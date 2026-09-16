@@ -6,6 +6,7 @@ namespace Page_switching;
 
 public sealed class AxisSnapshot
 {
+    // 创建一根轴的状态数据，默认显示为未连接。
     public AxisSnapshot(int axisNumber)
     {
         AxisNumber = axisNumber;
@@ -59,6 +60,7 @@ public sealed class AxisServiceOptions
     public double MaximumPosition { get; init; } = 20;
     public IReadOnlyList<AxisSymbolMap> AxisSymbols { get; init; } = Array.Empty<AxisSymbolMap>();
 
+    // 从 App.config 读取 ADS 连接参数和四根轴的变量地址。
     public static AxisServiceOptions FromConfiguration()
     {
         var settings = ConfigurationManager.AppSettings;
@@ -112,6 +114,7 @@ public sealed class AxisService : IDisposable
     private string? _lastError;
     private bool _disposed;
 
+    // 保存配置，并确认已经提供四根轴的变量映射。
     public AxisService(AxisServiceOptions options)
     {
         _options = options ?? throw new ArgumentNullException(nameof(options));
@@ -134,6 +137,7 @@ public sealed class AxisService : IDisposable
             !string.IsNullOrWhiteSpace(map.HomeCommand) &&
             !string.IsNullOrWhiteSpace(map.StopCommand));
 
+    // 判断指定轴是否已连接，并且已经配置回零、停止和点动变量。
     public bool CanControlAxis(int axisNumber)
     {
         ValidateAxisNumber(axisNumber);
@@ -170,6 +174,7 @@ public sealed class AxisService : IDisposable
         }
     }
 
+    // 根据配置的 AMS Net ID 和 ADS 端口连接 Beckhoff PLC。
     public async Task ConnectAsync(CancellationToken cancellationToken)
     {
         ThrowIfDisposed();
@@ -221,6 +226,7 @@ public sealed class AxisService : IDisposable
         }
     }
 
+    // 断开 ADS 连接并释放客户端。
     public async Task DisconnectAsync(CancellationToken cancellationToken)
     {
         if (_disposed)
@@ -260,6 +266,7 @@ public sealed class AxisService : IDisposable
         }
     }
 
+    // 读取四根轴的当前位置、速度和状态，供手动页面刷新显示。
     public async Task<IReadOnlyList<AxisSnapshot>> ReadSnapshotAsync(CancellationToken cancellationToken)
     {
         ThrowIfDisposed();
@@ -290,6 +297,7 @@ public sealed class AxisService : IDisposable
         }
     }
 
+    // 将四根轴的 EnableCommand 全部写为 true。
     public Task EnableAllAsync(CancellationToken cancellationToken) =>
         WriteAllAsync(
             [
@@ -301,6 +309,7 @@ public sealed class AxisService : IDisposable
             true,
             cancellationToken);
 
+    // 将四根轴的 EnableCommand 全部写为 false。
     public Task DisableAllAsync(CancellationToken cancellationToken) =>
         WriteAllAsync(
             [
@@ -312,6 +321,7 @@ public sealed class AxisService : IDisposable
             false,
             cancellationToken);
 
+    // 将一组布尔变量批量写成指定值。
     private async Task WriteAllAsync(
         IReadOnlyList<string> symbols,
         bool value,
@@ -331,6 +341,7 @@ public sealed class AxisService : IDisposable
         }
     }
 
+    // 将四根轴的 ResetAlarmCommand 置位 50 毫秒后复位。
     public Task ResetAlarmsAsync(CancellationToken cancellationToken) =>
         PulseAllAsync(
             [
@@ -341,6 +352,7 @@ public sealed class AxisService : IDisposable
             ],
             cancellationToken);
 
+    // 将四根轴的 HomeCommand 置位 50 毫秒后复位。
     public Task HomeAllAsync(CancellationToken cancellationToken) =>
         PulseAllAsync(
             [
@@ -351,6 +363,7 @@ public sealed class AxisService : IDisposable
             ],
             cancellationToken);
 
+    // 将四根轴的 StopCommand 置位 50 毫秒后复位。
     public Task StopAllAsync(CancellationToken cancellationToken) =>
         PulseAllAsync(
             [
@@ -361,18 +374,21 @@ public sealed class AxisService : IDisposable
             ],
             cancellationToken);
 
+    // 触发指定轴的 HomeCommand，使该轴开始回零。
     public Task HomeAxisAsync(int axisNumber, CancellationToken cancellationToken)
     {
         ValidateAxisNumber(axisNumber);
         return PulseAxisAsync(axisNumber, _options.AxisSymbols[axisNumber - 1].HomeCommand, cancellationToken);
     }
 
+    // 触发指定轴的 StopCommand，使该轴停止运动。
     public Task StopAxisAsync(int axisNumber, CancellationToken cancellationToken)
     {
         ValidateAxisNumber(axisNumber);
         return PulseAxisAsync(axisNumber, _options.AxisSymbols[axisNumber - 1].StopCommand, cancellationToken);
     }
 
+    // 写入点动速度和方向变量；按下时写 true，松开时写 false。
     public async Task JogAsync(
         int axisNumber,
         bool positive,
@@ -411,6 +427,7 @@ public sealed class AxisService : IDisposable
         }
     }
 
+    // 将四根轴的命令变量置位 50 毫秒，再全部复位。
     private async Task PulseAllAsync(
         IReadOnlyList<string> symbols,
         CancellationToken cancellationToken)
@@ -432,6 +449,7 @@ public sealed class AxisService : IDisposable
         }
     }
 
+    // 将指定轴的命令变量置位 50 毫秒，再复位。
     private async Task PulseAxisAsync(
         int axisNumber,
         string symbol,
@@ -462,6 +480,7 @@ public sealed class AxisService : IDisposable
         }
     }
 
+    // 把变量地址和值转换成 ADS 批量写请求。
     private static IReadOnlyCollection<WriteRequest> CreateWriteRequests(
         AdsClient client,
         IReadOnlyList<string> symbols,
@@ -482,6 +501,7 @@ public sealed class AxisService : IDisposable
         return requests;
     }
 
+    // 依次读取四根轴，并返回四份轴状态。
     private async Task<IReadOnlyList<AxisSnapshot>> ReadAdsSnapshotsAsync(
         AdsClient client,
         CancellationToken cancellationToken)
@@ -495,6 +515,7 @@ public sealed class AxisService : IDisposable
         return snapshots;
     }
 
+    // 一次批量读取指定轴的 8 个 PLC 变量，并填入轴状态。
     private async Task<AxisSnapshot> ReadAxisAsync(
         AdsClient client,
         int axisIndex,
@@ -542,12 +563,14 @@ public sealed class AxisService : IDisposable
         return snapshot;
     }
 
+    // 根据报警、限位、使能和回零信号生成界面状态文字。
     private static string GetAxisStatus(AxisSnapshot axis) =>
         axis.HasAlarm ? "报警" :
         axis.PositiveLimit || axis.NegativeLimit ? "限位" :
         !axis.IsEnabled ? "未使能" :
         !axis.IsHomed ? "未回零" : "就绪";
 
+    // 在未连接或读取失败时，生成四根轴的占位状态。
     private IReadOnlyList<AxisSnapshot> CreateUnavailableSnapshots(string status)
     {
         return Enumerable.Range(1, 4)
@@ -559,6 +582,7 @@ public sealed class AxisService : IDisposable
             .ToArray();
     }
 
+    // 仅在服务和 ADS 客户端都处于连接状态时返回客户端。
     private AdsClient? GetConnectedClient()
     {
         lock (_stateSync)
@@ -567,6 +591,7 @@ public sealed class AxisService : IDisposable
         }
     }
 
+    // 检查轴号必须处于 1 到 4 之间。
     private static void ValidateAxisNumber(int axisNumber)
     {
         if (axisNumber is < 1 or > 4)
@@ -575,11 +600,13 @@ public sealed class AxisService : IDisposable
         }
     }
 
+    // 服务释放后继续调用时，立即抛出明确异常。
     private void ThrowIfDisposed()
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
     }
 
+    // 关闭 ADS 连接并释放服务内部资源。
     public void Dispose()
     {
         if (_disposed)
