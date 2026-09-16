@@ -50,6 +50,38 @@ public partial class Config : UserControl
         UpdateWaveGeneratorState();
     }
 
+    private void SaveWaveGeneratorButton_Click(object? sender, EventArgs e)
+    {
+        try
+        {
+            var path = waveGeneratorPathTextBox.Text.Trim();
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                throw new InvalidOperationException("请先选择 WFast.exe 文件。");
+            }
+
+            if (!File.Exists(path))
+            {
+                throw new InvalidOperationException("WFast.exe 路径不存在。");
+            }
+
+            var configuration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            Set(configuration.AppSettings.Settings, "WaveGeneratorPath", path);
+            configuration.Save(ConfigurationSaveMode.Modified);
+            ConfigurationManager.RefreshSection("appSettings");
+
+            waveGeneratorStateLabel.Text = "已保存 WFast.exe 路径，波形页面可以直接生成";
+            waveGeneratorStateLabel.ForeColor = Color.FromArgb(5, 150, 105);
+            saveResultLabel.ForeColor = Color.FromArgb(5, 150, 105);
+            saveResultLabel.Text = "WFast.exe 路径保存成功。";
+        }
+        catch (Exception ex)
+        {
+            saveResultLabel.ForeColor = Color.FromArgb(220, 38, 38);
+            saveResultLabel.Text = "WFast 路径保存失败：" + ex.Message;
+        }
+    }
+
     private void UpdateWaveGeneratorState()
     {
         var path = waveGeneratorPathTextBox.Text.Trim();

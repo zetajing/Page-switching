@@ -28,6 +28,7 @@ partial class Config
     private GroupBox waveGeneratorGroup;
     private TableLayoutPanel waveGeneratorLayout;
     private Label waveGeneratorPathLabel;
+    private Button saveWaveGeneratorButton;
     private TextBox waveGeneratorPathTextBox;
     private Button browseWaveGeneratorButton;
     private Label waveGeneratorStateLabel;
@@ -71,6 +72,7 @@ partial class Config
         waveGeneratorPathLabel = new Label();
         waveGeneratorPathTextBox = new TextBox();
         browseWaveGeneratorButton = new Button();
+        saveWaveGeneratorButton = new Button();
         waveGeneratorStateLabel = new Label();
         rootLayout.SuspendLayout();
         routerGroup.SuspendLayout();
@@ -272,15 +274,17 @@ partial class Config
         waveGeneratorGroup.TabStop = false;
         waveGeneratorGroup.Text = "波形生成器";
         // waveGeneratorLayout
-        waveGeneratorLayout.ColumnCount = 3;
+        waveGeneratorLayout.ColumnCount = 4;
         waveGeneratorLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120F));
         waveGeneratorLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-        waveGeneratorLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 92F));
+        waveGeneratorLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 80F));
+        waveGeneratorLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 80F));
         waveGeneratorLayout.Controls.Add(waveGeneratorPathLabel, 0, 0);
         waveGeneratorLayout.Controls.Add(waveGeneratorPathTextBox, 1, 0);
         waveGeneratorLayout.Controls.Add(browseWaveGeneratorButton, 2, 0);
+        waveGeneratorLayout.Controls.Add(saveWaveGeneratorButton, 3, 0);
         waveGeneratorLayout.Controls.Add(waveGeneratorStateLabel, 1, 1);
-        waveGeneratorLayout.SetColumnSpan(waveGeneratorStateLabel, 2);
+        waveGeneratorLayout.SetColumnSpan(waveGeneratorStateLabel, 3);
         waveGeneratorLayout.Dock = DockStyle.Fill;
         waveGeneratorLayout.Name = "waveGeneratorLayout";
         waveGeneratorLayout.RowCount = 2;
@@ -302,6 +306,13 @@ partial class Config
         browseWaveGeneratorButton.Text = "浏览...";
         browseWaveGeneratorButton.UseVisualStyleBackColor = true;
         browseWaveGeneratorButton.Click += BrowseWaveGeneratorButton_Click;
+        // saveWaveGeneratorButton
+        saveWaveGeneratorButton.Dock = DockStyle.Fill;
+        saveWaveGeneratorButton.Font = new Font("Microsoft YaHei UI", 9F);
+        saveWaveGeneratorButton.Name = "saveWaveGeneratorButton";
+        saveWaveGeneratorButton.Text = "保存路径";
+        saveWaveGeneratorButton.UseVisualStyleBackColor = true;
+        saveWaveGeneratorButton.Click += SaveWaveGeneratorButton_Click;
         // waveGeneratorStateLabel
         waveGeneratorStateLabel.Dock = DockStyle.Fill;
         waveGeneratorStateLabel.Font = new Font("Microsoft YaHei UI", 8F);

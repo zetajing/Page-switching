@@ -122,10 +122,12 @@ public partial class WaveformPage : UserControl
         }
         catch (OperationCanceledException)
         {
+            regularStatusLabel.ForeColor = Color.FromArgb(180, 83, 9);
             regularStatusLabel.Text = "规则波生成已取消。";
         }
         catch (Exception ex)
         {
+            regularStatusLabel.ForeColor = Color.FromArgb(220, 38, 38);
             regularStatusLabel.Text = "规则波生成失败：" + ex.Message;
         }
         finally
@@ -188,10 +190,12 @@ public partial class WaveformPage : UserControl
         }
         catch (OperationCanceledException)
         {
+            irregularStatusLabel.ForeColor = Color.FromArgb(180, 83, 9);
             irregularStatusLabel.Text = "不规则波生成已取消。";
         }
         catch (Exception ex)
         {
+            irregularStatusLabel.ForeColor = Color.FromArgb(220, 38, 38);
             irregularStatusLabel.Text = "不规则波生成失败：" + ex.Message;
         }
         finally

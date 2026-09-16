@@ -93,7 +93,7 @@ public sealed class WaveformGeneratorService : IDisposable
             : configuredPath;
         if (string.IsNullOrWhiteSpace(wFastPath))
         {
-            throw new InvalidOperationException("请先在配置页面设置 WFast.exe 路径。");
+            throw new InvalidOperationException("请先在配置页面选择并保存 WFast.exe 路径。");
         }
 
         var generatorPath = Path.GetFullPath(wFastPath);
