@@ -20,7 +20,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <ProjectReference Include="..\..\Total\InduLink.Protocols.Ads\InduLink.Protocols.Ads.csproj" />
+    <ProjectReference Include="..\..\Total\InduLink.Protocols.Ads.Router\InduLink.Protocols.Ads.Router.csproj" />
   </ItemGroup>
 
   <ItemGroup>

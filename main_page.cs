@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Page_switching.panel;
+using InduLink.Protocols.Ads.Router;
 
 namespace Page_switching
 {
@@ -9,6 +10,7 @@ namespace Page_switching
         private readonly Manual _manualPage;
         private readonly Config _confige;
         private readonly AxisService _axisService;
+        private AdsTcpRouterHost? _adsTcpRouter;
         private UserControl? _currentPage;
 
         public Mainpage()
@@ -30,6 +32,19 @@ namespace Page_switching
 
         private async void Mainpage_Shown(object? sender, EventArgs e)
         {
+            if (AdsTcpRouterRuntime.IsEnabled)
+            {
+                try
+                {
+                    _adsTcpRouter = AdsTcpRouterRuntime.Create();
+                    await _adsTcpRouter.StartAsync(CancellationToken.None);
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine("ADS TCP Router 启动失败：" + ex);
+                }
+            }
+
             try
             {
                 await _axisService.ConnectAsync(CancellationToken.None);
@@ -45,6 +60,7 @@ namespace Page_switching
             try
             {
                 _axisService.Dispose();
+                _adsTcpRouter?.Dispose();
             }
             finally
             {
