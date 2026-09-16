@@ -61,61 +61,45 @@ public sealed class AxisServiceOptions
 
     public static AxisServiceOptions FromConfiguration()
     {
-        var symbols = Enumerable.Range(1, 4)
-            .Select(index => new AxisSymbolMap
-            {
-                ActualPosition = Read($"AdsAxis{index}ActualPosition"),
-                Speed = Read($"AdsAxis{index}Speed"),
-                Enabled = Read($"AdsAxis{index}Enabled"),
-                Homed = Read($"AdsAxis{index}Homed"),
-                Alarm = Read($"AdsAxis{index}Alarm"),
-                PositiveLimit = Read($"AdsAxis{index}PositiveLimit"),
-                NegativeLimit = Read($"AdsAxis{index}NegativeLimit"),
-                OriginSignal = Read($"AdsAxis{index}OriginSignal"),
-                EnableCommand = Read($"AdsAxis{index}EnableCommand"),
-                ResetAlarmCommand = Read($"AdsAxis{index}ResetAlarmCommand"),
-                HomeCommand = Read($"AdsAxis{index}HomeCommand"),
-                StopCommand = Read($"AdsAxis{index}StopCommand"),
-                JogSpeedCommand = Read($"AdsAxis{index}JogSpeedCommand"),
-                JogPositiveCommand = Read($"AdsAxis{index}JogPositiveCommand"),
-                JogNegativeCommand = Read($"AdsAxis{index}JogNegativeCommand")
-            })
-            .ToArray();
-
-        var minimum = ReadDouble("AxisMinimum", -20);
-        var maximum = ReadDouble("AxisMaximum", 20);
-        if (maximum <= minimum)
+        var settings = ConfigurationManager.AppSettings;
+        var symbols = new AxisSymbolMap[4];
+        for (var axisNumber = 1; axisNumber <= 4; axisNumber++)
         {
-            minimum = -20;
-            maximum = 20;
+            symbols[axisNumber - 1] = new AxisSymbolMap
+            {
+                ActualPosition = settings[$"AdsAxis{axisNumber}ActualPosition"] ?? "",
+                Speed = settings[$"AdsAxis{axisNumber}Speed"] ?? "",
+                Enabled = settings[$"AdsAxis{axisNumber}Enabled"] ?? "",
+                Homed = settings[$"AdsAxis{axisNumber}Homed"] ?? "",
+                Alarm = settings[$"AdsAxis{axisNumber}Alarm"] ?? "",
+                PositiveLimit = settings[$"AdsAxis{axisNumber}PositiveLimit"] ?? "",
+                NegativeLimit = settings[$"AdsAxis{axisNumber}NegativeLimit"] ?? "",
+                OriginSignal = settings[$"AdsAxis{axisNumber}OriginSignal"] ?? "",
+                EnableCommand = settings[$"AdsAxis{axisNumber}EnableCommand"] ?? "",
+                ResetAlarmCommand = settings[$"AdsAxis{axisNumber}ResetAlarmCommand"] ?? "",
+                HomeCommand = settings[$"AdsAxis{axisNumber}HomeCommand"] ?? "",
+                StopCommand = settings[$"AdsAxis{axisNumber}StopCommand"] ?? "",
+                JogSpeedCommand = settings[$"AdsAxis{axisNumber}JogSpeedCommand"] ?? "",
+                JogPositiveCommand = settings[$"AdsAxis{axisNumber}JogPositiveCommand"] ?? "",
+                JogNegativeCommand = settings[$"AdsAxis{axisNumber}JogNegativeCommand"] ?? ""
+            };
         }
 
         return new AxisServiceOptions
         {
-            AmsNetId = Read("AdsAmsNetId"),
-            AdsPort = Math.Clamp(ReadInt("AdsPort", 851), 1, 65535),
-            ConnectTimeoutMilliseconds = Math.Clamp(ReadInt("AdsConnectTimeoutMs", 10000), 1000, 60000),
-            OperationTimeoutMilliseconds = Math.Clamp(ReadInt("AdsOperationTimeoutMs", 5000), 1000, 60000),
-            RefreshIntervalMilliseconds = Math.Clamp(ReadInt("AdsRefreshIntervalMs", 100), 50, 2000),
-            Unit = string.IsNullOrWhiteSpace(Read("AxisUnit")) ? "°" : Read("AxisUnit"),
-            MinimumPosition = minimum,
-            MaximumPosition = maximum,
+            AmsNetId = settings["AdsAmsNetId"] ?? "",
+            AdsPort = Convert.ToInt32(settings["AdsPort"] ?? "851"),
+            ConnectTimeoutMilliseconds = Convert.ToInt32(settings["AdsConnectTimeoutMs"] ?? "10000"),
+            OperationTimeoutMilliseconds = Convert.ToInt32(settings["AdsOperationTimeoutMs"] ?? "5000"),
+            RefreshIntervalMilliseconds = Convert.ToInt32(settings["AdsRefreshIntervalMs"] ?? "100"),
+            Unit = settings["AxisUnit"] ?? "°",
+            MinimumPosition = Convert.ToDouble(settings["AxisMinimum"] ?? "-20",
+                System.Globalization.CultureInfo.InvariantCulture),
+            MaximumPosition = Convert.ToDouble(settings["AxisMaximum"] ?? "20",
+                System.Globalization.CultureInfo.InvariantCulture),
             AxisSymbols = symbols
         };
     }
-
-    private static string Read(string key) =>
-        ConfigurationManager.AppSettings[key]?.Trim() ?? string.Empty;
-
-    private static int ReadInt(string key, int fallback) =>
-        int.TryParse(Read(key), out var value) ? value : fallback;
-
-    private static double ReadDouble(string key, double fallback) =>
-        double.TryParse(Read(key), System.Globalization.NumberStyles.Float,
-            System.Globalization.CultureInfo.InvariantCulture, out var value)
-            ? value
-            : fallback;
-
 }
 
 public sealed class AxisService : IDisposable
