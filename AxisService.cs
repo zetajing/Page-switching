@@ -621,151 +621,67 @@ public sealed class AxisService : IDisposable
         AdsClient client,
         CancellationToken cancellationToken)
     {
-        var snapshots = CreateUnavailableSnapshots("未配置");
-        var requests = new List<ReadRequest>();
-
-        // 每根轴固定读取下面 8 个变量。这里直接列出，方便对照 App.config 中的符号。
-        foreach (var symbols in _options.AxisSymbols)
+        var snapshots = new List<AxisSnapshot>(4);
+        for (var axisIndex = 0; axisIndex < 4; axisIndex++)
         {
-            AddReadRequest(requests, client.DeviceId, symbols.ActualPosition, DataType.Double);
-            AddReadRequest(requests, client.DeviceId, symbols.Speed, DataType.Double);
-            AddReadRequest(requests, client.DeviceId, symbols.Enabled, DataType.Bool);
-            AddReadRequest(requests, client.DeviceId, symbols.Homed, DataType.Bool);
-            AddReadRequest(requests, client.DeviceId, symbols.Alarm, DataType.Bool);
-            AddReadRequest(requests, client.DeviceId, symbols.PositiveLimit, DataType.Bool);
-            AddReadRequest(requests, client.DeviceId, symbols.NegativeLimit, DataType.Bool);
-            AddReadRequest(requests, client.DeviceId, symbols.OriginSignal, DataType.Bool);
-        }
-
-        if (requests.Count == 0)
-        {
-            return snapshots;
-        }
-
-        var result = await client.ReadManyAsync(requests, cancellationToken).ConfigureAwait(false);
-        var valuesBySymbol = new Dictionary<string, DataValue>(StringComparer.OrdinalIgnoreCase);
-        foreach (var value in result.Values)
-        {
-            valuesBySymbol[value.Address] = value;
-        }
-
-        for (var index = 0; index < snapshots.Count; index++)
-        {
-            var snapshot = snapshots[index];
-            var symbols = _options.AxisSymbols[index];
-            var readFailed = false;
-
-            // PLC 变量 -> 页面数据，一一对应地写在这里。
-            snapshot.ActualPosition = ReadDouble(valuesBySymbol, symbols.ActualPosition, ref readFailed);
-            snapshot.Speed = ReadDouble(valuesBySymbol, symbols.Speed, ref readFailed);
-            snapshot.IsEnabled = ReadBoolean(valuesBySymbol, symbols.Enabled, ref readFailed) ?? false;
-            snapshot.IsHomed = ReadBoolean(valuesBySymbol, symbols.Homed, ref readFailed) ?? false;
-            snapshot.HasAlarm = ReadBoolean(valuesBySymbol, symbols.Alarm, ref readFailed) ?? false;
-
-            var positiveLimit = ReadBoolean(valuesBySymbol, symbols.PositiveLimit, ref readFailed);
-            snapshot.PositiveLimit = positiveLimit ?? false;
-            snapshot.PositiveLimitAvailable = positiveLimit.HasValue;
-
-            var negativeLimit = ReadBoolean(valuesBySymbol, symbols.NegativeLimit, ref readFailed);
-            snapshot.NegativeLimit = negativeLimit ?? false;
-            snapshot.NegativeLimitAvailable = negativeLimit.HasValue;
-
-            snapshot.OriginSignal = ReadBoolean(valuesBySymbol, symbols.OriginSignal, ref readFailed);
-
-            snapshot.StatusText = !symbols.HasActualPositionSymbol
-                ? "未配置"
-                : readFailed
-                    ? "读取失败"
-                    : snapshot.HasAlarm
-                        ? "报警"
-                        : snapshot.PositiveLimit || snapshot.NegativeLimit
-                            ? "限位"
-                            : !snapshot.IsEnabled
-                                ? "未使能"
-                                : !snapshot.IsHomed
-                                    ? "未回零"
-                                    : "就绪";
+            snapshots.Add(await ReadAxisAsync(client, axisIndex, cancellationToken).ConfigureAwait(false));
         }
 
         return snapshots;
     }
 
-    private static void AddReadRequest(
-        ICollection<ReadRequest> requests,
-        string deviceId,
-        string symbol,
-        DataType dataType)
+    private async Task<AxisSnapshot> ReadAxisAsync(
+        AdsClient client,
+        int axisIndex,
+        CancellationToken cancellationToken)
     {
-        if (!string.IsNullOrWhiteSpace(symbol))
+        var symbols = _options.AxisSymbols[axisIndex];
+        var snapshot = new AxisSnapshot(axisIndex + 1) { StatusText = "未配置" };
+        if (!symbols.HasActualPositionSymbol)
         {
-            requests.Add(new ReadRequest(deviceId, symbol, dataType));
+            return snapshot;
         }
+
+        var result = await client.ReadManyAsync(
+        [
+            new ReadRequest(client.DeviceId, symbols.ActualPosition, DataType.Double),
+            new ReadRequest(client.DeviceId, symbols.Speed, DataType.Double),
+            new ReadRequest(client.DeviceId, symbols.Enabled, DataType.Bool),
+            new ReadRequest(client.DeviceId, symbols.Homed, DataType.Bool),
+            new ReadRequest(client.DeviceId, symbols.Alarm, DataType.Bool),
+            new ReadRequest(client.DeviceId, symbols.PositiveLimit, DataType.Bool),
+            new ReadRequest(client.DeviceId, symbols.NegativeLimit, DataType.Bool),
+            new ReadRequest(client.DeviceId, symbols.OriginSignal, DataType.Bool)
+        ], cancellationToken).ConfigureAwait(false);
+
+        var values = result.Values;
+        if (values.Count != 8 || values.Any(value =>
+                value.Quality != QualityStatus.Good || value.Value is null))
+        {
+            snapshot.StatusText = "读取失败";
+            return snapshot;
+        }
+
+        snapshot.ActualPosition = (double)values[0].Value;
+        snapshot.Speed = (double)values[1].Value;
+        snapshot.IsEnabled = (bool)values[2].Value;
+        snapshot.IsHomed = (bool)values[3].Value;
+        snapshot.HasAlarm = (bool)values[4].Value;
+        snapshot.PositiveLimit = (bool)values[5].Value;
+        snapshot.NegativeLimit = (bool)values[6].Value;
+        snapshot.OriginSignal = (bool)values[7].Value;
+        snapshot.PositiveLimitAvailable = true;
+        snapshot.NegativeLimitAvailable = true;
+        snapshot.StatusText = GetAxisStatus(snapshot);
+
+        return snapshot;
     }
 
-    private static double? ReadDouble(
-        IReadOnlyDictionary<string, DataValue> values,
-        string symbol,
-        ref bool readFailed)
-    {
-        var value = ReadValue(values, symbol, ref readFailed);
-        if (value is null)
-        {
-            return null;
-        }
-
-        try
-        {
-            return Convert.ToDouble(value, System.Globalization.CultureInfo.InvariantCulture);
-        }
-        catch (Exception ex) when (ex is FormatException or InvalidCastException or OverflowException)
-        {
-            readFailed = true;
-            return null;
-        }
-    }
-
-    private static bool? ReadBoolean(
-        IReadOnlyDictionary<string, DataValue> values,
-        string symbol,
-        ref bool readFailed)
-    {
-        var value = ReadValue(values, symbol, ref readFailed);
-        if (value is null)
-        {
-            return null;
-        }
-
-        try
-        {
-            return Convert.ToBoolean(value, System.Globalization.CultureInfo.InvariantCulture);
-        }
-        catch (Exception ex) when (ex is FormatException or InvalidCastException)
-        {
-            readFailed = true;
-            return null;
-        }
-    }
-
-    private static object? ReadValue(
-        IReadOnlyDictionary<string, DataValue> values,
-        string symbol,
-        ref bool readFailed)
-    {
-        if (string.IsNullOrWhiteSpace(symbol))
-        {
-            return null;
-        }
-
-        if (!values.TryGetValue(symbol, out var value) ||
-            value.Quality != QualityStatus.Good ||
-            value.Value is null)
-        {
-            readFailed = true;
-            return null;
-        }
-
-        return value.Value;
-    }
+    private static string GetAxisStatus(AxisSnapshot axis) =>
+        axis.HasAlarm ? "报警" :
+        axis.PositiveLimit || axis.NegativeLimit ? "限位" :
+        !axis.IsEnabled ? "未使能" :
+        !axis.IsHomed ? "未回零" : "就绪";
 
     private IReadOnlyList<AxisSnapshot> CreateUnavailableSnapshots(string status)
     {
