@@ -241,7 +241,7 @@ partial class WaveformPage
         // regularLayout
         // 
         regularLayout.ColumnCount = 2;
-        regularLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 370F));
+        regularLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 405F));
         regularLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
         regularLayout.Controls.Add(regularParameterGroup, 0, 0);
         regularLayout.Controls.Add(regularPreviewGroup, 1, 0);
@@ -259,12 +259,14 @@ partial class WaveformPage
         // 
         // regularParameterLayout
         // 
+        regularParameterLayout.AutoSize = true;
+        regularParameterLayout.AutoSizeMode = AutoSizeMode.GrowAndShrink;
         regularParameterLayout.ColumnCount = 4;
-        regularParameterLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 72F));
-        regularParameterLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 108F));
-        regularParameterLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 72F));
+        regularParameterLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 84F));
+        regularParameterLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 106F));
+        regularParameterLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 84F));
         regularParameterLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-        regularParameterLayout.Dock = DockStyle.Fill;
+        regularParameterLayout.Dock = DockStyle.Top;
         regularParameterLayout.RowCount = 7;
         for (var i = 0; i < 7; i++)
         {
@@ -380,12 +382,14 @@ partial class WaveformPage
         // 
         // irregularParameterLayout
         // 
+        irregularParameterLayout.AutoSize = true;
+        irregularParameterLayout.AutoSizeMode = AutoSizeMode.GrowAndShrink;
         irregularParameterLayout.ColumnCount = 4;
         irregularParameterLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 94F));
         irregularParameterLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 110F));
         irregularParameterLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 94F));
         irregularParameterLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-        irregularParameterLayout.Dock = DockStyle.Fill;
+        irregularParameterLayout.Dock = DockStyle.Top;
         irregularParameterLayout.RowCount = 12;
         for (var i = 0; i < 12; i++)
         {
@@ -575,10 +579,15 @@ partial class WaveformPage
 
     private static void ConfigureActionButton(Button button, bool primary)
     {
-        button.Dock = DockStyle.Fill;
+        button.Dock = primary ? DockStyle.None : DockStyle.Fill;
+        button.Anchor = primary ? AnchorStyles.Left | AnchorStyles.Top : AnchorStyles.Left | AnchorStyles.Right;
         button.FlatStyle = FlatStyle.Flat;
         button.FlatAppearance.BorderSize = 0;
-        button.Margin = new Padding(3, 4, 3, 4);
+        button.Margin = primary ? new Padding(3, 6, 3, 6) : new Padding(3, 4, 3, 4);
+        if (primary)
+        {
+            button.Size = new Size(174, 46);
+        }
         button.Font = new Font("Microsoft YaHei UI", 9F, primary ? FontStyle.Bold : FontStyle.Regular);
         button.BackColor = primary ? Color.FromArgb(37, 99, 235) : Color.FromArgb(226, 232, 240);
         button.ForeColor = primary ? Color.White : Color.FromArgb(15, 23, 42);
