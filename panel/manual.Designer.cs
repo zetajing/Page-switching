@@ -536,7 +536,7 @@ namespace Page_switching
             connectionStateLabel.Name = "connectionStateLabel";
             connectionStateLabel.Size = new Size(124, 42);
             connectionStateLabel.TabIndex = 1;
-            connectionStateLabel.Text = "模拟模式";
+            connectionStateLabel.Text = "ADS 未连接";
             connectionStateLabel.TextAlign = ContentAlignment.MiddleRight;
             // 
             // titleLabel
@@ -1155,7 +1155,7 @@ namespace Page_switching
             helperLabel.Padding = new Padding(0, 10, 0, 0);
             helperLabel.Size = new Size(259, 111);
             helperLabel.TabIndex = 10;
-            helperLabel.Text = "提示：点动按钮按下运行，松开立即停止。\r\n模拟模式仅用于界面和流程验证。";
+            helperLabel.Text = "提示：点动按钮按下运行，松开立即停止。";
             // 
             // Manual
             // 

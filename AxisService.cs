@@ -49,7 +49,6 @@ public sealed class AxisSymbolMap
 
 public sealed class AxisServiceOptions
 {
-    public bool UseSimulation { get; init; } = true;
     public string AmsNetId { get; init; } = string.Empty;
     public int AdsPort { get; init; } = 851;
     public int ConnectTimeoutMilliseconds { get; init; } = 10000;
@@ -93,7 +92,6 @@ public sealed class AxisServiceOptions
 
         return new AxisServiceOptions
         {
-            UseSimulation = ReadBoolean("UseSimulation", true),
             AmsNetId = Read("AdsAmsNetId"),
             AdsPort = Math.Clamp(ReadInt("AdsPort", 851), 1, 65535),
             ConnectTimeoutMilliseconds = Math.Clamp(ReadInt("AdsConnectTimeoutMs", 10000), 1000, 60000),
@@ -118,20 +116,16 @@ public sealed class AxisServiceOptions
             ? value
             : fallback;
 
-    private static bool ReadBoolean(string key, bool fallback) =>
-        bool.TryParse(Read(key), out var value) ? value : fallback;
 }
 
 public sealed class AxisService : IDisposable
 {
     private readonly AxisServiceOptions _options;
     private readonly SemaphoreSlim _operationGate = new(1, 1);
-    private readonly object _simulationSync = new();
-    private readonly SimulationAxis[] _simulationAxes;
+    private readonly object _stateSync = new();
     private AdsClient? _adsClient;
     private bool _connected;
     private string? _lastError;
-    private DateTime _lastSimulationUpdateUtc = DateTime.UtcNow;
     private bool _disposed;
 
     public AxisService(AxisServiceOptions options)
@@ -142,20 +136,15 @@ public sealed class AxisService : IDisposable
             throw new ArgumentException("必须提供四个造波板轴的 ADS 符号映射。", nameof(options));
         }
 
-        _simulationAxes = Enumerable.Range(1, 4)
-            .Select(index => new SimulationAxis(index, _options.MinimumPosition, _options.MaximumPosition))
-            .ToArray();
     }
 
-    public bool IsSimulation => _options.UseSimulation;
     public int RefreshIntervalMilliseconds => _options.RefreshIntervalMilliseconds;
     public string Unit => _options.Unit;
     public double MinimumPosition => _options.MinimumPosition;
     public double MaximumPosition => _options.MaximumPosition;
     public string? LastError => _lastError;
 
-    public bool CanControlAll => IsSimulation ||
-        IsConnected && _options.AxisSymbols.All(map =>
+    public bool CanControlAll => IsConnected && _options.AxisSymbols.All(map =>
             !string.IsNullOrWhiteSpace(map.EnableCommand) &&
             !string.IsNullOrWhiteSpace(map.ResetAlarmCommand) &&
             !string.IsNullOrWhiteSpace(map.HomeCommand) &&
@@ -164,11 +153,6 @@ public sealed class AxisService : IDisposable
     public bool CanControlAxis(int axisNumber)
     {
         ValidateAxisNumber(axisNumber);
-        if (IsSimulation)
-        {
-            return IsConnected;
-        }
-
         var map = _options.AxisSymbols[axisNumber - 1];
         return IsConnected &&
             !string.IsNullOrWhiteSpace(map.HomeCommand) &&
@@ -182,12 +166,7 @@ public sealed class AxisService : IDisposable
     {
         get
         {
-            if (IsSimulation)
-            {
-                return _connected;
-            }
-
-            lock (_simulationSync)
+            lock (_stateSync)
             {
                 return _connected && _adsClient?.IsConnected == true;
             }
@@ -198,11 +177,6 @@ public sealed class AxisService : IDisposable
     {
         get
         {
-            if (IsSimulation)
-            {
-                return "模拟模式";
-            }
-
             if (IsConnected)
             {
                 return "ADS 已连接";
@@ -216,18 +190,6 @@ public sealed class AxisService : IDisposable
     {
         ThrowIfDisposed();
 
-        if (IsSimulation)
-        {
-            lock (_simulationSync)
-            {
-                _connected = true;
-                _lastError = null;
-                _lastSimulationUpdateUtc = DateTime.UtcNow;
-            }
-
-            return;
-        }
-
         await _operationGate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
@@ -238,7 +200,7 @@ public sealed class AxisService : IDisposable
 
             var client = new AdsClient(new AdsClientOptions
             {
-                DeviceId = "virtual-plc",
+            DeviceId = "beckhoff-plc",
                 AmsNetId = _options.AmsNetId,
                 Port = _options.AdsPort,
                 ConnectTimeoutMilliseconds = _options.ConnectTimeoutMilliseconds,
@@ -250,7 +212,7 @@ public sealed class AxisService : IDisposable
             try
             {
                 await client.ConnectAsync(cancellationToken).ConfigureAwait(false);
-                lock (_simulationSync)
+                lock (_stateSync)
                 {
                     _adsClient = client;
                     _connected = true;
@@ -260,7 +222,7 @@ public sealed class AxisService : IDisposable
             catch (Exception ex)
             {
                 client.Dispose();
-                lock (_simulationSync)
+                lock (_stateSync)
                 {
                     _connected = false;
                     _lastError = ex.Message;
@@ -286,7 +248,7 @@ public sealed class AxisService : IDisposable
         try
         {
             AdsClient? client;
-            lock (_simulationSync)
+            lock (_stateSync)
             {
                 client = _adsClient;
                 _adsClient = null;
@@ -318,15 +280,6 @@ public sealed class AxisService : IDisposable
     {
         ThrowIfDisposed();
 
-        if (IsSimulation)
-        {
-            lock (_simulationSync)
-            {
-                UpdateSimulation();
-                return _simulationAxes.Select(axis => axis.ToSnapshot()).ToArray();
-            }
-        }
-
         await _operationGate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
@@ -340,7 +293,7 @@ public sealed class AxisService : IDisposable
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            lock (_simulationSync)
+            lock (_stateSync)
             {
                 _lastError = ex.Message;
             }
@@ -354,44 +307,23 @@ public sealed class AxisService : IDisposable
     }
 
     public Task EnableAllAsync(CancellationToken cancellationToken) =>
-        RunSimulationOrWriteLevelAsync(
-            simulationAction: () =>
-            {
-                foreach (var axis in _simulationAxes) axis.Enabled = true;
-            },
+        WriteAllAsync(
             symbolSelector: map => map.EnableCommand,
             value: true,
             cancellationToken);
 
     public Task DisableAllAsync(CancellationToken cancellationToken) =>
-        RunSimulationOrWriteLevelAsync(
-            simulationAction: () =>
-            {
-                foreach (var axis in _simulationAxes)
-                {
-                    axis.Enabled = false;
-                    axis.Jogging = false;
-                    axis.DemoMotion = false;
-                    axis.Target = axis.Actual;
-                }
-            },
+        WriteAllAsync(
             symbolSelector: map => map.EnableCommand,
             value: false,
             cancellationToken);
 
-    private async Task RunSimulationOrWriteLevelAsync(
-        Action simulationAction,
+    private async Task WriteAllAsync(
         Func<AxisSymbolMap, string> symbolSelector,
         bool value,
         CancellationToken cancellationToken)
     {
         ThrowIfDisposed();
-        if (IsSimulation)
-        {
-            lock (_simulationSync) simulationAction();
-            return;
-        }
-
         await _operationGate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
@@ -406,69 +338,33 @@ public sealed class AxisService : IDisposable
     }
 
     public Task ResetAlarmsAsync(CancellationToken cancellationToken) =>
-        RunSimulationOrMomentaryAsync(
-            simulationAction: () =>
-            {
-                foreach (var axis in _simulationAxes) axis.Alarm = false;
-            },
+        PulseAllAsync(
             symbolSelector: map => map.ResetAlarmCommand,
             value: true,
             cancellationToken);
 
     public Task HomeAllAsync(CancellationToken cancellationToken) =>
-        RunSimulationOrMomentaryAsync(
-            simulationAction: () =>
-            {
-                foreach (var axis in _simulationAxes)
-                {
-                    axis.Target = 0;
-                    axis.Homed = true;
-                    axis.Jogging = false;
-                    axis.DemoMotion = false;
-                }
-            },
+        PulseAllAsync(
             symbolSelector: map => map.HomeCommand,
             value: true,
             cancellationToken);
 
     public Task StopAllAsync(CancellationToken cancellationToken) =>
-        RunSimulationOrMomentaryAsync(
-            simulationAction: () =>
-            {
-                foreach (var axis in _simulationAxes)
-                {
-                    axis.Target = axis.Actual;
-                    axis.Jogging = false;
-                    axis.DemoMotion = false;
-                }
-            },
+        PulseAllAsync(
             symbolSelector: map => map.StopCommand,
             value: true,
             cancellationToken);
 
     public Task HomeAxisAsync(int axisNumber, CancellationToken cancellationToken) =>
-        RunAxisSimulationOrMomentaryAsync(
+        PulseAxisAsync(
             axisNumber,
-            simulationAction: axis =>
-            {
-                axis.Target = 0;
-                axis.Homed = true;
-                axis.Jogging = false;
-                axis.DemoMotion = false;
-            },
             symbolSelector: map => map.HomeCommand,
             value: true,
             cancellationToken);
 
     public Task StopAxisAsync(int axisNumber, CancellationToken cancellationToken) =>
-        RunAxisSimulationOrMomentaryAsync(
+        PulseAxisAsync(
             axisNumber,
-            simulationAction: axis =>
-            {
-                axis.Target = axis.Actual;
-                axis.Jogging = false;
-                axis.DemoMotion = false;
-            },
             symbolSelector: map => map.StopCommand,
             value: true,
             cancellationToken);
@@ -482,24 +378,6 @@ public sealed class AxisService : IDisposable
     {
         ThrowIfDisposed();
         ValidateAxisNumber(axisNumber);
-
-        if (IsSimulation)
-        {
-            lock (_simulationSync)
-            {
-                var axis = _simulationAxes[axisNumber - 1];
-                axis.Jogging = start;
-                axis.JogPositive = positive;
-                axis.JogSpeed = Math.Clamp(Math.Abs(speed), 0.1, 180);
-                if (start)
-                {
-                    axis.Enabled = true;
-                    axis.DemoMotion = false;
-                }
-            }
-
-            return;
-        }
 
         var map = _options.AxisSymbols[axisNumber - 1];
         var commandSymbol = positive ? map.JogPositiveCommand : map.JogNegativeCommand;
@@ -529,19 +407,12 @@ public sealed class AxisService : IDisposable
         }
     }
 
-    private async Task RunSimulationOrMomentaryAsync(
-        Action simulationAction,
+    private async Task PulseAllAsync(
         Func<AxisSymbolMap, string> symbolSelector,
         bool value,
         CancellationToken cancellationToken)
     {
         ThrowIfDisposed();
-        if (IsSimulation)
-        {
-            lock (_simulationSync) simulationAction();
-            return;
-        }
-
         await _operationGate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
@@ -558,21 +429,14 @@ public sealed class AxisService : IDisposable
         }
     }
 
-    private async Task RunAxisSimulationOrMomentaryAsync(
+    private async Task PulseAxisAsync(
         int axisNumber,
-        Action<SimulationAxis> simulationAction,
         Func<AxisSymbolMap, string> symbolSelector,
         bool value,
         CancellationToken cancellationToken)
     {
         ThrowIfDisposed();
         ValidateAxisNumber(axisNumber);
-        if (IsSimulation)
-        {
-            lock (_simulationSync) simulationAction(_simulationAxes[axisNumber - 1]);
-            return;
-        }
-
         await _operationGate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
@@ -696,52 +560,9 @@ public sealed class AxisService : IDisposable
 
     private AdsClient? GetConnectedClient()
     {
-        lock (_simulationSync)
+        lock (_stateSync)
         {
             return _connected && _adsClient?.IsConnected == true ? _adsClient : null;
-        }
-    }
-
-    private void UpdateSimulation()
-    {
-        var now = DateTime.UtcNow;
-        var elapsed = Math.Clamp((now - _lastSimulationUpdateUtc).TotalSeconds, 0, 0.25);
-        _lastSimulationUpdateUtc = now;
-
-        foreach (var axis in _simulationAxes)
-        {
-            if (axis.Jogging && axis.Enabled && !axis.Alarm)
-            {
-                axis.Target += (axis.JogPositive ? 1 : -1) * axis.JogSpeed * elapsed;
-            }
-            else if (axis.DemoMotion && Math.Abs(axis.Target - axis.Actual) < 0.01)
-            {
-                axis.Target = axis.Target > (_options.MinimumPosition + _options.MaximumPosition) / 2
-                    ? _options.MinimumPosition + 10
-                    : _options.MaximumPosition - 10;
-            }
-
-            axis.Target = Math.Clamp(axis.Target, _options.MinimumPosition, _options.MaximumPosition);
-            var difference = axis.Target - axis.Actual;
-            var commandedSpeed = axis.Jogging ? axis.JogSpeed : 12;
-            var step = Math.Min(Math.Abs(difference), commandedSpeed * elapsed);
-            axis.Actual += Math.Sign(difference) * step;
-            axis.Speed = axis.Enabled && Math.Abs(difference) > 0.01
-                ? Math.Sign(difference) * commandedSpeed
-                : 0;
-            axis.PositiveLimit = axis.Actual >= _options.MaximumPosition - 0.001;
-            axis.NegativeLimit = axis.Actual <= _options.MinimumPosition + 0.001;
-            axis.Status = axis.Alarm
-                ? "报警"
-                : axis.PositiveLimit || axis.NegativeLimit
-                    ? "限位"
-                    : !axis.Enabled
-                        ? "未使能"
-                        : !axis.Homed
-                            ? "未回零"
-                            : Math.Abs(difference) > 0.01
-                                ? "运行中"
-                                : "就绪";
         }
     }
 
@@ -776,49 +597,6 @@ public sealed class AxisService : IDisposable
 
         _disposed = true;
         _operationGate.Dispose();
-    }
-
-    private sealed class SimulationAxis
-    {
-        public SimulationAxis(int axisNumber, double minimum, double maximum)
-        {
-            AxisNumber = axisNumber;
-            Actual = minimum + (maximum - minimum) * (axisNumber - 1) / 3;
-            Target = axisNumber % 2 == 0 ? maximum - 10 : minimum + 10;
-            Enabled = true;
-            Homed = true;
-            DemoMotion = true;
-        }
-
-        public int AxisNumber { get; }
-        public double Actual { get; set; }
-        public double Target { get; set; }
-        public double Speed { get; set; }
-        public bool Enabled { get; set; }
-        public bool Homed { get; set; }
-        public bool Alarm { get; set; }
-        public bool PositiveLimit { get; set; }
-        public bool NegativeLimit { get; set; }
-        public bool Jogging { get; set; }
-        public bool JogPositive { get; set; }
-        public double JogSpeed { get; set; } = 10;
-        public bool DemoMotion { get; set; }
-        public string Status { get; set; } = "未使能";
-
-        public AxisSnapshot ToSnapshot() => new(AxisNumber)
-        {
-            ActualPosition = Actual,
-            Speed = Speed,
-            IsEnabled = Enabled,
-            IsHomed = Homed,
-            HasAlarm = Alarm,
-            PositiveLimit = PositiveLimit,
-            NegativeLimit = NegativeLimit,
-            PositiveLimitAvailable = true,
-            NegativeLimitAvailable = true,
-            OriginSignal = Math.Abs(Actual) <= 0.1,
-            StatusText = Status
-        };
     }
 
 }

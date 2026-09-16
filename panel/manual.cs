@@ -190,11 +190,9 @@ namespace Page_switching
         private void UpdateConnectionState()
         {
             connectionStateLabel.Text = _axisService.ConnectionStateText;
-            connectionStateLabel.ForeColor = _axisService.IsSimulation
-                ? Color.FromArgb(37, 99, 235)
-                : _axisService.IsConnected
-                    ? Color.FromArgb(5, 150, 105)
-                    : Color.FromArgb(220, 38, 38);
+            connectionStateLabel.ForeColor = _axisService.IsConnected
+                ? Color.FromArgb(5, 150, 105)
+                : Color.FromArgb(220, 38, 38);
 
             var canControlAll = _axisService.CanControlAll;
             SetCommandButtonEnabled(enableAllButton, canControlAll);

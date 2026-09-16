@@ -32,7 +32,7 @@ namespace Page_switching
             // 启动时先显示默认页面，避免主区域空白。
             ShowPage(_autoPage);
 
-            // 窗体先显示，再异步建立 ADS 连接；模拟模式不会访问 PLC。
+            // 窗体先显示，再异步建立 ADS 连接。
             Shown += Mainpage_Shown;
         }
 
