@@ -33,6 +33,7 @@ namespace Page_switching
         {
             panel1 = new Panel();
             panel2 = new Panel();
+            bu_Configuration = new Button();
             button4 = new Button();
             button3 = new Button();
             Bu_manual = new Button();
@@ -54,6 +55,7 @@ namespace Page_switching
             // panel2
             // 
             panel2.BackColor = SystemColors.ActiveCaption;
+            panel2.Controls.Add(bu_Configuration);
             panel2.Controls.Add(button4);
             panel2.Controls.Add(button3);
             panel2.Controls.Add(Bu_manual);
@@ -63,6 +65,13 @@ namespace Page_switching
             panel2.Name = "panel2";
             panel2.Size = new Size(142, 681);
             panel2.TabIndex = 1;
+            bu_Configuration.Location = new Point(5, 594);
+            bu_Configuration.Name = "bu_Configuration";
+            bu_Configuration.Size = new Size(131, 75);
+            bu_Configuration.TabIndex = 7;
+            bu_Configuration.Text = "配置页面";
+            bu_Configuration.UseVisualStyleBackColor = true;
+            bu_Configuration.Click += bu_Configuration_Click;
             // 
             // button4
             // 
@@ -137,5 +146,6 @@ namespace Page_switching
         private Button button3;
         private Button Bu_manual;
         private Button Bu_auto;
+        private Button bu_Configuration;
     }
 }
