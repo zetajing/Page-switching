@@ -1,57 +1,43 @@
-using System.Configuration;
-using System.Globalization;
-using System.Windows.Forms;
-using InduLink.Abstractions;
-using InduLink.Protocols.S7;
-
 namespace Page_switching
 {
     public partial class Auto : UserControl
     {
-        private Func<SiemensS7Client?> _getClient = static () => null;
+        private readonly AxisService _axisService;
+        private readonly bool _ownsAxisService;
         private readonly System.Windows.Forms.Timer _refreshTimer;
-        private readonly string _positionAddress;
-        private readonly string _speedAddress;
-        private readonly string _targetPositionAddress;
+        private readonly CancellationTokenSource _lifetimeCancellation = new();
         private bool _refreshInProgress;
 
         public Auto()
+            : this(new AxisService(AxisServiceOptions.FromConfiguration()), true)
         {
+        }
+
+        public Auto(AxisService axisService)
+            : this(axisService, false)
+        {
+        }
+
+        private Auto(AxisService axisService, bool ownsAxisService)
+        {
+            _axisService = axisService ?? throw new ArgumentNullException(nameof(axisService));
+            _ownsAxisService = ownsAxisService;
             InitializeComponent();
 
-            _positionAddress = "DB1.DBD8";
-            _speedAddress = "DB1.DBD12";
-            _targetPositionAddress = "DB1.DBD16";
-
-            var interval = Convert.ToInt32(ConfigurationManager.AppSettings["AutoRefreshIntervalMs"]);
-
-
-            _refreshTimer = new System.Windows.Forms.Timer { Interval = interval };
+            _refreshTimer = new System.Windows.Forms.Timer
+            {
+                Interval = _axisService.RefreshIntervalMilliseconds
+            };
             _refreshTimer.Tick += RefreshTimer_Tick;
-            VisibleChanged += Auto_VisibleChanged;
-            ParentChanged += Auto_ParentChanged;
+            VisibleChanged += Auto_VisibilityChanged;
+            ParentChanged += Auto_VisibilityChanged;
             Disposed += Auto_Disposed;
+            UpdateConnectionLabel();
         }
 
-        public Auto(Func<SiemensS7Client?> getClient)
-            : this()
+        private void Auto_VisibilityChanged(object? sender, EventArgs e)
         {
-            _getClient = getClient ?? throw new ArgumentNullException(nameof(getClient));
-        }
-
-        private void Auto_VisibleChanged(object? sender, EventArgs e)
-        {
-            UpdateRefreshTimerState();
-        }
-
-        private void Auto_ParentChanged(object? sender, EventArgs e)
-        {
-            UpdateRefreshTimerState();
-        }
-
-        private void UpdateRefreshTimerState()
-        {
-            if (!Visible || Parent is null)
+            if (!Visible || Parent is null || IsDisposed)
             {
                 _refreshTimer.Stop();
                 return;
@@ -68,55 +54,49 @@ namespace Page_switching
 
         private async Task RefreshValuesAsync()
         {
-            if (_refreshInProgress || IsDisposed)
+            if (_refreshInProgress || IsDisposed || _lifetimeCancellation.IsCancellationRequested)
             {
-                return;
-            }
-
-            var client = _getClient();
-            if (client is null || !client.IsConnected)
-            {
-                SetValue(axis_Location, "--");
-                SetValue(axis_Speed, "--");
-                SetValue(axis_TargetPosition, "--");
                 return;
             }
 
             _refreshInProgress = true;
-
             try
             {
-                var result = await client.ReadManyAsync(
-                    new[]
-                    {
-                        new ReadRequest(client.DeviceId, _positionAddress, DataType.Float),
-                        new ReadRequest(client.DeviceId, _speedAddress, DataType.Float),
-                        new ReadRequest(client.DeviceId, _targetPositionAddress, DataType.Float),
-                    },
-                    CancellationToken.None);
-
-                if (IsDisposed)
+                var snapshots = await _axisService.ReadSnapshotAsync(_lifetimeCancellation.Token);
+                if (IsDisposed || _lifetimeCancellation.IsCancellationRequested)
                 {
                     return;
                 }
 
-                SetValue(axis_Location, FormatValue(result.Values[0].Value));
-                SetValue(axis_Speed, FormatValue(result.Values[1].Value));
-                SetValue(axis_TargetPosition, FormatValue(result.Values[2].Value));
+                var axis = snapshots.Count > 0 ? snapshots[0] : null;
+                SetValue(axis_Location, FormatValue(axis?.ActualPosition, _axisService.Unit));
+                SetValue(axis_Speed, FormatValue(axis?.Speed, _axisService.Unit + "/s"));
+                UpdateConnectionLabel();
             }
-            catch (Exception)
+            catch (OperationCanceledException)
             {
-                if (!IsDisposed)
-                {
-                    SetValue(axis_Location, "读取失败");
-                    SetValue(axis_Speed, "读取失败");
-                    SetValue(axis_TargetPosition, "读取失败");
-                }
+                // 页面关闭或切换时取消刷新。
+            }
+            catch
+            {
+                SetValue(axis_Location, "读取失败");
+                SetValue(axis_Speed, "读取失败");
+                UpdateConnectionLabel();
             }
             finally
             {
                 _refreshInProgress = false;
             }
+        }
+
+        private void UpdateConnectionLabel()
+        {
+            label2.Text = "轴 1 · " + _axisService.ConnectionStateText;
+            label2.ForeColor = _axisService.IsSimulation
+                ? Color.FromArgb(37, 99, 235)
+                : _axisService.IsConnected
+                    ? Color.FromArgb(5, 150, 105)
+                    : Color.FromArgb(220, 38, 38);
         }
 
         private static void SetValue(TextBox textBox, string value)
@@ -127,20 +107,19 @@ namespace Page_switching
             }
         }
 
-        private static string FormatValue(object? value)
-        {
-            return value switch
-            {
-                null => "--",
-                IFormattable formattable => formattable.ToString(null, CultureInfo.InvariantCulture) ?? "--",
-                _ => value.ToString() ?? "--"
-            };
-        }
+        private static string FormatValue(double? value, string unit) =>
+            value.HasValue ? $"{value.Value:0.00} {unit}" : "--";
 
         private void Auto_Disposed(object? sender, EventArgs e)
         {
             _refreshTimer.Stop();
             _refreshTimer.Dispose();
+            _lifetimeCancellation.Cancel();
+            _lifetimeCancellation.Dispose();
+            if (_ownsAxisService)
+            {
+                _axisService.Dispose();
+            }
         }
     }
 }

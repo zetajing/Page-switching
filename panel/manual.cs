@@ -1,151 +1,357 @@
-using System.Globalization;
-using System.Windows.Forms;
-using InduLink.Abstractions;
-using InduLink.Protocols.S7;
-
 namespace Page_switching
 {
     public partial class Manual : UserControl
     {
-        private Func<SiemensS7Client?> _getClient = static () => null;
+        private readonly AxisService _axisService;
+        private readonly bool _ownsAxisService;
+        private readonly System.Windows.Forms.Timer _refreshTimer;
+        private readonly CancellationTokenSource _lifetimeCancellation = new();
+        private readonly ServoPositionIndicator[] _positionIndicators;
+        private readonly Label[] _statusLabels;
+        private IReadOnlyList<AxisSnapshot> _lastSnapshots = Array.Empty<AxisSnapshot>();
+        private bool _refreshInProgress;
+        private bool _commandInProgress;
+        private bool _jogActive;
+        private bool _jogPositive;
+        private int _jogAxisNumber;
 
         public Manual()
+            : this(new AxisService(AxisServiceOptions.FromConfiguration()), true)
         {
+        }
+
+        public Manual(AxisService axisService)
+            : this(axisService, false)
+        {
+        }
+
+        private Manual(AxisService axisService, bool ownsAxisService)
+        {
+            _axisService = axisService ?? throw new ArgumentNullException(nameof(axisService));
+            _ownsAxisService = ownsAxisService;
+
             InitializeComponent();
-        }
 
-        public Manual(Func<SiemensS7Client?> getClient)
-            : this()
-        {
-            _getClient = getClient ?? throw new ArgumentNullException(nameof(getClient));
-        }
+            _positionIndicators =
+            [
+                axis1PositionIndicator,
+                axis2PositionIndicator,
+                axis3PositionIndicator,
+                axis4PositionIndicator
+            ];
+            _statusLabels =
+            [
+                axis1StatusLabel,
+                axis2StatusLabel,
+                axis3StatusLabel,
+                axis4StatusLabel
+            ];
 
-        private async void ManualReadButton_Click(object? sender, EventArgs e)
-        {
-            await RunAsync(async () =>
+            foreach (var indicator in _positionIndicators)
             {
-                var client = GetConnectedClient();
-                var address = GetAddress();
-                var dataType = GetDataType();
-                var result = await client.ReadAsync(
-                    new ReadRequest(client.DeviceId, address, dataType),
-                    CancellationToken.None);
-
-                AppendLog($"读取 {result.Address} = {FormatValue(result.Value)}，质量={result.Quality}");
-            });
-        }
-
-        private async void ManualWriteButton_Click(object? sender, EventArgs e)
-        {
-            await RunAsync(async () =>
-            {
-                var client = GetConnectedClient();
-                var address = GetAddress();
-                var dataType = GetDataType();
-                var value = ConvertValue(writeValueTextBox.Text.Trim(), dataType);
-
-                await client.WriteAsync(
-                    new WriteRequest(client.DeviceId, address, dataType, value),
-                    CancellationToken.None);
-
-                AppendLog($"写入 {address} = {FormatValue(value)} 成功");
-            });
-        }
-
-        private SiemensS7Client GetConnectedClient()
-        {
-            var client = _getClient();
-            if (client is null || !client.IsConnected)
-            {
-                throw new InvalidOperationException("请等待主页面连接 S7 PLC 完成。");
+                indicator.MinimumPosition = _axisService.MinimumPosition;
+                indicator.MaximumPosition = _axisService.MaximumPosition;
+                indicator.UnitText = _axisService.Unit;
             }
 
-            return client;
-        }
-
-        private string GetAddress()
-        {
-            var address = s7ipaddress.Text.Trim();
-            if (string.IsNullOrWhiteSpace(address))
+            axisSelector.SelectedIndex = 0;
+            _refreshTimer = new System.Windows.Forms.Timer
             {
-                throw new InvalidOperationException("请输入 S7 变量地址，例如 MX0.0。");
-            }
-
-            return address;
-        }
-
-        private DataType GetDataType()
-        {
-            if (!Enum.TryParse<DataType>(dataTypeComboBox.Text, out var dataType))
-            {
-                throw new InvalidOperationException("请选择有效的数据类型。");
-            }
-
-            return dataType;
-        }
-
-        private static object ConvertValue(string text, DataType dataType)
-        {
-            return dataType switch
-            {
-                DataType.Bool => ParseBool(text),
-                DataType.Int16 => short.Parse(text, CultureInfo.InvariantCulture),
-                DataType.UInt16 => ushort.Parse(text, CultureInfo.InvariantCulture),
-                DataType.Int32 => int.Parse(text, CultureInfo.InvariantCulture),
-                DataType.UInt32 => uint.Parse(text, CultureInfo.InvariantCulture),
-                DataType.Float => float.Parse(text, CultureInfo.InvariantCulture),
-                DataType.Double => double.Parse(text, CultureInfo.InvariantCulture),
-                DataType.Byte => byte.Parse(text, CultureInfo.InvariantCulture),
-                _ => throw new NotSupportedException("当前界面暂不支持该数据类型的写入。")
+                Interval = _axisService.RefreshIntervalMilliseconds
             };
+            _refreshTimer.Tick += RefreshTimer_Tick;
+            VisibleChanged += Manual_VisibilityChanged;
+            ParentChanged += Manual_VisibilityChanged;
+            Disposed += Manual_Disposed;
+            UpdateConnectionState();
         }
 
-        private static bool ParseBool(string text)
+        private void Manual_VisibilityChanged(object? sender, EventArgs e)
         {
-            if (bool.TryParse(text, out var result))
+            if (!Visible || Parent is null || IsDisposed)
             {
-                return result;
+                _refreshTimer.Stop();
+                _ = StopActiveJogAsync();
+                return;
             }
 
-            return text switch
-            {
-                "1" => true,
-                "0" => false,
-                _ => throw new FormatException("Bool 请输入 true、false、1 或 0。")
-            };
+            _refreshTimer.Start();
+            _ = RefreshValuesAsync();
         }
 
-        private static string FormatValue(object? value)
+        private async void RefreshTimer_Tick(object? sender, EventArgs e)
         {
-            return value switch
-            {
-                null => "(null)",
-                byte[] bytes => Convert.ToHexString(bytes),
-                IFormattable formattable => formattable.ToString(null, CultureInfo.InvariantCulture) ?? string.Empty,
-                _ => value.ToString() ?? string.Empty
-            };
+            await RefreshValuesAsync();
         }
 
-        private async Task RunAsync(Func<Task> action)
+        private async Task RefreshValuesAsync()
         {
-            try
-            {
-                await action();
-            }
-            catch (Exception ex)
-            {
-                AppendLog("错误：" + ex.Message);
-            }
-        }
-
-        private void AppendLog(string message)
-        {
-            if (display_log.IsDisposed)
+            if (_refreshInProgress || IsDisposed || _lifetimeCancellation.IsCancellationRequested)
             {
                 return;
             }
 
-            display_log.AppendText($"[{DateTime.Now:HH:mm:ss}] {message}{Environment.NewLine}");
+            _refreshInProgress = true;
+            try
+            {
+                var snapshots = await _axisService.ReadSnapshotAsync(_lifetimeCancellation.Token);
+                if (IsDisposed || _lifetimeCancellation.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                _lastSnapshots = snapshots;
+                UpdateAxisOverview(snapshots);
+                UpdateSelectedAxisDetails();
+                UpdateConnectionState();
+            }
+            catch (OperationCanceledException)
+            {
+                // 页面关闭或切换时取消刷新属于正常生命周期。
+            }
+            catch (Exception ex)
+            {
+                helperLabel.Text = "刷新失败：" + ex.Message;
+                UpdateConnectionState();
+            }
+            finally
+            {
+                _refreshInProgress = false;
+            }
+        }
+
+        private void UpdateAxisOverview(IReadOnlyList<AxisSnapshot> snapshots)
+        {
+            for (var index = 0; index < _positionIndicators.Length; index++)
+            {
+                var snapshot = index < snapshots.Count
+                    ? snapshots[index]
+                    : new AxisSnapshot(index + 1);
+                _positionIndicators[index].Update(
+                    snapshot,
+                    _axisService.Unit,
+                    _axisService.MinimumPosition,
+                    _axisService.MaximumPosition,
+                    _axisService.IsConnected);
+                _statusLabels[index].Text = snapshot.StatusText;
+                _statusLabels[index].ForeColor = GetStatusColor(snapshot);
+            }
+        }
+
+        private void UpdateSelectedAxisDetails()
+        {
+            var selectedIndex = Math.Max(0, axisSelector.SelectedIndex);
+            if (selectedIndex >= _lastSnapshots.Count)
+            {
+                selectedStatusLabel.Text = "未连接";
+                selectedActualLabel.Text = "--";
+                selectedSpeedLabel.Text = "--";
+            }
+            else
+            {
+                var snapshot = _lastSnapshots[selectedIndex];
+                selectedStatusLabel.Text = snapshot.StatusText;
+                selectedStatusLabel.ForeColor = GetStatusColor(snapshot);
+                selectedActualLabel.Text = FormatValue(snapshot.ActualPosition, _axisService.Unit);
+                selectedSpeedLabel.Text = FormatValue(snapshot.Speed, _axisService.Unit + "/s");
+            }
+
+            var canControlAxis = !_commandInProgress && _axisService.CanControlAxis(selectedIndex + 1);
+            jogNegativeButton.Enabled = canControlAxis;
+            jogPositiveButton.Enabled = canControlAxis;
+            homeSelectedButton.Enabled = canControlAxis;
+            stopSelectedButton.Enabled = canControlAxis;
+        }
+
+        private void UpdateConnectionState()
+        {
+            connectionStateLabel.Text = _axisService.ConnectionStateText;
+            connectionStateLabel.ForeColor = _axisService.IsSimulation
+                ? Color.FromArgb(37, 99, 235)
+                : _axisService.IsConnected
+                    ? Color.FromArgb(5, 150, 105)
+                    : Color.FromArgb(220, 38, 38);
+
+            var canControlAll = !_commandInProgress && _axisService.CanControlAll;
+            enableAllButton.Enabled = canControlAll;
+            resetAlarmButton.Enabled = canControlAll;
+            homeAllButton.Enabled = canControlAll;
+            stopAllButton.Enabled = canControlAll;
+            UpdateSelectedAxisDetails();
+        }
+
+        private void AxisSelector_SelectedIndexChanged(object? sender, EventArgs e)
+        {
+            UpdateSelectedAxisDetails();
+        }
+
+        private async void EnableAllButton_Click(object? sender, EventArgs e)
+        {
+            await RunCommandAsync(token => _axisService.EnableAllAsync(token), "全部轴已使能");
+        }
+
+        private async void ResetAlarmButton_Click(object? sender, EventArgs e)
+        {
+            await RunCommandAsync(token => _axisService.ResetAlarmsAsync(token), "报警复位命令已执行");
+        }
+
+        private async void HomeAllButton_Click(object? sender, EventArgs e)
+        {
+            await RunCommandAsync(token => _axisService.HomeAllAsync(token), "全部轴开始回零");
+        }
+
+        private async void StopAllButton_Click(object? sender, EventArgs e)
+        {
+            await RunCommandAsync(token => _axisService.StopAllAsync(token), "全部轴已停止");
+        }
+
+        private async void HomeSelectedButton_Click(object? sender, EventArgs e)
+        {
+            var axisNumber = SelectedAxisNumber;
+            await RunCommandAsync(
+                token => _axisService.HomeAxisAsync(axisNumber, token),
+                $"轴 {axisNumber} 开始回零");
+        }
+
+        private async void StopSelectedButton_Click(object? sender, EventArgs e)
+        {
+            var axisNumber = SelectedAxisNumber;
+            await RunCommandAsync(
+                token => _axisService.StopAxisAsync(axisNumber, token),
+                $"轴 {axisNumber} 已停止");
+        }
+
+        private async void JogNegativeButton_MouseDown(object? sender, MouseEventArgs e)
+        {
+            await StartJogAsync(false);
+        }
+
+        private async void JogPositiveButton_MouseDown(object? sender, MouseEventArgs e)
+        {
+            await StartJogAsync(true);
+        }
+
+        private async void JogButton_MouseUp(object? sender, EventArgs e)
+        {
+            await StopActiveJogAsync();
+        }
+
+        private async Task StartJogAsync(bool positive)
+        {
+            if (_jogActive || _commandInProgress)
+            {
+                return;
+            }
+
+            _jogAxisNumber = SelectedAxisNumber;
+            _jogPositive = positive;
+            _jogActive = true;
+            try
+            {
+                await _axisService.JogAsync(
+                    _jogAxisNumber,
+                    positive,
+                    true,
+                    decimal.ToDouble(jogSpeedInput.Value),
+                    _lifetimeCancellation.Token);
+                helperLabel.Text = $"轴 {_jogAxisNumber} 正在{(positive ? "正向" : "负向")}点动";
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                _jogActive = false;
+                helperLabel.Text = "点动失败：" + ex.Message;
+            }
+        }
+
+        private async Task StopActiveJogAsync()
+        {
+            if (!_jogActive)
+            {
+                return;
+            }
+
+            var axisNumber = _jogAxisNumber;
+            var positive = _jogPositive;
+            _jogActive = false;
+            try
+            {
+                await _axisService.JogAsync(
+                    axisNumber,
+                    positive,
+                    false,
+                    decimal.ToDouble(jogSpeedInput.Value),
+                    _lifetimeCancellation.Token);
+                if (!IsDisposed)
+                {
+                    helperLabel.Text = $"轴 {axisNumber} 点动已停止";
+                }
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                if (!IsDisposed)
+                {
+                    helperLabel.Text = "停止点动失败：" + ex.Message;
+                }
+            }
+        }
+
+        private async Task RunCommandAsync(Func<CancellationToken, Task> action, string successMessage)
+        {
+            if (_commandInProgress)
+            {
+                return;
+            }
+
+            _commandInProgress = true;
+            UpdateConnectionState();
+            try
+            {
+                await action(_lifetimeCancellation.Token);
+                helperLabel.Text = successMessage;
+                await RefreshValuesAsync();
+            }
+            catch (OperationCanceledException)
+            {
+                // 页面关闭时取消命令。
+            }
+            catch (Exception ex)
+            {
+                helperLabel.Text = "操作失败：" + ex.Message;
+            }
+            finally
+            {
+                _commandInProgress = false;
+                if (!IsDisposed)
+                {
+                    UpdateConnectionState();
+                }
+            }
+        }
+
+        private int SelectedAxisNumber => Math.Max(0, axisSelector.SelectedIndex) + 1;
+
+        private static string FormatValue(double? value, string unit) =>
+            value.HasValue ? $"{value.Value:0.00} {unit}" : "--";
+
+        private static Color GetStatusColor(AxisSnapshot snapshot)
+        {
+            if (snapshot.HasAlarm) return Color.FromArgb(220, 38, 38);
+            if (snapshot.PositiveLimit || snapshot.NegativeLimit) return Color.FromArgb(234, 88, 12);
+            return snapshot.StatusText is "就绪" or "运行中"
+                ? Color.FromArgb(5, 150, 105)
+                : Color.Gray;
+        }
+
+        private void Manual_Disposed(object? sender, EventArgs e)
+        {
+            _refreshTimer.Stop();
+            _refreshTimer.Dispose();
+            _lifetimeCancellation.Cancel();
+            _lifetimeCancellation.Dispose();
+            if (_ownsAxisService)
+            {
+                _axisService.Dispose();
+            }
         }
     }
 }

@@ -30,10 +30,8 @@
         {
             axis_Location = new TextBox();
             axis_Speed = new TextBox();
-            axis_TargetPosition = new TextBox();
             label1 = new Label();
             labelSpeed = new Label();
-            labelTargetPosition = new Label();
             label2 = new Label();
             SuspendLayout();
             // 
@@ -54,15 +52,6 @@
             axis_Speed.TabIndex = 2;
             axis_Speed.Text = "--";
             // 
-            // axis_TargetPosition
-            // 
-            axis_TargetPosition.Location = new Point(717, 121);
-            axis_TargetPosition.Name = "axis_TargetPosition";
-            axis_TargetPosition.ReadOnly = true;
-            axis_TargetPosition.Size = new Size(125, 27);
-            axis_TargetPosition.TabIndex = 3;
-            axis_TargetPosition.Text = "--";
-            // 
             // label1
             // 
             label1.AutoSize = true;
@@ -81,15 +70,6 @@
             labelSpeed.TabIndex = 4;
             labelSpeed.Text = "当前速度";
             // 
-            // labelTargetPosition
-            // 
-            labelTargetPosition.AutoSize = true;
-            labelTargetPosition.Location = new Point(631, 124);
-            labelTargetPosition.Name = "labelTargetPosition";
-            labelTargetPosition.Size = new Size(69, 20);
-            labelTargetPosition.TabIndex = 5;
-            labelTargetPosition.Text = "目标位置";
-            // 
             // label2
             // 
             label2.AutoSize = true;
@@ -104,9 +84,7 @@
             AutoScaleDimensions = new SizeF(9F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             Controls.Add(label2);
-            Controls.Add(labelTargetPosition);
             Controls.Add(labelSpeed);
-            Controls.Add(axis_TargetPosition);
             Controls.Add(axis_Speed);
             Controls.Add(label1);
             Controls.Add(axis_Location);
@@ -120,10 +98,8 @@
 
         private TextBox axis_Location;
         private TextBox axis_Speed;
-        private TextBox axis_TargetPosition;
         private Label label1;
         private Label labelSpeed;
-        private Label labelTargetPosition;
         private Label label2;
     }
 }

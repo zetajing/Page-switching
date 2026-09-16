@@ -16,20 +16,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="S7netplus" Version="0.20.0" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="InduLink.Abstractions">
-      <HintPath>..\..\Total\InduLink.Protocols.S7\bin\Debug\net8.0\InduLink.Abstractions.dll</HintPath>
-    </Reference>
-    <Reference Include="InduLink.Protocols.S7">
-      <HintPath>..\..\Total\InduLink.Protocols.S7\bin\Debug\net8.0\InduLink.Protocols.S7.dll</HintPath>
-    </Reference>
-    <Reference Include="InduLink.Runtime">
-      <HintPath>..\..\Total\InduLink.Protocols.S7\bin\Debug\net8.0\InduLink.Runtime.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\..\Total\InduLink.Protocols.Ads\InduLink.Protocols.Ads.csproj" />
   </ItemGroup>
 
   <ItemGroup>
