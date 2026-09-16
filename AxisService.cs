@@ -292,18 +292,28 @@ public sealed class AxisService : IDisposable
 
     public Task EnableAllAsync(CancellationToken cancellationToken) =>
         WriteAllAsync(
-            symbolSelector: map => map.EnableCommand,
-            value: true,
+            [
+                _options.AxisSymbols[0].EnableCommand,
+                _options.AxisSymbols[1].EnableCommand,
+                _options.AxisSymbols[2].EnableCommand,
+                _options.AxisSymbols[3].EnableCommand
+            ],
+            true,
             cancellationToken);
 
     public Task DisableAllAsync(CancellationToken cancellationToken) =>
         WriteAllAsync(
-            symbolSelector: map => map.EnableCommand,
-            value: false,
+            [
+                _options.AxisSymbols[0].EnableCommand,
+                _options.AxisSymbols[1].EnableCommand,
+                _options.AxisSymbols[2].EnableCommand,
+                _options.AxisSymbols[3].EnableCommand
+            ],
+            false,
             cancellationToken);
 
     private async Task WriteAllAsync(
-        Func<AxisSymbolMap, string> symbolSelector,
+        IReadOnlyList<string> symbols,
         bool value,
         CancellationToken cancellationToken)
     {
@@ -312,7 +322,7 @@ public sealed class AxisService : IDisposable
         try
         {
             var client = GetConnectedClient() ?? throw new InvalidOperationException("ADS 尚未连接。");
-            await client.WriteManyAsync(CreateCommandRequests(symbolSelector, value), cancellationToken)
+            await client.WriteManyAsync(CreateWriteRequests(client, symbols, value), cancellationToken)
                 .ConfigureAwait(false);
         }
         finally
@@ -323,35 +333,45 @@ public sealed class AxisService : IDisposable
 
     public Task ResetAlarmsAsync(CancellationToken cancellationToken) =>
         PulseAllAsync(
-            symbolSelector: map => map.ResetAlarmCommand,
-            value: true,
+            [
+                _options.AxisSymbols[0].ResetAlarmCommand,
+                _options.AxisSymbols[1].ResetAlarmCommand,
+                _options.AxisSymbols[2].ResetAlarmCommand,
+                _options.AxisSymbols[3].ResetAlarmCommand
+            ],
             cancellationToken);
 
     public Task HomeAllAsync(CancellationToken cancellationToken) =>
         PulseAllAsync(
-            symbolSelector: map => map.HomeCommand,
-            value: true,
+            [
+                _options.AxisSymbols[0].HomeCommand,
+                _options.AxisSymbols[1].HomeCommand,
+                _options.AxisSymbols[2].HomeCommand,
+                _options.AxisSymbols[3].HomeCommand
+            ],
             cancellationToken);
 
     public Task StopAllAsync(CancellationToken cancellationToken) =>
         PulseAllAsync(
-            symbolSelector: map => map.StopCommand,
-            value: true,
+            [
+                _options.AxisSymbols[0].StopCommand,
+                _options.AxisSymbols[1].StopCommand,
+                _options.AxisSymbols[2].StopCommand,
+                _options.AxisSymbols[3].StopCommand
+            ],
             cancellationToken);
 
-    public Task HomeAxisAsync(int axisNumber, CancellationToken cancellationToken) =>
-        PulseAxisAsync(
-            axisNumber,
-            symbolSelector: map => map.HomeCommand,
-            value: true,
-            cancellationToken);
+    public Task HomeAxisAsync(int axisNumber, CancellationToken cancellationToken)
+    {
+        ValidateAxisNumber(axisNumber);
+        return PulseAxisAsync(axisNumber, _options.AxisSymbols[axisNumber - 1].HomeCommand, cancellationToken);
+    }
 
-    public Task StopAxisAsync(int axisNumber, CancellationToken cancellationToken) =>
-        PulseAxisAsync(
-            axisNumber,
-            symbolSelector: map => map.StopCommand,
-            value: true,
-            cancellationToken);
+    public Task StopAxisAsync(int axisNumber, CancellationToken cancellationToken)
+    {
+        ValidateAxisNumber(axisNumber);
+        return PulseAxisAsync(axisNumber, _options.AxisSymbols[axisNumber - 1].StopCommand, cancellationToken);
+    }
 
     public async Task JogAsync(
         int axisNumber,
@@ -392,8 +412,7 @@ public sealed class AxisService : IDisposable
     }
 
     private async Task PulseAllAsync(
-        Func<AxisSymbolMap, string> symbolSelector,
-        bool value,
+        IReadOnlyList<string> symbols,
         CancellationToken cancellationToken)
     {
         ThrowIfDisposed();
@@ -401,10 +420,10 @@ public sealed class AxisService : IDisposable
         try
         {
             var client = GetConnectedClient() ?? throw new InvalidOperationException("ADS 尚未连接。");
-            var requests = CreateCommandRequests(symbolSelector, value);
-            await client.WriteManyAsync(requests, cancellationToken).ConfigureAwait(false);
+            await client.WriteManyAsync(CreateWriteRequests(client, symbols, true), cancellationToken)
+                .ConfigureAwait(false);
             await Task.Delay(50, cancellationToken).ConfigureAwait(false);
-            await client.WriteManyAsync(CreateCommandRequests(symbolSelector, false), cancellationToken)
+            await client.WriteManyAsync(CreateWriteRequests(client, symbols, false), cancellationToken)
                 .ConfigureAwait(false);
         }
         finally
@@ -415,8 +434,7 @@ public sealed class AxisService : IDisposable
 
     private async Task PulseAxisAsync(
         int axisNumber,
-        Func<AxisSymbolMap, string> symbolSelector,
-        bool value,
+        string symbol,
         CancellationToken cancellationToken)
     {
         ThrowIfDisposed();
@@ -425,14 +443,13 @@ public sealed class AxisService : IDisposable
         try
         {
             var client = GetConnectedClient() ?? throw new InvalidOperationException("ADS 尚未连接。");
-            var symbol = symbolSelector(_options.AxisSymbols[axisNumber - 1]);
             if (string.IsNullOrWhiteSpace(symbol))
             {
                 throw new InvalidOperationException($"轴 {axisNumber} 尚未配置 ADS 控制符号。");
             }
 
             await client.WriteAsync(
-                new WriteRequest(client.DeviceId, symbol, DataType.Bool, value), cancellationToken)
+                new WriteRequest(client.DeviceId, symbol, DataType.Bool, true), cancellationToken)
                 .ConfigureAwait(false);
             await Task.Delay(50, cancellationToken).ConfigureAwait(false);
             await client.WriteAsync(
@@ -445,15 +462,15 @@ public sealed class AxisService : IDisposable
         }
     }
 
-    private IReadOnlyCollection<WriteRequest> CreateCommandRequests(
-        Func<AxisSymbolMap, string> symbolSelector,
+    private static IReadOnlyCollection<WriteRequest> CreateWriteRequests(
+        AdsClient client,
+        IReadOnlyList<string> symbols,
         bool value)
     {
-        var client = GetConnectedClient() ?? throw new InvalidOperationException("ADS 尚未连接。");
-        var requests = new List<WriteRequest>(_options.AxisSymbols.Count);
-        for (var index = 0; index < _options.AxisSymbols.Count; index++)
+        var requests = new List<WriteRequest>(symbols.Count);
+        for (var index = 0; index < symbols.Count; index++)
         {
-            var symbol = symbolSelector(_options.AxisSymbols[index]);
+            var symbol = symbols[index];
             if (string.IsNullOrWhiteSpace(symbol))
             {
                 throw new InvalidOperationException($"轴 {index + 1} 尚未配置 ADS 控制符号。");
