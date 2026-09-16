@@ -9,6 +9,7 @@ namespace Page_switching
         private readonly Auto _autoPage;
         private readonly Manual _manualPage;
         private readonly Config _confige;
+        private readonly WaveformPage _waveformPage;
         private readonly AxisService _axisService;
         private AdsTcpRouterHost? _adsTcpRouter;
         private UserControl? _currentPage;
@@ -21,7 +22,12 @@ namespace Page_switching
             _autoPage = new Auto();
             _manualPage = new Manual(_axisService);
             _confige = new Config();
-            Disposed += (_, _) => _confige.Dispose();
+            _waveformPage = new WaveformPage();
+            Disposed += (_, _) =>
+            {
+                _confige.Dispose();
+                _waveformPage.Dispose();
+            };
 
             // 启动时先显示默认页面，避免主区域空白。
             ShowPage(_autoPage);
@@ -110,6 +116,11 @@ namespace Page_switching
         private void bu_Configuration_Click(object sender, EventArgs e)
         {
             ShowPage(_confige);
+        }
+
+        private void WaveformButton_Click(object sender, EventArgs e)
+        {
+            ShowPage(_waveformPage);
         }
     }
 }

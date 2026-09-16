@@ -13,6 +13,7 @@ public partial class Config : UserControl
 
     private void LoadSettings()
     {
+        waveGeneratorPathTextBox.Text = Read("WaveGeneratorPath");
         routerEnabledCheckBox.Checked = ReadBool("AdsTcpRouterEnabled", false);
         routerNameTextBox.Text = Read("AdsTcpRouterName", "PageSwitchingRouter");
         localNetIdTextBox.Text = Read("AdsTcpRouterLocalNetId");
@@ -20,7 +21,53 @@ public partial class Config : UserControl
         remoteNameTextBox.Text = Read("AdsTcpRouterRemoteName", "WaveMakerPlc");
         remoteAddressTextBox.Text = Read("AdsTcpRouterRemoteAddress");
         remoteNetIdTextBox.Text = Read("AdsTcpRouterRemoteNetId", Read("AdsAmsNetId"));
+        UpdateWaveGeneratorState();
         UpdateInputState();
+    }
+
+    private void BrowseWaveGeneratorButton_Click(object? sender, EventArgs e)
+    {
+        using var dialog = new OpenFileDialog
+        {
+            Filter = "WFast 程序 (WFast.exe)|WFast.exe|所有程序 (*.exe)|*.exe",
+            Title = "选择 WFast.exe"
+        };
+
+        if (File.Exists(waveGeneratorPathTextBox.Text.Trim()))
+        {
+            dialog.FileName = waveGeneratorPathTextBox.Text.Trim();
+        }
+
+        if (dialog.ShowDialog() == DialogResult.OK)
+        {
+            waveGeneratorPathTextBox.Text = dialog.FileName;
+            UpdateWaveGeneratorState();
+        }
+    }
+
+    private void WaveGeneratorPathTextBox_TextChanged(object? sender, EventArgs e)
+    {
+        UpdateWaveGeneratorState();
+    }
+
+    private void UpdateWaveGeneratorState()
+    {
+        var path = waveGeneratorPathTextBox.Text.Trim();
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            waveGeneratorStateLabel.Text = "未配置，波形生成页面运行时会提示设置路径";
+            waveGeneratorStateLabel.ForeColor = Color.FromArgb(180, 83, 9);
+        }
+        else if (File.Exists(path))
+        {
+            waveGeneratorStateLabel.Text = "已找到 WFast.exe";
+            waveGeneratorStateLabel.ForeColor = Color.FromArgb(5, 150, 105);
+        }
+        else
+        {
+            waveGeneratorStateLabel.Text = "路径不存在，请重新选择 WFast.exe";
+            waveGeneratorStateLabel.ForeColor = Color.FromArgb(220, 38, 38);
+        }
     }
 
     private void RouterEnabledCheckBox_CheckedChanged(object? sender, EventArgs e)
@@ -48,6 +95,7 @@ public partial class Config : UserControl
             ValidateInputs();
             var configuration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
             var settings = configuration.AppSettings.Settings;
+            Set(settings, "WaveGeneratorPath", waveGeneratorPathTextBox.Text.Trim());
             Set(settings, "AdsTcpRouterEnabled", routerEnabledCheckBox.Checked.ToString().ToLowerInvariant());
             Set(settings, "AdsTcpRouterName", routerNameTextBox.Text.Trim());
             Set(settings, "AdsTcpRouterLocalNetId", localNetIdTextBox.Text.Trim());
@@ -62,7 +110,7 @@ public partial class Config : UserControl
             ConfigurationManager.RefreshSection("appSettings");
 
             saveResultLabel.ForeColor = Color.FromArgb(5, 150, 105);
-            saveResultLabel.Text = "保存成功，请重启程序使 Router 和 ADS 连接配置生效。";
+            saveResultLabel.Text = "保存成功；Router 和 ADS 配置重启后生效，WFast 路径立即可用于波形生成。";
         }
         catch (Exception ex)
         {
@@ -75,6 +123,7 @@ public partial class Config : UserControl
     {
         if (!routerEnabledCheckBox.Checked)
         {
+            ValidateWaveGeneratorPath();
             return;
         }
 
@@ -95,6 +144,16 @@ public partial class Config : UserControl
         }
 
         ValidateAmsNetId(remoteNetIdTextBox.Text, "PLC AMS Net ID");
+        ValidateWaveGeneratorPath();
+    }
+
+    private void ValidateWaveGeneratorPath()
+    {
+        var path = waveGeneratorPathTextBox.Text.Trim();
+        if (!string.IsNullOrWhiteSpace(path) && !File.Exists(path))
+        {
+            throw new InvalidOperationException("WFast.exe 路径不存在。");
+        }
     }
 
     private static void ValidateAmsNetId(string value, string caption)

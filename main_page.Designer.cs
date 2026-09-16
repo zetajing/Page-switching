@@ -31,6 +31,7 @@ namespace Page_switching
         /// </summary>
         private void InitializeComponent()
         {
+            button2 = new Button();
             panel1 = new Panel();
             panel2 = new Panel();
             bu_Configuration = new Button();
@@ -56,6 +57,7 @@ namespace Page_switching
             // 
             panel2.BackColor = SystemColors.ActiveCaption;
             panel2.Controls.Add(bu_Configuration);
+            panel2.Controls.Add(button2);
             panel2.Controls.Add(button4);
             panel2.Controls.Add(button3);
             panel2.Controls.Add(Bu_manual);
@@ -72,6 +74,16 @@ namespace Page_switching
             bu_Configuration.Text = "配置页面";
             bu_Configuration.UseVisualStyleBackColor = true;
             bu_Configuration.Click += bu_Configuration_Click;
+            //
+            // button2
+            //
+            button2.Location = new Point(5, 324);
+            button2.Name = "button2";
+            button2.Size = new Size(131, 75);
+            button2.TabIndex = 5;
+            button2.Text = "波形生成";
+            button2.UseVisualStyleBackColor = true;
+            button2.Click += WaveformButton_Click;
             // 
             // button4
             // 
@@ -147,5 +159,6 @@ namespace Page_switching
         private Button Bu_manual;
         private Button Bu_auto;
         private Button bu_Configuration;
+        private Button button2;
     }
 }

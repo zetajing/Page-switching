@@ -25,6 +25,12 @@ partial class Config
     private Button saveRouterButton;
     private Label saveResultLabel;
     private Label routerNoticeLabel;
+    private GroupBox waveGeneratorGroup;
+    private TableLayoutPanel waveGeneratorLayout;
+    private Label waveGeneratorPathLabel;
+    private TextBox waveGeneratorPathTextBox;
+    private Button browseWaveGeneratorButton;
+    private Label waveGeneratorStateLabel;
 
     protected override void Dispose(bool disposing)
     {
@@ -60,6 +66,12 @@ partial class Config
         saveRouterButton = new Button();
         saveResultLabel = new Label();
         routerNoticeLabel = new Label();
+        waveGeneratorGroup = new GroupBox();
+        waveGeneratorLayout = new TableLayoutPanel();
+        waveGeneratorPathLabel = new Label();
+        waveGeneratorPathTextBox = new TextBox();
+        browseWaveGeneratorButton = new Button();
+        waveGeneratorStateLabel = new Label();
         rootLayout.SuspendLayout();
         routerGroup.SuspendLayout();
         routerLayout.SuspendLayout();
@@ -67,9 +79,12 @@ partial class Config
         SuspendLayout();
         // rootLayout
         rootLayout.BackColor = Color.FromArgb(241, 245, 249);
+        waveGeneratorGroup.SuspendLayout();
+        waveGeneratorLayout.SuspendLayout();
         rootLayout.ColumnCount = 1;
         rootLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
         rootLayout.Controls.Add(titleLabel, 0, 0);
+        rootLayout.Controls.Add(waveGeneratorGroup, 0, 3);
         rootLayout.Controls.Add(subtitleLabel, 0, 1);
         rootLayout.Controls.Add(routerGroup, 0, 2);
         rootLayout.Dock = DockStyle.Fill;
@@ -78,8 +93,8 @@ partial class Config
         rootLayout.RowCount = 4;
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 44F));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 38F));
-        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 485F));
-        rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 455F));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 100F));
         // titleLabel
         titleLabel.Dock = DockStyle.Fill;
         titleLabel.Font = new Font("Microsoft YaHei UI", 16F, FontStyle.Bold);
@@ -247,6 +262,51 @@ partial class Config
         routerNoticeLabel.Name = "routerNoticeLabel";
         routerNoticeLabel.Padding = new Padding(0, 10, 0, 0);
         routerNoticeLabel.Text = "提示：系统 TwinCAT Router 已运行时请关闭独立 Router，否则 TCP 48898 端口会冲突。远程 PLC 还需要配置返回本机 AMS Net ID 的路由。";
+        // waveGeneratorGroup
+        waveGeneratorGroup.Controls.Add(waveGeneratorLayout);
+        waveGeneratorGroup.Dock = DockStyle.Fill;
+        waveGeneratorGroup.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
+        waveGeneratorGroup.ForeColor = Color.FromArgb(15, 23, 42);
+        waveGeneratorGroup.Name = "waveGeneratorGroup";
+        waveGeneratorGroup.Padding = new Padding(14, 18, 14, 10);
+        waveGeneratorGroup.TabStop = false;
+        waveGeneratorGroup.Text = "波形生成器";
+        // waveGeneratorLayout
+        waveGeneratorLayout.ColumnCount = 3;
+        waveGeneratorLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120F));
+        waveGeneratorLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+        waveGeneratorLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 92F));
+        waveGeneratorLayout.Controls.Add(waveGeneratorPathLabel, 0, 0);
+        waveGeneratorLayout.Controls.Add(waveGeneratorPathTextBox, 1, 0);
+        waveGeneratorLayout.Controls.Add(browseWaveGeneratorButton, 2, 0);
+        waveGeneratorLayout.Controls.Add(waveGeneratorStateLabel, 1, 1);
+        waveGeneratorLayout.SetColumnSpan(waveGeneratorStateLabel, 2);
+        waveGeneratorLayout.Dock = DockStyle.Fill;
+        waveGeneratorLayout.Name = "waveGeneratorLayout";
+        waveGeneratorLayout.RowCount = 2;
+        waveGeneratorLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
+        waveGeneratorLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+        // waveGeneratorPathLabel
+        waveGeneratorPathLabel.Dock = DockStyle.Fill;
+        waveGeneratorPathLabel.ForeColor = Color.FromArgb(71, 85, 105);
+        waveGeneratorPathLabel.Name = "waveGeneratorPathLabel";
+        waveGeneratorPathLabel.Text = "WFast.exe 路径";
+        waveGeneratorPathLabel.TextAlign = ContentAlignment.MiddleLeft;
+        // waveGeneratorPathTextBox
+        waveGeneratorPathTextBox.Dock = DockStyle.Fill;
+        waveGeneratorPathTextBox.Name = "waveGeneratorPathTextBox";
+        waveGeneratorPathTextBox.TextChanged += WaveGeneratorPathTextBox_TextChanged;
+        // browseWaveGeneratorButton
+        browseWaveGeneratorButton.Dock = DockStyle.Fill;
+        browseWaveGeneratorButton.Name = "browseWaveGeneratorButton";
+        browseWaveGeneratorButton.Text = "浏览...";
+        browseWaveGeneratorButton.UseVisualStyleBackColor = true;
+        browseWaveGeneratorButton.Click += BrowseWaveGeneratorButton_Click;
+        // waveGeneratorStateLabel
+        waveGeneratorStateLabel.Dock = DockStyle.Fill;
+        waveGeneratorStateLabel.Font = new Font("Microsoft YaHei UI", 8F);
+        waveGeneratorStateLabel.Name = "waveGeneratorStateLabel";
+        waveGeneratorStateLabel.TextAlign = ContentAlignment.MiddleLeft;
         // Config
         AutoScaleDimensions = new SizeF(9F, 20F);
         AutoScaleMode = AutoScaleMode.Font;
@@ -258,6 +318,8 @@ partial class Config
         routerLayout.ResumeLayout(false);
         routerLayout.PerformLayout();
         ((System.ComponentModel.ISupportInitialize)routerTcpPortInput).EndInit();
+        waveGeneratorGroup.ResumeLayout(false);
+        waveGeneratorLayout.ResumeLayout(false);
         ResumeLayout(false);
     }
 }
