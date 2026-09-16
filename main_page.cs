@@ -14,7 +14,7 @@ namespace Page_switching
             InitializeComponent();
 
             _axisService = new AxisService(AxisServiceOptions.FromConfiguration());
-            _autoPage = new Auto(_axisService);
+            _autoPage = new Auto();
             _manualPage = new Manual(_axisService);
 
             // 启动时先显示默认页面，避免主区域空白。
