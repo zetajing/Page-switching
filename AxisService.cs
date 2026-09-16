@@ -52,6 +52,8 @@ public sealed class AxisServiceOptions
     public bool UseSimulation { get; init; } = true;
     public string AmsNetId { get; init; } = string.Empty;
     public int AdsPort { get; init; } = 851;
+    public int ConnectTimeoutMilliseconds { get; init; } = 10000;
+    public int OperationTimeoutMilliseconds { get; init; } = 5000;
     public int RefreshIntervalMilliseconds { get; init; } = 100;
     public string Unit { get; init; } = "°";
     public double MinimumPosition { get; init; } = -20;
@@ -94,6 +96,8 @@ public sealed class AxisServiceOptions
             UseSimulation = ReadBoolean("UseSimulation", true),
             AmsNetId = Read("AdsAmsNetId"),
             AdsPort = Math.Clamp(ReadInt("AdsPort", 851), 1, 65535),
+            ConnectTimeoutMilliseconds = Math.Clamp(ReadInt("AdsConnectTimeoutMs", 10000), 1000, 60000),
+            OperationTimeoutMilliseconds = Math.Clamp(ReadInt("AdsOperationTimeoutMs", 5000), 1000, 60000),
             RefreshIntervalMilliseconds = Math.Clamp(ReadInt("AdsRefreshIntervalMs", 100), 50, 2000),
             Unit = string.IsNullOrWhiteSpace(Read("AxisUnit")) ? "°" : Read("AxisUnit"),
             MinimumPosition = minimum,
@@ -234,11 +238,11 @@ public sealed class AxisService : IDisposable
 
             var client = new AdsClient(new AdsClientOptions
             {
-                DeviceId = "wavemaker-axis",
+                DeviceId = "virtual-plc",
                 AmsNetId = _options.AmsNetId,
                 Port = _options.AdsPort,
-                ConnectTimeoutMilliseconds = 5000,
-                OperationTimeoutMilliseconds = 3000,
+                ConnectTimeoutMilliseconds = _options.ConnectTimeoutMilliseconds,
+                OperationTimeoutMilliseconds = _options.OperationTimeoutMilliseconds,
                 ValidateTargetStateOnConnect = true,
                 EnableSumCommands = true
             });
@@ -350,7 +354,7 @@ public sealed class AxisService : IDisposable
     }
 
     public Task EnableAllAsync(CancellationToken cancellationToken) =>
-        RunSimulationOrMomentaryAsync(
+        RunSimulationOrWriteLevelAsync(
             simulationAction: () =>
             {
                 foreach (var axis in _simulationAxes) axis.Enabled = true;
@@ -358,6 +362,48 @@ public sealed class AxisService : IDisposable
             symbolSelector: map => map.EnableCommand,
             value: true,
             cancellationToken);
+
+    public Task DisableAllAsync(CancellationToken cancellationToken) =>
+        RunSimulationOrWriteLevelAsync(
+            simulationAction: () =>
+            {
+                foreach (var axis in _simulationAxes)
+                {
+                    axis.Enabled = false;
+                    axis.Jogging = false;
+                    axis.DemoMotion = false;
+                    axis.Target = axis.Actual;
+                }
+            },
+            symbolSelector: map => map.EnableCommand,
+            value: false,
+            cancellationToken);
+
+    private async Task RunSimulationOrWriteLevelAsync(
+        Action simulationAction,
+        Func<AxisSymbolMap, string> symbolSelector,
+        bool value,
+        CancellationToken cancellationToken)
+    {
+        ThrowIfDisposed();
+        if (IsSimulation)
+        {
+            lock (_simulationSync) simulationAction();
+            return;
+        }
+
+        await _operationGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            var client = GetConnectedClient() ?? throw new InvalidOperationException("ADS 尚未连接。");
+            await client.WriteManyAsync(CreateCommandRequests(symbolSelector, value), cancellationToken)
+                .ConfigureAwait(false);
+        }
+        finally
+        {
+            _operationGate.Release();
+        }
+    }
 
     public Task ResetAlarmsAsync(CancellationToken cancellationToken) =>
         RunSimulationOrMomentaryAsync(

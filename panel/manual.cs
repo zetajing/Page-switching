@@ -14,6 +14,7 @@ namespace Page_switching
         private IReadOnlyList<AxisSnapshot> _lastSnapshots = Array.Empty<AxisSnapshot>();
         private bool _refreshInProgress;
         private bool _commandInProgress;
+        private Button? _activeCommandButton;
         private bool _jogActive;
         private bool _jogPositive;
         private int _jogAxisNumber;
@@ -179,11 +180,11 @@ namespace Page_switching
                 selectedSpeedLabel.Text = FormatValue(snapshot.Speed, _axisService.Unit + "/s");
             }
 
-            var canControlAxis = !_commandInProgress && _axisService.CanControlAxis(selectedIndex + 1);
-            jogNegativeButton.Enabled = canControlAxis;
-            jogPositiveButton.Enabled = canControlAxis;
-            homeSelectedButton.Enabled = canControlAxis;
-            stopSelectedButton.Enabled = canControlAxis;
+            var canControlAxis = _axisService.CanControlAxis(selectedIndex + 1);
+            SetCommandButtonEnabled(jogNegativeButton, canControlAxis);
+            SetCommandButtonEnabled(jogPositiveButton, canControlAxis);
+            SetCommandButtonEnabled(homeSelectedButton, canControlAxis);
+            SetCommandButtonEnabled(stopSelectedButton, canControlAxis);
         }
 
         private void UpdateConnectionState()
@@ -195,12 +196,22 @@ namespace Page_switching
                     ? Color.FromArgb(5, 150, 105)
                     : Color.FromArgb(220, 38, 38);
 
-            var canControlAll = !_commandInProgress && _axisService.CanControlAll;
-            enableAllButton.Enabled = canControlAll;
-            resetAlarmButton.Enabled = canControlAll;
-            homeAllButton.Enabled = canControlAll;
-            stopAllButton.Enabled = canControlAll;
+            var canControlAll = _axisService.CanControlAll;
+            SetCommandButtonEnabled(enableAllButton, canControlAll);
+            SetCommandButtonEnabled(disableAllButton, canControlAll);
+            SetCommandButtonEnabled(resetAlarmButton, canControlAll);
+            SetCommandButtonEnabled(homeAllButton, canControlAll);
+            SetCommandButtonEnabled(stopAllButton, canControlAll);
             UpdateSelectedAxisDetails();
+        }
+
+        private void SetCommandButtonEnabled(Button button, bool canControl)
+        {
+            var enabled = canControl && !ReferenceEquals(button, _activeCommandButton);
+            if (button.Enabled != enabled)
+            {
+                button.Enabled = enabled;
+            }
         }
 
         private void AxisSelector_SelectedIndexChanged(object? sender, EventArgs e)
@@ -210,28 +221,39 @@ namespace Page_switching
 
         private async void EnableAllButton_Click(object? sender, EventArgs e)
         {
-            await RunCommandAsync(token => _axisService.EnableAllAsync(token), "全部轴已使能");
+            await RunCommandAsync(sender as Button,
+                token => _axisService.EnableAllAsync(token), "全部轴已使能");
+        }
+
+        private async void DisableAllButton_Click(object? sender, EventArgs e)
+        {
+            await RunCommandAsync(sender as Button,
+                token => _axisService.DisableAllAsync(token), "全部轴已取消使能");
         }
 
         private async void ResetAlarmButton_Click(object? sender, EventArgs e)
         {
-            await RunCommandAsync(token => _axisService.ResetAlarmsAsync(token), "报警复位命令已执行");
+            await RunCommandAsync(sender as Button,
+                token => _axisService.ResetAlarmsAsync(token), "报警复位命令已执行");
         }
 
         private async void HomeAllButton_Click(object? sender, EventArgs e)
         {
-            await RunCommandAsync(token => _axisService.HomeAllAsync(token), "全部轴开始回零");
+            await RunCommandAsync(sender as Button,
+                token => _axisService.HomeAllAsync(token), "全部轴开始回零");
         }
 
         private async void StopAllButton_Click(object? sender, EventArgs e)
         {
-            await RunCommandAsync(token => _axisService.StopAllAsync(token), "全部轴已停止");
+            await RunCommandAsync(sender as Button,
+                token => _axisService.StopAllAsync(token), "全部轴已停止");
         }
 
         private async void HomeSelectedButton_Click(object? sender, EventArgs e)
         {
             var axisNumber = SelectedAxisNumber;
             await RunCommandAsync(
+                sender as Button,
                 token => _axisService.HomeAxisAsync(axisNumber, token),
                 $"轴 {axisNumber} 开始回零");
         }
@@ -240,6 +262,7 @@ namespace Page_switching
         {
             var axisNumber = SelectedAxisNumber;
             await RunCommandAsync(
+                sender as Button,
                 token => _axisService.StopAxisAsync(axisNumber, token),
                 $"轴 {axisNumber} 已停止");
         }
@@ -318,7 +341,10 @@ namespace Page_switching
             }
         }
 
-        private async Task RunCommandAsync(Func<CancellationToken, Task> action, string successMessage)
+        private async Task RunCommandAsync(
+            Button? sourceButton,
+            Func<CancellationToken, Task> action,
+            string successMessage)
         {
             if (_commandInProgress)
             {
@@ -326,6 +352,7 @@ namespace Page_switching
             }
 
             _commandInProgress = true;
+            _activeCommandButton = sourceButton;
             UpdateConnectionState();
             try
             {
@@ -344,6 +371,7 @@ namespace Page_switching
             finally
             {
                 _commandInProgress = false;
+                _activeCommandButton = null;
                 if (!IsDisposed)
                 {
                     UpdateConnectionState();
