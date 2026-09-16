@@ -20,6 +20,9 @@ public sealed class AxisSnapshot
     public bool HasAlarm { get; internal set; }
     public bool PositiveLimit { get; internal set; }
     public bool NegativeLimit { get; internal set; }
+    public bool PositiveLimitAvailable { get; internal set; }
+    public bool NegativeLimitAvailable { get; internal set; }
+    public bool? OriginSignal { get; internal set; }
     public string StatusText { get; internal set; }
 }
 
@@ -32,6 +35,7 @@ public sealed class AxisSymbolMap
     public string Alarm { get; init; } = string.Empty;
     public string PositiveLimit { get; init; } = string.Empty;
     public string NegativeLimit { get; init; } = string.Empty;
+    public string OriginSignal { get; init; } = string.Empty;
     public string EnableCommand { get; init; } = string.Empty;
     public string ResetAlarmCommand { get; init; } = string.Empty;
     public string HomeCommand { get; init; } = string.Empty;
@@ -66,6 +70,7 @@ public sealed class AxisServiceOptions
                 Alarm = Read($"AdsAxis{index}Alarm"),
                 PositiveLimit = Read($"AdsAxis{index}PositiveLimit"),
                 NegativeLimit = Read($"AdsAxis{index}NegativeLimit"),
+                OriginSignal = Read($"AdsAxis{index}OriginSignal"),
                 EnableCommand = Read($"AdsAxis{index}EnableCommand"),
                 ResetAlarmCommand = Read($"AdsAxis{index}ResetAlarmCommand"),
                 HomeCommand = Read($"AdsAxis{index}HomeCommand"),
@@ -583,6 +588,7 @@ public sealed class AxisService : IDisposable
             AddDescriptor(descriptors, index, map.Alarm, DataType.Bool, ReadKind.Alarm);
             AddDescriptor(descriptors, index, map.PositiveLimit, DataType.Bool, ReadKind.PositiveLimit);
             AddDescriptor(descriptors, index, map.NegativeLimit, DataType.Bool, ReadKind.NegativeLimit);
+            AddDescriptor(descriptors, index, map.OriginSignal, DataType.Bool, ReadKind.OriginSignal);
         }
 
         if (descriptors.Count == 0)
@@ -666,9 +672,14 @@ public sealed class AxisService : IDisposable
                 break;
             case ReadKind.PositiveLimit:
                 snapshot.PositiveLimit = Convert.ToBoolean(value, System.Globalization.CultureInfo.InvariantCulture);
+                snapshot.PositiveLimitAvailable = true;
                 break;
             case ReadKind.NegativeLimit:
                 snapshot.NegativeLimit = Convert.ToBoolean(value, System.Globalization.CultureInfo.InvariantCulture);
+                snapshot.NegativeLimitAvailable = true;
+                break;
+            case ReadKind.OriginSignal:
+                snapshot.OriginSignal = Convert.ToBoolean(value, System.Globalization.CultureInfo.InvariantCulture);
                 break;
         }
     }
@@ -804,6 +815,9 @@ public sealed class AxisService : IDisposable
             HasAlarm = Alarm,
             PositiveLimit = PositiveLimit,
             NegativeLimit = NegativeLimit,
+            PositiveLimitAvailable = true,
+            NegativeLimitAvailable = true,
+            OriginSignal = Math.Abs(Actual) <= 0.1,
             StatusText = Status
         };
     }
@@ -835,6 +849,7 @@ public sealed class AxisService : IDisposable
         Homed,
         Alarm,
         PositiveLimit,
-        NegativeLimit
+        NegativeLimit,
+        OriginSignal
     }
 }

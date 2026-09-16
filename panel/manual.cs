@@ -8,6 +8,9 @@ namespace Page_switching
         private readonly CancellationTokenSource _lifetimeCancellation = new();
         private readonly ServoPositionIndicator[] _positionIndicators;
         private readonly Label[] _statusLabels;
+        private readonly Label[] _negativeLimitLamps;
+        private readonly Label[] _originLamps;
+        private readonly Label[] _positiveLimitLamps;
         private IReadOnlyList<AxisSnapshot> _lastSnapshots = Array.Empty<AxisSnapshot>();
         private bool _refreshInProgress;
         private bool _commandInProgress;
@@ -53,6 +56,10 @@ namespace Page_switching
                 indicator.MaximumPosition = _axisService.MaximumPosition;
                 indicator.UnitText = _axisService.Unit;
             }
+
+            _negativeLimitLamps = [axis1NegativeLimitLamp, axis2NegativeLimitLamp, axis3NegativeLimitLamp, axis4NegativeLimitLamp];
+            _originLamps = [axis1OriginLamp, axis2OriginLamp, axis3OriginLamp, axis4OriginLamp];
+            _positiveLimitLamps = [axis1PositiveLimitLamp, axis2PositiveLimitLamp, axis3PositiveLimitLamp, axis4PositiveLimitLamp];
 
             axisSelector.SelectedIndex = 0;
             _refreshTimer = new System.Windows.Forms.Timer
@@ -112,6 +119,7 @@ namespace Page_switching
             catch (Exception ex)
             {
                 helperLabel.Text = "刷新失败：" + ex.Message;
+                UpdateAxisOverview(Array.Empty<AxisSnapshot>());
                 UpdateConnectionState();
             }
             finally
@@ -135,7 +143,22 @@ namespace Page_switching
                     _axisService.IsConnected);
                 _statusLabels[index].Text = snapshot.StatusText;
                 _statusLabels[index].ForeColor = GetStatusColor(snapshot);
+                var connected = _axisService.IsConnected;
+                UpdateSignalLamp(_negativeLimitLamps[index], "负限位",
+                    connected && snapshot.NegativeLimitAvailable ? snapshot.NegativeLimit : null, Color.FromArgb(234, 88, 12));
+                UpdateSignalLamp(_originLamps[index], "原点",
+                    connected ? snapshot.OriginSignal : null, Color.FromArgb(5, 150, 105));
+                UpdateSignalLamp(_positiveLimitLamps[index], "正限位",
+                    connected && snapshot.PositiveLimitAvailable ? snapshot.PositiveLimit : null, Color.FromArgb(234, 88, 12));
             }
+        }
+
+        private static void UpdateSignalLamp(Label lamp, string caption, bool? active, Color activeColor)
+        {
+            lamp.Text = $"{(active == true ? "●" : "○")} {caption}{(active.HasValue ? string.Empty : " --")}";
+            lamp.BackColor = active == true ? activeColor : Color.FromArgb(241, 245, 249);
+            lamp.ForeColor = active == true ? Color.White : active.HasValue ? Color.FromArgb(71, 85, 105) : Color.Gray;
+            lamp.AccessibleName = $"{caption}：{(active.HasValue ? active.Value ? "触发" : "未触发" : "无有效数据")}";
         }
 
         private void UpdateSelectedAxisDetails()
