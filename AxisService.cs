@@ -622,53 +622,59 @@ public sealed class AxisService : IDisposable
         CancellationToken cancellationToken)
     {
         var snapshots = CreateUnavailableSnapshots("未配置");
-        var descriptors = new List<ReadDescriptor>();
+        var requests = new List<ReadRequest>();
 
-        for (var index = 0; index < _options.AxisSymbols.Count; index++)
+        // 每根轴固定读取下面 8 个变量。这里直接列出，方便对照 App.config 中的符号。
+        foreach (var symbols in _options.AxisSymbols)
         {
-            var map = _options.AxisSymbols[index];
-            AddDescriptor(descriptors, index, map.ActualPosition, DataType.Double, ReadKind.Actual);
-            AddDescriptor(descriptors, index, map.Speed, DataType.Double, ReadKind.Speed);
-            AddDescriptor(descriptors, index, map.Enabled, DataType.Bool, ReadKind.Enabled);
-            AddDescriptor(descriptors, index, map.Homed, DataType.Bool, ReadKind.Homed);
-            AddDescriptor(descriptors, index, map.Alarm, DataType.Bool, ReadKind.Alarm);
-            AddDescriptor(descriptors, index, map.PositiveLimit, DataType.Bool, ReadKind.PositiveLimit);
-            AddDescriptor(descriptors, index, map.NegativeLimit, DataType.Bool, ReadKind.NegativeLimit);
-            AddDescriptor(descriptors, index, map.OriginSignal, DataType.Bool, ReadKind.OriginSignal);
+            AddReadRequest(requests, client.DeviceId, symbols.ActualPosition, DataType.Double);
+            AddReadRequest(requests, client.DeviceId, symbols.Speed, DataType.Double);
+            AddReadRequest(requests, client.DeviceId, symbols.Enabled, DataType.Bool);
+            AddReadRequest(requests, client.DeviceId, symbols.Homed, DataType.Bool);
+            AddReadRequest(requests, client.DeviceId, symbols.Alarm, DataType.Bool);
+            AddReadRequest(requests, client.DeviceId, symbols.PositiveLimit, DataType.Bool);
+            AddReadRequest(requests, client.DeviceId, symbols.NegativeLimit, DataType.Bool);
+            AddReadRequest(requests, client.DeviceId, symbols.OriginSignal, DataType.Bool);
         }
 
-        if (descriptors.Count == 0)
+        if (requests.Count == 0)
         {
             return snapshots;
         }
 
-        var requests = descriptors
-            .Select(descriptor => new ReadRequest(client.DeviceId, descriptor.Symbol, descriptor.DataType))
-            .ToArray();
         var result = await client.ReadManyAsync(requests, cancellationToken).ConfigureAwait(false);
-
-        foreach (var descriptor in descriptors)
+        var valuesBySymbol = new Dictionary<string, DataValue>(StringComparer.OrdinalIgnoreCase);
+        foreach (var value in result.Values)
         {
-            var value = descriptor.Index < result.Values.Count
-                ? result.Values[descriptor.Index]
-                : null;
-            if (value is null || value.Quality != QualityStatus.Good || value.Value is null)
-            {
-                descriptor.Failed = true;
-                continue;
-            }
-
-            ApplyValue(snapshots[descriptor.AxisIndex], descriptor.Kind, value.Value);
+            valuesBySymbol[value.Address] = value;
         }
 
         for (var index = 0; index < snapshots.Count; index++)
         {
             var snapshot = snapshots[index];
-            var map = _options.AxisSymbols[index];
-            var hasFailure = descriptors.Any(item => item.AxisIndex == index && item.Failed);
-            snapshot.StatusText = !map.HasActualPositionSymbol
+            var symbols = _options.AxisSymbols[index];
+            var readFailed = false;
+
+            // PLC 变量 -> 页面数据，一一对应地写在这里。
+            snapshot.ActualPosition = ReadDouble(valuesBySymbol, symbols.ActualPosition, ref readFailed);
+            snapshot.Speed = ReadDouble(valuesBySymbol, symbols.Speed, ref readFailed);
+            snapshot.IsEnabled = ReadBoolean(valuesBySymbol, symbols.Enabled, ref readFailed) ?? false;
+            snapshot.IsHomed = ReadBoolean(valuesBySymbol, symbols.Homed, ref readFailed) ?? false;
+            snapshot.HasAlarm = ReadBoolean(valuesBySymbol, symbols.Alarm, ref readFailed) ?? false;
+
+            var positiveLimit = ReadBoolean(valuesBySymbol, symbols.PositiveLimit, ref readFailed);
+            snapshot.PositiveLimit = positiveLimit ?? false;
+            snapshot.PositiveLimitAvailable = positiveLimit.HasValue;
+
+            var negativeLimit = ReadBoolean(valuesBySymbol, symbols.NegativeLimit, ref readFailed);
+            snapshot.NegativeLimit = negativeLimit ?? false;
+            snapshot.NegativeLimitAvailable = negativeLimit.HasValue;
+
+            snapshot.OriginSignal = ReadBoolean(valuesBySymbol, symbols.OriginSignal, ref readFailed);
+
+            snapshot.StatusText = !symbols.HasActualPositionSymbol
                 ? "未配置"
-                : hasFailure
+                : readFailed
                     ? "读取失败"
                     : snapshot.HasAlarm
                         ? "报警"
@@ -684,50 +690,81 @@ public sealed class AxisService : IDisposable
         return snapshots;
     }
 
-    private static void AddDescriptor(
-        ICollection<ReadDescriptor> descriptors,
-        int axisIndex,
+    private static void AddReadRequest(
+        ICollection<ReadRequest> requests,
+        string deviceId,
         string symbol,
-        DataType dataType,
-        ReadKind kind)
+        DataType dataType)
     {
         if (!string.IsNullOrWhiteSpace(symbol))
         {
-            descriptors.Add(new ReadDescriptor(descriptors.Count, axisIndex, symbol, dataType, kind));
+            requests.Add(new ReadRequest(deviceId, symbol, dataType));
         }
     }
 
-    private static void ApplyValue(AxisSnapshot snapshot, ReadKind kind, object value)
+    private static double? ReadDouble(
+        IReadOnlyDictionary<string, DataValue> values,
+        string symbol,
+        ref bool readFailed)
     {
-        switch (kind)
+        var value = ReadValue(values, symbol, ref readFailed);
+        if (value is null)
         {
-            case ReadKind.Actual:
-                snapshot.ActualPosition = Convert.ToDouble(value, System.Globalization.CultureInfo.InvariantCulture);
-                break;
-            case ReadKind.Speed:
-                snapshot.Speed = Convert.ToDouble(value, System.Globalization.CultureInfo.InvariantCulture);
-                break;
-            case ReadKind.Enabled:
-                snapshot.IsEnabled = Convert.ToBoolean(value, System.Globalization.CultureInfo.InvariantCulture);
-                break;
-            case ReadKind.Homed:
-                snapshot.IsHomed = Convert.ToBoolean(value, System.Globalization.CultureInfo.InvariantCulture);
-                break;
-            case ReadKind.Alarm:
-                snapshot.HasAlarm = Convert.ToBoolean(value, System.Globalization.CultureInfo.InvariantCulture);
-                break;
-            case ReadKind.PositiveLimit:
-                snapshot.PositiveLimit = Convert.ToBoolean(value, System.Globalization.CultureInfo.InvariantCulture);
-                snapshot.PositiveLimitAvailable = true;
-                break;
-            case ReadKind.NegativeLimit:
-                snapshot.NegativeLimit = Convert.ToBoolean(value, System.Globalization.CultureInfo.InvariantCulture);
-                snapshot.NegativeLimitAvailable = true;
-                break;
-            case ReadKind.OriginSignal:
-                snapshot.OriginSignal = Convert.ToBoolean(value, System.Globalization.CultureInfo.InvariantCulture);
-                break;
+            return null;
         }
+
+        try
+        {
+            return Convert.ToDouble(value, System.Globalization.CultureInfo.InvariantCulture);
+        }
+        catch (Exception ex) when (ex is FormatException or InvalidCastException or OverflowException)
+        {
+            readFailed = true;
+            return null;
+        }
+    }
+
+    private static bool? ReadBoolean(
+        IReadOnlyDictionary<string, DataValue> values,
+        string symbol,
+        ref bool readFailed)
+    {
+        var value = ReadValue(values, symbol, ref readFailed);
+        if (value is null)
+        {
+            return null;
+        }
+
+        try
+        {
+            return Convert.ToBoolean(value, System.Globalization.CultureInfo.InvariantCulture);
+        }
+        catch (Exception ex) when (ex is FormatException or InvalidCastException)
+        {
+            readFailed = true;
+            return null;
+        }
+    }
+
+    private static object? ReadValue(
+        IReadOnlyDictionary<string, DataValue> values,
+        string symbol,
+        ref bool readFailed)
+    {
+        if (string.IsNullOrWhiteSpace(symbol))
+        {
+            return null;
+        }
+
+        if (!values.TryGetValue(symbol, out var value) ||
+            value.Quality != QualityStatus.Good ||
+            value.Value is null)
+        {
+            readFailed = true;
+            return null;
+        }
+
+        return value.Value;
     }
 
     private IReadOnlyList<AxisSnapshot> CreateUnavailableSnapshots(string status)
@@ -868,34 +905,4 @@ public sealed class AxisService : IDisposable
         };
     }
 
-    private sealed class ReadDescriptor
-    {
-        public ReadDescriptor(int index, int axisIndex, string symbol, DataType dataType, ReadKind kind)
-        {
-            Index = index;
-            AxisIndex = axisIndex;
-            Symbol = symbol;
-            DataType = dataType;
-            Kind = kind;
-        }
-
-        public int AxisIndex { get; }
-        public string Symbol { get; }
-        public DataType DataType { get; }
-        public ReadKind Kind { get; }
-        public bool Failed { get; set; }
-        public int Index { get; }
-    }
-
-    private enum ReadKind
-    {
-        Actual,
-        Speed,
-        Enabled,
-        Homed,
-        Alarm,
-        PositiveLimit,
-        NegativeLimit,
-        OriginSignal
-    }
 }
