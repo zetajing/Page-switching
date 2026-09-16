@@ -31,10 +31,12 @@ namespace Page_switching
         /// </summary>
         private void InitializeComponent()
         {
-            button2 = new Button();
             panel1 = new Panel();
             panel2 = new Panel();
             bu_Configuration = new Button();
+            button5 = new Button();
+            button2 = new Button();
+            button1 = new Button();
             button4 = new Button();
             button3 = new Button();
             Bu_manual = new Button();
@@ -57,7 +59,9 @@ namespace Page_switching
             // 
             panel2.BackColor = SystemColors.ActiveCaption;
             panel2.Controls.Add(bu_Configuration);
+            panel2.Controls.Add(button5);
             panel2.Controls.Add(button2);
+            panel2.Controls.Add(button1);
             panel2.Controls.Add(button4);
             panel2.Controls.Add(button3);
             panel2.Controls.Add(Bu_manual);
@@ -67,6 +71,9 @@ namespace Page_switching
             panel2.Name = "panel2";
             panel2.Size = new Size(142, 681);
             panel2.TabIndex = 1;
+            // 
+            // bu_Configuration
+            // 
             bu_Configuration.Location = new Point(5, 594);
             bu_Configuration.Name = "bu_Configuration";
             bu_Configuration.Size = new Size(131, 75);
@@ -74,10 +81,19 @@ namespace Page_switching
             bu_Configuration.Text = "配置页面";
             bu_Configuration.UseVisualStyleBackColor = true;
             bu_Configuration.Click += bu_Configuration_Click;
-            //
+            // 
+            // button5
+            // 
+            button5.Location = new Point(5, 510);
+            button5.Name = "button5";
+            button5.Size = new Size(131, 75);
+            button5.TabIndex = 6;
+            button5.Text = "浪高仪";
+            button5.UseVisualStyleBackColor = true;
+            // 
             // button2
-            //
-            button2.Location = new Point(5, 324);
+            // 
+            button2.Location = new Point(5, 426);
             button2.Name = "button2";
             button2.Size = new Size(131, 75);
             button2.TabIndex = 5;
@@ -85,18 +101,27 @@ namespace Page_switching
             button2.UseVisualStyleBackColor = true;
             button2.Click += WaveformButton_Click;
             // 
+            // button1
+            // 
+            button1.Location = new Point(5, 342);
+            button1.Name = "button1";
+            button1.Size = new Size(131, 75);
+            button1.TabIndex = 4;
+            button1.Text = "数据库";
+            button1.UseVisualStyleBackColor = true;
+            // 
             // button4
             // 
-            button4.Location = new Point(5, 244);
+            button4.Location = new Point(5, 258);
             button4.Name = "button4";
             button4.Size = new Size(131, 75);
             button4.TabIndex = 3;
-            button4.Text = "button4";
+            button4.Text = "标定页面";
             button4.UseVisualStyleBackColor = true;
             // 
             // button3
             // 
-            button3.Location = new Point(5, 164);
+            button3.Location = new Point(5, 174);
             button3.Name = "button3";
             button3.Size = new Size(131, 75);
             button3.TabIndex = 2;
@@ -106,7 +131,7 @@ namespace Page_switching
             // Bu_manual
             // 
             Bu_manual.Font = new Font("Microsoft YaHei UI", 19.8000011F, FontStyle.Regular, GraphicsUnit.Point, 134);
-            Bu_manual.Location = new Point(5, 84);
+            Bu_manual.Location = new Point(5, 90);
             Bu_manual.Name = "Bu_manual";
             Bu_manual.Size = new Size(131, 75);
             Bu_manual.TabIndex = 1;
@@ -159,6 +184,8 @@ namespace Page_switching
         private Button Bu_manual;
         private Button Bu_auto;
         private Button bu_Configuration;
+        private Button button5;
         private Button button2;
+        private Button button1;
     }
 }
