@@ -10,6 +10,7 @@ internal static class AdsTcpRouterRuntime
     public static bool IsEnabled =>
         bool.TryParse(Read("AdsTcpRouterEnabled"), out var enabled) && enabled;
 
+    // 从 App.config 读取 Router 参数并创建 ADS TCP Router。
     public static AdsTcpRouterHost Create()
     {
         var values = new Dictionary<string, string?>
@@ -32,6 +33,7 @@ internal static class AdsTcpRouterRuntime
         return new AdsTcpRouterHost(configuration, NullLoggerFactory.Instance);
     }
 
+    // 读取指定 Router 配置项并去除首尾空格。
     private static string Read(string key) =>
         System.Configuration.ConfigurationManager.AppSettings[key]?.Trim() ?? string.Empty;
 }

@@ -67,6 +67,7 @@ namespace Page_switching
         private Button stopSelectedButton;
         private Label helperLabel;
 
+        // 释放设计器创建的手动页面组件。
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -77,6 +78,7 @@ namespace Page_switching
             base.Dispose(disposing);
         }
 
+        // 创建设计器中的手动页面控件并绑定事件。
         private void InitializeComponent()
         {
             axis1FeedbackLayout = new TableLayoutPanel();

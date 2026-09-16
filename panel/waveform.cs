@@ -9,6 +9,7 @@ public partial class WaveformPage : UserControl
     private bool _generationInProgress;
     private bool _disposed;
 
+    // 初始化波形页面、生成服务和下拉选项。
     public WaveformPage()
     {
         InitializeComponent();
@@ -16,6 +17,7 @@ public partial class WaveformPage : UserControl
         InitializeWaveformChoices();
     }
 
+    // 填充规则波和不规则波所需的方向、频谱等选项。
     private void InitializeWaveformChoices()
     {
         regularSegmentComboBox.Items.AddRange(["X轴+Y轴", "X轴", "Y轴"]);
@@ -60,12 +62,15 @@ public partial class WaveformPage : UserControl
         irregularPositiveDirectionTextBox.Text = "25";
     }
 
+    // 选择规则波输出文件路径。
     private void BrowseRegularOutputButton_Click(object? sender, EventArgs e) =>
         SelectOutputPath(regularOutputTextBox);
 
+    // 选择不规则波输出文件路径。
     private void BrowseIrregularOutputButton_Click(object? sender, EventArgs e) =>
         SelectOutputPath(irregularOutputTextBox);
 
+    // 打开保存对话框，并把选择的路径写入指定文本框。
     private static void SelectOutputPath(TextBox target)
     {
         using var dialog = new SaveFileDialog
@@ -89,6 +94,7 @@ public partial class WaveformPage : UserControl
         }
     }
 
+    // 校验规则波参数、调用生成程序并显示预览。
     private async void GenerateRegularButton_Click(object? sender, EventArgs e)
     {
         if (_generationInProgress)
@@ -137,6 +143,7 @@ public partial class WaveformPage : UserControl
         }
     }
 
+    // 校验不规则波参数、调用生成程序并显示预览。
     private async void GenerateIrregularButton_Click(object? sender, EventArgs e)
     {
         if (_generationInProgress)
@@ -205,6 +212,7 @@ public partial class WaveformPage : UserControl
         }
     }
 
+    // 生成期间禁用操作按钮并更新状态提示。
     private void SetGenerationState(bool generating, Button button, Label statusLabel)
     {
         _generationInProgress = generating;
@@ -223,6 +231,7 @@ public partial class WaveformPage : UserControl
         }
     }
 
+    // 获取必填输出路径，空值时提示用户。
     private static string RequireOutputPath(TextBox textBox)
     {
         if (string.IsNullOrWhiteSpace(textBox.Text))
@@ -233,6 +242,7 @@ public partial class WaveformPage : UserControl
         return Path.GetFullPath(textBox.Text.Trim());
     }
 
+    // 读取并校验一个浮点参数的范围。
     private static double ParseDouble(TextBox textBox, string caption, double minimum, double? maximum = null)
     {
         if (!double.TryParse(textBox.Text.Trim(), NumberStyles.Float,
@@ -250,6 +260,7 @@ public partial class WaveformPage : UserControl
         return value;
     }
 
+    // 读取并校验一个整数参数的范围。
     private static int ParseInt(TextBox textBox, string caption, int minimum, int maximum)
     {
         if (!int.TryParse(textBox.Text.Trim(), NumberStyles.Integer,
@@ -261,6 +272,7 @@ public partial class WaveformPage : UserControl
         return value;
     }
 
+    // 将界面中的造波方向转换为外部程序需要的数字代码。
     private static int GetSideCode(ComboBox comboBox) => comboBox.SelectedIndex switch
     {
         1 => 2,
@@ -268,6 +280,7 @@ public partial class WaveformPage : UserControl
         _ => 1
     };
 
+    // 将频谱名称转换为外部程序需要的数字代码。
     private static int GetSpectrumCode(ComboBox comboBox) => comboBox.SelectedItem?.ToString() switch
     {
         "Scott" => 2,
@@ -280,6 +293,7 @@ public partial class WaveformPage : UserControl
         _ => 1
     };
 
+    // 页面释放时取消并释放波形生成服务。
     protected override void Dispose(bool disposing)
     {
         if (disposing && !_disposed)

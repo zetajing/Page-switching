@@ -90,6 +90,7 @@ partial class WaveformPage
     private GroupBox irregularPreviewGroup;
     private WaveformPreviewControl irregularPreview;
 
+    // 创建设计器中的波形页面控件并绑定事件。
     private void InitializeComponent()
     {
         components = new System.ComponentModel.Container();
@@ -552,6 +553,7 @@ partial class WaveformPage
         ResumeLayout(false);
     }
 
+    // 统一设置参数标签的字体、颜色和对齐方式。
     private static void ConfigureParameterLabel(Label label)
     {
         label.Dock = DockStyle.Fill;
@@ -561,6 +563,7 @@ partial class WaveformPage
         label.AutoEllipsis = true;
     }
 
+    // 统一设置输入控件的尺寸、字体和边距。
     private static void ConfigureInput(Control control)
     {
         control.Dock = DockStyle.Fill;
@@ -568,6 +571,7 @@ partial class WaveformPage
         control.Font = new Font("Microsoft YaHei UI", 9F);
     }
 
+    // 统一设置状态标签的显示样式。
     private static void ConfigureStatus(Label label)
     {
         label.Dock = DockStyle.Fill;
@@ -577,6 +581,7 @@ partial class WaveformPage
         label.AutoEllipsis = true;
     }
 
+    // 根据主次操作统一设置按钮样式。
     private static void ConfigureActionButton(Button button, bool primary)
     {
         button.Dock = primary ? DockStyle.None : DockStyle.Fill;

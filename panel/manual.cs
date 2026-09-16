@@ -19,16 +19,19 @@ namespace Page_switching
         private bool _jogPositive;
         private int _jogAxisNumber;
 
+        // 供设计器使用；自行创建并管理轴服务。
         public Manual()
             : this(new AxisService(AxisServiceOptions.FromConfiguration()), true)
         {
         }
 
+        // 使用主窗体传入的共享轴服务创建手动页面。
         public Manual(AxisService axisService)
             : this(axisService, false)
         {
         }
 
+        // 初始化手动页面、轴指示器和定时刷新器。
         private Manual(AxisService axisService, bool ownsAxisService)
         {
             _axisService = axisService ?? throw new ArgumentNullException(nameof(axisService));
@@ -74,6 +77,7 @@ namespace Page_switching
             UpdateConnectionState();
         }
 
+        // 页面显示时开始刷新，隐藏时停止刷新和正在进行的点动。
         private void Manual_VisibilityChanged(object? sender, EventArgs e)
         {
             if (!Visible || Parent is null || IsDisposed)
@@ -87,11 +91,13 @@ namespace Page_switching
             _ = RefreshValuesAsync();
         }
 
+        // 定时器到期后读取一次四轴状态。
         private async void RefreshTimer_Tick(object? sender, EventArgs e)
         {
             await RefreshValuesAsync();
         }
 
+        // 从轴服务读取最新状态并更新手动页面。
         private async Task RefreshValuesAsync()
         {
             if (_refreshInProgress || IsDisposed || _lifetimeCancellation.IsCancellationRequested)
@@ -129,6 +135,7 @@ namespace Page_switching
             }
         }
 
+        // 更新四根轴的位置指示、状态文字和限位信号灯。
         private void UpdateAxisOverview(IReadOnlyList<AxisSnapshot> snapshots)
         {
             for (var index = 0; index < _positionIndicators.Length; index++)
@@ -154,6 +161,7 @@ namespace Page_switching
             }
         }
 
+        // 根据布尔信号更新一个状态灯的文字和颜色。
         private static void UpdateSignalLamp(Label lamp, string caption, bool? active, Color activeColor)
         {
             lamp.Text = $"{(active == true ? "●" : "○")} {caption}{(active.HasValue ? string.Empty : " --")}";
@@ -162,6 +170,7 @@ namespace Page_switching
             lamp.AccessibleName = $"{caption}：{(active.HasValue ? active.Value ? "触发" : "未触发" : "无有效数据")}";
         }
 
+        // 显示当前选中轴的状态、位置、速度和可用控制按钮。
         private void UpdateSelectedAxisDetails()
         {
             var selectedIndex = Math.Max(0, axisSelector.SelectedIndex);
@@ -187,6 +196,7 @@ namespace Page_switching
             SetCommandButtonEnabled(stopSelectedButton, canControlAxis);
         }
 
+        // 更新 ADS 连接文字、颜色和所有控制按钮状态。
         private void UpdateConnectionState()
         {
             connectionStateLabel.Text = _axisService.ConnectionStateText;
@@ -203,6 +213,7 @@ namespace Page_switching
             UpdateSelectedAxisDetails();
         }
 
+        // 根据连接状态和当前执行命令设置按钮是否可用。
         private void SetCommandButtonEnabled(Button button, bool canControl)
         {
             var enabled = canControl && !ReferenceEquals(button, _activeCommandButton);
@@ -212,41 +223,48 @@ namespace Page_switching
             }
         }
 
+        // 切换轴选择后刷新所选轴的详细信息。
         private void AxisSelector_SelectedIndexChanged(object? sender, EventArgs e)
         {
             UpdateSelectedAxisDetails();
         }
 
+        // 点击后将四根轴的使能变量全部写为 true。
         private async void EnableAllButton_Click(object? sender, EventArgs e)
         {
             await RunCommandAsync(sender as Button,
                 token => _axisService.EnableAllAsync(token), "全部轴已使能");
         }
 
+        // 点击后将四根轴的使能变量全部写为 false。
         private async void DisableAllButton_Click(object? sender, EventArgs e)
         {
             await RunCommandAsync(sender as Button,
                 token => _axisService.DisableAllAsync(token), "全部轴已取消使能");
         }
 
+        // 点击后触发四根轴的报警复位变量。
         private async void ResetAlarmButton_Click(object? sender, EventArgs e)
         {
             await RunCommandAsync(sender as Button,
                 token => _axisService.ResetAlarmsAsync(token), "报警复位命令已执行");
         }
 
+        // 点击后触发四根轴的回零变量。
         private async void HomeAllButton_Click(object? sender, EventArgs e)
         {
             await RunCommandAsync(sender as Button,
                 token => _axisService.HomeAllAsync(token), "全部轴开始回零");
         }
 
+        // 点击后触发四根轴的停止变量。
         private async void StopAllButton_Click(object? sender, EventArgs e)
         {
             await RunCommandAsync(sender as Button,
                 token => _axisService.StopAllAsync(token), "全部轴已停止");
         }
 
+        // 点击后触发当前所选轴的回零变量。
         private async void HomeSelectedButton_Click(object? sender, EventArgs e)
         {
             var axisNumber = SelectedAxisNumber;
@@ -256,6 +274,7 @@ namespace Page_switching
                 $"轴 {axisNumber} 开始回零");
         }
 
+        // 点击后触发当前所选轴的停止变量。
         private async void StopSelectedButton_Click(object? sender, EventArgs e)
         {
             var axisNumber = SelectedAxisNumber;
@@ -265,21 +284,25 @@ namespace Page_switching
                 $"轴 {axisNumber} 已停止");
         }
 
+        // 按下负向点动按钮时启动负向点动。
         private async void JogNegativeButton_MouseDown(object? sender, MouseEventArgs e)
         {
             await StartJogAsync(false);
         }
 
+        // 按下正向点动按钮时启动正向点动。
         private async void JogPositiveButton_MouseDown(object? sender, MouseEventArgs e)
         {
             await StartJogAsync(true);
         }
 
+        // 松开点动按钮时立即停止当前点动。
         private async void JogButton_MouseUp(object? sender, EventArgs e)
         {
             await StopActiveJogAsync();
         }
 
+        // 写入点动速度和方向启动信号。
         private async Task StartJogAsync(bool positive)
         {
             if (_jogActive || _commandInProgress)
@@ -307,6 +330,7 @@ namespace Page_switching
             }
         }
 
+        // 清除当前轴的点动方向信号。
         private async Task StopActiveJogAsync()
         {
             if (!_jogActive)
@@ -339,6 +363,7 @@ namespace Page_switching
             }
         }
 
+        // 统一执行按钮命令、显示结果并在成功后刷新轴状态。
         private async Task RunCommandAsync(
             Button? sourceButton,
             Func<CancellationToken, Task> action,
@@ -379,9 +404,11 @@ namespace Page_switching
 
         private int SelectedAxisNumber => Math.Max(0, axisSelector.SelectedIndex) + 1;
 
+        // 将可空数值格式化为带单位的界面文字。
         private static string FormatValue(double? value, string unit) =>
             value.HasValue ? $"{value.Value:0.00} {unit}" : "--";
 
+        // 根据报警、限位和运行状态选择状态文字颜色。
         private static Color GetStatusColor(AxisSnapshot snapshot)
         {
             if (snapshot.HasAlarm) return Color.FromArgb(220, 38, 38);
@@ -391,6 +418,7 @@ namespace Page_switching
                 : Color.Gray;
         }
 
+        // 页面释放时停止定时器、取消任务并按需释放轴服务。
         private void Manual_Disposed(object? sender, EventArgs e)
         {
             _refreshTimer.Stop();

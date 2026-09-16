@@ -11,6 +11,7 @@
         /// 清理所有正在使用的资源。
         /// </summary>
         /// <param name="disposing">如果应释放托管资源，为 true；否则为 false。</param>
+        // 释放设计器创建的自动页面组件。
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -26,6 +27,7 @@
         /// 设计器支持所需的方法 - 不要修改
         /// 使用代码编辑器修改此方法的内容。
         /// </summary>
+        // 创建设计器中的自动页面控件并设置布局。
         private void InitializeComponent()
         {
             SuspendLayout();

@@ -5,6 +5,7 @@ using System.Text;
 
 namespace Page_switching;
 
+// 保存一次规则波生成所需的全部参数。
 public sealed record RegularWaveParameters(
     double WaterDepth,
     double Period,
@@ -17,6 +18,7 @@ public sealed record RegularWaveParameters(
     int TheoryCode,
     int SideCode);
 
+// 保存一次不规则波生成所需的全部参数。
 public sealed record IrregularWaveParameters(
     double WaterDepth,
     double SignificantPeriod,
@@ -50,6 +52,7 @@ public sealed class WaveformGeneratorOptions
 {
     public string WFastPath { get; init; } = string.Empty;
 
+    // 从 App.config 读取外部波形生成程序路径和执行超时时间。
     public static WaveformGeneratorOptions FromConfiguration() => new()
     {
         WFastPath = ConfigurationManager.AppSettings["WaveGeneratorPath"]?.Trim() ?? string.Empty
@@ -63,23 +66,27 @@ public sealed class WaveformGeneratorService : IDisposable
     private Process? _runningProcess;
     private bool _disposed;
 
+    // 保存波形生成配置，供后续生成任务使用。
     public WaveformGeneratorService(WaveformGeneratorOptions options)
     {
         _options = options ?? throw new ArgumentNullException(nameof(options));
     }
 
+    // 根据规则波参数生成输入文件，并调用外部程序生成波形。
     public Task<WaveformGenerationResult> GenerateRegularAsync(
         RegularWaveParameters parameters,
         string outputPath,
         CancellationToken cancellationToken) =>
         GenerateAsync(BuildRegularParameterFile(parameters, outputPath), outputPath, cancellationToken);
 
+    // 根据不规则波参数生成输入文件，并调用外部程序生成波形。
     public Task<WaveformGenerationResult> GenerateIrregularAsync(
         IrregularWaveParameters parameters,
         string outputPath,
         CancellationToken cancellationToken) =>
         GenerateAsync(BuildIrregularParameterFile(parameters, outputPath), outputPath, cancellationToken);
 
+    // 启动外部生成程序，等待输出文件并读取生成结果。
     private async Task<WaveformGenerationResult> GenerateAsync(
         string parameterFile,
         string outputPath,
@@ -219,6 +226,7 @@ public sealed class WaveformGeneratorService : IDisposable
         }
     }
 
+    // 将生成程序同目录下的依赖文件复制到本次临时工作目录。
     private static void CopyGeneratorSupportFiles(string generatorPath, string workDirectory)
     {
         var generatorDirectory = Path.GetDirectoryName(generatorPath);
@@ -235,6 +243,7 @@ public sealed class WaveformGeneratorService : IDisposable
         }
     }
 
+    // 按外部程序要求组装规则波参数文件内容。
     private static string BuildRegularParameterFile(RegularWaveParameters p, string outputPath)
     {
         var values = new[]
@@ -266,6 +275,7 @@ public sealed class WaveformGeneratorService : IDisposable
         return string.Join("\r\n", values) + "\r\n";
     }
 
+    // 按外部程序要求组装不规则波参数文件内容。
     private static string BuildIrregularParameterFile(IrregularWaveParameters p, string outputPath)
     {
         var values = new[]
@@ -297,9 +307,11 @@ public sealed class WaveformGeneratorService : IDisposable
         return string.Join("\r\n", values) + "\r\n";
     }
 
+    // 使用固定小数格式输出参数，避免系统区域设置影响文件内容。
     private static string Format(double value) =>
         value.ToString("0.###############", CultureInfo.InvariantCulture);
 
+    // 超时或取消时尝试终止外部生成进程。
     private static void TryKill(Process process)
     {
         try
@@ -315,6 +327,7 @@ public sealed class WaveformGeneratorService : IDisposable
         }
     }
 
+    // 取消正在执行的生成任务并释放取消令牌。
     public void Dispose()
     {
         if (_disposed)
@@ -334,6 +347,7 @@ public sealed class WaveformGeneratorService : IDisposable
 
 public static class WaveformCsvReader
 {
+    // 从外部程序输出文件中读取所有有效波形采样值。
     public static IReadOnlyList<double> ReadSamples(string path)
     {
         var samples = new List<double>();
@@ -356,6 +370,7 @@ public static class WaveformCsvReader
         return samples;
     }
 
+    // 使用不受系统区域设置影响的方式解析数值文本。
     private static bool TryParse(string value, out double number) =>
         double.TryParse(value.Trim(), NumberStyles.Float | NumberStyles.AllowThousands,
             CultureInfo.InvariantCulture, out number) ||

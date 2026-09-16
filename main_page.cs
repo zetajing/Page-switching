@@ -14,6 +14,7 @@ namespace Page_switching
         private AdsTcpRouterHost? _adsTcpRouter;
         private UserControl? _currentPage;
 
+        // 初始化共享轴服务和各个页面，并显示默认页面。
         public Mainpage()
         {
             InitializeComponent();
@@ -36,6 +37,7 @@ namespace Page_switching
             Shown += Mainpage_Shown;
         }
 
+        // 主窗体显示后启动可选 Router，并连接真实 ADS PLC。
         private async void Mainpage_Shown(object? sender, EventArgs e)
         {
             if (AdsTcpRouterRuntime.IsEnabled)
@@ -61,6 +63,7 @@ namespace Page_switching
             }
         }
 
+        // 主窗体关闭时释放 ADS 连接和 Router。
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
             try
@@ -74,6 +77,7 @@ namespace Page_switching
             }
         }
 
+        // 隐藏当前页面并显示指定的缓存页面。
         private void ShowPage(UserControl page)
         {
             ArgumentNullException.ThrowIfNull(page);
@@ -103,21 +107,25 @@ namespace Page_switching
             }
         }
 
+        // 切换到自动页面。
         private void Bu_auto_Click(object sender, EventArgs e)
         {
             ShowPage(_autoPage);
         }
 
+        // 切换到手动控制页面。
         private void Bu_manual_Click(object sender, EventArgs e)
         {
             ShowPage(_manualPage);
         }
 
+        // 切换到配置页面。
         private void bu_Configuration_Click(object sender, EventArgs e)
         {
             ShowPage(_confige);
         }
 
+        // 切换到波形生成页面。
         private void WaveformButton_Click(object sender, EventArgs e)
         {
             ShowPage(_waveformPage);

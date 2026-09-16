@@ -14,6 +14,7 @@ public sealed class ServoPositionIndicator : Control
     private bool _positiveLimit;
     private bool _negativeLimit;
 
+    // 初始化伺服位置指示器的字体、颜色和双缓冲绘制。
     public ServoPositionIndicator()
     {
         SetStyle(
@@ -120,6 +121,7 @@ public sealed class ServoPositionIndicator : Control
         }
     }
 
+    // 使用最新轴状态更新位置、范围、单位和连接状态。
     public void Update(AxisSnapshot snapshot, string unit, double minimum, double maximum, bool connected)
     {
         MinimumPosition = minimum;
@@ -132,6 +134,7 @@ public sealed class ServoPositionIndicator : Control
         IsConnected = connected;
     }
 
+    // 绘制位置刻度、当前位置和轴状态。
     protected override void OnPaint(PaintEventArgs e)
     {
         base.OnPaint(e);
@@ -185,6 +188,7 @@ public sealed class ServoPositionIndicator : Control
         DrawAlignedString(graphics, $"{_maximumPosition:0.##}{_unitText}", Font, Brushes.Gray, right, Height - 20, rightAligned: true);
     }
 
+    // 将实际轴位置换算为控件中的横坐标。
     private float MapPosition(double position, float left, float right)
     {
         var rate = (position - _minimumPosition) / (_maximumPosition - _minimumPosition);
@@ -192,6 +196,7 @@ public sealed class ServoPositionIndicator : Control
         return left + (float)((right - left) * rate);
     }
 
+    // 根据连接、报警和限位状态返回当前位置的显示颜色。
     private Color GetActualColor()
     {
         if (_hasAlarm) return Color.FromArgb(220, 38, 38);
@@ -199,12 +204,14 @@ public sealed class ServoPositionIndicator : Control
         return Color.FromArgb(14, 116, 144);
     }
 
+    // 以指定横坐标为中心绘制文字。
     private static void DrawCenteredString(Graphics graphics, string text, Font font, Brush brush, float centerX, float y)
     {
         var size = graphics.MeasureString(text, font);
         graphics.DrawString(text, font, brush, centerX - size.Width / 2, y);
     }
 
+    // 按左对齐或右对齐方式绘制文字。
     private static void DrawAlignedString(Graphics graphics, string text, Font font, Brush brush, float x, float y, bool rightAligned = false)
     {
         var size = graphics.MeasureString(text, font);

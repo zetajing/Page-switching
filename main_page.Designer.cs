@@ -11,6 +11,7 @@ namespace Page_switching
         ///  Clean up any resources being used.
         /// </summary>
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        // 释放设计器创建的窗体组件。
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -29,6 +30,7 @@ namespace Page_switching
         ///  Required method for Designer support - do not modify
         ///  the contents of this method with the code editor.
         /// </summary>
+        // 创建设计器中的控件并设置布局和事件。
         private void InitializeComponent()
         {
             panel1 = new Panel();

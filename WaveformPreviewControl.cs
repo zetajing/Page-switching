@@ -7,6 +7,7 @@ public sealed class WaveformPreviewControl : Control
 {
     private IReadOnlyList<double> _samples = Array.Empty<double>();
 
+    // 初始化波形预览控件的绘制样式。
     public WaveformPreviewControl()
     {
         SetStyle(
@@ -24,6 +25,7 @@ public sealed class WaveformPreviewControl : Control
 
     public string UnitText { get; set; } = "m";
 
+    // 设置需要显示的采样点和采样时间间隔，并触发重绘。
     public void SetSamples(IReadOnlyList<double> samples, double sampleIntervalSeconds)
     {
         _samples = samples?.ToArray() ?? Array.Empty<double>();
@@ -31,12 +33,14 @@ public sealed class WaveformPreviewControl : Control
         Invalidate();
     }
 
+    // 清空当前波形数据并刷新控件。
     public void ClearSamples()
     {
         _samples = Array.Empty<double>();
         Invalidate();
     }
 
+    // 绘制背景、坐标和当前波形曲线。
     protected override void OnPaint(PaintEventArgs e)
     {
         base.OnPaint(e);

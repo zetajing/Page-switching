@@ -33,6 +33,7 @@ partial class Config
     private Button saveWaveGeneratorButton;
     private Label waveGeneratorStateLabel;
 
+    // 释放设计器创建的配置页面组件。
     protected override void Dispose(bool disposing)
     {
         if (disposing)
@@ -43,6 +44,7 @@ partial class Config
         base.Dispose(disposing);
     }
 
+    // 创建设计器中的配置页面控件并绑定事件。
     private void InitializeComponent()
     {
         rootLayout = new TableLayoutPanel();
