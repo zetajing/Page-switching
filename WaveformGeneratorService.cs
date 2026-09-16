@@ -125,6 +125,7 @@ public sealed class WaveformGeneratorService : IDisposable
                 "wave-runtime",
                 Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(workDirectory);
+            CopyGeneratorSupportFiles(generatorPath, workDirectory);
             var basicParametersPath = Path.Combine(workDirectory, "BasicParameters.dat");
             await File.WriteAllTextAsync(
                 basicParametersPath,
@@ -215,6 +216,22 @@ public sealed class WaveformGeneratorService : IDisposable
                     // 临时目录清理失败不应覆盖生成结果或原始异常。
                 }
             }
+        }
+    }
+
+    private static void CopyGeneratorSupportFiles(string generatorPath, string workDirectory)
+    {
+        var generatorDirectory = Path.GetDirectoryName(generatorPath);
+        if (string.IsNullOrWhiteSpace(generatorDirectory) || !Directory.Exists(generatorDirectory))
+        {
+            return;
+        }
+
+        // 旧版 WFast 会从当前工作目录读取造风/造流系数表；临时目录需要带上这些只读数据文件。
+        foreach (var supportFile in Directory.EnumerateFiles(generatorDirectory, "*.csv"))
+        {
+            var targetPath = Path.Combine(workDirectory, Path.GetFileName(supportFile));
+            File.Copy(supportFile, targetPath, overwrite: true);
         }
     }
 

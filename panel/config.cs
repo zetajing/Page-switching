@@ -41,7 +41,7 @@ public partial class Config : UserControl
         if (dialog.ShowDialog() == DialogResult.OK)
         {
             waveGeneratorPathTextBox.Text = dialog.FileName;
-            UpdateWaveGeneratorState();
+            SaveWaveGeneratorButton_Click(sender, EventArgs.Empty);
         }
     }
 
