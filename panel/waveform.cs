@@ -7,6 +7,7 @@ public partial class WaveformPage : UserControl
     private readonly WaveformGeneratorService _generatorService;
     private readonly CancellationTokenSource _lifetimeCancellation = new();
     private bool _generationInProgress;
+    private bool _disposed;
 
     public WaveformPage()
     {
@@ -281,8 +282,9 @@ public partial class WaveformPage : UserControl
 
     protected override void Dispose(bool disposing)
     {
-        if (disposing)
+        if (disposing && !_disposed)
         {
+            _disposed = true;
             _lifetimeCancellation.Cancel();
             _generatorService.Dispose();
             _lifetimeCancellation.Dispose();
