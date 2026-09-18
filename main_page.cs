@@ -15,6 +15,8 @@ namespace Page_switching
         private readonly WaveformPage _waveformPage;
         private readonly AxisService _axisService;
         private readonly Wave_Height_Meter _wave_Height_Meter;
+        private readonly Data _data;
+        private readonly Calibration _calibration;
         private readonly System.Windows.Forms.Timer _headerStatusTimer = new() { Interval = 500 };
         private AdsTcpRouterHost? _adsTcpRouter;
         private UserControl? _currentPage;
@@ -30,7 +32,9 @@ namespace Page_switching
             _controlAuthorityPage = new ControlAuthority(_axisService);
             _config = new Config();
             _waveformPage = new WaveformPage();
-            _wave_Height_Meter= new Wave_Height_Meter();
+            _wave_Height_Meter = new Wave_Height_Meter();
+            _data = new Data();
+            _calibration = new Calibration();
             _headerStatusTimer.Tick += (_, _) => UpdateHeaderStatus();
             Disposed += (_, _) =>
             {
@@ -146,7 +150,7 @@ namespace Page_switching
         // 高亮当前页面对应的导航按钮，并恢复其他按钮的深色背景。
         private void SetActiveNavigation(Button activeButton)
         {
-            foreach (var button in new[] { Bu_auto, Bu_manual, button3, button2, bu_Configuration })
+            foreach (var button in new[] { Bu_auto, Bu_manual, button3, Bu_Calibration, Bu_data, button2, button5, bu_Configuration })
             {
                 var isActive = ReferenceEquals(button, activeButton);
                 button.BackColor = isActive
@@ -186,6 +190,8 @@ namespace Page_switching
             Auto => "自动运行",
             Manual => "手动控制",
             ControlAuthority => "控制权申请",
+            Calibration => "标定管理",
+            Data => "数据管理",
             WaveformPage => "波形生成",
             Config => "系统配置",
             Wave_Height_Meter => "浪高监测",
@@ -198,6 +204,8 @@ namespace Page_switching
             var value when ReferenceEquals(value, Bu_auto) => "自动运行",
             var value when ReferenceEquals(value, Bu_manual) => "手动控制",
             var value when ReferenceEquals(value, button3) => "控制权申请",
+            var value when ReferenceEquals(value, Bu_Calibration) => "标定管理",
+            var value when ReferenceEquals(value, Bu_data) => "数据管理",
             var value when ReferenceEquals(value, button2) => "波形生成",
             var value when ReferenceEquals(value, bu_Configuration) => "系统配置",
             var value when ReferenceEquals(value, button5) => "浪高监测",
@@ -247,6 +255,18 @@ namespace Page_switching
         {
             ShowPage(_wave_Height_Meter);
             SetActiveNavigation(button5);
+        }
+
+        private void Bu_data_Click(object sender, EventArgs e)
+        {
+            ShowPage(_data);
+            SetActiveNavigation(Bu_data);
+        }
+
+        private void Bu_Calibration_Click(object sender, EventArgs e)
+        {
+            ShowPage(_calibration);
+            SetActiveNavigation(Bu_Calibration);
         }
     }
 }

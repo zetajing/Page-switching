@@ -46,8 +46,8 @@ namespace Page_switching
             bu_Configuration = new Button();
             button5 = new Button();
             button2 = new Button();
-            button1 = new Button();
-            button4 = new Button();
+            Bu_data = new Button();
+            Bu_Calibration = new Button();
             button3 = new Button();
             Bu_manual = new Button();
             Bu_auto = new Button();
@@ -136,8 +136,8 @@ namespace Page_switching
             panel2.Controls.Add(bu_Configuration);
             panel2.Controls.Add(button5);
             panel2.Controls.Add(button2);
-            panel2.Controls.Add(button1);
-            panel2.Controls.Add(button4);
+            panel2.Controls.Add(Bu_data);
+            panel2.Controls.Add(Bu_Calibration);
             panel2.Controls.Add(button3);
             panel2.Controls.Add(Bu_manual);
             panel2.Controls.Add(Bu_auto);
@@ -198,18 +198,18 @@ namespace Page_switching
             // 
             // button5
             // 
-            button5.BackColor = Color.FromArgb(17, 24, 39);
-            button5.Enabled = true;
+            button5.BackColor = Color.FromArgb(30, 41, 59);
+            button5.Cursor = Cursors.Hand;
             button5.FlatAppearance.BorderSize = 0;
             button5.FlatStyle = FlatStyle.Flat;
-            button5.Font = new Font("Microsoft YaHei UI", 9F);
-            button5.ForeColor = Color.FromArgb(100, 116, 139);
+            button5.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
+            button5.ForeColor = Color.FromArgb(226, 232, 240);
             button5.Location = new Point(15, 465);
             button5.Name = "button5";
             button5.Padding = new Padding(12, 0, 0, 0);
             button5.Size = new Size(160, 48);
             button5.TabIndex = 6;
-            button5.Text = "◌  浪高监测 · 预留";
+            button5.Text = "◌  浪高监测";
             button5.TextAlign = ContentAlignment.MiddleLeft;
             button5.UseVisualStyleBackColor = false;
             button5.Click += button5_Click;
@@ -227,48 +227,50 @@ namespace Page_switching
             button2.Padding = new Padding(12, 0, 0, 0);
             button2.Size = new Size(160, 48);
             button2.TabIndex = 5;
-            button2.Text = "≈  波形生成";
+            button2.Text = "≈   波形生成";
             button2.TextAlign = ContentAlignment.MiddleLeft;
             button2.UseVisualStyleBackColor = false;
             button2.Click += WaveformButton_Click;
             // 
-            // button1
+            // Bu_data
             // 
-            button1.BackColor = Color.FromArgb(17, 24, 39);
-            button1.Enabled = true;
-            button1.FlatAppearance.BorderSize = 0;
-            button1.FlatStyle = FlatStyle.Flat;
-            button1.Font = new Font("Microsoft YaHei UI", 9F);
-            button1.ForeColor = Color.FromArgb(100, 116, 139);
-            button1.Location = new Point(15, 357);
-            button1.Name = "button1";
-            button1.Padding = new Padding(12, 0, 0, 0);
-            button1.Size = new Size(160, 48);
-            button1.TabIndex = 4;
-            button1.Text = "▦  数据管理 · 预留";
-            button1.TextAlign = ContentAlignment.MiddleLeft;
-            button1.UseVisualStyleBackColor = false;
+            Bu_data.BackColor = Color.FromArgb(30, 41, 59);
+            Bu_data.Cursor = Cursors.Hand;
+            Bu_data.FlatAppearance.BorderSize = 0;
+            Bu_data.FlatStyle = FlatStyle.Flat;
+            Bu_data.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
+            Bu_data.ForeColor = Color.FromArgb(226, 232, 240);
+            Bu_data.Location = new Point(15, 357);
+            Bu_data.Name = "Bu_data";
+            Bu_data.Padding = new Padding(12, 0, 0, 0);
+            Bu_data.Size = new Size(160, 48);
+            Bu_data.TabIndex = 4;
+            Bu_data.Text = "▦  数据管理 ";
+            Bu_data.TextAlign = ContentAlignment.MiddleLeft;
+            Bu_data.UseVisualStyleBackColor = false;
+            Bu_data.Click += Bu_data_Click;
             // 
-            // button4
+            // Bu_Calibration
             // 
-            button4.BackColor = Color.FromArgb(17, 24, 39);
-            button4.Enabled = true;
-            button4.FlatAppearance.BorderSize = 0;
-            button4.FlatStyle = FlatStyle.Flat;
-            button4.Font = new Font("Microsoft YaHei UI", 9F);
-            button4.ForeColor = Color.FromArgb(100, 116, 139);
-            button4.Location = new Point(15, 303);
-            button4.Name = "button4";
-            button4.Padding = new Padding(12, 0, 0, 0);
-            button4.Size = new Size(160, 48);
-            button4.TabIndex = 3;
-            button4.Text = "⌖  标定管理 · 预留";
-            button4.TextAlign = ContentAlignment.MiddleLeft;
-            button4.UseVisualStyleBackColor = false;
+            Bu_Calibration.BackColor = Color.FromArgb(30, 41, 59);
+            Bu_Calibration.Cursor = Cursors.Hand;
+            Bu_Calibration.FlatAppearance.BorderSize = 0;
+            Bu_Calibration.FlatStyle = FlatStyle.Flat;
+            Bu_Calibration.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
+            Bu_Calibration.ForeColor = Color.FromArgb(226, 232, 240);
+            Bu_Calibration.Location = new Point(15, 303);
+            Bu_Calibration.Name = "Bu_Calibration";
+            Bu_Calibration.Padding = new Padding(12, 0, 0, 0);
+            Bu_Calibration.Size = new Size(160, 48);
+            Bu_Calibration.TabIndex = 3;
+            Bu_Calibration.Text = "⌖  标定管理";
+            Bu_Calibration.TextAlign = ContentAlignment.MiddleLeft;
+            Bu_Calibration.UseVisualStyleBackColor = false;
+            Bu_Calibration.Click += Bu_Calibration_Click;
             // 
             // button3
             // 
-            button3.BackColor = Color.FromArgb(17, 24, 39);
+            button3.BackColor = Color.FromArgb(30, 41, 59);
             button3.Cursor = Cursors.Hand;
             button3.FlatAppearance.BorderSize = 0;
             button3.FlatStyle = FlatStyle.Flat;
@@ -279,7 +281,7 @@ namespace Page_switching
             button3.Padding = new Padding(12, 0, 0, 0);
             button3.Size = new Size(160, 48);
             button3.TabIndex = 2;
-            button3.Text = "◇  控制权申请";
+            button3.Text = "◇   控制权申请";
             button3.TextAlign = ContentAlignment.MiddleLeft;
             button3.UseVisualStyleBackColor = false;
             button3.Click += ControlAuthorityButton_Click;
@@ -356,14 +358,14 @@ namespace Page_switching
         private Panel headerStatusPanel;
         private Panel panel2;
         private Panel panelswitch;
-        private Button button4;
+        private Button Bu_Calibration;
         private Button button3;
         private Button Bu_manual;
         private Button Bu_auto;
         private Button bu_Configuration;
         private Button button5;
         private Button button2;
-        private Button button1;
+        private Button Bu_data;
         private Label appTitleLabel;
         private Label appSubtitleLabel;
         private Label controlSectionLabel;
