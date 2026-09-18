@@ -59,7 +59,7 @@ public partial class Config : UserControl
             ColumnCount = 3,
             RowCount = 2
         };
-        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 160F));
+        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 220F));
         layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
         layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 100F));
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
@@ -68,7 +68,7 @@ public partial class Config : UserControl
         _databaseEnabledCheckBox = new CheckBox
         {
             Dock = DockStyle.Fill,
-            Text = "启用日志（SQL Server）",
+            Text = "启用 SQL 日志",
             Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold)
         };
         _databaseEnabledCheckBox.CheckedChanged += (_, _) => UpdateDatabaseState();

@@ -430,7 +430,7 @@ partial class Config
         waveGeneratorPathLabel.Name = "waveGeneratorPathLabel";
         waveGeneratorPathLabel.Size = new Size(114, 34);
         waveGeneratorPathLabel.TabIndex = 0;
-        waveGeneratorPathLabel.Text = "WFast.exe 路径（外部）";
+        waveGeneratorPathLabel.Text = "WFast.exe 路径";
         waveGeneratorPathLabel.TextAlign = ContentAlignment.MiddleLeft;
         // 
         // waveGeneratorPathTextBox
