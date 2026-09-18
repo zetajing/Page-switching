@@ -107,7 +107,7 @@ partial class Config
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 38F));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 455F));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 130F));
-        rootLayout.Size = new Size(905, 681);
+        rootLayout.Size = new Size(1210, 796);
         rootLayout.TabIndex = 0;
         // 
         // titleLabel
@@ -399,7 +399,7 @@ partial class Config
         // waveGeneratorLayout
         // 
         waveGeneratorLayout.ColumnCount = 4;
-        waveGeneratorLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 160F));
+        waveGeneratorLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 220F));
         waveGeneratorLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
         waveGeneratorLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 80F));
         waveGeneratorLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 80F));
@@ -508,7 +508,7 @@ partial class Config
         AutoScaleMode = AutoScaleMode.Font;
         Controls.Add(rootLayout);
         Name = "Config";
-        Size = new Size(905, 681);
+        Size = new Size(1210, 796);
         rootLayout.ResumeLayout(false);
         routerGroup.ResumeLayout(false);
         routerLayout.ResumeLayout(false);

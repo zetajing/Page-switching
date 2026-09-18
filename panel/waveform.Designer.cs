@@ -209,7 +209,7 @@ partial class WaveformPage
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 42F));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-        rootLayout.Size = new Size(905, 681);
+        rootLayout.Size = new Size(1210, 796);
         rootLayout.TabIndex = 0;
         // 
         // titleLabel
@@ -1039,7 +1039,7 @@ partial class WaveformPage
         AutoScaleMode = AutoScaleMode.Font;
         Controls.Add(rootLayout);
         Name = "WaveformPage";
-        Size = new Size(905, 681);
+        Size = new Size(1210, 796);
         rootLayout.ResumeLayout(false);
         waveformTabs.ResumeLayout(false);
         regularTab.ResumeLayout(false);
