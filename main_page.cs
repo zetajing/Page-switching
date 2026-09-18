@@ -146,7 +146,7 @@ namespace Page_switching
         // 高亮当前页面对应的导航按钮，并恢复其他按钮的深色背景。
         private void SetActiveNavigation(Button activeButton)
         {
-            foreach (var button in new[] { Bu_auto, Bu_manual, button3, button2, bu_Configuration, button5 })
+            foreach (var button in new[] { Bu_auto, Bu_manual, button3, button2, bu_Configuration })
             {
                 var isActive = ReferenceEquals(button, activeButton);
                 button.BackColor = isActive
