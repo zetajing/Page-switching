@@ -15,6 +15,11 @@ public partial class Config : UserControl
     // 将 Router 和波形生成器配置加载到界面控件。
     private void LoadSettings()
     {
+        waveGeneratorModeComboBox.Items.AddRange(["外部 WFast.exe", "WaveMaker 内置算法"]);
+        waveGeneratorModeComboBox.SelectedIndex = string.Equals(
+            Read("WaveGeneratorMode", "ExternalExe"),
+            nameof(WaveformGeneratorMode.WaveMaker),
+            StringComparison.OrdinalIgnoreCase) ? 1 : 0;
         waveGeneratorPathTextBox.Text = Read("WaveGeneratorPath");
         routerEnabledCheckBox.Checked = ReadBool("AdsTcpRouterEnabled", false);
         routerNameTextBox.Text = Read("AdsTcpRouterName", "PageSwitchingRouter");
@@ -54,31 +59,42 @@ public partial class Config : UserControl
         UpdateWaveGeneratorState();
     }
 
+    // 生成方案变化后更新路径输入框和状态提示。
+    private void WaveGeneratorModeComboBox_SelectedIndexChanged(object? sender, EventArgs e)
+    {
+        UpdateWaveGeneratorState();
+    }
+
     // 验证并保存波形生成程序路径。
     private void SaveWaveGeneratorButton_Click(object? sender, EventArgs e)
     {
         try
         {
             var path = waveGeneratorPathTextBox.Text.Trim();
-            if (string.IsNullOrWhiteSpace(path))
+            var useWaveMaker = IsWaveMakerModeSelected();
+            if (!useWaveMaker && string.IsNullOrWhiteSpace(path))
             {
                 throw new InvalidOperationException("请先选择 WFast.exe 文件。");
             }
 
-            if (!File.Exists(path))
+            if (!useWaveMaker && !File.Exists(path))
             {
                 throw new InvalidOperationException("WFast.exe 路径不存在。");
             }
 
             var configuration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            Set(configuration.AppSettings.Settings, "WaveGeneratorMode",
+                useWaveMaker ? nameof(WaveformGeneratorMode.WaveMaker) : nameof(WaveformGeneratorMode.ExternalExe));
             Set(configuration.AppSettings.Settings, "WaveGeneratorPath", path);
             configuration.Save(ConfigurationSaveMode.Modified);
             ConfigurationManager.RefreshSection("appSettings");
 
-            waveGeneratorStateLabel.Text = "已保存 WFast.exe 路径，波形页面可以直接生成";
+            waveGeneratorStateLabel.Text = useWaveMaker
+                ? "已启用 WaveMaker 内置算法，不需要 WFast.exe"
+                : "已保存 WFast.exe 路径，波形页面可以直接生成";
             waveGeneratorStateLabel.ForeColor = Color.FromArgb(5, 150, 105);
             saveResultLabel.ForeColor = Color.FromArgb(5, 150, 105);
-            saveResultLabel.Text = "WFast.exe 路径保存成功。";
+            saveResultLabel.Text = useWaveMaker ? "WaveMaker 内置方案保存成功。" : "WFast.exe 方案保存成功。";
         }
         catch (Exception ex)
         {
@@ -90,6 +106,16 @@ public partial class Config : UserControl
     // 根据文件是否存在更新路径状态提示。
     private void UpdateWaveGeneratorState()
     {
+        var useWaveMaker = IsWaveMakerModeSelected();
+        waveGeneratorPathTextBox.Enabled = !useWaveMaker;
+        browseWaveGeneratorButton.Enabled = !useWaveMaker;
+        if (useWaveMaker)
+        {
+            waveGeneratorStateLabel.Text = "已选择 WaveMaker 内置算法，不需要配置 WFast.exe";
+            waveGeneratorStateLabel.ForeColor = Color.FromArgb(5, 150, 105);
+            return;
+        }
+
         var path = waveGeneratorPathTextBox.Text.Trim();
         if (string.IsNullOrWhiteSpace(path))
         {
@@ -136,6 +162,8 @@ public partial class Config : UserControl
             ValidateInputs();
             var configuration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
             var settings = configuration.AppSettings.Settings;
+            Set(settings, "WaveGeneratorMode",
+                IsWaveMakerModeSelected() ? nameof(WaveformGeneratorMode.WaveMaker) : nameof(WaveformGeneratorMode.ExternalExe));
             Set(settings, "WaveGeneratorPath", waveGeneratorPathTextBox.Text.Trim());
             Set(settings, "AdsTcpRouterEnabled", routerEnabledCheckBox.Checked.ToString().ToLowerInvariant());
             Set(settings, "AdsTcpRouterName", routerNameTextBox.Text.Trim());
@@ -151,7 +179,7 @@ public partial class Config : UserControl
             ConfigurationManager.RefreshSection("appSettings");
 
             saveResultLabel.ForeColor = Color.FromArgb(5, 150, 105);
-            saveResultLabel.Text = "保存成功；Router 和 ADS 配置重启后生效，WFast 路径立即可用于波形生成。";
+            saveResultLabel.Text = "保存成功；Router 和 ADS 配置重启后生效，波形生成方案立即可用。";
         }
         catch (Exception ex)
         {
@@ -192,6 +220,11 @@ public partial class Config : UserControl
     // 检查波形生成程序路径是否为空且文件是否存在。
     private void ValidateWaveGeneratorPath()
     {
+        if (IsWaveMakerModeSelected())
+        {
+            return;
+        }
+
         var path = waveGeneratorPathTextBox.Text.Trim();
         if (!string.IsNullOrWhiteSpace(path) && !File.Exists(path))
         {
@@ -220,6 +253,9 @@ public partial class Config : UserControl
     // 读取端口配置并限制到有效端口范围。
     private static decimal ReadPort(string key, int fallback) =>
         int.TryParse(Read(key), out var value) && value is >= 1 and <= 65535 ? value : fallback;
+
+    // 判断当前是否选择 WaveMaker 内置方案。
+    private bool IsWaveMakerModeSelected() => waveGeneratorModeComboBox.SelectedIndex == 1;
 
     // 新增或更新一个 App.config 配置项。
     private static void Set(KeyValueConfigurationCollection settings, string key, string value)

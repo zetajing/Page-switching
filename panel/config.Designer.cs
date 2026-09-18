@@ -32,6 +32,8 @@ partial class Config
     private Button browseWaveGeneratorButton;
     private Button saveWaveGeneratorButton;
     private Label waveGeneratorStateLabel;
+    private Label waveGeneratorModeLabel;
+    private ComboBox waveGeneratorModeComboBox;
 
     // 释放设计器创建的配置页面组件。
     protected override void Dispose(bool disposing)
@@ -76,6 +78,8 @@ partial class Config
         browseWaveGeneratorButton = new Button();
         saveWaveGeneratorButton = new Button();
         waveGeneratorStateLabel = new Label();
+        waveGeneratorModeLabel = new Label();
+        waveGeneratorModeComboBox = new ComboBox();
         rootLayout.SuspendLayout();
         routerGroup.SuspendLayout();
         routerLayout.SuspendLayout();
@@ -87,6 +91,7 @@ partial class Config
         // rootLayout
         // 
         rootLayout.BackColor = Color.FromArgb(241, 245, 249);
+        rootLayout.AutoScroll = true;
         rootLayout.ColumnCount = 1;
         rootLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
         rootLayout.Controls.Add(titleLabel, 0, 0);
@@ -101,7 +106,7 @@ partial class Config
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 44F));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 38F));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 455F));
-        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 100F));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 130F));
         rootLayout.Size = new Size(905, 681);
         rootLayout.TabIndex = 0;
         // 
@@ -386,7 +391,7 @@ partial class Config
         waveGeneratorGroup.Location = new Point(23, 560);
         waveGeneratorGroup.Name = "waveGeneratorGroup";
         waveGeneratorGroup.Padding = new Padding(14, 18, 14, 10);
-        waveGeneratorGroup.Size = new Size(859, 98);
+        waveGeneratorGroup.Size = new Size(859, 128);
         waveGeneratorGroup.TabIndex = 3;
         waveGeneratorGroup.TabStop = false;
         waveGeneratorGroup.Text = "波形生成器";
@@ -403,13 +408,17 @@ partial class Config
         waveGeneratorLayout.Controls.Add(browseWaveGeneratorButton, 2, 0);
         waveGeneratorLayout.Controls.Add(saveWaveGeneratorButton, 3, 0);
         waveGeneratorLayout.Controls.Add(waveGeneratorStateLabel, 1, 1);
+        waveGeneratorLayout.Controls.Add(waveGeneratorModeLabel, 0, 2);
+        waveGeneratorLayout.Controls.Add(waveGeneratorModeComboBox, 1, 2);
+        waveGeneratorLayout.SetColumnSpan(waveGeneratorModeComboBox, 3);
         waveGeneratorLayout.Dock = DockStyle.Fill;
         waveGeneratorLayout.Location = new Point(14, 40);
         waveGeneratorLayout.Name = "waveGeneratorLayout";
-        waveGeneratorLayout.RowCount = 2;
+        waveGeneratorLayout.RowCount = 3;
         waveGeneratorLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
         waveGeneratorLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-        waveGeneratorLayout.Size = new Size(831, 48);
+        waveGeneratorLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
+        waveGeneratorLayout.Size = new Size(831, 108);
         waveGeneratorLayout.TabIndex = 0;
         // 
         // waveGeneratorPathLabel
@@ -421,7 +430,7 @@ partial class Config
         waveGeneratorPathLabel.Name = "waveGeneratorPathLabel";
         waveGeneratorPathLabel.Size = new Size(114, 34);
         waveGeneratorPathLabel.TabIndex = 0;
-        waveGeneratorPathLabel.Text = "WFast.exe 路径";
+        waveGeneratorPathLabel.Text = "WFast.exe 路径（外部）";
         waveGeneratorPathLabel.TextAlign = ContentAlignment.MiddleLeft;
         // 
         // waveGeneratorPathTextBox
@@ -454,7 +463,7 @@ partial class Config
         saveWaveGeneratorButton.Name = "saveWaveGeneratorButton";
         saveWaveGeneratorButton.Size = new Size(74, 28);
         saveWaveGeneratorButton.TabIndex = 3;
-        saveWaveGeneratorButton.Text = "保存路径";
+        saveWaveGeneratorButton.Text = "保存设置";
         saveWaveGeneratorButton.UseVisualStyleBackColor = true;
         saveWaveGeneratorButton.Click += SaveWaveGeneratorButton_Click;
         // 
@@ -468,6 +477,30 @@ partial class Config
         waveGeneratorStateLabel.Size = new Size(625, 20);
         waveGeneratorStateLabel.TabIndex = 3;
         waveGeneratorStateLabel.TextAlign = ContentAlignment.MiddleLeft;
+        //
+        // waveGeneratorModeLabel
+        //
+        waveGeneratorModeLabel.Dock = DockStyle.Fill;
+        waveGeneratorModeLabel.Font = new Font("Microsoft YaHei UI", 9F);
+        waveGeneratorModeLabel.ForeColor = Color.FromArgb(71, 85, 105);
+        waveGeneratorModeLabel.Location = new Point(3, 54);
+        waveGeneratorModeLabel.Name = "waveGeneratorModeLabel";
+        waveGeneratorModeLabel.Size = new Size(114, 34);
+        waveGeneratorModeLabel.TabIndex = 4;
+        waveGeneratorModeLabel.Text = "生成方案";
+        waveGeneratorModeLabel.TextAlign = ContentAlignment.MiddleLeft;
+        //
+        // waveGeneratorModeComboBox
+        //
+        waveGeneratorModeComboBox.Dock = DockStyle.Fill;
+        waveGeneratorModeComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
+        waveGeneratorModeComboBox.Font = new Font("Microsoft YaHei UI", 9F);
+        waveGeneratorModeComboBox.FormattingEnabled = true;
+        waveGeneratorModeComboBox.Location = new Point(123, 57);
+        waveGeneratorModeComboBox.Name = "waveGeneratorModeComboBox";
+        waveGeneratorModeComboBox.Size = new Size(705, 28);
+        waveGeneratorModeComboBox.TabIndex = 5;
+        waveGeneratorModeComboBox.SelectedIndexChanged += WaveGeneratorModeComboBox_SelectedIndexChanged;
         // 
         // Config
         // 

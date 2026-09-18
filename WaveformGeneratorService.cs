@@ -48,15 +48,32 @@ public sealed class WaveformGenerationResult
     public required TimeSpan Elapsed { get; init; }
 }
 
+// 选择波形生成方式：调用外部 WFast.exe，或使用内置 WaveMaker 算法。
+public enum WaveformGeneratorMode
+{
+    ExternalExe,
+    WaveMaker
+}
+
 public sealed class WaveformGeneratorOptions
 {
     public string WFastPath { get; init; } = string.Empty;
+    public WaveformGeneratorMode Mode { get; init; } = WaveformGeneratorMode.ExternalExe;
 
-    // 从 App.config 读取外部波形生成程序路径和执行超时时间。
-    public static WaveformGeneratorOptions FromConfiguration() => new()
+    // 从 App.config 读取波形生成方式和外部程序路径。
+    public static WaveformGeneratorOptions FromConfiguration()
     {
-        WFastPath = ConfigurationManager.AppSettings["WaveGeneratorPath"]?.Trim() ?? string.Empty
-    };
+        var modeText = ConfigurationManager.AppSettings["WaveGeneratorMode"]?.Trim();
+        var mode = Enum.TryParse<WaveformGeneratorMode>(modeText, ignoreCase: true, out var parsedMode)
+            ? parsedMode
+            : WaveformGeneratorMode.ExternalExe;
+
+        return new WaveformGeneratorOptions
+        {
+            Mode = mode,
+            WFastPath = ConfigurationManager.AppSettings["WaveGeneratorPath"]?.Trim() ?? string.Empty
+        };
+    }
 }
 
 public sealed class WaveformGeneratorService : IDisposable
@@ -72,19 +89,79 @@ public sealed class WaveformGeneratorService : IDisposable
         _options = options ?? throw new ArgumentNullException(nameof(options));
     }
 
-    // 根据规则波参数生成输入文件，并调用外部程序生成波形。
+    // 当前选中的生成方式，供界面显示。
+    public string GenerationModeText => CurrentMode == WaveformGeneratorMode.WaveMaker
+        ? "WaveMaker 内置算法"
+        : "WFast.exe";
+
+    // 根据规则波参数生成波形，并按当前方式写出 CSV 文件。
     public Task<WaveformGenerationResult> GenerateRegularAsync(
         RegularWaveParameters parameters,
         string outputPath,
         CancellationToken cancellationToken) =>
-        GenerateAsync(BuildRegularParameterFile(parameters, outputPath), outputPath, cancellationToken);
+        CurrentMode == WaveformGeneratorMode.WaveMaker
+            ? GenerateBuiltInAsync(
+                () => WaveMakerWaveGenerator.GenerateRegular(parameters),
+                outputPath,
+                parameters.TimeStep,
+                cancellationToken)
+            : GenerateAsync(BuildRegularParameterFile(parameters, outputPath), outputPath, cancellationToken);
 
-    // 根据不规则波参数生成输入文件，并调用外部程序生成波形。
+    // 根据不规则波参数生成波形，并按当前方式写出 CSV 文件。
     public Task<WaveformGenerationResult> GenerateIrregularAsync(
         IrregularWaveParameters parameters,
         string outputPath,
         CancellationToken cancellationToken) =>
-        GenerateAsync(BuildIrregularParameterFile(parameters, outputPath), outputPath, cancellationToken);
+        CurrentMode == WaveformGeneratorMode.WaveMaker
+            ? GenerateBuiltInAsync(
+                () => WaveMakerWaveGenerator.GenerateIrregular(parameters),
+                outputPath,
+                parameters.TimeStep,
+                cancellationToken)
+            : GenerateAsync(BuildIrregularParameterFile(parameters, outputPath), outputPath, cancellationToken);
+
+    // 使用内置 WaveMaker 算法生成采样点并保存为 CSV。
+    private async Task<WaveformGenerationResult> GenerateBuiltInAsync(
+        Func<IReadOnlyList<double>> generator,
+        string outputPath,
+        double sampleInterval,
+        CancellationToken cancellationToken)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        var fullOutputPath = ValidateOutputPath(outputPath);
+        await _operationGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            var stopwatch = Stopwatch.StartNew();
+            var samples = await Task.Run(generator, cancellationToken).ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
+            WaveMakerWaveGenerator.WriteCsv(fullOutputPath, samples, sampleInterval);
+            stopwatch.Stop();
+
+            return new WaveformGenerationResult
+            {
+                OutputPath = fullOutputPath,
+                Samples = samples,
+                Elapsed = stopwatch.Elapsed
+            };
+        }
+        finally
+        {
+            _operationGate.Release();
+        }
+    }
+
+    // 优先读取刚刚保存的配置，使配置页面保存后无需重启主窗口。
+    private WaveformGeneratorMode CurrentMode
+    {
+        get
+        {
+            var text = ConfigurationManager.AppSettings["WaveGeneratorMode"]?.Trim();
+            return Enum.TryParse<WaveformGeneratorMode>(text, ignoreCase: true, out var mode)
+                ? mode
+                : _options.Mode;
+        }
+    }
 
     // 启动外部生成程序，等待输出文件并读取生成结果。
     private async Task<WaveformGenerationResult> GenerateAsync(
@@ -109,19 +186,7 @@ public sealed class WaveformGeneratorService : IDisposable
             throw new FileNotFoundException("找不到配置的 WFast.exe 文件。", generatorPath);
         }
 
-        if (string.IsNullOrWhiteSpace(outputPath) || outputPath.Contains('\r') || outputPath.Contains('\n'))
-        {
-            throw new InvalidOperationException("波形保存路径不能为空，且不能包含换行符。");
-        }
-
-        var fullOutputPath = Path.GetFullPath(outputPath);
-        var outputDirectory = Path.GetDirectoryName(fullOutputPath);
-        if (string.IsNullOrWhiteSpace(outputDirectory))
-        {
-            throw new InvalidOperationException("波形保存路径无效。");
-        }
-
-        Directory.CreateDirectory(outputDirectory);
+        var fullOutputPath = ValidateOutputPath(outputPath);
         await _operationGate.WaitAsync(cancellationToken).ConfigureAwait(false);
 
         string? workDirectory = null;
@@ -223,7 +288,28 @@ public sealed class WaveformGeneratorService : IDisposable
                     // 临时目录清理失败不应覆盖生成结果或原始异常。
                 }
             }
+
+            _operationGate.Release();
         }
+    }
+
+    // 校验输出路径并提前创建目标目录。
+    private static string ValidateOutputPath(string outputPath)
+    {
+        if (string.IsNullOrWhiteSpace(outputPath) || outputPath.Contains('\r') || outputPath.Contains('\n'))
+        {
+            throw new InvalidOperationException("波形保存路径不能为空，且不能包含换行符。");
+        }
+
+        var fullOutputPath = Path.GetFullPath(outputPath);
+        var outputDirectory = Path.GetDirectoryName(fullOutputPath);
+        if (string.IsNullOrWhiteSpace(outputDirectory))
+        {
+            throw new InvalidOperationException("波形保存路径无效。");
+        }
+
+        Directory.CreateDirectory(outputDirectory);
+        return fullOutputPath;
     }
 
     // 将生成程序同目录下的依赖文件复制到本次临时工作目录。

@@ -213,7 +213,7 @@ public partial class WaveformPage : UserControl
                 GetSideCode(regularSegmentComboBox));
 
             SetGenerationState(true, regularGenerateButton, regularStatusLabel);
-            regularStatusLabel.Text = "正在调用 WFast.exe 生成规则波……";
+            regularStatusLabel.Text = $"正在使用 {_generatorService.GenerationModeText} 生成规则波……";
             var result = await _generatorService.GenerateRegularAsync(
                 parameters,
                 outputPath,
@@ -282,7 +282,7 @@ public partial class WaveformPage : UserControl
             }
 
             SetGenerationState(true, irregularGenerateButton, irregularStatusLabel);
-            irregularStatusLabel.Text = "正在调用 WFast.exe 生成不规则波……";
+            irregularStatusLabel.Text = $"正在使用 {_generatorService.GenerationModeText} 生成不规则波……";
             var result = await _generatorService.GenerateIrregularAsync(
                 parameters,
                 outputPath,
