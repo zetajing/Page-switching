@@ -415,11 +415,12 @@ partial class Config
         // 
         // waveGeneratorLayout
         // 
-        waveGeneratorLayout.ColumnCount = 4;
+        waveGeneratorLayout.ColumnCount = 5;
         waveGeneratorLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 220F));
         waveGeneratorLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 650F));
         waveGeneratorLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 80F));
         waveGeneratorLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 80F));
+        waveGeneratorLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
         waveGeneratorLayout.Controls.Add(waveGeneratorPathLabel, 0, 0);
         waveGeneratorLayout.Controls.Add(waveGeneratorPathTextBox, 1, 0);
         waveGeneratorLayout.Controls.Add(browseWaveGeneratorButton, 2, 0);
@@ -530,10 +531,11 @@ partial class Config
         // 
         // _databaseLayout
         // 
-        _databaseLayout.ColumnCount = 3;
+        _databaseLayout.ColumnCount = 4;
         _databaseLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 220F));
         _databaseLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 650F));
         _databaseLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 100F));
+        _databaseLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
         _databaseLayout.Controls.Add(_databaseEnabledCheckBox, 0, 0);
         _databaseLayout.Controls.Add(_databaseConnectionTextBox, 1, 0);
         _databaseLayout.Controls.Add(_saveDatabaseButton, 2, 0);
