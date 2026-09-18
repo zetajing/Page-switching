@@ -62,24 +62,44 @@ namespace Page_switching
             var root = new TableLayoutPanel
             {
                 Dock = DockStyle.Fill,
+                Margin = new Padding(0),
+                AutoSize = false,
                 ColumnCount = 1,
                 RowCount = 3,
                 Padding = new Padding(20),
                 BackColor = Color.FromArgb(241, 245, 249)
             };
-            root.RowStyles.Add(new RowStyle(SizeType.Absolute, 44F));
-            root.RowStyles.Add(new RowStyle(SizeType.Absolute, 70F));
+            root.RowStyles.Clear();
+            root.RowStyles.Add(new RowStyle(SizeType.Absolute, 56F));
+            root.RowStyles.Add(new RowStyle(SizeType.Absolute, 78F));
             root.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
 
-            var title = new Label
+            var header = new Panel
             {
                 Dock = DockStyle.Fill,
+                Margin = new Padding(0),
+                BackColor = Color.FromArgb(241, 245, 249)
+            };
+            var title = new Label
+            {
+                Dock = DockStyle.Top,
+                Height = 34,
                 Text = "自动运行",
                 Font = new Font("Microsoft YaHei UI", 16F, FontStyle.Bold),
                 ForeColor = Color.FromArgb(15, 23, 42),
                 TextAlign = ContentAlignment.MiddleLeft
             };
-            root.Controls.Add(title, 0, 0);
+            var subtitle = new Label
+            {
+                Dock = DockStyle.Fill,
+                Text = "自动任务状态、PLC 连接和运行日志",
+                Font = new Font("Microsoft YaHei UI", 9F),
+                ForeColor = Color.FromArgb(71, 85, 105),
+                TextAlign = ContentAlignment.MiddleLeft
+            };
+            header.Controls.Add(subtitle);
+            header.Controls.Add(title);
+            root.Controls.Add(header, 0, 0);
 
             var statusGroup = new GroupBox
             {
@@ -87,6 +107,7 @@ namespace Page_switching
                 Text = "运行状态",
                 Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold),
                 ForeColor = Color.FromArgb(15, 23, 42),
+                Margin = new Padding(0, 4, 0, 4),
                 Padding = new Padding(14, 18, 14, 8)
             };
             var statusLayout = new TableLayoutPanel
@@ -119,6 +140,7 @@ namespace Page_switching
                 Text = "运行日志",
                 Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold),
                 ForeColor = Color.FromArgb(15, 23, 42),
+                Margin = new Padding(0, 4, 0, 4),
                 Padding = new Padding(14, 18, 14, 12)
             };
             var logLayout = new TableLayoutPanel
