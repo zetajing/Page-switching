@@ -5,19 +5,13 @@ namespace Page_switching.panel;
 
 public partial class Config : UserControl
 {
-    private GroupBox _databaseGroup = null!;
-    private CheckBox _databaseEnabledCheckBox = null!;
-    private TextBox _databaseConnectionTextBox = null!;
-    private Button _saveDatabaseButton = null!;
-    private Label _databaseStateLabel = null!;
-
     // 初始化配置页面并加载当前 App.config 设置。
     public Config()
     {
         InitializeComponent();
+        InitializeDatabaseControls();
         Size = new Size(1210, 796);
-        waveGeneratorLayout.ColumnStyles[0].Width = 160F;
-        BuildDatabaseSettings();
+        waveGeneratorLayout.ColumnStyles[0].Width = 220F;
         LoadSettings();
         LoadDatabaseSettings();
     }
@@ -40,74 +34,6 @@ public partial class Config : UserControl
         remoteNetIdTextBox.Text = Read("AdsTcpRouterRemoteNetId", Read("AdsAmsNetId"));
         UpdateWaveGeneratorState();
         UpdateInputState();
-    }
-
-    // 在配置页面底部创建数据库配置区域。
-    private void BuildDatabaseSettings()
-    {
-        _databaseGroup = new GroupBox
-        {
-            Dock = DockStyle.Fill,
-            Text = "数据库日志",
-            Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold),
-            ForeColor = Color.FromArgb(15, 23, 42),
-            Padding = new Padding(14, 18, 14, 10)
-        };
-        var layout = new TableLayoutPanel
-        {
-            Dock = DockStyle.Fill,
-            ColumnCount = 3,
-            RowCount = 2
-        };
-        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 220F));
-        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 100F));
-        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
-        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 24F));
-
-        _databaseEnabledCheckBox = new CheckBox
-        {
-            Dock = DockStyle.Fill,
-            Text = "启用 SQL 日志",
-            Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold)
-        };
-        _databaseEnabledCheckBox.CheckedChanged += (_, _) => UpdateDatabaseState();
-        layout.Controls.Add(_databaseEnabledCheckBox, 0, 0);
-
-        _databaseConnectionTextBox = new TextBox
-        {
-            Dock = DockStyle.Fill,
-            Font = new Font("Microsoft YaHei UI", 9F),
-            PlaceholderText = "数据库连接字符串"
-        };
-        layout.Controls.Add(_databaseConnectionTextBox, 1, 0);
-
-        _saveDatabaseButton = new Button
-        {
-            Dock = DockStyle.Fill,
-            Text = "保存数据库",
-            Font = new Font("Microsoft YaHei UI", 9F),
-            FlatStyle = FlatStyle.Flat,
-            BackColor = Color.FromArgb(226, 232, 240),
-            ForeColor = Color.FromArgb(15, 23, 42)
-        };
-        _saveDatabaseButton.FlatAppearance.BorderSize = 0;
-        _saveDatabaseButton.Click += SaveDatabaseButton_Click;
-        layout.Controls.Add(_saveDatabaseButton, 2, 0);
-
-        _databaseStateLabel = new Label
-        {
-            Dock = DockStyle.Fill,
-            Font = new Font("Microsoft YaHei UI", 8F),
-            TextAlign = ContentAlignment.MiddleLeft
-        };
-        layout.Controls.Add(_databaseStateLabel, 1, 1);
-        layout.SetColumnSpan(_databaseStateLabel, 2);
-        _databaseGroup.Controls.Add(layout);
-
-        rootLayout.RowCount = 5;
-        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 100F));
-        rootLayout.Controls.Add(_databaseGroup, 0, 4);
     }
 
     // 从 App.config 读取数据库开关、类型和连接字符串。
