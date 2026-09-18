@@ -44,8 +44,8 @@
         {
             rootLayout = new TableLayoutPanel();
             headerPanel = new Panel();
-            titleLabel = new Label();
             subtitleLabel = new Label();
+            titleLabel = new Label();
             statusGroup = new GroupBox();
             statusLayout = new TableLayoutPanel();
             taskCaptionLabel = new Label();
@@ -71,12 +71,15 @@
             rootLayout.Controls.Add(statusGroup, 0, 1);
             rootLayout.Controls.Add(logGroup, 0, 2);
             rootLayout.Dock = DockStyle.Fill;
+            rootLayout.Location = new Point(0, 0);
             rootLayout.Margin = new Padding(0);
+            rootLayout.Name = "rootLayout";
             rootLayout.Padding = new Padding(20);
             rootLayout.RowCount = 3;
             rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 56F));
             rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 78F));
             rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            rootLayout.Size = new Size(1210, 796);
             rootLayout.TabIndex = 0;
             // 
             // headerPanel
@@ -85,29 +88,35 @@
             headerPanel.Controls.Add(subtitleLabel);
             headerPanel.Controls.Add(titleLabel);
             headerPanel.Dock = DockStyle.Fill;
+            headerPanel.Location = new Point(20, 20);
             headerPanel.Margin = new Padding(0);
+            headerPanel.Name = "headerPanel";
+            headerPanel.Size = new Size(1170, 56);
             headerPanel.TabIndex = 0;
-            // 
-            // titleLabel
-            // 
-            titleLabel.Dock = DockStyle.Top;
-            titleLabel.Font = new Font("Microsoft YaHei UI", 16F, FontStyle.Bold);
-            titleLabel.ForeColor = Color.FromArgb(15, 23, 42);
-            titleLabel.Height = 34;
-            titleLabel.Name = "titleLabel";
-            titleLabel.TabIndex = 0;
-            titleLabel.Text = "自动运行";
-            titleLabel.TextAlign = ContentAlignment.MiddleLeft;
             // 
             // subtitleLabel
             // 
             subtitleLabel.Dock = DockStyle.Fill;
             subtitleLabel.Font = new Font("Microsoft YaHei UI", 9F);
             subtitleLabel.ForeColor = Color.FromArgb(71, 85, 105);
+            subtitleLabel.Location = new Point(0, 34);
             subtitleLabel.Name = "subtitleLabel";
+            subtitleLabel.Size = new Size(1170, 22);
             subtitleLabel.TabIndex = 1;
             subtitleLabel.Text = "自动任务状态、PLC 连接和运行日志";
             subtitleLabel.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // titleLabel
+            // 
+            titleLabel.Dock = DockStyle.Top;
+            titleLabel.Font = new Font("Microsoft YaHei UI", 16F, FontStyle.Bold);
+            titleLabel.ForeColor = Color.FromArgb(15, 23, 42);
+            titleLabel.Location = new Point(0, 0);
+            titleLabel.Name = "titleLabel";
+            titleLabel.Size = new Size(1170, 34);
+            titleLabel.TabIndex = 0;
+            titleLabel.Text = "自动运行";
+            titleLabel.TextAlign = ContentAlignment.MiddleLeft;
             // 
             // statusGroup
             // 
@@ -115,8 +124,11 @@
             statusGroup.Dock = DockStyle.Fill;
             statusGroup.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
             statusGroup.ForeColor = Color.FromArgb(15, 23, 42);
+            statusGroup.Location = new Point(20, 80);
             statusGroup.Margin = new Padding(0, 4, 0, 4);
+            statusGroup.Name = "statusGroup";
             statusGroup.Padding = new Padding(14, 18, 14, 8);
+            statusGroup.Size = new Size(1170, 70);
             statusGroup.TabIndex = 1;
             statusGroup.TabStop = false;
             statusGroup.Text = "运行状态";
@@ -129,7 +141,11 @@
             statusLayout.Controls.Add(taskCaptionLabel, 0, 0);
             statusLayout.Controls.Add(_runStateLabel, 1, 0);
             statusLayout.Dock = DockStyle.Fill;
+            statusLayout.Location = new Point(14, 38);
+            statusLayout.Name = "statusLayout";
             statusLayout.RowCount = 1;
+            statusLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            statusLayout.Size = new Size(1142, 24);
             statusLayout.TabIndex = 0;
             // 
             // taskCaptionLabel
@@ -137,7 +153,9 @@
             taskCaptionLabel.Dock = DockStyle.Fill;
             taskCaptionLabel.Font = new Font("Microsoft YaHei UI", 9F);
             taskCaptionLabel.ForeColor = Color.FromArgb(71, 85, 105);
+            taskCaptionLabel.Location = new Point(3, 0);
             taskCaptionLabel.Name = "taskCaptionLabel";
+            taskCaptionLabel.Size = new Size(114, 24);
             taskCaptionLabel.TabIndex = 0;
             taskCaptionLabel.Text = "自动任务";
             taskCaptionLabel.TextAlign = ContentAlignment.MiddleLeft;
@@ -147,7 +165,9 @@
             _runStateLabel.Dock = DockStyle.Fill;
             _runStateLabel.Font = new Font("Microsoft YaHei UI", 11F, FontStyle.Bold);
             _runStateLabel.ForeColor = Color.FromArgb(5, 150, 105);
+            _runStateLabel.Location = new Point(123, 0);
             _runStateLabel.Name = "_runStateLabel";
+            _runStateLabel.Size = new Size(1016, 24);
             _runStateLabel.TabIndex = 1;
             _runStateLabel.Text = "待机";
             _runStateLabel.TextAlign = ContentAlignment.MiddleLeft;
@@ -158,8 +178,11 @@
             logGroup.Dock = DockStyle.Fill;
             logGroup.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
             logGroup.ForeColor = Color.FromArgb(15, 23, 42);
+            logGroup.Location = new Point(20, 158);
             logGroup.Margin = new Padding(0, 4, 0, 4);
+            logGroup.Name = "logGroup";
             logGroup.Padding = new Padding(14, 18, 14, 12);
+            logGroup.Size = new Size(1170, 614);
             logGroup.TabIndex = 2;
             logGroup.TabStop = false;
             logGroup.Text = "运行日志";
@@ -171,9 +194,12 @@
             logLayout.Controls.Add(_logList, 0, 0);
             logLayout.Controls.Add(clearLogButton, 0, 1);
             logLayout.Dock = DockStyle.Fill;
+            logLayout.Location = new Point(14, 38);
+            logLayout.Name = "logLayout";
             logLayout.RowCount = 2;
             logLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             logLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 38F));
+            logLayout.Size = new Size(1142, 564);
             logLayout.TabIndex = 0;
             // 
             // _logList
@@ -183,7 +209,10 @@
             _logList.Dock = DockStyle.Fill;
             _logList.Font = new Font("Consolas", 9F);
             _logList.IntegralHeight = false;
-            _logList.ItemHeight = 17;
+            _logList.ItemHeight = 18;
+            _logList.Location = new Point(3, 3);
+            _logList.Name = "_logList";
+            _logList.Size = new Size(1136, 520);
             _logList.TabIndex = 0;
             // 
             // clearLogButton
@@ -194,8 +223,9 @@
             clearLogButton.FlatAppearance.BorderSize = 0;
             clearLogButton.FlatStyle = FlatStyle.Flat;
             clearLogButton.ForeColor = Color.FromArgb(15, 23, 42);
-            clearLogButton.Location = new Point(3, 386);
+            clearLogButton.Location = new Point(3, 530);
             clearLogButton.Name = "clearLogButton";
+            clearLogButton.Size = new Size(79, 29);
             clearLogButton.TabIndex = 1;
             clearLogButton.Text = "清空日志";
             clearLogButton.UseVisualStyleBackColor = false;
@@ -209,12 +239,13 @@
             Controls.Add(rootLayout);
             Name = "Auto";
             Size = new Size(1210, 796);
-            logLayout.ResumeLayout(false);
-            logGroup.ResumeLayout(false);
-            statusLayout.ResumeLayout(false);
-            statusGroup.ResumeLayout(false);
-            headerPanel.ResumeLayout(false);
             rootLayout.ResumeLayout(false);
+            headerPanel.ResumeLayout(false);
+            statusGroup.ResumeLayout(false);
+            statusLayout.ResumeLayout(false);
+            logGroup.ResumeLayout(false);
+            logLayout.ResumeLayout(false);
+            logLayout.PerformLayout();
             ResumeLayout(false);
         }
 

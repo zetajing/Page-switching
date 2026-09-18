@@ -1,4 +1,5 @@
 using System.Configuration;
+using System.Data.Common;
 using System.Net;
 
 namespace Page_switching.panel;
@@ -35,13 +36,18 @@ public partial class Config : UserControl
         UpdateInputState();
     }
 
-    // 从 App.config 读取数据库开关、类型和连接字符串。
+    // 从 App.config 读取数据库开关、连接字符串以及 SQL Server 账号密码。
     private void LoadDatabaseSettings()
     {
         _databaseEnabledCheckBox.Checked = ReadBool("DatabaseEnabled", false);
-        _databaseConnectionTextBox.Text = Read(
+        var connectionString = Read(
             "DatabaseConnectionString",
             "Server=localhost;Database=WaveControl;Integrated Security=True;TrustServerCertificate=True");
+        _databaseConnectionTextBox.Text = connectionString;
+
+        var connectionCredentials = ReadDatabaseCredentials(connectionString);
+        _databaseUserNameTextBox.Text = Read("DatabaseUserName", connectionCredentials.UserName);
+        _databasePasswordTextBox.Text = Read("DatabasePassword", connectionCredentials.Password);
         UpdateDatabaseState();
     }
 
@@ -61,6 +67,8 @@ public partial class Config : UserControl
 
         var enabled = _databaseEnabledCheckBox.Checked;
         _databaseConnectionTextBox.Enabled = enabled;
+        _databaseUserNameTextBox.Enabled = enabled;
+        _databasePasswordTextBox.Enabled = enabled;
         _databaseStateLabel.Text = enabled
             ? "数据库只用于运行日志和操作追溯，不参与 PLC 实时控制。"
             : "数据库日志未启用。";
@@ -75,18 +83,31 @@ public partial class Config : UserControl
         try
         {
             var connectionString = _databaseConnectionTextBox.Text.Trim();
+            var userName = _databaseUserNameTextBox.Text.Trim();
+            var password = _databasePasswordTextBox.Text;
             if (_databaseEnabledCheckBox.Checked && string.IsNullOrWhiteSpace(connectionString))
             {
                 throw new InvalidOperationException("启用数据库日志时，连接字符串不能为空。");
             }
+
+            if (!string.IsNullOrWhiteSpace(password) && string.IsNullOrWhiteSpace(userName))
+            {
+                throw new InvalidOperationException("填写数据库密码时，账号不能为空。");
+            }
+
+            connectionString = AddSqlServerCredentials(connectionString, userName, password);
 
             var configuration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
             var settings = configuration.AppSettings.Settings;
             Set(settings, "DatabaseEnabled", _databaseEnabledCheckBox.Checked.ToString().ToLowerInvariant());
             Set(settings, "DatabaseProvider", "SQL Server");
             Set(settings, "DatabaseConnectionString", connectionString);
+            Set(settings, "DatabaseUserName", userName);
+            Set(settings, "DatabasePassword", password);
             configuration.Save(ConfigurationSaveMode.Modified);
             ConfigurationManager.RefreshSection("appSettings");
+
+            _databaseConnectionTextBox.Text = connectionString;
 
             _databaseStateLabel.ForeColor = Color.FromArgb(5, 150, 105);
             _databaseStateLabel.Text = "数据库配置保存成功，当前仅用于日志和追溯。";
@@ -321,6 +342,42 @@ public partial class Config : UserControl
     // 读取端口配置并限制到有效端口范围。
     private static decimal ReadPort(string key, int fallback) =>
         int.TryParse(Read(key), out var value) && value is >= 1 and <= 65535 ? value : fallback;
+
+    // 从连接字符串中读取已有的 SQL Server 账号密码，兼容旧配置。
+    private static (string UserName, string Password) ReadDatabaseCredentials(string connectionString)
+    {
+        try
+        {
+            var builder = new DbConnectionStringBuilder { ConnectionString = connectionString };
+            return (
+                ReadConnectionValue(builder, "User ID"),
+                ReadConnectionValue(builder, "Password"));
+        }
+        catch (ArgumentException)
+        {
+            return (string.Empty, string.Empty);
+        }
+    }
+
+    // 将页面输入的账号密码写回 SQL Server 连接字符串。
+    private static string AddSqlServerCredentials(string connectionString, string userName, string password)
+    {
+        if (string.IsNullOrWhiteSpace(userName))
+        {
+            return connectionString;
+        }
+
+        var builder = new DbConnectionStringBuilder { ConnectionString = connectionString };
+        builder["Integrated Security"] = false;
+        builder.Remove("Trusted_Connection");
+        builder["User ID"] = userName;
+        builder["Password"] = password;
+        return builder.ConnectionString;
+    }
+
+    // 从连接字符串读取一个键，不存在时返回空字符串。
+    private static string ReadConnectionValue(DbConnectionStringBuilder builder, string key) =>
+        builder.TryGetValue(key, out var value) ? Convert.ToString(value) ?? string.Empty : string.Empty;
 
     // 判断当前是否选择 WaveMaker 内置方案。
     private bool IsWaveMakerModeSelected() => waveGeneratorModeComboBox.SelectedIndex == 1;
