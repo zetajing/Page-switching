@@ -28,6 +28,9 @@
     <Reference Include="InduLink.Protocols.Ads.Router">
       <HintPath>..\..\Total\InduLink.Protocols.Ads.Router\bin\Debug\net8.0\InduLink.Protocols.Ads.Router.dll</HintPath>
     </Reference>
+    <Reference Include="LogHelper">
+      <HintPath>..\..\Total\LogHelper\bin\Release\net472\LogHelper.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>

@@ -1,5 +1,6 @@
 using System.Configuration;
 using System.Diagnostics;
+using LogHelper;
 using Page_switching.panel;
 using InduLink.Protocols.Ads.Router;
 
@@ -94,6 +95,7 @@ namespace Page_switching
             finally
             {
                 base.OnFormClosed(e);
+                LogDisplayHelper.Shutdown();
             }
         }
 

@@ -7,7 +7,7 @@ public partial class Config : UserControl
 {
     private GroupBox _databaseGroup = null!;
     private CheckBox _databaseEnabledCheckBox = null!;
-    private ComboBox _databaseProviderComboBox = null!;
+    private Label _databaseProviderLabel = null!;
     private TextBox _databaseConnectionTextBox = null!;
     private Button _saveDatabaseButton = null!;
     private Label _databaseStateLabel = null!;
@@ -59,7 +59,7 @@ public partial class Config : UserControl
             RowCount = 2
         };
         layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120F));
-        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 130F));
+        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 100F));
         layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
         layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 100F));
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
@@ -74,14 +74,15 @@ public partial class Config : UserControl
         _databaseEnabledCheckBox.CheckedChanged += (_, _) => UpdateDatabaseState();
         layout.Controls.Add(_databaseEnabledCheckBox, 0, 0);
 
-        _databaseProviderComboBox = new ComboBox
+        _databaseProviderLabel = new Label
         {
             Dock = DockStyle.Fill,
-            DropDownStyle = ComboBoxStyle.DropDownList,
-            Font = new Font("Microsoft YaHei UI", 9F)
+            Text = "SQL Server",
+            Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold),
+            ForeColor = Color.FromArgb(71, 85, 105),
+            TextAlign = ContentAlignment.MiddleLeft
         };
-        _databaseProviderComboBox.Items.AddRange(["SQLite", "SQL Server"]);
-        layout.Controls.Add(_databaseProviderComboBox, 1, 0);
+        layout.Controls.Add(_databaseProviderLabel, 1, 0);
 
         _databaseConnectionTextBox = new TextBox
         {
@@ -90,7 +91,6 @@ public partial class Config : UserControl
             PlaceholderText = "数据库连接字符串"
         };
         layout.Controls.Add(_databaseConnectionTextBox, 2, 0);
-        layout.SetColumnSpan(_databaseConnectionTextBox, 1);
 
         _saveDatabaseButton = new Button
         {
@@ -124,11 +124,9 @@ public partial class Config : UserControl
     private void LoadDatabaseSettings()
     {
         _databaseEnabledCheckBox.Checked = ReadBool("DatabaseEnabled", false);
-        _databaseProviderComboBox.SelectedIndex =
-            string.Equals(Read("DatabaseProvider", "SQLite"), "SQL Server", StringComparison.OrdinalIgnoreCase)
-                ? 1
-                : 0;
-        _databaseConnectionTextBox.Text = Read("DatabaseConnectionString", "Data Source=wave-control.db");
+        _databaseConnectionTextBox.Text = Read(
+            "DatabaseConnectionString",
+            "Server=localhost;Database=WaveControl;Integrated Security=True;TrustServerCertificate=True");
         UpdateDatabaseState();
     }
 
@@ -141,7 +139,6 @@ public partial class Config : UserControl
         }
 
         var enabled = _databaseEnabledCheckBox.Checked;
-        _databaseProviderComboBox.Enabled = enabled;
         _databaseConnectionTextBox.Enabled = enabled;
         _databaseStateLabel.Text = enabled
             ? "数据库只用于运行日志和操作追溯，不参与 PLC 实时控制。"
@@ -165,7 +162,7 @@ public partial class Config : UserControl
             var configuration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
             var settings = configuration.AppSettings.Settings;
             Set(settings, "DatabaseEnabled", _databaseEnabledCheckBox.Checked.ToString().ToLowerInvariant());
-            Set(settings, "DatabaseProvider", _databaseProviderComboBox.SelectedItem?.ToString() ?? "SQLite");
+            Set(settings, "DatabaseProvider", "SQL Server");
             Set(settings, "DatabaseConnectionString", connectionString);
             configuration.Save(ConfigurationSaveMode.Modified);
             ConfigurationManager.RefreshSection("appSettings");

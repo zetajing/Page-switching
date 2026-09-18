@@ -1,3 +1,5 @@
+using LogHelper;
+
 namespace Page_switching
 {
     public partial class Auto : UserControl
@@ -28,6 +30,15 @@ namespace Page_switching
             }
 
             _logList.Items.Add($"{DateTime.Now:HH:mm:ss}  {message}");
+            try
+            {
+                LogDisplayHelper.ShowMsg($"[自动运行] {message}");
+            }
+            catch
+            {
+                // 本地日志组件异常时不影响自动页面显示。
+            }
+
             if (_logList.Items.Count > 500)
             {
                 _logList.Items.RemoveAt(0);
