@@ -611,7 +611,7 @@ partial class Config
         _databaseUserNameTextBox.Name = "_databaseUserNameTextBox";
         _databaseUserNameTextBox.PlaceholderText = "SQL Server 账号";
         _databaseUserNameTextBox.Size = new Size(144, 27);
-        _databaseUserNameTextBox.TabIndex = 2;
+        _databaseUserNameTextBox.TabIndex = 3;
         // 
         // _databasePasswordLabel
         // 
@@ -621,7 +621,7 @@ partial class Config
         _databasePasswordLabel.Location = new Point(763, 0);
         _databasePasswordLabel.Name = "_databasePasswordLabel";
         _databasePasswordLabel.Size = new Size(44, 34);
-        _databasePasswordLabel.TabIndex = 3;
+        _databasePasswordLabel.TabIndex = 4;
         _databasePasswordLabel.Text = "密码";
         _databasePasswordLabel.TextAlign = ContentAlignment.MiddleLeft;
         // 
@@ -633,7 +633,7 @@ partial class Config
         _databasePasswordTextBox.Name = "_databasePasswordTextBox";
         _databasePasswordTextBox.PlaceholderText = "SQL Server 密码";
         _databasePasswordTextBox.Size = new Size(144, 27);
-        _databasePasswordTextBox.TabIndex = 3;
+        _databasePasswordTextBox.TabIndex = 5;
         _databasePasswordTextBox.UseSystemPasswordChar = true;
         // 
         // _saveDatabaseButton
