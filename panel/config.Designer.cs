@@ -34,6 +34,12 @@ partial class Config
     private Label waveGeneratorStateLabel;
     private Label waveGeneratorModeLabel;
     private ComboBox waveGeneratorModeComboBox;
+    private GroupBox _databaseGroup;
+    private TableLayoutPanel _databaseLayout;
+    private CheckBox _databaseEnabledCheckBox;
+    private TextBox _databaseConnectionTextBox;
+    private Button _saveDatabaseButton;
+    private Label _databaseStateLabel;
 
     // 释放设计器创建的配置页面组件。
     protected override void Dispose(bool disposing)
@@ -80,12 +86,20 @@ partial class Config
         waveGeneratorStateLabel = new Label();
         waveGeneratorModeLabel = new Label();
         waveGeneratorModeComboBox = new ComboBox();
+        _databaseGroup = new GroupBox();
+        _databaseLayout = new TableLayoutPanel();
+        _databaseEnabledCheckBox = new CheckBox();
+        _databaseConnectionTextBox = new TextBox();
+        _saveDatabaseButton = new Button();
+        _databaseStateLabel = new Label();
         rootLayout.SuspendLayout();
         routerGroup.SuspendLayout();
         routerLayout.SuspendLayout();
         ((System.ComponentModel.ISupportInitialize)routerTcpPortInput).BeginInit();
         waveGeneratorGroup.SuspendLayout();
         waveGeneratorLayout.SuspendLayout();
+        _databaseGroup.SuspendLayout();
+        _databaseLayout.SuspendLayout();
         SuspendLayout();
         // 
         // rootLayout
@@ -98,15 +112,17 @@ partial class Config
         rootLayout.Controls.Add(subtitleLabel, 0, 1);
         rootLayout.Controls.Add(routerGroup, 0, 2);
         rootLayout.Controls.Add(waveGeneratorGroup, 0, 3);
+        rootLayout.Controls.Add(_databaseGroup, 0, 4);
         rootLayout.Dock = DockStyle.Fill;
         rootLayout.Location = new Point(0, 0);
         rootLayout.Name = "rootLayout";
         rootLayout.Padding = new Padding(20);
-        rootLayout.RowCount = 4;
+        rootLayout.RowCount = 5;
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 44F));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 38F));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 455F));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 130F));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 100F));
         rootLayout.Size = new Size(1210, 796);
         rootLayout.TabIndex = 0;
         // 
@@ -501,6 +517,65 @@ partial class Config
         waveGeneratorModeComboBox.Size = new Size(705, 28);
         waveGeneratorModeComboBox.TabIndex = 5;
         waveGeneratorModeComboBox.SelectedIndexChanged += WaveGeneratorModeComboBox_SelectedIndexChanged;
+        // _databaseGroup
+        // 
+        _databaseGroup.Controls.Add(_databaseLayout);
+        _databaseGroup.Dock = DockStyle.Fill;
+        _databaseGroup.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
+        _databaseGroup.ForeColor = Color.FromArgb(15, 23, 42);
+        _databaseGroup.Padding = new Padding(14, 18, 14, 10);
+        _databaseGroup.TabStop = false;
+        _databaseGroup.Text = "数据库日志";
+        // 
+        // _databaseLayout
+        // 
+        _databaseLayout.ColumnCount = 3;
+        _databaseLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 220F));
+        _databaseLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+        _databaseLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 100F));
+        _databaseLayout.Controls.Add(_databaseEnabledCheckBox, 0, 0);
+        _databaseLayout.Controls.Add(_databaseConnectionTextBox, 1, 0);
+        _databaseLayout.Controls.Add(_saveDatabaseButton, 2, 0);
+        _databaseLayout.Controls.Add(_databaseStateLabel, 1, 1);
+        _databaseLayout.Dock = DockStyle.Fill;
+        _databaseLayout.RowCount = 2;
+        _databaseLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
+        _databaseLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 24F));
+        _databaseLayout.SetColumnSpan(_databaseStateLabel, 2);
+        // 
+        // _databaseEnabledCheckBox
+        // 
+        _databaseEnabledCheckBox.Dock = DockStyle.Fill;
+        _databaseEnabledCheckBox.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
+        _databaseEnabledCheckBox.Text = "启用 SQL 日志";
+        _databaseEnabledCheckBox.CheckedChanged += DatabaseEnabledCheckBox_CheckedChanged;
+        // 
+        // _databaseConnectionTextBox
+        // 
+        _databaseConnectionTextBox.Dock = DockStyle.Fill;
+        _databaseConnectionTextBox.Font = new Font("Microsoft YaHei UI", 9F);
+        _databaseConnectionTextBox.PlaceholderText = "SQL Server 连接字符串";
+        // 
+        // _saveDatabaseButton
+        // 
+        _saveDatabaseButton.BackColor = Color.FromArgb(226, 232, 240);
+        _saveDatabaseButton.Dock = DockStyle.Fill;
+        _saveDatabaseButton.FlatAppearance.BorderSize = 0;
+        _saveDatabaseButton.FlatStyle = FlatStyle.Flat;
+        _saveDatabaseButton.Font = new Font("Microsoft YaHei UI", 9F);
+        _saveDatabaseButton.ForeColor = Color.FromArgb(15, 23, 42);
+        _saveDatabaseButton.Text = "保存数据库";
+        _saveDatabaseButton.Click += SaveDatabaseButton_Click;
+        // 
+        // _databaseStateLabel
+        // 
+        _databaseStateLabel.Dock = DockStyle.Fill;
+        _databaseStateLabel.Font = new Font("Microsoft YaHei UI", 8F);
+        _databaseStateLabel.ForeColor = Color.FromArgb(100, 116, 139);
+        _databaseStateLabel.Text = "数据库日志未启用。";
+        _databaseStateLabel.TextAlign = ContentAlignment.MiddleLeft;
+        // 
+
         // 
         // Config
         // 
@@ -517,6 +592,8 @@ partial class Config
         waveGeneratorGroup.ResumeLayout(false);
         waveGeneratorLayout.ResumeLayout(false);
         waveGeneratorLayout.PerformLayout();
+        _databaseLayout.ResumeLayout(false);
+        _databaseGroup.ResumeLayout(false);
         ResumeLayout(false);
     }
 }

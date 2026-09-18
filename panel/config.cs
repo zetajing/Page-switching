@@ -9,7 +9,6 @@ public partial class Config : UserControl
     public Config()
     {
         InitializeComponent();
-        InitializeDatabaseControls();
         Size = new Size(1210, 796);
         waveGeneratorLayout.ColumnStyles[0].Width = 220F;
         LoadSettings();
@@ -43,6 +42,12 @@ public partial class Config : UserControl
         _databaseConnectionTextBox.Text = Read(
             "DatabaseConnectionString",
             "Server=localhost;Database=WaveControl;Integrated Security=True;TrustServerCertificate=True");
+        UpdateDatabaseState();
+    }
+
+    // 响应数据库日志开关变化并更新连接字符串输入状态。
+    private void DatabaseEnabledCheckBox_CheckedChanged(object? sender, EventArgs e)
+    {
         UpdateDatabaseState();
     }
 
