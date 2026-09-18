@@ -166,8 +166,9 @@ partial class Config
         // 
         // routerLayout
         // 
-        routerLayout.ColumnCount = 2;
+        routerLayout.ColumnCount = 3;
         routerLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 190F));
+        routerLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 650F));
         routerLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
         routerLayout.Controls.Add(routerEnabledCheckBox, 0, 0);
         routerLayout.Controls.Add(routerStateLabel, 1, 0);
@@ -387,7 +388,7 @@ partial class Config
         // 
         // routerNoticeLabel
         // 
-        routerLayout.SetColumnSpan(routerNoticeLabel, 2);
+        routerLayout.SetColumnSpan(routerNoticeLabel, 3);
         routerNoticeLabel.Dock = DockStyle.Fill;
         routerNoticeLabel.Font = new Font("Microsoft YaHei UI", 9F);
         routerNoticeLabel.ForeColor = Color.FromArgb(180, 83, 9);
@@ -416,7 +417,7 @@ partial class Config
         // 
         waveGeneratorLayout.ColumnCount = 4;
         waveGeneratorLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 220F));
-        waveGeneratorLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+        waveGeneratorLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 650F));
         waveGeneratorLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 80F));
         waveGeneratorLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 80F));
         waveGeneratorLayout.Controls.Add(waveGeneratorPathLabel, 0, 0);
@@ -531,7 +532,7 @@ partial class Config
         // 
         _databaseLayout.ColumnCount = 3;
         _databaseLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 220F));
-        _databaseLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+        _databaseLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 650F));
         _databaseLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 100F));
         _databaseLayout.Controls.Add(_databaseEnabledCheckBox, 0, 0);
         _databaseLayout.Controls.Add(_databaseConnectionTextBox, 1, 0);
