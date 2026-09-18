@@ -120,7 +120,7 @@ partial class Config
         rootLayout.RowCount = 5;
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 42F));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
-        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 420F));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 432F));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 144F));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 114F));
         rootLayout.Size = new Size(1210, 796);
@@ -394,7 +394,7 @@ partial class Config
         routerNoticeLabel.ForeColor = Color.FromArgb(180, 83, 9);
         routerNoticeLabel.Location = new Point(3, 384);
         routerNoticeLabel.Name = "routerNoticeLabel";
-        routerNoticeLabel.Padding = new Padding(0, 10, 0, 0);
+        routerNoticeLabel.Padding = new Padding(0, 4, 0, 0);
         routerNoticeLabel.Size = new Size(825, 11);
         routerNoticeLabel.TabIndex = 16;
         routerNoticeLabel.Text = "提示：系统 TwinCAT Router 已运行时请关闭独立 Router，否则 TCP 48898 端口会冲突。远程 PLC 还需要配置返回本机 AMS Net ID 的路由。";
