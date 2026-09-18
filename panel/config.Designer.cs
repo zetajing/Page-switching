@@ -38,6 +38,10 @@ partial class Config
     private TableLayoutPanel _databaseLayout;
     private CheckBox _databaseEnabledCheckBox;
     private TextBox _databaseConnectionTextBox;
+    private Label _databaseUserNameLabel;
+    private TextBox _databaseUserNameTextBox;
+    private Label _databasePasswordLabel;
+    private TextBox _databasePasswordTextBox;
     private Button _saveDatabaseButton;
     private Label _databaseStateLabel;
 
@@ -90,6 +94,10 @@ partial class Config
         _databaseLayout = new TableLayoutPanel();
         _databaseEnabledCheckBox = new CheckBox();
         _databaseConnectionTextBox = new TextBox();
+        _databaseUserNameLabel = new Label();
+        _databaseUserNameTextBox = new TextBox();
+        _databasePasswordLabel = new Label();
+        _databasePasswordTextBox = new TextBox();
         _saveDatabaseButton = new Button();
         _databaseStateLabel = new Label();
         rootLayout.SuspendLayout();
@@ -528,39 +536,70 @@ partial class Config
         _databaseGroup.Padding = new Padding(14, 18, 14, 10);
         _databaseGroup.TabStop = false;
         _databaseGroup.Text = "数据库日志";
-        // 
         // _databaseLayout
-        // 
-        _databaseLayout.ColumnCount = 4;
-        _databaseLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 220F));
-        _databaseLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 650F));
+        //
+        _databaseLayout.ColumnCount = 8;
+        _databaseLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 160F));
+        _databaseLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 400F));
+        _databaseLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 50F));
+        _databaseLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150F));
+        _databaseLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 50F));
+        _databaseLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150F));
         _databaseLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 100F));
         _databaseLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
         _databaseLayout.Controls.Add(_databaseEnabledCheckBox, 0, 0);
         _databaseLayout.Controls.Add(_databaseConnectionTextBox, 1, 0);
-        _databaseLayout.Controls.Add(_saveDatabaseButton, 2, 0);
+        _databaseLayout.Controls.Add(_databaseUserNameLabel, 2, 0);
+        _databaseLayout.Controls.Add(_databaseUserNameTextBox, 3, 0);
+        _databaseLayout.Controls.Add(_databasePasswordLabel, 4, 0);
+        _databaseLayout.Controls.Add(_databasePasswordTextBox, 5, 0);
+        _databaseLayout.Controls.Add(_saveDatabaseButton, 6, 0);
         _databaseLayout.Controls.Add(_databaseStateLabel, 1, 1);
         _databaseLayout.Dock = DockStyle.Fill;
         _databaseLayout.RowCount = 2;
         _databaseLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
         _databaseLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 24F));
-        _databaseLayout.SetColumnSpan(_databaseStateLabel, 2);
-        // 
+        _databaseLayout.SetColumnSpan(_databaseStateLabel, 6);
         // _databaseEnabledCheckBox
-        // 
+        //
         _databaseEnabledCheckBox.Dock = DockStyle.Fill;
         _databaseEnabledCheckBox.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
         _databaseEnabledCheckBox.Text = "启用 SQL 日志";
         _databaseEnabledCheckBox.CheckedChanged += DatabaseEnabledCheckBox_CheckedChanged;
-        // 
         // _databaseConnectionTextBox
-        // 
+        //
         _databaseConnectionTextBox.Dock = DockStyle.Fill;
         _databaseConnectionTextBox.Font = new Font("Microsoft YaHei UI", 9F);
         _databaseConnectionTextBox.PlaceholderText = "SQL Server 连接字符串";
-        // 
+        // _databaseUserNameLabel
+        //
+        _databaseUserNameLabel.Dock = DockStyle.Fill;
+        _databaseUserNameLabel.Font = new Font("Microsoft YaHei UI", 9F);
+        _databaseUserNameLabel.ForeColor = Color.FromArgb(71, 85, 105);
+        _databaseUserNameLabel.Text = "账号";
+        _databaseUserNameLabel.TextAlign = ContentAlignment.MiddleLeft;
+        // _databaseUserNameTextBox
+        //
+        _databaseUserNameTextBox.Dock = DockStyle.Fill;
+        _databaseUserNameTextBox.Font = new Font("Microsoft YaHei UI", 9F);
+        _databaseUserNameTextBox.PlaceholderText = "SQL Server 账号";
+        _databaseUserNameTextBox.TabIndex = 2;
+        // _databasePasswordLabel
+        //
+        _databasePasswordLabel.Dock = DockStyle.Fill;
+        _databasePasswordLabel.Font = new Font("Microsoft YaHei UI", 9F);
+        _databasePasswordLabel.ForeColor = Color.FromArgb(71, 85, 105);
+        _databasePasswordLabel.Text = "密码";
+        _databasePasswordLabel.TextAlign = ContentAlignment.MiddleLeft;
+        // _databasePasswordTextBox
+        //
+        _databasePasswordTextBox.Dock = DockStyle.Fill;
+        _databasePasswordTextBox.Font = new Font("Microsoft YaHei UI", 9F);
+        _databasePasswordTextBox.PlaceholderText = "SQL Server 密码";
+        _databasePasswordTextBox.UseSystemPasswordChar = true;
+        _databasePasswordTextBox.TabIndex = 3;
         // _saveDatabaseButton
-        // 
+        //
         _saveDatabaseButton.BackColor = Color.FromArgb(226, 232, 240);
         _saveDatabaseButton.Dock = DockStyle.Fill;
         _saveDatabaseButton.FlatAppearance.BorderSize = 0;
@@ -569,9 +608,8 @@ partial class Config
         _saveDatabaseButton.ForeColor = Color.FromArgb(15, 23, 42);
         _saveDatabaseButton.Text = "保存数据库";
         _saveDatabaseButton.Click += SaveDatabaseButton_Click;
-        // 
         // _databaseStateLabel
-        // 
+        //
         _databaseStateLabel.Dock = DockStyle.Fill;
         _databaseStateLabel.Font = new Font("Microsoft YaHei UI", 8F);
         _databaseStateLabel.ForeColor = Color.FromArgb(100, 116, 139);
