@@ -34,6 +34,9 @@ namespace Page_switching
         private void InitializeComponent()
         {
             panel1 = new Panel();
+            headerStatusPanel = new Panel();
+            adsStatusLabel = new Label();
+            controlStatusLabel = new Label();
             appSubtitleLabel = new Label();
             appTitleLabel = new Label();
             panel2 = new Panel();
@@ -56,6 +59,7 @@ namespace Page_switching
             // panel1
             // 
             panel1.BackColor = Color.FromArgb(15, 23, 42);
+            panel1.Controls.Add(headerStatusPanel);
             panel1.Controls.Add(appSubtitleLabel);
             panel1.Controls.Add(appTitleLabel);
             panel1.Dock = DockStyle.Top;
@@ -63,6 +67,39 @@ namespace Page_switching
             panel1.Name = "panel1";
             panel1.Size = new Size(1095, 64);
             panel1.TabIndex = 0;
+            //
+            // headerStatusPanel
+            //
+            headerStatusPanel.BackColor = Color.FromArgb(15, 23, 42);
+            headerStatusPanel.Controls.Add(controlStatusLabel);
+            headerStatusPanel.Controls.Add(adsStatusLabel);
+            headerStatusPanel.Dock = DockStyle.Right;
+            headerStatusPanel.Location = new Point(700, 0);
+            headerStatusPanel.Name = "headerStatusPanel";
+            headerStatusPanel.Padding = new Padding(10, 8, 18, 6);
+            headerStatusPanel.Size = new Size(395, 64);
+            headerStatusPanel.TabIndex = 2;
+            //
+            // adsStatusLabel
+            //
+            adsStatusLabel.Dock = DockStyle.Top;
+            adsStatusLabel.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
+            adsStatusLabel.ForeColor = Color.FromArgb(251, 146, 60);
+            adsStatusLabel.Height = 25;
+            adsStatusLabel.Name = "adsStatusLabel";
+            adsStatusLabel.TabIndex = 0;
+            adsStatusLabel.Text = "●  ADS 未连接";
+            adsStatusLabel.TextAlign = ContentAlignment.MiddleRight;
+            //
+            // controlStatusLabel
+            //
+            controlStatusLabel.Dock = DockStyle.Fill;
+            controlStatusLabel.Font = new Font("Microsoft YaHei UI", 8F);
+            controlStatusLabel.ForeColor = Color.FromArgb(148, 163, 184);
+            controlStatusLabel.Name = "controlStatusLabel";
+            controlStatusLabel.TabIndex = 1;
+            controlStatusLabel.Text = "控制权：待配置    安全状态：待配置";
+            controlStatusLabel.TextAlign = ContentAlignment.MiddleRight;
             //
             // appSubtitleLabel
             //
@@ -306,6 +343,7 @@ namespace Page_switching
         #endregion
 
         private Panel panel1;
+        private Panel headerStatusPanel;
         private Panel panel2;
         private Panel panelswitch;
         private Button button4;
@@ -321,5 +359,7 @@ namespace Page_switching
         private Label controlSectionLabel;
         private Label toolsSectionLabel;
         private Label systemSectionLabel;
+        private Label adsStatusLabel;
+        private Label controlStatusLabel;
     }
 }
