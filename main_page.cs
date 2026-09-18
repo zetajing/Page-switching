@@ -32,6 +32,7 @@ namespace Page_switching
 
             // 启动时先显示默认页面，避免主区域空白。
             ShowPage(_autoPage);
+            SetActiveNavigation(Bu_auto);
 
             // 窗体先显示，再异步建立 ADS 连接。
             Shown += Mainpage_Shown;
@@ -107,28 +108,45 @@ namespace Page_switching
             }
         }
 
+        // 高亮当前页面对应的导航按钮，并恢复其他按钮的深色背景。
+        private void SetActiveNavigation(Button activeButton)
+        {
+            foreach (var button in new[] { Bu_auto, Bu_manual, button2, bu_Configuration })
+            {
+                var isActive = ReferenceEquals(button, activeButton);
+                button.BackColor = isActive
+                    ? Color.FromArgb(14, 165, 233)
+                    : Color.FromArgb(30, 41, 59);
+                button.ForeColor = isActive ? Color.White : Color.FromArgb(226, 232, 240);
+            }
+        }
+
         // 切换到自动页面。
         private void Bu_auto_Click(object sender, EventArgs e)
         {
             ShowPage(_autoPage);
+            SetActiveNavigation(Bu_auto);
         }
 
         // 切换到手动控制页面。
         private void Bu_manual_Click(object sender, EventArgs e)
         {
             ShowPage(_manualPage);
+            SetActiveNavigation(Bu_manual);
         }
 
         // 切换到配置页面。
         private void bu_Configuration_Click(object sender, EventArgs e)
         {
             ShowPage(_confige);
+            SetActiveNavigation(bu_Configuration);
         }
 
         // 切换到波形生成页面。
         private void WaveformButton_Click(object sender, EventArgs e)
         {
             ShowPage(_waveformPage);
+            SetActiveNavigation(button2);
         }
     }
 }
