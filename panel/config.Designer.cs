@@ -399,7 +399,7 @@ partial class Config
         // waveGeneratorLayout
         // 
         waveGeneratorLayout.ColumnCount = 4;
-        waveGeneratorLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120F));
+        waveGeneratorLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 160F));
         waveGeneratorLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
         waveGeneratorLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 80F));
         waveGeneratorLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 80F));
