@@ -51,28 +51,12 @@ namespace Page_switching
         // 主窗体显示后启动可选 Router，并连接真实 ADS PLC。
         private async void Mainpage_Shown(object? sender, EventArgs e)
         {
-            if (AdsTcpRouterRuntime.IsEnabled)
-            {
-                try
-                {
-                    _adsTcpRouter = AdsTcpRouterRuntime.Create();
-                    await _adsTcpRouter.StartAsync(CancellationToken.None);
-                    _autoPage.AddLog("独立 ADS TCP Router 已启动");
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine("ADS TCP Router 启动失败：" + ex);
-                    _autoPage.AddLog("ADS TCP Router 启动失败：" + ex.Message);
-                }
-            }
-            else
-            {
-                _autoPage.AddLog("使用系统 TwinCAT Router");
-            }
+            _adsTcpRouter = await StartRouterInBackgroundAsync();
 
             try
             {
-                await _axisService.ConnectAsync(CancellationToken.None);
+                // 部分 ADS 客户端连接方法会在返回 Task 前同步等待；放到后台避免卡住界面绘制。
+                await Task.Run(() => _axisService.ConnectAsync(CancellationToken.None));
                 _autoPage.AddLog("ADS 连接成功");
             }
             catch (Exception ex)
@@ -82,6 +66,34 @@ namespace Page_switching
             }
 
             UpdateHeaderStatus();
+        }
+
+        // 在后台启动可选的 ADS TCP Router，避免启动阶段阻塞主界面。
+        private async Task<AdsTcpRouterHost?> StartRouterInBackgroundAsync()
+        {
+            if (!AdsTcpRouterRuntime.IsEnabled)
+            {
+                _autoPage.AddLog("使用系统 TwinCAT Router");
+                return null;
+            }
+
+            try
+            {
+                var router = await Task.Run(async () =>
+                {
+                    var host = AdsTcpRouterRuntime.Create();
+                    await host.StartAsync(CancellationToken.None).ConfigureAwait(false);
+                    return host;
+                });
+                _autoPage.AddLog("独立 ADS TCP Router 已启动");
+                return router;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("ADS TCP Router 启动失败：" + ex);
+                _autoPage.AddLog("ADS TCP Router 启动失败：" + ex.Message);
+                return null;
+            }
         }
 
         // 主窗体关闭时释放 ADS 连接和 Router。
