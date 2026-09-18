@@ -21,7 +21,7 @@ public sealed class ControlAuthority : UserControl
     public ControlAuthority(AxisService axisService)
     {
         _axisService = axisService ?? throw new ArgumentNullException(nameof(axisService));
-        Size = new Size(905, 681);
+        Size = new Size(1210, 796);
         BuildPage();
         RefreshConfiguration();
         _refreshTimer.Tick += (_, _) => RefreshConfiguration();

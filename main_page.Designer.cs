@@ -65,7 +65,7 @@ namespace Page_switching
             panel1.Dock = DockStyle.Top;
             panel1.Location = new Point(0, 0);
             panel1.Name = "panel1";
-            panel1.Size = new Size(1095, 64);
+            panel1.Size = new Size(1400, 64);
             panel1.TabIndex = 0;
             //
             // headerStatusPanel
@@ -74,7 +74,7 @@ namespace Page_switching
             headerStatusPanel.Controls.Add(controlStatusLabel);
             headerStatusPanel.Controls.Add(adsStatusLabel);
             headerStatusPanel.Dock = DockStyle.Right;
-            headerStatusPanel.Location = new Point(700, 0);
+            headerStatusPanel.Location = new Point(1005, 0);
             headerStatusPanel.Name = "headerStatusPanel";
             headerStatusPanel.Padding = new Padding(10, 8, 18, 6);
             headerStatusPanel.Size = new Size(395, 64);
@@ -141,7 +141,7 @@ namespace Page_switching
             panel2.Location = new Point(0, 64);
             panel2.Name = "panel2";
             panel2.Padding = new Padding(15, 0, 15, 12);
-            panel2.Size = new Size(190, 681);
+            panel2.Size = new Size(190, 796);
             panel2.TabIndex = 1;
             //
             // systemSectionLabel
@@ -320,14 +320,14 @@ namespace Page_switching
             panelswitch.Dock = DockStyle.Fill;
             panelswitch.Location = new Point(190, 64);
             panelswitch.Name = "panelswitch";
-            panelswitch.Size = new Size(905, 681);
+            panelswitch.Size = new Size(1210, 796);
             panelswitch.TabIndex = 2;
             // 
             // Mainpage
             // 
             AutoScaleDimensions = new SizeF(9F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1095, 745);
+            ClientSize = new Size(1400, 860);
             Controls.Add(panelswitch);
             Controls.Add(panel2);
             Controls.Add(panel1);

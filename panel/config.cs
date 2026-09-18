@@ -15,6 +15,7 @@ public partial class Config : UserControl
     public Config()
     {
         InitializeComponent();
+        Size = new Size(1210, 796);
         BuildDatabaseSettings();
         LoadSettings();
         LoadDatabaseSettings();

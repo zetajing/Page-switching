@@ -208,7 +208,7 @@
             BackColor = Color.FromArgb(241, 245, 249);
             Controls.Add(rootLayout);
             Name = "Auto";
-            Size = new Size(905, 681);
+            Size = new Size(1210, 796);
             logLayout.ResumeLayout(false);
             logGroup.ResumeLayout(false);
             statusLayout.ResumeLayout(false);

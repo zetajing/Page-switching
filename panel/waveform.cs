@@ -13,6 +13,7 @@ public partial class WaveformPage : UserControl
     public WaveformPage()
     {
         InitializeComponent();
+        Size = new Size(1210, 796);
         ApplyStyles();
         _generatorService = new WaveformGeneratorService(WaveformGeneratorOptions.FromConfiguration());
         InitializeWaveformChoices();
