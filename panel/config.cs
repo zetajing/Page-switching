@@ -7,7 +7,6 @@ public partial class Config : UserControl
 {
     private GroupBox _databaseGroup = null!;
     private CheckBox _databaseEnabledCheckBox = null!;
-    private Label _databaseProviderLabel = null!;
     private TextBox _databaseConnectionTextBox = null!;
     private Button _saveDatabaseButton = null!;
     private Label _databaseStateLabel = null!;
@@ -55,11 +54,10 @@ public partial class Config : UserControl
         var layout = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
-            ColumnCount = 4,
+            ColumnCount = 3,
             RowCount = 2
         };
-        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120F));
-        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 100F));
+        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 160F));
         layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
         layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 100F));
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
@@ -68,21 +66,11 @@ public partial class Config : UserControl
         _databaseEnabledCheckBox = new CheckBox
         {
             Dock = DockStyle.Fill,
-            Text = "启用日志",
+            Text = "启用日志（SQL Server）",
             Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold)
         };
         _databaseEnabledCheckBox.CheckedChanged += (_, _) => UpdateDatabaseState();
         layout.Controls.Add(_databaseEnabledCheckBox, 0, 0);
-
-        _databaseProviderLabel = new Label
-        {
-            Dock = DockStyle.Fill,
-            Text = "SQL Server",
-            Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold),
-            ForeColor = Color.FromArgb(71, 85, 105),
-            TextAlign = ContentAlignment.MiddleLeft
-        };
-        layout.Controls.Add(_databaseProviderLabel, 1, 0);
 
         _databaseConnectionTextBox = new TextBox
         {
@@ -90,7 +78,7 @@ public partial class Config : UserControl
             Font = new Font("Microsoft YaHei UI", 9F),
             PlaceholderText = "数据库连接字符串"
         };
-        layout.Controls.Add(_databaseConnectionTextBox, 2, 0);
+        layout.Controls.Add(_databaseConnectionTextBox, 1, 0);
 
         _saveDatabaseButton = new Button
         {
@@ -103,7 +91,7 @@ public partial class Config : UserControl
         };
         _saveDatabaseButton.FlatAppearance.BorderSize = 0;
         _saveDatabaseButton.Click += SaveDatabaseButton_Click;
-        layout.Controls.Add(_saveDatabaseButton, 3, 0);
+        layout.Controls.Add(_saveDatabaseButton, 2, 0);
 
         _databaseStateLabel = new Label
         {
@@ -112,7 +100,7 @@ public partial class Config : UserControl
             TextAlign = ContentAlignment.MiddleLeft
         };
         layout.Controls.Add(_databaseStateLabel, 1, 1);
-        layout.SetColumnSpan(_databaseStateLabel, 3);
+        layout.SetColumnSpan(_databaseStateLabel, 2);
         _databaseGroup.Controls.Add(layout);
 
         rootLayout.RowCount = 5;
