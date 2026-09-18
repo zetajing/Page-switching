@@ -151,6 +151,18 @@ public sealed partial class ControlAuthority
         ConfigureValue(_stateValue);
         ConfigureValue(_safetyValue);
         ConfigureValue(_watchdogValue);
+        connectionCaptionLabel.Text = "ADS 连接";
+        stationCaptionLabel.Text = "本站点";
+        ownerCaptionLabel.Text = "当前 Owner";
+        stateCaptionLabel.Text = "PLC 状态";
+        safetyCaptionLabel.Text = "安全状态";
+        watchdogCaptionLabel.Text = "看门狗";
+        _connectionValue.Text = "未连接";
+        _stationValue.Text = "1";
+        _ownerValue.Text = "待配置";
+        _stateValue.Text = "待配置";
+        _safetyValue.Text = "待配置";
+        _watchdogValue.Text = "待配置";
         //
         // actionGroup
         //
@@ -179,9 +191,12 @@ public sealed partial class ControlAuthority
         actionLayout.TabIndex = 0;
         ConfigureActionButton(_requestButton, "申请控制权");
         ConfigureActionButton(_releaseButton, "释放控制权");
+        _requestButton.Text = "申请控制权";
+        _releaseButton.Text = "释放控制权";
         _hintLabel.Dock = DockStyle.Fill;
         _hintLabel.Font = new Font("Microsoft YaHei UI", 9F);
         _hintLabel.ForeColor = Color.FromArgb(180, 83, 9);
+        _hintLabel.Text = "请先在 App.config 填写控制权变量名。";
         _hintLabel.TextAlign = ContentAlignment.MiddleLeft;
         //
         // ControlAuthority
