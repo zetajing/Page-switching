@@ -5,11 +5,20 @@ namespace Page_switching.panel;
 
 public partial class Config : UserControl
 {
+    private GroupBox _databaseGroup = null!;
+    private CheckBox _databaseEnabledCheckBox = null!;
+    private ComboBox _databaseProviderComboBox = null!;
+    private TextBox _databaseConnectionTextBox = null!;
+    private Button _saveDatabaseButton = null!;
+    private Label _databaseStateLabel = null!;
+
     // 初始化配置页面并加载当前 App.config 设置。
     public Config()
     {
         InitializeComponent();
+        BuildDatabaseSettings();
         LoadSettings();
+        LoadDatabaseSettings();
     }
 
     // 将 Router 和波形生成器配置加载到界面控件。
@@ -30,6 +39,147 @@ public partial class Config : UserControl
         remoteNetIdTextBox.Text = Read("AdsTcpRouterRemoteNetId", Read("AdsAmsNetId"));
         UpdateWaveGeneratorState();
         UpdateInputState();
+    }
+
+    // 在配置页面底部创建数据库配置区域。
+    private void BuildDatabaseSettings()
+    {
+        _databaseGroup = new GroupBox
+        {
+            Dock = DockStyle.Fill,
+            Text = "数据库日志",
+            Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold),
+            ForeColor = Color.FromArgb(15, 23, 42),
+            Padding = new Padding(14, 18, 14, 10)
+        };
+        var layout = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 4,
+            RowCount = 2
+        };
+        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120F));
+        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 130F));
+        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 100F));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 24F));
+
+        _databaseEnabledCheckBox = new CheckBox
+        {
+            Dock = DockStyle.Fill,
+            Text = "启用日志",
+            Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold)
+        };
+        _databaseEnabledCheckBox.CheckedChanged += (_, _) => UpdateDatabaseState();
+        layout.Controls.Add(_databaseEnabledCheckBox, 0, 0);
+
+        _databaseProviderComboBox = new ComboBox
+        {
+            Dock = DockStyle.Fill,
+            DropDownStyle = ComboBoxStyle.DropDownList,
+            Font = new Font("Microsoft YaHei UI", 9F)
+        };
+        _databaseProviderComboBox.Items.AddRange(["SQLite", "SQL Server"]);
+        layout.Controls.Add(_databaseProviderComboBox, 1, 0);
+
+        _databaseConnectionTextBox = new TextBox
+        {
+            Dock = DockStyle.Fill,
+            Font = new Font("Microsoft YaHei UI", 9F),
+            PlaceholderText = "数据库连接字符串"
+        };
+        layout.Controls.Add(_databaseConnectionTextBox, 2, 0);
+        layout.SetColumnSpan(_databaseConnectionTextBox, 1);
+
+        _saveDatabaseButton = new Button
+        {
+            Dock = DockStyle.Fill,
+            Text = "保存数据库",
+            Font = new Font("Microsoft YaHei UI", 9F),
+            FlatStyle = FlatStyle.Flat,
+            BackColor = Color.FromArgb(226, 232, 240),
+            ForeColor = Color.FromArgb(15, 23, 42)
+        };
+        _saveDatabaseButton.FlatAppearance.BorderSize = 0;
+        _saveDatabaseButton.Click += SaveDatabaseButton_Click;
+        layout.Controls.Add(_saveDatabaseButton, 3, 0);
+
+        _databaseStateLabel = new Label
+        {
+            Dock = DockStyle.Fill,
+            Font = new Font("Microsoft YaHei UI", 8F),
+            TextAlign = ContentAlignment.MiddleLeft
+        };
+        layout.Controls.Add(_databaseStateLabel, 1, 1);
+        layout.SetColumnSpan(_databaseStateLabel, 3);
+        _databaseGroup.Controls.Add(layout);
+
+        rootLayout.RowCount = 5;
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 100F));
+        rootLayout.Controls.Add(_databaseGroup, 0, 4);
+    }
+
+    // 从 App.config 读取数据库开关、类型和连接字符串。
+    private void LoadDatabaseSettings()
+    {
+        _databaseEnabledCheckBox.Checked = ReadBool("DatabaseEnabled", false);
+        _databaseProviderComboBox.SelectedIndex =
+            string.Equals(Read("DatabaseProvider", "SQLite"), "SQL Server", StringComparison.OrdinalIgnoreCase)
+                ? 1
+                : 0;
+        _databaseConnectionTextBox.Text = Read("DatabaseConnectionString", "Data Source=wave-control.db");
+        UpdateDatabaseState();
+    }
+
+    // 根据数据库开关更新输入控件和状态文字。
+    private void UpdateDatabaseState()
+    {
+        if (_databaseEnabledCheckBox is null)
+        {
+            return;
+        }
+
+        var enabled = _databaseEnabledCheckBox.Checked;
+        _databaseProviderComboBox.Enabled = enabled;
+        _databaseConnectionTextBox.Enabled = enabled;
+        _databaseStateLabel.Text = enabled
+            ? "数据库只用于运行日志和操作追溯，不参与 PLC 实时控制。"
+            : "数据库日志未启用。";
+        _databaseStateLabel.ForeColor = enabled
+            ? Color.FromArgb(5, 150, 105)
+            : Color.FromArgb(100, 116, 139);
+    }
+
+    // 验证并保存数据库配置到 App.config。
+    private void SaveDatabaseButton_Click(object? sender, EventArgs e)
+    {
+        try
+        {
+            var connectionString = _databaseConnectionTextBox.Text.Trim();
+            if (_databaseEnabledCheckBox.Checked && string.IsNullOrWhiteSpace(connectionString))
+            {
+                throw new InvalidOperationException("启用数据库日志时，连接字符串不能为空。");
+            }
+
+            var configuration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            var settings = configuration.AppSettings.Settings;
+            Set(settings, "DatabaseEnabled", _databaseEnabledCheckBox.Checked.ToString().ToLowerInvariant());
+            Set(settings, "DatabaseProvider", _databaseProviderComboBox.SelectedItem?.ToString() ?? "SQLite");
+            Set(settings, "DatabaseConnectionString", connectionString);
+            configuration.Save(ConfigurationSaveMode.Modified);
+            ConfigurationManager.RefreshSection("appSettings");
+
+            _databaseStateLabel.ForeColor = Color.FromArgb(5, 150, 105);
+            _databaseStateLabel.Text = "数据库配置保存成功，当前仅用于日志和追溯。";
+            saveResultLabel.ForeColor = Color.FromArgb(5, 150, 105);
+            saveResultLabel.Text = "数据库配置保存成功。";
+        }
+        catch (Exception ex)
+        {
+            saveResultLabel.ForeColor = Color.FromArgb(220, 38, 38);
+            saveResultLabel.Text = "数据库配置保存失败：" + ex.Message;
+        }
     }
 
     // 打开文件选择框，让用户选择波形生成程序。

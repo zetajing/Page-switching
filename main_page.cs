@@ -9,6 +9,7 @@ namespace Page_switching
     {
         private readonly Auto _autoPage;
         private readonly Manual _manualPage;
+        private readonly ControlAuthority _controlAuthorityPage;
         private readonly Config _confige;
         private readonly WaveformPage _waveformPage;
         private readonly AxisService _axisService;
@@ -24,6 +25,7 @@ namespace Page_switching
             _axisService = new AxisService(AxisServiceOptions.FromConfiguration());
             _autoPage = new Auto();
             _manualPage = new Manual(_axisService);
+            _controlAuthorityPage = new ControlAuthority(_axisService);
             _confige = new Config();
             _waveformPage = new WaveformPage();
             _headerStatusTimer.Tick += (_, _) => UpdateHeaderStatus();
@@ -33,6 +35,7 @@ namespace Page_switching
                 _headerStatusTimer.Dispose();
                 _confige.Dispose();
                 _waveformPage.Dispose();
+                _controlAuthorityPage.Dispose();
             };
 
             // 启动时先显示默认页面，避免主区域空白。
@@ -53,20 +56,28 @@ namespace Page_switching
                 {
                     _adsTcpRouter = AdsTcpRouterRuntime.Create();
                     await _adsTcpRouter.StartAsync(CancellationToken.None);
+                    _autoPage.AddLog("独立 ADS TCP Router 已启动");
                 }
                 catch (Exception ex)
                 {
                     Debug.WriteLine("ADS TCP Router 启动失败：" + ex);
+                    _autoPage.AddLog("ADS TCP Router 启动失败：" + ex.Message);
                 }
+            }
+            else
+            {
+                _autoPage.AddLog("使用系统 TwinCAT Router");
             }
 
             try
             {
                 await _axisService.ConnectAsync(CancellationToken.None);
+                _autoPage.AddLog("ADS 连接成功");
             }
             catch (Exception ex)
             {
                 Debug.WriteLine("ADS 连接失败：" + ex);
+                _autoPage.AddLog("ADS 连接失败：" + ex.Message);
             }
 
             UpdateHeaderStatus();
@@ -119,7 +130,7 @@ namespace Page_switching
         // 高亮当前页面对应的导航按钮，并恢复其他按钮的深色背景。
         private void SetActiveNavigation(Button activeButton)
         {
-            foreach (var button in new[] { Bu_auto, Bu_manual, button2, bu_Configuration })
+            foreach (var button in new[] { Bu_auto, Bu_manual, button3, button2, bu_Configuration })
             {
                 var isActive = ReferenceEquals(button, activeButton);
                 button.BackColor = isActive
@@ -168,6 +179,7 @@ namespace Page_switching
         {
             var value when ReferenceEquals(value, Bu_auto) => "自动运行",
             var value when ReferenceEquals(value, Bu_manual) => "手动控制",
+            var value when ReferenceEquals(value, button3) => "控制权申请",
             var value when ReferenceEquals(value, button2) => "波形生成",
             var value when ReferenceEquals(value, bu_Configuration) => "系统配置",
             _ => "系统"
@@ -189,6 +201,13 @@ namespace Page_switching
         {
             ShowPage(_manualPage);
             SetActiveNavigation(Bu_manual);
+        }
+
+        // 切换到控制权申请页面。
+        private void ControlAuthorityButton_Click(object sender, EventArgs e)
+        {
+            ShowPage(_controlAuthorityPage);
+            SetActiveNavigation(button3);
         }
 
         // 切换到配置页面。

@@ -262,21 +262,22 @@ namespace Page_switching
             button4.UseVisualStyleBackColor = false;
             //
             // button3
-            //
+            // 
             button3.BackColor = Color.FromArgb(17, 24, 39);
-            button3.Enabled = false;
+            button3.Cursor = Cursors.Hand;
             button3.FlatAppearance.BorderSize = 0;
             button3.FlatStyle = FlatStyle.Flat;
-            button3.Font = new Font("Microsoft YaHei UI", 9F);
-            button3.ForeColor = Color.FromArgb(100, 116, 139);
+            button3.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
+            button3.ForeColor = Color.FromArgb(226, 232, 240);
             button3.Location = new Point(15, 249);
             button3.Name = "button3";
             button3.Padding = new Padding(12, 0, 0, 0);
             button3.Size = new Size(160, 48);
             button3.TabIndex = 2;
-            button3.Text = "◇  设备总览 · 预留";
+            button3.Text = "◇  控制权申请";
             button3.TextAlign = ContentAlignment.MiddleLeft;
             button3.UseVisualStyleBackColor = false;
+            button3.Click += ControlAuthorityButton_Click;
             //
             // Bu_manual
             //
