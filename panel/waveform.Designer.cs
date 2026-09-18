@@ -269,10 +269,13 @@ partial class WaveformPage
         regularParameterLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
         regularParameterLayout.Dock = DockStyle.Top;
         regularParameterLayout.RowCount = 7;
-        for (var i = 0; i < 7; i++)
-        {
-            regularParameterLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
-        }
+        regularParameterLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
+        regularParameterLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
+        regularParameterLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
+        regularParameterLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
+        regularParameterLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
+        regularParameterLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
+        regularParameterLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
         regularParameterLayout.Controls.Add(regularSegmentLabel, 0, 0);
         regularParameterLayout.Controls.Add(regularSegmentComboBox, 1, 0);
         regularParameterLayout.Controls.Add(regularTheoryLabel, 2, 0);
@@ -318,31 +321,6 @@ partial class WaveformPage
         regularGenerateButton.Text = "计算并保存";
         regularBrowseOutputButton.Text = "浏览";
         regularStatusLabel.Text = "请选择 CSV 保存路径";
-        ConfigureParameterLabel(regularSegmentLabel);
-        ConfigureParameterLabel(regularTheoryLabel);
-        ConfigureParameterLabel(regularDepthLabel);
-        ConfigureParameterLabel(regularPeriodLabel);
-        ConfigureParameterLabel(regularHeightLabel);
-        ConfigureParameterLabel(regularDirectionLabel);
-        ConfigureParameterLabel(regularTimeStepLabel);
-        ConfigureParameterLabel(regularSampleCountLabel);
-        ConfigureParameterLabel(regularFrequencyLabel);
-        ConfigureParameterLabel(regularCharacteristicPeriodLabel);
-        ConfigureParameterLabel(regularOutputLabel);
-        ConfigureInput(regularSegmentComboBox);
-        ConfigureInput(regularTheoryComboBox);
-        ConfigureInput(regularDepthTextBox);
-        ConfigureInput(regularPeriodTextBox);
-        ConfigureInput(regularHeightTextBox);
-        ConfigureInput(regularDirectionTextBox);
-        ConfigureInput(regularTimeStepTextBox);
-        ConfigureInput(regularSampleCountTextBox);
-        ConfigureInput(regularCharacteristicFrequencyTextBox);
-        ConfigureInput(regularCharacteristicPeriodTextBox);
-        ConfigureInput(regularOutputTextBox);
-        ConfigureStatus(regularStatusLabel);
-        ConfigureActionButton(regularBrowseOutputButton, false);
-        ConfigureActionButton(regularGenerateButton, true);
         regularBrowseOutputButton.Click += BrowseRegularOutputButton_Click;
         regularGenerateButton.Click += GenerateRegularButton_Click;
         // 
@@ -392,10 +370,18 @@ partial class WaveformPage
         irregularParameterLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
         irregularParameterLayout.Dock = DockStyle.Top;
         irregularParameterLayout.RowCount = 12;
-        for (var i = 0; i < 12; i++)
-        {
-            irregularParameterLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
-        }
+        irregularParameterLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
+        irregularParameterLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
+        irregularParameterLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
+        irregularParameterLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
+        irregularParameterLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
+        irregularParameterLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
+        irregularParameterLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
+        irregularParameterLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
+        irregularParameterLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
+        irregularParameterLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
+        irregularParameterLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
+        irregularParameterLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
         irregularParameterLayout.Controls.Add(irregularModeLabel, 0, 0);
         irregularParameterLayout.Controls.Add(irregularModeComboBox, 1, 0);
         irregularParameterLayout.Controls.Add(irregularTheoryLabel, 2, 0);
@@ -471,51 +457,6 @@ partial class WaveformPage
         irregularGenerateButton.Text = "计算并保存";
         irregularBrowseOutputButton.Text = "浏览";
         irregularStatusLabel.Text = "请选择 CSV 保存路径";
-        ConfigureParameterLabel(irregularModeLabel);
-        ConfigureParameterLabel(irregularTheoryLabel);
-        ConfigureParameterLabel(irregularSpectrumLabel);
-        ConfigureParameterLabel(irregularSegmentLabel);
-        ConfigureParameterLabel(irregularDirectionLabel);
-        ConfigureParameterLabel(irregularDepthLabel);
-        ConfigureParameterLabel(irregularSignificantPeriodLabel);
-        ConfigureParameterLabel(irregularSignificantHeightLabel);
-        ConfigureParameterLabel(irregularTimeStepLabel);
-        ConfigureParameterLabel(irregularSampleCountLabel);
-        ConfigureParameterLabel(irregularFrequencyLabel);
-        ConfigureParameterLabel(irregularCharacteristicPeriodLabel);
-        ConfigureParameterLabel(irregularPeakFactorLabel);
-        ConfigureParameterLabel(irregularRandomSeedLabel);
-        ConfigureParameterLabel(irregularMinimumPeriodLabel);
-        ConfigureParameterLabel(irregularMaximumPeriodLabel);
-        ConfigureParameterLabel(irregularMinimumDifferencePeriodLabel);
-        ConfigureParameterLabel(irregularMaximumDifferencePeriodLabel);
-        ConfigureParameterLabel(irregularNegativeDirectionLabel);
-        ConfigureParameterLabel(irregularPositiveDirectionLabel);
-        ConfigureParameterLabel(irregularOutputLabel);
-        ConfigureInput(irregularModeComboBox);
-        ConfigureInput(irregularTheoryComboBox);
-        ConfigureInput(irregularSpectrumComboBox);
-        ConfigureInput(irregularSegmentComboBox);
-        ConfigureInput(irregularDirectionTextBox);
-        ConfigureInput(irregularDepthTextBox);
-        ConfigureInput(irregularSignificantPeriodTextBox);
-        ConfigureInput(irregularSignificantHeightTextBox);
-        ConfigureInput(irregularTimeStepTextBox);
-        ConfigureInput(irregularSampleCountTextBox);
-        ConfigureInput(irregularCharacteristicFrequencyTextBox);
-        ConfigureInput(irregularCharacteristicPeriodTextBox);
-        ConfigureInput(irregularPeakFactorTextBox);
-        ConfigureInput(irregularRandomSeedTextBox);
-        ConfigureInput(irregularMinimumPeriodTextBox);
-        ConfigureInput(irregularMaximumPeriodTextBox);
-        ConfigureInput(irregularMinimumDifferencePeriodTextBox);
-        ConfigureInput(irregularMaximumDifferencePeriodTextBox);
-        ConfigureInput(irregularNegativeDirectionTextBox);
-        ConfigureInput(irregularPositiveDirectionTextBox);
-        ConfigureInput(irregularOutputTextBox);
-        ConfigureStatus(irregularStatusLabel);
-        ConfigureActionButton(irregularBrowseOutputButton, false);
-        ConfigureActionButton(irregularGenerateButton, true);
         irregularBrowseOutputButton.Click += BrowseIrregularOutputButton_Click;
         irregularGenerateButton.Click += GenerateIrregularButton_Click;
         // 
@@ -553,49 +494,4 @@ partial class WaveformPage
         ResumeLayout(false);
     }
 
-    // 统一设置参数标签的字体、颜色和对齐方式。
-    private static void ConfigureParameterLabel(Label label)
-    {
-        label.Dock = DockStyle.Fill;
-        label.Font = new Font("Microsoft YaHei UI", 8.5F);
-        label.ForeColor = Color.FromArgb(71, 85, 105);
-        label.TextAlign = ContentAlignment.MiddleLeft;
-        label.AutoEllipsis = true;
-    }
-
-    // 统一设置输入控件的尺寸、字体和边距。
-    private static void ConfigureInput(Control control)
-    {
-        control.Dock = DockStyle.Fill;
-        control.Margin = new Padding(3, 5, 3, 5);
-        control.Font = new Font("Microsoft YaHei UI", 9F);
-    }
-
-    // 统一设置状态标签的显示样式。
-    private static void ConfigureStatus(Label label)
-    {
-        label.Dock = DockStyle.Fill;
-        label.Font = new Font("Microsoft YaHei UI", 8.5F);
-        label.ForeColor = Color.FromArgb(71, 85, 105);
-        label.TextAlign = ContentAlignment.MiddleLeft;
-        label.AutoEllipsis = true;
-    }
-
-    // 根据主次操作统一设置按钮样式。
-    private static void ConfigureActionButton(Button button, bool primary)
-    {
-        button.Dock = primary ? DockStyle.None : DockStyle.Fill;
-        button.Anchor = primary ? AnchorStyles.Left | AnchorStyles.Top : AnchorStyles.Left | AnchorStyles.Right;
-        button.FlatStyle = FlatStyle.Flat;
-        button.FlatAppearance.BorderSize = 0;
-        button.Margin = primary ? new Padding(3, 6, 3, 6) : new Padding(3, 4, 3, 4);
-        if (primary)
-        {
-            button.Size = new Size(174, 46);
-        }
-        button.Font = new Font("Microsoft YaHei UI", 9F, primary ? FontStyle.Bold : FontStyle.Regular);
-        button.BackColor = primary ? Color.FromArgb(37, 99, 235) : Color.FromArgb(226, 232, 240);
-        button.ForeColor = primary ? Color.White : Color.FromArgb(15, 23, 42);
-        button.UseVisualStyleBackColor = false;
-    }
 }

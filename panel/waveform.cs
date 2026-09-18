@@ -13,8 +13,103 @@ public partial class WaveformPage : UserControl
     public WaveformPage()
     {
         InitializeComponent();
+        ApplyStyles();
         _generatorService = new WaveformGeneratorService(WaveformGeneratorOptions.FromConfiguration());
         InitializeWaveformChoices();
+    }
+
+    // 在设计器初始化完成后统一设置标签、输入框和按钮样式。
+    private void ApplyStyles()
+    {
+        foreach (var label in new[]
+        {
+            regularSegmentLabel, regularTheoryLabel, regularDepthLabel, regularPeriodLabel,
+            regularHeightLabel, regularDirectionLabel, regularTimeStepLabel, regularSampleCountLabel,
+            regularFrequencyLabel, regularCharacteristicPeriodLabel, regularOutputLabel,
+            irregularModeLabel, irregularTheoryLabel, irregularSpectrumLabel, irregularSegmentLabel,
+            irregularDirectionLabel, irregularDepthLabel, irregularSignificantPeriodLabel,
+            irregularSignificantHeightLabel, irregularTimeStepLabel, irregularSampleCountLabel,
+            irregularFrequencyLabel, irregularCharacteristicPeriodLabel, irregularPeakFactorLabel,
+            irregularRandomSeedLabel, irregularMinimumPeriodLabel, irregularMaximumPeriodLabel,
+            irregularMinimumDifferencePeriodLabel, irregularMaximumDifferencePeriodLabel,
+            irregularNegativeDirectionLabel, irregularPositiveDirectionLabel, irregularOutputLabel
+        })
+        {
+            ConfigureParameterLabel(label);
+        }
+
+        foreach (var input in new Control[]
+        {
+            regularSegmentComboBox, regularTheoryComboBox, regularDepthTextBox, regularPeriodTextBox,
+            regularHeightTextBox, regularDirectionTextBox, regularTimeStepTextBox,
+            regularSampleCountTextBox, regularCharacteristicFrequencyTextBox,
+            regularCharacteristicPeriodTextBox, regularOutputTextBox,
+            irregularModeComboBox, irregularTheoryComboBox, irregularSpectrumComboBox,
+            irregularSegmentComboBox, irregularDirectionTextBox, irregularDepthTextBox,
+            irregularSignificantPeriodTextBox, irregularSignificantHeightTextBox,
+            irregularTimeStepTextBox, irregularSampleCountTextBox,
+            irregularCharacteristicFrequencyTextBox, irregularCharacteristicPeriodTextBox,
+            irregularPeakFactorTextBox, irregularRandomSeedTextBox, irregularMinimumPeriodTextBox,
+            irregularMaximumPeriodTextBox, irregularMinimumDifferencePeriodTextBox,
+            irregularMaximumDifferencePeriodTextBox, irregularNegativeDirectionTextBox,
+            irregularPositiveDirectionTextBox, irregularOutputTextBox
+        })
+        {
+            ConfigureInput(input);
+        }
+
+        ConfigureStatus(regularStatusLabel);
+        ConfigureStatus(irregularStatusLabel);
+        ConfigureActionButton(regularBrowseOutputButton, false);
+        ConfigureActionButton(regularGenerateButton, true);
+        ConfigureActionButton(irregularBrowseOutputButton, false);
+        ConfigureActionButton(irregularGenerateButton, true);
+    }
+
+    // 统一设置参数标签的字体、颜色和对齐方式。
+    private static void ConfigureParameterLabel(Label label)
+    {
+        label.Dock = DockStyle.Fill;
+        label.Font = new Font("Microsoft YaHei UI", 8.5F);
+        label.ForeColor = Color.FromArgb(71, 85, 105);
+        label.TextAlign = ContentAlignment.MiddleLeft;
+        label.AutoEllipsis = true;
+    }
+
+    // 统一设置输入控件的尺寸、字体和边距。
+    private static void ConfigureInput(Control control)
+    {
+        control.Dock = DockStyle.Fill;
+        control.Margin = new Padding(3, 5, 3, 5);
+        control.Font = new Font("Microsoft YaHei UI", 9F);
+    }
+
+    // 统一设置状态标签的显示样式。
+    private static void ConfigureStatus(Label label)
+    {
+        label.Dock = DockStyle.Fill;
+        label.Font = new Font("Microsoft YaHei UI", 8.5F);
+        label.ForeColor = Color.FromArgb(71, 85, 105);
+        label.TextAlign = ContentAlignment.MiddleLeft;
+        label.AutoEllipsis = true;
+    }
+
+    // 根据主次操作统一设置按钮样式。
+    private static void ConfigureActionButton(Button button, bool primary)
+    {
+        button.Dock = primary ? DockStyle.None : DockStyle.Fill;
+        button.Anchor = primary ? AnchorStyles.Left | AnchorStyles.Top : AnchorStyles.Left | AnchorStyles.Right;
+        button.FlatStyle = FlatStyle.Flat;
+        button.FlatAppearance.BorderSize = 0;
+        button.Margin = primary ? new Padding(3, 6, 3, 6) : new Padding(3, 4, 3, 4);
+        if (primary)
+        {
+            button.Size = new Size(174, 46);
+        }
+        button.Font = new Font("Microsoft YaHei UI", 9F, primary ? FontStyle.Bold : FontStyle.Regular);
+        button.BackColor = primary ? Color.FromArgb(37, 99, 235) : Color.FromArgb(226, 232, 240);
+        button.ForeColor = primary ? Color.White : Color.FromArgb(15, 23, 42);
+        button.UseVisualStyleBackColor = false;
     }
 
     // 填充规则波和不规则波所需的方向、频谱等选项。
