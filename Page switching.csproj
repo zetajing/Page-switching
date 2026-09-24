@@ -25,11 +25,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="InduLink.Storage">
+      <HintPath>..\..\Total\InduLink.Storage\bin\Release\net8.0\InduLink.Storage.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="InduLink.Abstractions">
+      <HintPath>..\..\Total\InduLink.Storage\bin\Release\net8.0\InduLink.Abstractions.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
     <Reference Include="InduLink.Protocols.Ads.Router">
       <HintPath>..\..\Total\InduLink.Protocols.Ads.Router\bin\Debug\net8.0\InduLink.Protocols.Ads.Router.dll</HintPath>
-    </Reference>
-    <Reference Include="LogHelper">
-      <HintPath>..\..\Total\LogHelper\bin\Release\net472\LogHelper.dll</HintPath>
     </Reference>
   </ItemGroup>
 

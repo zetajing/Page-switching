@@ -1,5 +1,5 @@
 using System.ComponentModel;
-using LogHelper;
+using InduLink.Storage;
 
 namespace Page_switching
 {

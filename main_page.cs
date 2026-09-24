@@ -1,6 +1,6 @@
 using System.Configuration;
 using System.Diagnostics;
-using LogHelper;
+using InduLink.Storage;
 using Page_switching.panel;
 using InduLink.Protocols.Ads.Router;
 
