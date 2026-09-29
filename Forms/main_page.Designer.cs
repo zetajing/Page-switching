@@ -59,7 +59,7 @@ namespace Page_switching
             // 
             // panel1
             // 
-            panel1.BackColor = Color.FromArgb(15, 23, 42);
+            panel1.BackColor = Color.White;
             panel1.Controls.Add(headerStatusPanel);
             panel1.Controls.Add(appSubtitleLabel);
             panel1.Controls.Add(appTitleLabel);
@@ -71,7 +71,7 @@ namespace Page_switching
             // 
             // headerStatusPanel
             // 
-            headerStatusPanel.BackColor = Color.FromArgb(15, 23, 42);
+            headerStatusPanel.BackColor = Color.White;
             headerStatusPanel.Controls.Add(controlStatusLabel);
             headerStatusPanel.Controls.Add(adsStatusLabel);
             headerStatusPanel.Dock = DockStyle.Right;
@@ -85,7 +85,7 @@ namespace Page_switching
             // 
             controlStatusLabel.Dock = DockStyle.Fill;
             controlStatusLabel.Font = new Font("Microsoft YaHei UI", 8F);
-            controlStatusLabel.ForeColor = Color.FromArgb(148, 163, 184);
+            controlStatusLabel.ForeColor = Color.FromArgb(100, 116, 139);
             controlStatusLabel.Location = new Point(10, 33);
             controlStatusLabel.Name = "controlStatusLabel";
             controlStatusLabel.Size = new Size(367, 25);
@@ -97,7 +97,7 @@ namespace Page_switching
             // 
             adsStatusLabel.Dock = DockStyle.Top;
             adsStatusLabel.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
-            adsStatusLabel.ForeColor = Color.FromArgb(251, 146, 60);
+            adsStatusLabel.ForeColor = Color.FromArgb(154, 52, 18);
             adsStatusLabel.Location = new Point(10, 8);
             adsStatusLabel.Name = "adsStatusLabel";
             adsStatusLabel.Size = new Size(367, 25);
@@ -109,7 +109,7 @@ namespace Page_switching
             // 
             appSubtitleLabel.AutoSize = true;
             appSubtitleLabel.Font = new Font("Segoe UI", 8F, FontStyle.Bold);
-            appSubtitleLabel.ForeColor = Color.FromArgb(56, 189, 248);
+            appSubtitleLabel.ForeColor = Color.FromArgb(29, 78, 216);
             appSubtitleLabel.Location = new Point(226, 34);
             appSubtitleLabel.Name = "appSubtitleLabel";
             appSubtitleLabel.Size = new Size(186, 19);
@@ -120,7 +120,7 @@ namespace Page_switching
             // 
             appTitleLabel.AutoSize = true;
             appTitleLabel.Font = new Font("Microsoft YaHei UI", 16F, FontStyle.Bold);
-            appTitleLabel.ForeColor = Color.White;
+            appTitleLabel.ForeColor = Color.FromArgb(15, 23, 42);
             appTitleLabel.Location = new Point(20, 14);
             appTitleLabel.Name = "appTitleLabel";
             appTitleLabel.Size = new Size(177, 36);
@@ -129,7 +129,7 @@ namespace Page_switching
             // 
             // panel2
             // 
-            panel2.BackColor = Color.FromArgb(17, 24, 39);
+            panel2.BackColor = Color.FromArgb(248, 250, 252);
             panel2.Controls.Add(systemSectionLabel);
             panel2.Controls.Add(toolsSectionLabel);
             panel2.Controls.Add(controlSectionLabel);
@@ -180,12 +180,12 @@ namespace Page_switching
             // 
             // bu_Configuration
             // 
-            bu_Configuration.BackColor = Color.FromArgb(30, 41, 59);
+            bu_Configuration.BackColor = Color.FromArgb(248, 250, 252);
             bu_Configuration.Cursor = Cursors.Hand;
             bu_Configuration.FlatAppearance.BorderSize = 0;
             bu_Configuration.FlatStyle = FlatStyle.Flat;
             bu_Configuration.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
-            bu_Configuration.ForeColor = Color.FromArgb(226, 232, 240);
+            bu_Configuration.ForeColor = Color.FromArgb(71, 85, 105);
             bu_Configuration.Location = new Point(15, 557);
             bu_Configuration.Name = "bu_Configuration";
             bu_Configuration.Padding = new Padding(12, 0, 0, 0);
@@ -198,12 +198,12 @@ namespace Page_switching
             // 
             // button5
             // 
-            button5.BackColor = Color.FromArgb(30, 41, 59);
+            button5.BackColor = Color.FromArgb(248, 250, 252);
             button5.Cursor = Cursors.Hand;
             button5.FlatAppearance.BorderSize = 0;
             button5.FlatStyle = FlatStyle.Flat;
             button5.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
-            button5.ForeColor = Color.FromArgb(226, 232, 240);
+            button5.ForeColor = Color.FromArgb(71, 85, 105);
             button5.Location = new Point(15, 465);
             button5.Name = "button5";
             button5.Padding = new Padding(12, 0, 0, 0);
@@ -216,12 +216,12 @@ namespace Page_switching
             // 
             // button2
             // 
-            button2.BackColor = Color.FromArgb(30, 41, 59);
+            button2.BackColor = Color.FromArgb(248, 250, 252);
             button2.Cursor = Cursors.Hand;
             button2.FlatAppearance.BorderSize = 0;
             button2.FlatStyle = FlatStyle.Flat;
             button2.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
-            button2.ForeColor = Color.FromArgb(226, 232, 240);
+            button2.ForeColor = Color.FromArgb(71, 85, 105);
             button2.Location = new Point(15, 411);
             button2.Name = "button2";
             button2.Padding = new Padding(12, 0, 0, 0);
@@ -234,12 +234,12 @@ namespace Page_switching
             // 
             // Bu_data
             // 
-            Bu_data.BackColor = Color.FromArgb(30, 41, 59);
+            Bu_data.BackColor = Color.FromArgb(248, 250, 252);
             Bu_data.Cursor = Cursors.Hand;
             Bu_data.FlatAppearance.BorderSize = 0;
             Bu_data.FlatStyle = FlatStyle.Flat;
             Bu_data.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
-            Bu_data.ForeColor = Color.FromArgb(226, 232, 240);
+            Bu_data.ForeColor = Color.FromArgb(71, 85, 105);
             Bu_data.Location = new Point(15, 357);
             Bu_data.Name = "Bu_data";
             Bu_data.Padding = new Padding(12, 0, 0, 0);
@@ -252,12 +252,12 @@ namespace Page_switching
             // 
             // Bu_Calibration
             // 
-            Bu_Calibration.BackColor = Color.FromArgb(30, 41, 59);
+            Bu_Calibration.BackColor = Color.FromArgb(248, 250, 252);
             Bu_Calibration.Cursor = Cursors.Hand;
             Bu_Calibration.FlatAppearance.BorderSize = 0;
             Bu_Calibration.FlatStyle = FlatStyle.Flat;
             Bu_Calibration.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
-            Bu_Calibration.ForeColor = Color.FromArgb(226, 232, 240);
+            Bu_Calibration.ForeColor = Color.FromArgb(71, 85, 105);
             Bu_Calibration.Location = new Point(15, 303);
             Bu_Calibration.Name = "Bu_Calibration";
             Bu_Calibration.Padding = new Padding(12, 0, 0, 0);
@@ -270,12 +270,12 @@ namespace Page_switching
             // 
             // button3
             // 
-            button3.BackColor = Color.FromArgb(30, 41, 59);
+            button3.BackColor = Color.FromArgb(248, 250, 252);
             button3.Cursor = Cursors.Hand;
             button3.FlatAppearance.BorderSize = 0;
             button3.FlatStyle = FlatStyle.Flat;
             button3.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
-            button3.ForeColor = Color.FromArgb(226, 232, 240);
+            button3.ForeColor = Color.FromArgb(71, 85, 105);
             button3.Location = new Point(15, 249);
             button3.Name = "button3";
             button3.Padding = new Padding(12, 0, 0, 0);
@@ -288,12 +288,12 @@ namespace Page_switching
             // 
             // Bu_manual
             // 
-            Bu_manual.BackColor = Color.FromArgb(30, 41, 59);
+            Bu_manual.BackColor = Color.FromArgb(248, 250, 252);
             Bu_manual.Cursor = Cursors.Hand;
             Bu_manual.FlatAppearance.BorderSize = 0;
             Bu_manual.FlatStyle = FlatStyle.Flat;
             Bu_manual.Font = new Font("Microsoft YaHei UI", 11F, FontStyle.Bold);
-            Bu_manual.ForeColor = Color.FromArgb(226, 232, 240);
+            Bu_manual.ForeColor = Color.FromArgb(71, 85, 105);
             Bu_manual.Location = new Point(15, 105);
             Bu_manual.Name = "Bu_manual";
             Bu_manual.Padding = new Padding(12, 0, 0, 0);
@@ -306,12 +306,12 @@ namespace Page_switching
             // 
             // Bu_auto
             // 
-            Bu_auto.BackColor = Color.FromArgb(14, 165, 233);
+            Bu_auto.BackColor = Color.FromArgb(219, 234, 254);
             Bu_auto.Cursor = Cursors.Hand;
             Bu_auto.FlatAppearance.BorderSize = 0;
             Bu_auto.FlatStyle = FlatStyle.Flat;
             Bu_auto.Font = new Font("Microsoft YaHei UI", 11F, FontStyle.Bold);
-            Bu_auto.ForeColor = Color.White;
+            Bu_auto.ForeColor = Color.FromArgb(30, 64, 175);
             Bu_auto.Location = new Point(15, 43);
             Bu_auto.Name = "Bu_auto";
             Bu_auto.Padding = new Padding(12, 0, 0, 0);
@@ -324,6 +324,7 @@ namespace Page_switching
             // 
             // panelswitch
             // 
+            panelswitch.BackColor = Color.FromArgb(241, 245, 249);
             panelswitch.Dock = DockStyle.Fill;
             panelswitch.Location = new Point(190, 64);
             panelswitch.Name = "panelswitch";
@@ -332,6 +333,8 @@ namespace Page_switching
             // 
             // Mainpage
             // 
+            BackColor = Color.FromArgb(241, 245, 249);
+            ForeColor = Color.FromArgb(15, 23, 42);
             AutoScaleDimensions = new SizeF(9F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1400, 860);

@@ -73,8 +73,8 @@ public partial class Config : UserControl
             ? "数据库保存采集任务及文件索引，不保存逐点数据，也不参与 PLC 实时控制。"
             : "数据库日志未启用。";
         _databaseStateLabel.ForeColor = enabled
-            ? Color.FromArgb(5, 150, 105)
-            : Color.FromArgb(100, 116, 139);
+            ? UiPalette.Success
+            : UiPalette.Muted;
     }
 
     // 验证并保存数据库配置到 App.config。
@@ -106,14 +106,14 @@ public partial class Config : UserControl
 
             _databaseConnectionTextBox.Text = connectionString;
 
-            _databaseStateLabel.ForeColor = Color.FromArgb(5, 150, 105);
+            _databaseStateLabel.ForeColor = UiPalette.Success;
             _databaseStateLabel.Text = "数据库配置保存成功；采集任务索引可在数据管理页同步。";
-            saveResultLabel.ForeColor = Color.FromArgb(5, 150, 105);
+            saveResultLabel.ForeColor = UiPalette.Success;
             saveResultLabel.Text = "数据库配置保存成功。";
         }
         catch (Exception ex)
         {
-            saveResultLabel.ForeColor = Color.FromArgb(220, 38, 38);
+            saveResultLabel.ForeColor = UiPalette.Danger;
             saveResultLabel.Text = "数据库配置保存失败：" + ex.Message;
         }
     }
@@ -177,13 +177,13 @@ public partial class Config : UserControl
             waveGeneratorStateLabel.Text = useWaveMaker
                 ? "已启用 WaveMaker 内置算法，不需要 WFast.exe"
                 : "已保存 WFast.exe 路径，波形页面可以直接生成";
-            waveGeneratorStateLabel.ForeColor = Color.FromArgb(5, 150, 105);
-            saveResultLabel.ForeColor = Color.FromArgb(5, 150, 105);
+            waveGeneratorStateLabel.ForeColor = UiPalette.Success;
+            saveResultLabel.ForeColor = UiPalette.Success;
             saveResultLabel.Text = useWaveMaker ? "WaveMaker 内置方案保存成功。" : "WFast.exe 方案保存成功。";
         }
         catch (Exception ex)
         {
-            saveResultLabel.ForeColor = Color.FromArgb(220, 38, 38);
+            saveResultLabel.ForeColor = UiPalette.Danger;
             saveResultLabel.Text = "WFast 路径保存失败：" + ex.Message;
         }
     }
@@ -197,7 +197,7 @@ public partial class Config : UserControl
         if (useWaveMaker)
         {
             waveGeneratorStateLabel.Text = "已选择 WaveMaker 内置算法，不需要配置 WFast.exe";
-            waveGeneratorStateLabel.ForeColor = Color.FromArgb(5, 150, 105);
+            waveGeneratorStateLabel.ForeColor = UiPalette.Success;
             return;
         }
 
@@ -205,17 +205,17 @@ public partial class Config : UserControl
         if (string.IsNullOrWhiteSpace(path))
         {
             waveGeneratorStateLabel.Text = "未配置，波形生成页面运行时会提示设置路径";
-            waveGeneratorStateLabel.ForeColor = Color.FromArgb(180, 83, 9);
+            waveGeneratorStateLabel.ForeColor = UiPalette.Warning;
         }
         else if (File.Exists(path))
         {
             waveGeneratorStateLabel.Text = "已找到 WFast.exe";
-            waveGeneratorStateLabel.ForeColor = Color.FromArgb(5, 150, 105);
+            waveGeneratorStateLabel.ForeColor = UiPalette.Success;
         }
         else
         {
             waveGeneratorStateLabel.Text = "路径不存在，请重新选择 WFast.exe";
-            waveGeneratorStateLabel.ForeColor = Color.FromArgb(220, 38, 38);
+            waveGeneratorStateLabel.ForeColor = UiPalette.Danger;
         }
     }
 
@@ -236,7 +236,7 @@ public partial class Config : UserControl
         remoteAddressTextBox.Enabled = enabled;
         remoteNetIdTextBox.Enabled = enabled;
         routerStateLabel.Text = enabled ? "独立 Router：启用（重启后生效）" : "独立 Router：关闭，使用系统 TwinCAT Router";
-        routerStateLabel.ForeColor = enabled ? Color.FromArgb(5, 150, 105) : Color.FromArgb(100, 116, 139);
+        routerStateLabel.ForeColor = enabled ? UiPalette.Success : UiPalette.Muted;
     }
 
     // 验证并保存 ADS TCP Router 配置。
@@ -261,12 +261,12 @@ public partial class Config : UserControl
                 ("AdsTcpRouterRemoteNetId", remoteNetIdTextBox.Text.Trim()),
                 ("AdsAmsNetId", remoteNetIdTextBox.Text.Trim()));
 
-            saveResultLabel.ForeColor = Color.FromArgb(5, 150, 105);
+            saveResultLabel.ForeColor = UiPalette.Success;
             saveResultLabel.Text = "保存成功；Router 和 ADS 配置重启后生效，波形生成方案立即可用。";
         }
         catch (Exception ex)
         {
-            saveResultLabel.ForeColor = Color.FromArgb(220, 38, 38);
+            saveResultLabel.ForeColor = UiPalette.Danger;
             saveResultLabel.Text = "保存失败：" + ex.Message;
         }
     }

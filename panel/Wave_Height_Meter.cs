@@ -70,7 +70,7 @@ namespace Page_switching.panel
             _waveformPreview.ClearSamples();
             UpdateConnectionControls();
             _connectionStatusLabel.Text = "正在连接并启动采集…";
-            _connectionStatusLabel.ForeColor = Color.FromArgb(37, 99, 235);
+            _connectionStatusLabel.ForeColor = UiPalette.Primary;
 
             var client = new WaveHeightMeterClient();
             _client?.Dispose();
@@ -99,7 +99,7 @@ namespace Page_switching.panel
                 if (!IsDisposed)
                 {
                     _connectionStatusLabel.Text = "设备已连接，正在接收数据";
-                    _connectionStatusLabel.ForeColor = Color.FromArgb(5, 150, 105);
+                    _connectionStatusLabel.ForeColor = UiPalette.Success;
                     _sampleRateLabel.Text = $"CH1 · {_sampleRateInput.Value:0} Hz";
                 }
             }
@@ -119,7 +119,7 @@ namespace Page_switching.panel
                 if (!IsDisposed)
                 {
                     _connectionStatusLabel.Text = "连接失败：" + ex.Message;
-                    _connectionStatusLabel.ForeColor = Color.FromArgb(220, 38, 38);
+                    _connectionStatusLabel.ForeColor = UiPalette.Danger;
                 }
             }
             finally
@@ -155,7 +155,7 @@ namespace Page_switching.panel
                 if (!IsDisposed)
                 {
                     _connectionStatusLabel.Text = "设备已断开";
-                    _connectionStatusLabel.ForeColor = Color.FromArgb(100, 116, 139);
+                    _connectionStatusLabel.ForeColor = UiPalette.Muted;
                 }
             }
             catch (Exception ex)
@@ -164,7 +164,7 @@ namespace Page_switching.panel
                 if (!IsDisposed)
                 {
                     _connectionStatusLabel.Text = "断开时发生错误：" + ex.Message;
-                    _connectionStatusLabel.ForeColor = Color.FromArgb(220, 38, 38);
+                    _connectionStatusLabel.ForeColor = UiPalette.Danger;
                 }
             }
             finally
@@ -195,12 +195,12 @@ namespace Page_switching.panel
                 configuration.Save(ConfigurationSaveMode.Modified);
                 ConfigurationManager.RefreshSection("appSettings");
                 _connectionStatusLabel.Text = "浪高仪连接参数已保存";
-                _connectionStatusLabel.ForeColor = Color.FromArgb(5, 150, 105);
+                _connectionStatusLabel.ForeColor = UiPalette.Success;
             }
             catch (Exception ex)
             {
                 _connectionStatusLabel.Text = "保存参数失败：" + ex.Message;
-                _connectionStatusLabel.ForeColor = Color.FromArgb(220, 38, 38);
+                _connectionStatusLabel.ForeColor = UiPalette.Danger;
             }
         }
 
@@ -223,7 +223,7 @@ namespace Page_switching.panel
                 _connectionStatusLabel.Text = e.Error is null
                     ? "设备连接已关闭"
                     : "连接中断：" + e.Error.Message;
-                _connectionStatusLabel.ForeColor = Color.FromArgb(220, 38, 38);
+                _connectionStatusLabel.ForeColor = UiPalette.Danger;
                 CompleteSession();
                 UpdateConnectionControls();
             });
@@ -249,7 +249,7 @@ namespace Page_switching.panel
             catch (Exception ex)
             {
                 _connectionStatusLabel.Text = "本地记录失败：" + ex.Message;
-                _connectionStatusLabel.ForeColor = Color.FromArgb(220, 38, 38);
+                _connectionStatusLabel.ForeColor = UiPalette.Danger;
                 _ = DisconnectForStorageFailureAsync();
                 return;
             }
@@ -293,7 +293,7 @@ namespace Page_switching.panel
             if (manifest is null || manifest.SampleCount == 0 || !File.Exists(manifest.CsvPath))
             {
                 _connectionStatusLabel.Text = "当前没有可导出的采样数据";
-                _connectionStatusLabel.ForeColor = Color.FromArgb(180, 83, 9);
+                _connectionStatusLabel.ForeColor = UiPalette.Warning;
                 return;
             }
 
@@ -316,12 +316,12 @@ namespace Page_switching.panel
             {
                 File.Copy(manifest.CsvPath, dialog.FileName, true);
                 _connectionStatusLabel.Text = $"已导出 {manifest.SampleCount:N0} 个采样点";
-                _connectionStatusLabel.ForeColor = Color.FromArgb(5, 150, 105);
+                _connectionStatusLabel.ForeColor = UiPalette.Success;
             }
             catch (Exception ex)
             {
                 _connectionStatusLabel.Text = "导出失败：" + ex.Message;
-                _connectionStatusLabel.ForeColor = Color.FromArgb(220, 38, 38);
+                _connectionStatusLabel.ForeColor = UiPalette.Danger;
             }
         }
 

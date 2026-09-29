@@ -153,16 +153,15 @@ namespace Page_switching
             SetActiveNavigation(button);
         }
 
-        // 高亮当前页面对应的导航按钮，并恢复其他按钮的深色背景。
+        // 高亮当前页面对应的导航按钮。
         private void SetActiveNavigation(Button activeButton)
         {
             foreach (var button in new[] { Bu_auto, Bu_manual, button3, Bu_Calibration, Bu_data, button2, button5, bu_Configuration })
             {
                 var isActive = ReferenceEquals(button, activeButton);
-                button.BackColor = isActive
-                    ? Color.FromArgb(14, 165, 233)
-                    : Color.FromArgb(30, 41, 59);
-                button.ForeColor = isActive ? Color.White : Color.FromArgb(226, 232, 240);
+                button.BackColor = isActive ? UiPalette.Selection : UiPalette.Sidebar;
+                button.ForeColor = isActive ? UiPalette.PrimaryHover : UiPalette.SecondaryText;
+                button.FlatAppearance.MouseOverBackColor = UiPalette.Selection;
             }
 
             UpdateHeaderStatus();
@@ -178,9 +177,7 @@ namespace Page_switching
 
             var connected = _axisService.IsConnected;
             adsStatusLabel.Text = connected ? "●  ADS 已连接" : "●  ADS 未连接";
-            adsStatusLabel.ForeColor = connected
-                ? Color.FromArgb(74, 222, 128)
-                : Color.FromArgb(251, 146, 60);
+            adsStatusLabel.ForeColor = connected ? UiPalette.Success : UiPalette.Warning;
 
             var ownerState = HasControlSetting("AdsControlOwnerStationId") ? "已配置" : "待配置";
             var safetyState = HasControlSetting("AdsSafetyOk") ? "已配置" : "待配置";

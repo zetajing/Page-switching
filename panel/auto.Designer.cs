@@ -84,7 +84,7 @@
             // 
             // headerPanel
             // 
-            headerPanel.BackColor = Color.FromArgb(241, 245, 249);
+            headerPanel.BackColor = Color.White;
             headerPanel.Controls.Add(subtitleLabel);
             headerPanel.Controls.Add(titleLabel);
             headerPanel.Dock = DockStyle.Fill;
@@ -120,6 +120,7 @@
             // 
             // statusGroup
             // 
+            statusGroup.BackColor = Color.White;
             statusGroup.Controls.Add(statusLayout);
             statusGroup.Dock = DockStyle.Fill;
             statusGroup.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
@@ -164,7 +165,7 @@
             // 
             _runStateLabel.Dock = DockStyle.Fill;
             _runStateLabel.Font = new Font("Microsoft YaHei UI", 11F, FontStyle.Bold);
-            _runStateLabel.ForeColor = Color.FromArgb(5, 150, 105);
+            _runStateLabel.ForeColor = Color.FromArgb(4, 120, 87);
             _runStateLabel.Location = new Point(123, 0);
             _runStateLabel.Name = "_runStateLabel";
             _runStateLabel.Size = new Size(1016, 24);
@@ -174,6 +175,7 @@
             // 
             // logGroup
             // 
+            logGroup.BackColor = Color.White;
             logGroup.Controls.Add(logLayout);
             logGroup.Dock = DockStyle.Fill;
             logGroup.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
@@ -236,6 +238,7 @@
             AutoScaleDimensions = new SizeF(9F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(241, 245, 249);
+            ForeColor = Color.FromArgb(15, 23, 42);
             Controls.Add(rootLayout);
             Name = "Auto";
             Size = new Size(1210, 796);

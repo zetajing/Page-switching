@@ -24,8 +24,8 @@ public sealed class ServoPositionIndicator : Control
             ControlStyles.ResizeRedraw,
             true);
 
-        BackColor = Color.White;
-        ForeColor = Color.FromArgb(31, 41, 55);
+        BackColor = UiPalette.Surface;
+        ForeColor = UiPalette.Text;
         MinimumSize = new Size(180, 66);
         Height = 82;
         TabStop = false;
@@ -143,14 +143,15 @@ public sealed class ServoPositionIndicator : Control
         graphics.SmoothingMode = SmoothingMode.AntiAlias;
         graphics.Clear(BackColor);
 
-        using var borderPen = new Pen(Color.FromArgb(226, 232, 240));
-        using var trackPen = new Pen(Color.FromArgb(203, 213, 225), 8)
+        using var borderPen = new Pen(UiPalette.Border);
+        using var trackPen = new Pen(UiPalette.Border, 8)
         {
             StartCap = LineCap.Round,
             EndCap = LineCap.Round
         };
         using var actualBrush = new SolidBrush(GetActualColor());
         using var actualTextBrush = new SolidBrush(GetActualColor());
+        using var mutedBrush = new SolidBrush(UiPalette.Muted);
 
         var border = new Rectangle(0, 0, Math.Max(0, Width - 1), Math.Max(0, Height - 1));
         graphics.DrawRectangle(borderPen, border);
@@ -161,7 +162,7 @@ public sealed class ServoPositionIndicator : Control
         graphics.DrawLine(trackPen, left, trackY, right, trackY);
 
         var zeroX = MapPosition(0, left, right);
-        using var zeroPen = new Pen(Color.FromArgb(148, 163, 184), 1)
+        using var zeroPen = new Pen(UiPalette.Muted, 1)
         {
             DashStyle = DashStyle.Dash
         };
@@ -181,11 +182,11 @@ public sealed class ServoPositionIndicator : Control
         }
         else
         {
-            DrawCenteredString(graphics, "暂无位置数据", Font, Brushes.Gray, (left + right) / 2, 6);
+            DrawCenteredString(graphics, "暂无位置数据", Font, mutedBrush, (left + right) / 2, 6);
         }
 
-        DrawAlignedString(graphics, $"{_minimumPosition:0.##}{_unitText}", Font, Brushes.Gray, left, Height - 20);
-        DrawAlignedString(graphics, $"{_maximumPosition:0.##}{_unitText}", Font, Brushes.Gray, right, Height - 20, rightAligned: true);
+        DrawAlignedString(graphics, $"{_minimumPosition:0.##}{_unitText}", Font, mutedBrush, left, Height - 20);
+        DrawAlignedString(graphics, $"{_maximumPosition:0.##}{_unitText}", Font, mutedBrush, right, Height - 20, rightAligned: true);
     }
 
     // 将实际轴位置换算为控件中的横坐标。
@@ -199,9 +200,9 @@ public sealed class ServoPositionIndicator : Control
     // 根据连接、报警和限位状态返回当前位置的显示颜色。
     private Color GetActualColor()
     {
-        if (_hasAlarm) return Color.FromArgb(220, 38, 38);
-        if (_positiveLimit || _negativeLimit) return Color.FromArgb(234, 88, 12);
-        return Color.FromArgb(14, 116, 144);
+        if (_hasAlarm) return UiPalette.Danger;
+        if (_positiveLimit || _negativeLimit) return UiPalette.Warning;
+        return UiPalette.Primary;
     }
 
     // 以指定横坐标为中心绘制文字。

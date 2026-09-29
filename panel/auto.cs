@@ -51,7 +51,7 @@ namespace Page_switching
         public void SetRunState(string state, Color? color = null)
         {
             _runStateLabel.Text = state;
-            _runStateLabel.ForeColor = color ?? Color.FromArgb(5, 150, 105);
+            _runStateLabel.ForeColor = color ?? UiPalette.Success;
             AddLog("状态：" + state);
         }
 

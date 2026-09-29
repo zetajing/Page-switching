@@ -153,11 +153,11 @@ namespace Page_switching
                 _statusLabels[index].ForeColor = GetStatusColor(snapshot);
                 var connected = _axisService.IsConnected;
                 UpdateSignalLamp(_negativeLimitLamps[index], "负限位",
-                    connected && snapshot.NegativeLimitAvailable ? snapshot.NegativeLimit : null, Color.FromArgb(234, 88, 12));
+                    connected && snapshot.NegativeLimitAvailable ? snapshot.NegativeLimit : null, UiPalette.Warning);
                 UpdateSignalLamp(_originLamps[index], "原点",
-                    connected ? snapshot.OriginSignal : null, Color.FromArgb(5, 150, 105));
+                    connected ? snapshot.OriginSignal : null, UiPalette.Success);
                 UpdateSignalLamp(_positiveLimitLamps[index], "正限位",
-                    connected && snapshot.PositiveLimitAvailable ? snapshot.PositiveLimit : null, Color.FromArgb(234, 88, 12));
+                    connected && snapshot.PositiveLimitAvailable ? snapshot.PositiveLimit : null, UiPalette.Warning);
             }
         }
 
@@ -165,8 +165,8 @@ namespace Page_switching
         private static void UpdateSignalLamp(Label lamp, string caption, bool? active, Color activeColor)
         {
             lamp.Text = $"{(active == true ? "●" : "○")} {caption}{(active.HasValue ? string.Empty : " --")}";
-            lamp.BackColor = active == true ? activeColor : Color.FromArgb(241, 245, 249);
-            lamp.ForeColor = active == true ? Color.White : active.HasValue ? Color.FromArgb(71, 85, 105) : Color.Gray;
+            lamp.BackColor = active == true ? activeColor : UiPalette.Canvas;
+            lamp.ForeColor = active == true ? Color.White : active.HasValue ? UiPalette.SecondaryText : UiPalette.Muted;
             lamp.AccessibleName = $"{caption}：{(active.HasValue ? active.Value ? "触发" : "未触发" : "无有效数据")}";
         }
 
@@ -201,8 +201,8 @@ namespace Page_switching
         {
             connectionStateLabel.Text = _axisService.ConnectionStateText;
             connectionStateLabel.ForeColor = _axisService.IsConnected
-                ? Color.FromArgb(5, 150, 105)
-                : Color.FromArgb(220, 38, 38);
+                ? UiPalette.Success
+                : UiPalette.Danger;
 
             var canControlAll = _axisService.CanControlAll;
             SetCommandButtonEnabled(enableAllButton, canControlAll);
@@ -411,11 +411,11 @@ namespace Page_switching
         // 根据报警、限位和运行状态选择状态文字颜色。
         private static Color GetStatusColor(AxisSnapshot snapshot)
         {
-            if (snapshot.HasAlarm) return Color.FromArgb(220, 38, 38);
-            if (snapshot.PositiveLimit || snapshot.NegativeLimit) return Color.FromArgb(234, 88, 12);
+            if (snapshot.HasAlarm) return UiPalette.Danger;
+            if (snapshot.PositiveLimit || snapshot.NegativeLimit) return UiPalette.Warning;
             return snapshot.StatusText is "就绪" or "运行中"
-                ? Color.FromArgb(5, 150, 105)
-                : Color.Gray;
+                ? UiPalette.Success
+                : UiPalette.Muted;
         }
 
         // 页面释放时停止定时器、取消任务并按需释放轴服务。

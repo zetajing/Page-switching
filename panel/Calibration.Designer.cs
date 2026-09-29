@@ -58,6 +58,8 @@ partial class Calibration
         channelCaption.Name = "channelCaption";
         toolbar.Controls.Add(channelCaption);
         channelPicker.DropDownStyle = ComboBoxStyle.DropDownList;
+        channelPicker.BackColor = Color.White;
+        channelPicker.ForeColor = Color.FromArgb(15, 23, 42);
         channelPicker.Name = "channelPicker";
         channelPicker.Size = new Size(92, 30);
         toolbar.Controls.Add(channelPicker);
@@ -67,6 +69,7 @@ partial class Calibration
         rawCaption.Name = "rawCaption";
         toolbar.Controls.Add(rawCaption);
         rawValue.AutoSize = false;
+        rawValue.ForeColor = Color.FromArgb(15, 23, 42);
         rawValue.Margin = new Padding(0, 7, 10, 0);
         rawValue.Name = "rawValue";
         rawValue.Size = new Size(85, 32);
@@ -74,7 +77,9 @@ partial class Calibration
         rawValue.TextAlign = ContentAlignment.MiddleLeft;
         toolbar.Controls.Add(rawValue);
         zeroButton.BackColor = Color.FromArgb(226, 232, 240);
+        zeroButton.FlatAppearance.BorderSize = 0;
         zeroButton.FlatStyle = FlatStyle.Flat;
+        zeroButton.ForeColor = Color.FromArgb(15, 23, 42);
         zeroButton.Font = new Font("Microsoft YaHei UI", 8.5F);
         zeroButton.Margin = new Padding(0, 2, 8, 0);
         zeroButton.Name = "zeroButton";
@@ -83,7 +88,9 @@ partial class Calibration
         zeroButton.UseVisualStyleBackColor = false;
         toolbar.Controls.Add(zeroButton);
         addButton.BackColor = Color.FromArgb(226, 232, 240);
+        addButton.FlatAppearance.BorderSize = 0;
         addButton.FlatStyle = FlatStyle.Flat;
+        addButton.ForeColor = Color.FromArgb(15, 23, 42);
         addButton.Font = new Font("Microsoft YaHei UI", 8.5F);
         addButton.Margin = new Padding(0, 2, 8, 0);
         addButton.Name = "addButton";
@@ -92,7 +99,9 @@ partial class Calibration
         addButton.UseVisualStyleBackColor = false;
         toolbar.Controls.Add(addButton);
         removeButton.BackColor = Color.FromArgb(226, 232, 240);
+        removeButton.FlatAppearance.BorderSize = 0;
         removeButton.FlatStyle = FlatStyle.Flat;
+        removeButton.ForeColor = Color.FromArgb(15, 23, 42);
         removeButton.Font = new Font("Microsoft YaHei UI", 8.5F);
         removeButton.Margin = new Padding(0, 2, 8, 0);
         removeButton.Name = "removeButton";
@@ -101,7 +110,9 @@ partial class Calibration
         removeButton.UseVisualStyleBackColor = false;
         toolbar.Controls.Add(removeButton);
         fitButton.BackColor = Color.FromArgb(226, 232, 240);
+        fitButton.FlatAppearance.BorderSize = 0;
         fitButton.FlatStyle = FlatStyle.Flat;
+        fitButton.ForeColor = Color.FromArgb(15, 23, 42);
         fitButton.Font = new Font("Microsoft YaHei UI", 8.5F);
         fitButton.Margin = new Padding(0, 2, 8, 0);
         fitButton.Name = "fitButton";
@@ -109,8 +120,11 @@ partial class Calibration
         fitButton.Text = "计算系数";
         fitButton.UseVisualStyleBackColor = false;
         toolbar.Controls.Add(fitButton);
-        saveButton.BackColor = Color.FromArgb(226, 232, 240);
+        saveButton.BackColor = Color.FromArgb(29, 78, 216);
+        saveButton.FlatAppearance.BorderSize = 0;
+        saveButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(30, 64, 175);
         saveButton.FlatStyle = FlatStyle.Flat;
+        saveButton.ForeColor = Color.White;
         saveButton.Font = new Font("Microsoft YaHei UI", 8.5F);
         saveButton.Margin = new Padding(0, 2, 8, 0);
         saveButton.Name = "saveButton";
@@ -119,7 +133,9 @@ partial class Calibration
         saveButton.UseVisualStyleBackColor = false;
         toolbar.Controls.Add(saveButton);
         importButton.BackColor = Color.FromArgb(226, 232, 240);
+        importButton.FlatAppearance.BorderSize = 0;
         importButton.FlatStyle = FlatStyle.Flat;
+        importButton.ForeColor = Color.FromArgb(15, 23, 42);
         importButton.Font = new Font("Microsoft YaHei UI", 8.5F);
         importButton.Margin = new Padding(0, 2, 8, 0);
         importButton.Name = "importButton";
@@ -128,7 +144,9 @@ partial class Calibration
         importButton.UseVisualStyleBackColor = false;
         toolbar.Controls.Add(importButton);
         exportButton.BackColor = Color.FromArgb(226, 232, 240);
+        exportButton.FlatAppearance.BorderSize = 0;
         exportButton.FlatStyle = FlatStyle.Flat;
+        exportButton.ForeColor = Color.FromArgb(15, 23, 42);
         exportButton.Font = new Font("Microsoft YaHei UI", 8.5F);
         exportButton.Margin = new Padding(0, 2, 8, 0);
         exportButton.Name = "exportButton";
@@ -140,11 +158,24 @@ partial class Calibration
         pointsGrid.AllowUserToAddRows = true;
         pointsGrid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
         pointsGrid.BackgroundColor = Color.White;
+        pointsGrid.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(241, 245, 249);
+        pointsGrid.ColumnHeadersDefaultCellStyle.ForeColor = Color.FromArgb(15, 23, 42);
+        pointsGrid.DefaultCellStyle.BackColor = Color.White;
+        pointsGrid.DefaultCellStyle.ForeColor = Color.FromArgb(15, 23, 42);
+        pointsGrid.DefaultCellStyle.SelectionBackColor = Color.FromArgb(219, 234, 254);
+        pointsGrid.DefaultCellStyle.SelectionForeColor = Color.FromArgb(15, 23, 42);
+        pointsGrid.EnableHeadersVisualStyles = false;
+        pointsGrid.GridColor = Color.FromArgb(203, 213, 225);
+        pointsGrid.RowHeadersDefaultCellStyle.BackColor = Color.FromArgb(241, 245, 249);
+        pointsGrid.RowHeadersDefaultCellStyle.ForeColor = Color.FromArgb(15, 23, 42);
+        pointsGrid.RowHeadersDefaultCellStyle.SelectionBackColor = Color.FromArgb(219, 234, 254);
+        pointsGrid.RowHeadersDefaultCellStyle.SelectionForeColor = Color.FromArgb(15, 23, 42);
         pointsGrid.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
         pointsGrid.Columns.AddRange(rawColumn, levelColumn);
         pointsGrid.Dock = DockStyle.Fill;
         pointsGrid.Margin = new Padding(0, 10, 0, 10);
         pointsGrid.Name = "pointsGrid";
+        pointsGrid.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
         rawColumn.HeaderText = "原始计数";
         rawColumn.Name = "rawColumn";
         levelColumn.HeaderText = "标定水位 (mm)";
@@ -161,6 +192,8 @@ partial class Calibration
         result.Text = "先录入至少两个不同原始计数的标定点，再计算并保存。";
         root.Controls.Add(result, 0, 3);
 
+        BackColor = Color.FromArgb(241, 245, 249);
+        ForeColor = Color.FromArgb(15, 23, 42);
         Controls.Add(root);
         Name = "Calibration";
         Size = new Size(1210, 796);

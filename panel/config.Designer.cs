@@ -163,6 +163,7 @@ partial class Config
         // 
         // routerGroup
         // 
+        routerGroup.BackColor = Color.White;
         routerGroup.Controls.Add(routerLayout);
         routerGroup.Dock = DockStyle.Fill;
         routerGroup.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
@@ -259,6 +260,8 @@ partial class Config
         routerNameTextBox.Font = new Font("Microsoft YaHei UI", 10F);
         routerNameTextBox.Location = new Point(150, 37);
         routerNameTextBox.Margin = new Padding(2, 5, 2, 5);
+        routerNameTextBox.BackColor = Color.White;
+        routerNameTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         routerNameTextBox.Name = "routerNameTextBox";
         routerNameTextBox.Size = new Size(294, 24);
         routerNameTextBox.TabIndex = 3;
@@ -282,6 +285,8 @@ partial class Config
         localNetIdTextBox.Font = new Font("Microsoft YaHei UI", 10F);
         localNetIdTextBox.Location = new Point(150, 69);
         localNetIdTextBox.Margin = new Padding(2, 5, 2, 5);
+        localNetIdTextBox.BackColor = Color.White;
+        localNetIdTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         localNetIdTextBox.Name = "localNetIdTextBox";
         localNetIdTextBox.Size = new Size(294, 24);
         localNetIdTextBox.TabIndex = 5;
@@ -307,6 +312,8 @@ partial class Config
         routerTcpPortInput.Margin = new Padding(2, 5, 2, 5);
         routerTcpPortInput.Maximum = new decimal(new int[] { 65535, 0, 0, 0 });
         routerTcpPortInput.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
+        routerTcpPortInput.BackColor = Color.White;
+        routerTcpPortInput.ForeColor = Color.FromArgb(15, 23, 42);
         routerTcpPortInput.Name = "routerTcpPortInput";
         routerTcpPortInput.Size = new Size(294, 24);
         routerTcpPortInput.TabIndex = 7;
@@ -331,6 +338,8 @@ partial class Config
         remoteNameTextBox.Font = new Font("Microsoft YaHei UI", 10F);
         remoteNameTextBox.Location = new Point(150, 133);
         remoteNameTextBox.Margin = new Padding(2, 5, 2, 5);
+        remoteNameTextBox.BackColor = Color.White;
+        remoteNameTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         remoteNameTextBox.Name = "remoteNameTextBox";
         remoteNameTextBox.Size = new Size(294, 24);
         remoteNameTextBox.TabIndex = 9;
@@ -354,6 +363,8 @@ partial class Config
         remoteAddressTextBox.Font = new Font("Microsoft YaHei UI", 10F);
         remoteAddressTextBox.Location = new Point(150, 165);
         remoteAddressTextBox.Margin = new Padding(2, 5, 2, 5);
+        remoteAddressTextBox.BackColor = Color.White;
+        remoteAddressTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         remoteAddressTextBox.Name = "remoteAddressTextBox";
         remoteAddressTextBox.Size = new Size(294, 24);
         remoteAddressTextBox.TabIndex = 11;
@@ -377,6 +388,8 @@ partial class Config
         remoteNetIdTextBox.Font = new Font("Microsoft YaHei UI", 10F);
         remoteNetIdTextBox.Location = new Point(150, 197);
         remoteNetIdTextBox.Margin = new Padding(2, 5, 2, 5);
+        remoteNetIdTextBox.BackColor = Color.White;
+        remoteNetIdTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         remoteNetIdTextBox.Name = "remoteNetIdTextBox";
         remoteNetIdTextBox.Size = new Size(294, 24);
         remoteNetIdTextBox.TabIndex = 13;
@@ -384,8 +397,9 @@ partial class Config
         // saveRouterButton
         // 
         saveRouterButton.Anchor = AnchorStyles.Left;
-        saveRouterButton.BackColor = Color.FromArgb(37, 99, 235);
+        saveRouterButton.BackColor = Color.FromArgb(29, 78, 216);
         saveRouterButton.FlatAppearance.BorderSize = 0;
+        saveRouterButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(30, 64, 175);
         saveRouterButton.FlatStyle = FlatStyle.Flat;
         saveRouterButton.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
         saveRouterButton.ForeColor = Color.White;
@@ -414,7 +428,7 @@ partial class Config
         routerLayout.SetColumnSpan(routerNoticeLabel, 3);
         routerNoticeLabel.Dock = DockStyle.Fill;
         routerNoticeLabel.Font = new Font("Microsoft YaHei UI", 9F);
-        routerNoticeLabel.ForeColor = Color.FromArgb(180, 83, 9);
+        routerNoticeLabel.ForeColor = Color.FromArgb(154, 52, 18);
         routerNoticeLabel.Location = new Point(2, 289);
         routerNoticeLabel.Margin = new Padding(2, 0, 2, 0);
         routerNoticeLabel.Name = "routerNoticeLabel";
@@ -425,6 +439,7 @@ partial class Config
         // 
         // waveGeneratorGroup
         // 
+        waveGeneratorGroup.BackColor = Color.White;
         waveGeneratorGroup.Controls.Add(waveGeneratorLayout);
         waveGeneratorGroup.Dock = DockStyle.Fill;
         waveGeneratorGroup.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
@@ -483,6 +498,8 @@ partial class Config
         waveGeneratorPathTextBox.Font = new Font("Microsoft YaHei UI", 9F);
         waveGeneratorPathTextBox.Location = new Point(173, 3);
         waveGeneratorPathTextBox.Margin = new Padding(2, 3, 2, 3);
+        waveGeneratorPathTextBox.BackColor = Color.White;
+        waveGeneratorPathTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         waveGeneratorPathTextBox.Name = "waveGeneratorPathTextBox";
         waveGeneratorPathTextBox.Size = new Size(502, 23);
         waveGeneratorPathTextBox.TabIndex = 1;
@@ -490,7 +507,11 @@ partial class Config
         // 
         // browseWaveGeneratorButton
         // 
+        browseWaveGeneratorButton.BackColor = Color.FromArgb(226, 232, 240);
         browseWaveGeneratorButton.Dock = DockStyle.Fill;
+        browseWaveGeneratorButton.FlatAppearance.BorderSize = 0;
+        browseWaveGeneratorButton.FlatStyle = FlatStyle.Flat;
+        browseWaveGeneratorButton.ForeColor = Color.FromArgb(15, 23, 42);
         browseWaveGeneratorButton.Font = new Font("Microsoft YaHei UI", 9F);
         browseWaveGeneratorButton.Location = new Point(679, 3);
         browseWaveGeneratorButton.Margin = new Padding(2, 3, 2, 3);
@@ -498,12 +519,17 @@ partial class Config
         browseWaveGeneratorButton.Size = new Size(64, 23);
         browseWaveGeneratorButton.TabIndex = 2;
         browseWaveGeneratorButton.Text = "浏览...";
-        browseWaveGeneratorButton.UseVisualStyleBackColor = true;
+        browseWaveGeneratorButton.UseVisualStyleBackColor = false;
         browseWaveGeneratorButton.Click += BrowseWaveGeneratorButton_Click;
         // 
         // saveWaveGeneratorButton
         // 
+        saveWaveGeneratorButton.BackColor = Color.FromArgb(29, 78, 216);
         saveWaveGeneratorButton.Dock = DockStyle.Fill;
+        saveWaveGeneratorButton.FlatAppearance.BorderSize = 0;
+        saveWaveGeneratorButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(30, 64, 175);
+        saveWaveGeneratorButton.FlatStyle = FlatStyle.Flat;
+        saveWaveGeneratorButton.ForeColor = Color.White;
         saveWaveGeneratorButton.Font = new Font("Microsoft YaHei UI", 9F);
         saveWaveGeneratorButton.Location = new Point(747, 3);
         saveWaveGeneratorButton.Margin = new Padding(2, 3, 2, 3);
@@ -511,7 +537,7 @@ partial class Config
         saveWaveGeneratorButton.Size = new Size(82, 23);
         saveWaveGeneratorButton.TabIndex = 3;
         saveWaveGeneratorButton.Text = "保存设置";
-        saveWaveGeneratorButton.UseVisualStyleBackColor = true;
+        saveWaveGeneratorButton.UseVisualStyleBackColor = false;
         saveWaveGeneratorButton.Click += SaveWaveGeneratorButton_Click;
         // 
         // waveGeneratorStateLabel
@@ -548,6 +574,8 @@ partial class Config
         waveGeneratorModeComboBox.FormattingEnabled = true;
         waveGeneratorModeComboBox.Location = new Point(173, 49);
         waveGeneratorModeComboBox.Margin = new Padding(2, 3, 2, 3);
+        waveGeneratorModeComboBox.BackColor = Color.White;
+        waveGeneratorModeComboBox.ForeColor = Color.FromArgb(15, 23, 42);
         waveGeneratorModeComboBox.Name = "waveGeneratorModeComboBox";
         waveGeneratorModeComboBox.Size = new Size(101, 25);
         waveGeneratorModeComboBox.TabIndex = 5;
@@ -555,6 +583,7 @@ partial class Config
         // 
         // _databaseGroup
         // 
+        _databaseGroup.BackColor = Color.White;
         _databaseGroup.Controls.Add(_databaseLayout);
         _databaseGroup.Dock = DockStyle.Fill;
         _databaseGroup.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
@@ -615,6 +644,8 @@ partial class Config
         _databaseConnectionTextBox.Font = new Font("Microsoft YaHei UI", 9F);
         _databaseConnectionTextBox.Location = new Point(126, 3);
         _databaseConnectionTextBox.Margin = new Padding(2, 3, 2, 3);
+        _databaseConnectionTextBox.BackColor = Color.White;
+        _databaseConnectionTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         _databaseConnectionTextBox.Name = "_databaseConnectionTextBox";
         _databaseConnectionTextBox.PlaceholderText = "SQL Server 连接字符串";
         _databaseConnectionTextBox.Size = new Size(307, 23);
@@ -639,6 +670,8 @@ partial class Config
         _databaseUserNameTextBox.Font = new Font("Microsoft YaHei UI", 9F);
         _databaseUserNameTextBox.Location = new Point(476, 3);
         _databaseUserNameTextBox.Margin = new Padding(2, 3, 2, 3);
+        _databaseUserNameTextBox.BackColor = Color.White;
+        _databaseUserNameTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         _databaseUserNameTextBox.Name = "_databaseUserNameTextBox";
         _databaseUserNameTextBox.PlaceholderText = "SQL Server 账号";
         _databaseUserNameTextBox.Size = new Size(113, 23);
@@ -663,6 +696,8 @@ partial class Config
         _databasePasswordTextBox.Font = new Font("Microsoft YaHei UI", 9F);
         _databasePasswordTextBox.Location = new Point(632, 3);
         _databasePasswordTextBox.Margin = new Padding(2, 3, 2, 3);
+        _databasePasswordTextBox.BackColor = Color.White;
+        _databasePasswordTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         _databasePasswordTextBox.Name = "_databasePasswordTextBox";
         _databasePasswordTextBox.PlaceholderText = "SQL Server 密码";
         _databasePasswordTextBox.Size = new Size(113, 23);
@@ -671,12 +706,13 @@ partial class Config
         // 
         // _saveDatabaseButton
         // 
-        _saveDatabaseButton.BackColor = Color.FromArgb(226, 232, 240);
+        _saveDatabaseButton.BackColor = Color.FromArgb(29, 78, 216);
         _saveDatabaseButton.Dock = DockStyle.Fill;
         _saveDatabaseButton.FlatAppearance.BorderSize = 0;
+        _saveDatabaseButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(30, 64, 175);
         _saveDatabaseButton.FlatStyle = FlatStyle.Flat;
         _saveDatabaseButton.Font = new Font("Microsoft YaHei UI", 9F);
-        _saveDatabaseButton.ForeColor = Color.FromArgb(15, 23, 42);
+        _saveDatabaseButton.ForeColor = Color.White;
         _saveDatabaseButton.Location = new Point(749, 3);
         _saveDatabaseButton.Margin = new Padding(2, 3, 2, 3);
         _saveDatabaseButton.Name = "_saveDatabaseButton";
@@ -704,6 +740,8 @@ partial class Config
         // 
         AutoScaleDimensions = new SizeF(7F, 17F);
         AutoScaleMode = AutoScaleMode.Font;
+        BackColor = Color.FromArgb(241, 245, 249);
+        ForeColor = Color.FromArgb(15, 23, 42);
         Controls.Add(rootLayout);
         Margin = new Padding(2, 3, 2, 3);
         Name = "Config";

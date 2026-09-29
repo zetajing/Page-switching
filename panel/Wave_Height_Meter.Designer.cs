@@ -89,6 +89,8 @@ namespace Page_switching.panel
             _ipAddressInput.BorderStyle = BorderStyle.FixedSingle;
             _ipAddressInput.Font = new Font("Microsoft YaHei UI", 9F);
             _ipAddressInput.Location = new Point(0, 23);
+            _ipAddressInput.BackColor = Color.White;
+            _ipAddressInput.ForeColor = Color.FromArgb(15, 23, 42);
             _ipAddressInput.Name = "_ipAddressInput";
             _ipAddressInput.Size = new Size(166, 27);
             _ipAddressInput.TabIndex = 0;
@@ -112,6 +114,8 @@ namespace Page_switching.panel
             _portInput.BorderStyle = BorderStyle.FixedSingle;
             _portInput.Font = new Font("Microsoft YaHei UI", 9F);
             _portInput.Location = new Point(0, 23);
+            _portInput.BackColor = Color.White;
+            _portInput.ForeColor = Color.FromArgb(15, 23, 42);
             _portInput.Name = "_portInput";
             _portInput.Size = new Size(76, 27);
             _portInput.TabIndex = 1;
@@ -137,6 +141,8 @@ namespace Page_switching.panel
             _sampleRateInput.BorderStyle = BorderStyle.FixedSingle;
             _sampleRateInput.Font = new Font("Microsoft YaHei UI", 9F);
             _sampleRateInput.Location = new Point(0, 23);
+            _sampleRateInput.BackColor = Color.White;
+            _sampleRateInput.ForeColor = Color.FromArgb(15, 23, 42);
             _sampleRateInput.Name = "_sampleRateInput";
             _sampleRateInput.Size = new Size(106, 27);
             _sampleRateInput.TabIndex = 2;
@@ -160,12 +166,14 @@ namespace Page_switching.panel
             _sampleLimitInput.Location = new Point(0, 23);
             _sampleLimitInput.Maximum = 10000000;
             _sampleLimitInput.Minimum = 1;
+            _sampleLimitInput.BackColor = Color.White;
+            _sampleLimitInput.ForeColor = Color.FromArgb(15, 23, 42);
             _sampleLimitInput.Name = "_sampleLimitInput";
             _sampleLimitInput.Size = new Size(91, 27);
             _sampleLimitInput.Value = 4096;
             sampleLimitField.Controls.Add(_sampleLimitInput);
             _connectButton = new Button();
-            _connectButton.BackColor = Color.FromArgb(37, 99, 235);
+            _connectButton.BackColor = Color.FromArgb(29, 78, 216);
             _connectButton.Cursor = Cursors.Hand;
             _connectButton.FlatStyle = FlatStyle.Flat;
             _connectButton.Font = new Font("Microsoft YaHei UI", 8.5F, FontStyle.Bold);
@@ -178,6 +186,7 @@ namespace Page_switching.panel
             _connectButton.UseVisualStyleBackColor = false;
             connectionSettings.Controls.Add(_connectButton);
             _connectButton.FlatAppearance.BorderSize = 0;
+            _connectButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(30, 64, 175);
             _connectButton.Click += ConnectButton_Click;
             _disconnectButton = new Button();
             _disconnectButton.BackColor = Color.FromArgb(226, 232, 240);
@@ -262,7 +271,7 @@ namespace Page_switching.panel
             channel2Selector.Enabled = false;
             channel2Selector.FlatStyle = FlatStyle.Flat;
             channel2Selector.Font = new Font("Microsoft YaHei UI", 9F);
-            channel2Selector.ForeColor = Color.FromArgb(148, 163, 184);
+            channel2Selector.ForeColor = Color.FromArgb(100, 116, 139);
             channel2Selector.Margin = new Padding(0, 0, 8, 0);
             channel2Selector.Name = "channel2Selector";
             channel2Selector.Size = new Size(135, 76);
@@ -276,7 +285,7 @@ namespace Page_switching.panel
             channel3Selector.Enabled = false;
             channel3Selector.FlatStyle = FlatStyle.Flat;
             channel3Selector.Font = new Font("Microsoft YaHei UI", 9F);
-            channel3Selector.ForeColor = Color.FromArgb(148, 163, 184);
+            channel3Selector.ForeColor = Color.FromArgb(100, 116, 139);
             channel3Selector.Margin = new Padding(0, 0, 8, 0);
             channel3Selector.Name = "channel3Selector";
             channel3Selector.Size = new Size(135, 76);
@@ -290,7 +299,7 @@ namespace Page_switching.panel
             channel4Selector.Enabled = false;
             channel4Selector.FlatStyle = FlatStyle.Flat;
             channel4Selector.Font = new Font("Microsoft YaHei UI", 9F);
-            channel4Selector.ForeColor = Color.FromArgb(148, 163, 184);
+            channel4Selector.ForeColor = Color.FromArgb(100, 116, 139);
             channel4Selector.Margin = new Padding(0, 0, 8, 0);
             channel4Selector.Name = "channel4Selector";
             channel4Selector.Size = new Size(135, 76);
@@ -304,7 +313,7 @@ namespace Page_switching.panel
             channel5Selector.Enabled = false;
             channel5Selector.FlatStyle = FlatStyle.Flat;
             channel5Selector.Font = new Font("Microsoft YaHei UI", 9F);
-            channel5Selector.ForeColor = Color.FromArgb(148, 163, 184);
+            channel5Selector.ForeColor = Color.FromArgb(100, 116, 139);
             channel5Selector.Margin = new Padding(0, 0, 8, 0);
             channel5Selector.Name = "channel5Selector";
             channel5Selector.Size = new Size(135, 76);
@@ -318,7 +327,7 @@ namespace Page_switching.panel
             channel6Selector.Enabled = false;
             channel6Selector.FlatStyle = FlatStyle.Flat;
             channel6Selector.Font = new Font("Microsoft YaHei UI", 9F);
-            channel6Selector.ForeColor = Color.FromArgb(148, 163, 184);
+            channel6Selector.ForeColor = Color.FromArgb(100, 116, 139);
             channel6Selector.Margin = new Padding(0, 0, 8, 0);
             channel6Selector.Name = "channel6Selector";
             channel6Selector.Size = new Size(135, 76);
@@ -365,7 +374,7 @@ namespace Page_switching.panel
             latestValueDetail = new Label();
             latestValueDetail.AutoSize = true;
             latestValueDetail.Font = new Font("Microsoft YaHei UI", 8F);
-            latestValueDetail.ForeColor = Color.FromArgb(148, 163, 184);
+            latestValueDetail.ForeColor = Color.FromArgb(100, 116, 139);
             latestValueDetail.Location = new Point(0, 65);
             latestValueDetail.Name = "latestValueDetail";
             latestValueDetail.Text = "16 位无符号计数";
@@ -400,7 +409,7 @@ namespace Page_switching.panel
             sampleCountDetail = new Label();
             sampleCountDetail.AutoSize = true;
             sampleCountDetail.Font = new Font("Microsoft YaHei UI", 8F);
-            sampleCountDetail.ForeColor = Color.FromArgb(148, 163, 184);
+            sampleCountDetail.ForeColor = Color.FromArgb(100, 116, 139);
             sampleCountDetail.Location = new Point(0, 65);
             sampleCountDetail.Name = "sampleCountDetail";
             sampleCountDetail.Text = "样本数";
@@ -435,7 +444,7 @@ namespace Page_switching.panel
             sampleRateDetail = new Label();
             sampleRateDetail.AutoSize = true;
             sampleRateDetail.Font = new Font("Microsoft YaHei UI", 8F);
-            sampleRateDetail.ForeColor = Color.FromArgb(148, 163, 184);
+            sampleRateDetail.ForeColor = Color.FromArgb(100, 116, 139);
             sampleRateDetail.Location = new Point(0, 65);
             sampleRateDetail.Name = "sampleRateDetail";
             sampleRateDetail.Text = "设备通道 1";
@@ -597,6 +606,7 @@ namespace Page_switching.panel
             AutoScaleDimensions = new SizeF(9F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(241, 245, 249);
+            ForeColor = Color.FromArgb(15, 23, 42);
             Controls.Add(rootLayout);
             Name = "Wave_Height_Meter";
             Size = new Size(1210, 796);

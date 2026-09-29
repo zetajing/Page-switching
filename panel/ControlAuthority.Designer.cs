@@ -116,6 +116,7 @@ public sealed partial class ControlAuthority
         // 
         // statusGroup
         // 
+        statusGroup.BackColor = Color.White;
         statusGroup.Controls.Add(statusLayout);
         statusGroup.Dock = DockStyle.Fill;
         statusGroup.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
@@ -255,6 +256,7 @@ public sealed partial class ControlAuthority
         // 
         // actionGroup
         // 
+        actionGroup.BackColor = Color.White;
         actionGroup.Controls.Add(actionLayout);
         actionGroup.Dock = DockStyle.Fill;
         actionGroup.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
@@ -305,7 +307,7 @@ public sealed partial class ControlAuthority
         // 
         _hintLabel.Dock = DockStyle.Fill;
         _hintLabel.Font = new Font("Microsoft YaHei UI", 9F);
-        _hintLabel.ForeColor = Color.FromArgb(180, 83, 9);
+        _hintLabel.ForeColor = Color.FromArgb(154, 52, 18);
         _hintLabel.Location = new Point(173, 0);
         _hintLabel.Name = "_hintLabel";
         actionLayout.SetRowSpan(_hintLabel, 2);
@@ -319,6 +321,7 @@ public sealed partial class ControlAuthority
         AutoScaleDimensions = new SizeF(9F, 20F);
         AutoScaleMode = AutoScaleMode.Font;
         BackColor = Color.FromArgb(241, 245, 249);
+        ForeColor = Color.FromArgb(15, 23, 42);
         Controls.Add(rootLayout);
         Name = "ControlAuthority";
         Size = new Size(1210, 796);

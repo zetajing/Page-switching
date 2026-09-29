@@ -16,8 +16,8 @@ public sealed class WaveformPreviewControl : Control
             ControlStyles.OptimizedDoubleBuffer |
             ControlStyles.ResizeRedraw,
             true);
-        BackColor = Color.White;
-        ForeColor = Color.FromArgb(30, 64, 175);
+        BackColor = UiPalette.Surface;
+        ForeColor = UiPalette.Primary;
         MinimumSize = new Size(360, 260);
     }
 
@@ -48,11 +48,11 @@ public sealed class WaveformPreviewControl : Control
         e.Graphics.Clear(BackColor);
 
         var plot = new RectangleF(58, 24, Math.Max(1, Width - 82), Math.Max(1, Height - 58));
-        using var gridPen = new Pen(Color.FromArgb(226, 232, 240));
-        using var axisPen = new Pen(Color.FromArgb(100, 116, 139));
+        using var gridPen = new Pen(UiPalette.SecondaryButton);
+        using var axisPen = new Pen(UiPalette.Muted);
         using var curvePen = new Pen(ForeColor, 2f);
-        using var textBrush = new SolidBrush(Color.FromArgb(71, 85, 105));
-        using var emptyBrush = new SolidBrush(Color.FromArgb(100, 116, 139));
+        using var textBrush = new SolidBrush(UiPalette.SecondaryText);
+        using var emptyBrush = new SolidBrush(UiPalette.Muted);
         using var labelFont = new Font(Font.FontFamily, 8.5F);
 
         for (var i = 0; i <= 4; i++)

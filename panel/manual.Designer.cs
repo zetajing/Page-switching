@@ -185,7 +185,7 @@ namespace Page_switching
             axis1PositionIndicator.BackColor = Color.White;
             axis1FeedbackLayout.SetColumnSpan(axis1PositionIndicator, 3);
             axis1PositionIndicator.Dock = DockStyle.Fill;
-            axis1PositionIndicator.ForeColor = Color.FromArgb(31, 41, 55);
+            axis1PositionIndicator.ForeColor = Color.FromArgb(15, 23, 42);
             axis1PositionIndicator.HasAlarm = false;
             axis1PositionIndicator.IsConnected = false;
             axis1PositionIndicator.Location = new Point(3, 5);
@@ -206,7 +206,7 @@ namespace Page_switching
             axis1NegativeLimitLamp.BackColor = Color.FromArgb(241, 245, 249);
             axis1NegativeLimitLamp.Dock = DockStyle.Fill;
             axis1NegativeLimitLamp.Font = new Font("Microsoft YaHei UI", 8F);
-            axis1NegativeLimitLamp.ForeColor = Color.Gray;
+            axis1NegativeLimitLamp.ForeColor = Color.FromArgb(100, 116, 139);
             axis1NegativeLimitLamp.Location = new Point(2, 98);
             axis1NegativeLimitLamp.Margin = new Padding(2);
             axis1NegativeLimitLamp.Name = "axis1NegativeLimitLamp";
@@ -220,7 +220,7 @@ namespace Page_switching
             axis1OriginLamp.BackColor = Color.FromArgb(241, 245, 249);
             axis1OriginLamp.Dock = DockStyle.Fill;
             axis1OriginLamp.Font = new Font("Microsoft YaHei UI", 8F);
-            axis1OriginLamp.ForeColor = Color.Gray;
+            axis1OriginLamp.ForeColor = Color.FromArgb(100, 116, 139);
             axis1OriginLamp.Location = new Point(135, 98);
             axis1OriginLamp.Margin = new Padding(2);
             axis1OriginLamp.Name = "axis1OriginLamp";
@@ -234,7 +234,7 @@ namespace Page_switching
             axis1PositiveLimitLamp.BackColor = Color.FromArgb(241, 245, 249);
             axis1PositiveLimitLamp.Dock = DockStyle.Fill;
             axis1PositiveLimitLamp.Font = new Font("Microsoft YaHei UI", 8F);
-            axis1PositiveLimitLamp.ForeColor = Color.Gray;
+            axis1PositiveLimitLamp.ForeColor = Color.FromArgb(100, 116, 139);
             axis1PositiveLimitLamp.Location = new Point(268, 98);
             axis1PositiveLimitLamp.Margin = new Padding(2);
             axis1PositiveLimitLamp.Name = "axis1PositiveLimitLamp";
@@ -269,7 +269,7 @@ namespace Page_switching
             axis2PositionIndicator.BackColor = Color.White;
             axis2FeedbackLayout.SetColumnSpan(axis2PositionIndicator, 3);
             axis2PositionIndicator.Dock = DockStyle.Fill;
-            axis2PositionIndicator.ForeColor = Color.FromArgb(31, 41, 55);
+            axis2PositionIndicator.ForeColor = Color.FromArgb(15, 23, 42);
             axis2PositionIndicator.HasAlarm = false;
             axis2PositionIndicator.IsConnected = false;
             axis2PositionIndicator.Location = new Point(3, 5);
@@ -290,7 +290,7 @@ namespace Page_switching
             axis2NegativeLimitLamp.BackColor = Color.FromArgb(241, 245, 249);
             axis2NegativeLimitLamp.Dock = DockStyle.Fill;
             axis2NegativeLimitLamp.Font = new Font("Microsoft YaHei UI", 8F);
-            axis2NegativeLimitLamp.ForeColor = Color.Gray;
+            axis2NegativeLimitLamp.ForeColor = Color.FromArgb(100, 116, 139);
             axis2NegativeLimitLamp.Location = new Point(2, 98);
             axis2NegativeLimitLamp.Margin = new Padding(2);
             axis2NegativeLimitLamp.Name = "axis2NegativeLimitLamp";
@@ -304,7 +304,7 @@ namespace Page_switching
             axis2OriginLamp.BackColor = Color.FromArgb(241, 245, 249);
             axis2OriginLamp.Dock = DockStyle.Fill;
             axis2OriginLamp.Font = new Font("Microsoft YaHei UI", 8F);
-            axis2OriginLamp.ForeColor = Color.Gray;
+            axis2OriginLamp.ForeColor = Color.FromArgb(100, 116, 139);
             axis2OriginLamp.Location = new Point(135, 98);
             axis2OriginLamp.Margin = new Padding(2);
             axis2OriginLamp.Name = "axis2OriginLamp";
@@ -318,7 +318,7 @@ namespace Page_switching
             axis2PositiveLimitLamp.BackColor = Color.FromArgb(241, 245, 249);
             axis2PositiveLimitLamp.Dock = DockStyle.Fill;
             axis2PositiveLimitLamp.Font = new Font("Microsoft YaHei UI", 8F);
-            axis2PositiveLimitLamp.ForeColor = Color.Gray;
+            axis2PositiveLimitLamp.ForeColor = Color.FromArgb(100, 116, 139);
             axis2PositiveLimitLamp.Location = new Point(268, 98);
             axis2PositiveLimitLamp.Margin = new Padding(2);
             axis2PositiveLimitLamp.Name = "axis2PositiveLimitLamp";
@@ -353,7 +353,7 @@ namespace Page_switching
             axis3PositionIndicator.BackColor = Color.White;
             axis3FeedbackLayout.SetColumnSpan(axis3PositionIndicator, 3);
             axis3PositionIndicator.Dock = DockStyle.Fill;
-            axis3PositionIndicator.ForeColor = Color.FromArgb(31, 41, 55);
+            axis3PositionIndicator.ForeColor = Color.FromArgb(15, 23, 42);
             axis3PositionIndicator.HasAlarm = false;
             axis3PositionIndicator.IsConnected = false;
             axis3PositionIndicator.Location = new Point(3, 5);
@@ -374,7 +374,7 @@ namespace Page_switching
             axis3NegativeLimitLamp.BackColor = Color.FromArgb(241, 245, 249);
             axis3NegativeLimitLamp.Dock = DockStyle.Fill;
             axis3NegativeLimitLamp.Font = new Font("Microsoft YaHei UI", 8F);
-            axis3NegativeLimitLamp.ForeColor = Color.Gray;
+            axis3NegativeLimitLamp.ForeColor = Color.FromArgb(100, 116, 139);
             axis3NegativeLimitLamp.Location = new Point(2, 98);
             axis3NegativeLimitLamp.Margin = new Padding(2);
             axis3NegativeLimitLamp.Name = "axis3NegativeLimitLamp";
@@ -388,7 +388,7 @@ namespace Page_switching
             axis3OriginLamp.BackColor = Color.FromArgb(241, 245, 249);
             axis3OriginLamp.Dock = DockStyle.Fill;
             axis3OriginLamp.Font = new Font("Microsoft YaHei UI", 8F);
-            axis3OriginLamp.ForeColor = Color.Gray;
+            axis3OriginLamp.ForeColor = Color.FromArgb(100, 116, 139);
             axis3OriginLamp.Location = new Point(135, 98);
             axis3OriginLamp.Margin = new Padding(2);
             axis3OriginLamp.Name = "axis3OriginLamp";
@@ -402,7 +402,7 @@ namespace Page_switching
             axis3PositiveLimitLamp.BackColor = Color.FromArgb(241, 245, 249);
             axis3PositiveLimitLamp.Dock = DockStyle.Fill;
             axis3PositiveLimitLamp.Font = new Font("Microsoft YaHei UI", 8F);
-            axis3PositiveLimitLamp.ForeColor = Color.Gray;
+            axis3PositiveLimitLamp.ForeColor = Color.FromArgb(100, 116, 139);
             axis3PositiveLimitLamp.Location = new Point(268, 98);
             axis3PositiveLimitLamp.Margin = new Padding(2);
             axis3PositiveLimitLamp.Name = "axis3PositiveLimitLamp";
@@ -437,7 +437,7 @@ namespace Page_switching
             axis4PositionIndicator.BackColor = Color.White;
             axis4FeedbackLayout.SetColumnSpan(axis4PositionIndicator, 3);
             axis4PositionIndicator.Dock = DockStyle.Fill;
-            axis4PositionIndicator.ForeColor = Color.FromArgb(31, 41, 55);
+            axis4PositionIndicator.ForeColor = Color.FromArgb(15, 23, 42);
             axis4PositionIndicator.HasAlarm = false;
             axis4PositionIndicator.IsConnected = false;
             axis4PositionIndicator.Location = new Point(3, 5);
@@ -458,7 +458,7 @@ namespace Page_switching
             axis4NegativeLimitLamp.BackColor = Color.FromArgb(241, 245, 249);
             axis4NegativeLimitLamp.Dock = DockStyle.Fill;
             axis4NegativeLimitLamp.Font = new Font("Microsoft YaHei UI", 8F);
-            axis4NegativeLimitLamp.ForeColor = Color.Gray;
+            axis4NegativeLimitLamp.ForeColor = Color.FromArgb(100, 116, 139);
             axis4NegativeLimitLamp.Location = new Point(2, 98);
             axis4NegativeLimitLamp.Margin = new Padding(2);
             axis4NegativeLimitLamp.Name = "axis4NegativeLimitLamp";
@@ -472,7 +472,7 @@ namespace Page_switching
             axis4OriginLamp.BackColor = Color.FromArgb(241, 245, 249);
             axis4OriginLamp.Dock = DockStyle.Fill;
             axis4OriginLamp.Font = new Font("Microsoft YaHei UI", 8F);
-            axis4OriginLamp.ForeColor = Color.Gray;
+            axis4OriginLamp.ForeColor = Color.FromArgb(100, 116, 139);
             axis4OriginLamp.Location = new Point(135, 98);
             axis4OriginLamp.Margin = new Padding(2);
             axis4OriginLamp.Name = "axis4OriginLamp";
@@ -486,7 +486,7 @@ namespace Page_switching
             axis4PositiveLimitLamp.BackColor = Color.FromArgb(241, 245, 249);
             axis4PositiveLimitLamp.Dock = DockStyle.Fill;
             axis4PositiveLimitLamp.Font = new Font("Microsoft YaHei UI", 8F);
-            axis4PositiveLimitLamp.ForeColor = Color.Gray;
+            axis4PositiveLimitLamp.ForeColor = Color.FromArgb(100, 116, 139);
             axis4PositiveLimitLamp.Location = new Point(268, 98);
             axis4PositiveLimitLamp.Margin = new Padding(2);
             axis4PositiveLimitLamp.Name = "axis4PositiveLimitLamp";
@@ -532,7 +532,7 @@ namespace Page_switching
             // 
             connectionStateLabel.Dock = DockStyle.Right;
             connectionStateLabel.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
-            connectionStateLabel.ForeColor = Color.FromArgb(5, 150, 105);
+            connectionStateLabel.ForeColor = Color.FromArgb(4, 120, 87);
             connectionStateLabel.Location = new Point(780, 0);
             connectionStateLabel.Margin = new Padding(2, 0, 2, 0);
             connectionStateLabel.Name = "connectionStateLabel";
@@ -572,7 +572,7 @@ namespace Page_switching
             // 
             // enableAllButton
             // 
-            enableAllButton.BackColor = Color.FromArgb(5, 150, 105);
+            enableAllButton.BackColor = Color.FromArgb(4, 120, 87);
             enableAllButton.FlatAppearance.BorderSize = 0;
             enableAllButton.FlatStyle = FlatStyle.Flat;
             enableAllButton.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
@@ -588,7 +588,7 @@ namespace Page_switching
             // 
             // disableAllButton
             // 
-            disableAllButton.BackColor = Color.FromArgb(180, 83, 9);
+            disableAllButton.BackColor = Color.FromArgb(154, 52, 18);
             disableAllButton.FlatAppearance.BorderSize = 0;
             disableAllButton.FlatStyle = FlatStyle.Flat;
             disableAllButton.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
@@ -604,7 +604,7 @@ namespace Page_switching
             // 
             // resetAlarmButton
             // 
-            resetAlarmButton.BackColor = Color.FromArgb(37, 99, 235);
+            resetAlarmButton.BackColor = Color.FromArgb(154, 52, 18);
             resetAlarmButton.FlatAppearance.BorderSize = 0;
             resetAlarmButton.FlatStyle = FlatStyle.Flat;
             resetAlarmButton.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
@@ -620,11 +620,11 @@ namespace Page_switching
             // 
             // homeAllButton
             // 
-            homeAllButton.BackColor = Color.FromArgb(71, 85, 105);
+            homeAllButton.BackColor = Color.FromArgb(226, 232, 240);
             homeAllButton.FlatAppearance.BorderSize = 0;
             homeAllButton.FlatStyle = FlatStyle.Flat;
             homeAllButton.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
-            homeAllButton.ForeColor = Color.White;
+            homeAllButton.ForeColor = Color.FromArgb(15, 23, 42);
             homeAllButton.Location = new Point(318, 7);
             homeAllButton.Margin = new Padding(0, 0, 8, 0);
             homeAllButton.Name = "homeAllButton";
@@ -636,7 +636,7 @@ namespace Page_switching
             // 
             // stopAllButton
             // 
-            stopAllButton.BackColor = Color.FromArgb(220, 38, 38);
+            stopAllButton.BackColor = Color.FromArgb(185, 28, 28);
             stopAllButton.FlatAppearance.BorderSize = 0;
             stopAllButton.FlatStyle = FlatStyle.Flat;
             stopAllButton.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
@@ -668,6 +668,7 @@ namespace Page_switching
             // 
             // overviewGroup
             // 
+            overviewGroup.BackColor = Color.White;
             overviewGroup.Controls.Add(axisOverviewLayout);
             overviewGroup.Dock = DockStyle.Fill;
             overviewGroup.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
@@ -772,7 +773,7 @@ namespace Page_switching
             // 
             axis1StatusLabel.Dock = DockStyle.Fill;
             axis1StatusLabel.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
-            axis1StatusLabel.ForeColor = Color.Gray;
+            axis1StatusLabel.ForeColor = Color.FromArgb(100, 116, 139);
             axis1StatusLabel.Location = new Point(453, 26);
             axis1StatusLabel.Margin = new Padding(2, 0, 2, 0);
             axis1StatusLabel.Name = "axis1StatusLabel";
@@ -798,7 +799,7 @@ namespace Page_switching
             // 
             axis2StatusLabel.Dock = DockStyle.Fill;
             axis2StatusLabel.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
-            axis2StatusLabel.ForeColor = Color.Gray;
+            axis2StatusLabel.ForeColor = Color.FromArgb(100, 116, 139);
             axis2StatusLabel.Location = new Point(453, 146);
             axis2StatusLabel.Margin = new Padding(2, 0, 2, 0);
             axis2StatusLabel.Name = "axis2StatusLabel";
@@ -824,7 +825,7 @@ namespace Page_switching
             // 
             axis3StatusLabel.Dock = DockStyle.Fill;
             axis3StatusLabel.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
-            axis3StatusLabel.ForeColor = Color.Gray;
+            axis3StatusLabel.ForeColor = Color.FromArgb(100, 116, 139);
             axis3StatusLabel.Location = new Point(453, 266);
             axis3StatusLabel.Margin = new Padding(2, 0, 2, 0);
             axis3StatusLabel.Name = "axis3StatusLabel";
@@ -850,7 +851,7 @@ namespace Page_switching
             // 
             axis4StatusLabel.Dock = DockStyle.Fill;
             axis4StatusLabel.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
-            axis4StatusLabel.ForeColor = Color.Gray;
+            axis4StatusLabel.ForeColor = Color.FromArgb(100, 116, 139);
             axis4StatusLabel.Location = new Point(453, 386);
             axis4StatusLabel.Margin = new Padding(2, 0, 2, 0);
             axis4StatusLabel.Name = "axis4StatusLabel";
@@ -861,6 +862,7 @@ namespace Page_switching
             // 
             // controlGroup
             // 
+            controlGroup.BackColor = Color.White;
             controlGroup.Controls.Add(controlLayout);
             controlGroup.Dock = DockStyle.Fill;
             controlGroup.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
@@ -936,6 +938,8 @@ namespace Page_switching
             axisSelector.Items.AddRange(new object[] { "轴 1", "轴 2", "轴 3", "轴 4" });
             axisSelector.Location = new Point(183, 3);
             axisSelector.Margin = new Padding(2, 3, 2, 3);
+            axisSelector.BackColor = Color.White;
+            axisSelector.ForeColor = Color.FromArgb(15, 23, 42);
             axisSelector.Name = "axisSelector";
             axisSelector.Size = new Size(178, 27);
             axisSelector.TabIndex = 0;
@@ -958,7 +962,7 @@ namespace Page_switching
             // 
             selectedStatusLabel.Dock = DockStyle.Fill;
             selectedStatusLabel.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
-            selectedStatusLabel.ForeColor = Color.Gray;
+            selectedStatusLabel.ForeColor = Color.FromArgb(100, 116, 139);
             selectedStatusLabel.Location = new Point(183, 32);
             selectedStatusLabel.Margin = new Padding(2, 0, 2, 0);
             selectedStatusLabel.Name = "selectedStatusLabel";
@@ -984,7 +988,7 @@ namespace Page_switching
             // 
             selectedActualLabel.Dock = DockStyle.Fill;
             selectedActualLabel.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
-            selectedActualLabel.ForeColor = Color.FromArgb(14, 116, 144);
+            selectedActualLabel.ForeColor = Color.FromArgb(29, 78, 216);
             selectedActualLabel.Location = new Point(183, 59);
             selectedActualLabel.Margin = new Padding(2, 0, 2, 0);
             selectedActualLabel.Name = "selectedActualLabel";
@@ -1042,6 +1046,8 @@ namespace Page_switching
             jogSpeedInput.Margin = new Padding(2, 3, 2, 3);
             jogSpeedInput.Maximum = new decimal(new int[] { 180, 0, 0, 0 });
             jogSpeedInput.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
+            jogSpeedInput.BackColor = Color.White;
+            jogSpeedInput.ForeColor = Color.FromArgb(15, 23, 42);
             jogSpeedInput.Name = "jogSpeedInput";
             jogSpeedInput.Size = new Size(178, 24);
             jogSpeedInput.TabIndex = 1;
@@ -1052,7 +1058,7 @@ namespace Page_switching
             controlLayout.SetColumnSpan(jogSectionLabel, 2);
             jogSectionLabel.Dock = DockStyle.Fill;
             jogSectionLabel.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
-            jogSectionLabel.ForeColor = Color.FromArgb(14, 116, 144);
+            jogSectionLabel.ForeColor = Color.FromArgb(29, 78, 216);
             jogSectionLabel.Location = new Point(2, 149);
             jogSectionLabel.Margin = new Padding(2, 0, 2, 0);
             jogSectionLabel.Name = "jogSectionLabel";
@@ -1064,12 +1070,12 @@ namespace Page_switching
             // 
             // jogNegativeButton
             // 
-            jogNegativeButton.BackColor = Color.FromArgb(71, 85, 105);
+            jogNegativeButton.BackColor = Color.FromArgb(226, 232, 240);
             jogNegativeButton.Dock = DockStyle.Fill;
             jogNegativeButton.FlatAppearance.BorderSize = 0;
             jogNegativeButton.FlatStyle = FlatStyle.Flat;
             jogNegativeButton.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
-            jogNegativeButton.ForeColor = Color.White;
+            jogNegativeButton.ForeColor = Color.FromArgb(15, 23, 42);
             jogNegativeButton.Location = new Point(3, 179);
             jogNegativeButton.Name = "jogNegativeButton";
             jogNegativeButton.Size = new Size(175, 40);
@@ -1082,12 +1088,12 @@ namespace Page_switching
             // 
             // jogPositiveButton
             // 
-            jogPositiveButton.BackColor = Color.FromArgb(71, 85, 105);
+            jogPositiveButton.BackColor = Color.FromArgb(226, 232, 240);
             jogPositiveButton.Dock = DockStyle.Fill;
             jogPositiveButton.FlatAppearance.BorderSize = 0;
             jogPositiveButton.FlatStyle = FlatStyle.Flat;
             jogPositiveButton.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
-            jogPositiveButton.ForeColor = Color.White;
+            jogPositiveButton.ForeColor = Color.FromArgb(15, 23, 42);
             jogPositiveButton.Location = new Point(184, 179);
             jogPositiveButton.Name = "jogPositiveButton";
             jogPositiveButton.Size = new Size(176, 40);
@@ -1103,7 +1109,7 @@ namespace Page_switching
             controlLayout.SetColumnSpan(singleAxisSectionLabel, 2);
             singleAxisSectionLabel.Dock = DockStyle.Fill;
             singleAxisSectionLabel.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
-            singleAxisSectionLabel.ForeColor = Color.FromArgb(14, 116, 144);
+            singleAxisSectionLabel.ForeColor = Color.FromArgb(29, 78, 216);
             singleAxisSectionLabel.Location = new Point(2, 222);
             singleAxisSectionLabel.Margin = new Padding(2, 0, 2, 0);
             singleAxisSectionLabel.Name = "singleAxisSectionLabel";
@@ -1115,12 +1121,12 @@ namespace Page_switching
             // 
             // homeSelectedButton
             // 
-            homeSelectedButton.BackColor = Color.FromArgb(71, 85, 105);
+            homeSelectedButton.BackColor = Color.FromArgb(226, 232, 240);
             homeSelectedButton.Dock = DockStyle.Fill;
             homeSelectedButton.FlatAppearance.BorderSize = 0;
             homeSelectedButton.FlatStyle = FlatStyle.Flat;
             homeSelectedButton.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
-            homeSelectedButton.ForeColor = Color.White;
+            homeSelectedButton.ForeColor = Color.FromArgb(15, 23, 42);
             homeSelectedButton.Location = new Point(3, 252);
             homeSelectedButton.Name = "homeSelectedButton";
             homeSelectedButton.Size = new Size(175, 48);
@@ -1131,7 +1137,7 @@ namespace Page_switching
             // 
             // stopSelectedButton
             // 
-            stopSelectedButton.BackColor = Color.FromArgb(220, 38, 38);
+            stopSelectedButton.BackColor = Color.FromArgb(185, 28, 28);
             stopSelectedButton.Dock = DockStyle.Fill;
             stopSelectedButton.FlatAppearance.BorderSize = 0;
             stopSelectedButton.FlatStyle = FlatStyle.Flat;
@@ -1164,6 +1170,7 @@ namespace Page_switching
             AutoScaleDimensions = new SizeF(7F, 17F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(241, 245, 249);
+            ForeColor = Color.FromArgb(15, 23, 42);
             Controls.Add(rootLayout);
             Margin = new Padding(2, 3, 2, 3);
             Name = "Manual";

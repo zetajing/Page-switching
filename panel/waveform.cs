@@ -72,7 +72,7 @@ public partial class WaveformPage : UserControl
     {
         label.Dock = DockStyle.Fill;
         label.Font = new Font("Microsoft YaHei UI", 8.5F);
-        label.ForeColor = Color.FromArgb(71, 85, 105);
+        label.ForeColor = UiPalette.SecondaryText;
         label.TextAlign = ContentAlignment.MiddleLeft;
         label.AutoEllipsis = true;
     }
@@ -90,7 +90,7 @@ public partial class WaveformPage : UserControl
     {
         label.Dock = DockStyle.Fill;
         label.Font = new Font("Microsoft YaHei UI", 8.5F);
-        label.ForeColor = Color.FromArgb(71, 85, 105);
+        label.ForeColor = UiPalette.SecondaryText;
         label.TextAlign = ContentAlignment.MiddleLeft;
         label.AutoEllipsis = true;
     }
@@ -102,14 +102,15 @@ public partial class WaveformPage : UserControl
         button.Anchor = primary ? AnchorStyles.Left | AnchorStyles.Top : AnchorStyles.Left | AnchorStyles.Right;
         button.FlatStyle = FlatStyle.Flat;
         button.FlatAppearance.BorderSize = 0;
+        if (primary) button.FlatAppearance.MouseOverBackColor = UiPalette.PrimaryHover;
         button.Margin = primary ? new Padding(3, 6, 3, 6) : new Padding(3, 4, 3, 4);
         if (primary)
         {
             button.Size = new Size(174, 46);
         }
         button.Font = new Font("Microsoft YaHei UI", 9F, primary ? FontStyle.Bold : FontStyle.Regular);
-        button.BackColor = primary ? Color.FromArgb(37, 99, 235) : Color.FromArgb(226, 232, 240);
-        button.ForeColor = primary ? Color.White : Color.FromArgb(15, 23, 42);
+        button.BackColor = primary ? UiPalette.Primary : UiPalette.SecondaryButton;
+        button.ForeColor = primary ? Color.White : UiPalette.Text;
         button.UseVisualStyleBackColor = false;
     }
 
@@ -225,12 +226,12 @@ public partial class WaveformPage : UserControl
         }
         catch (OperationCanceledException)
         {
-            regularStatusLabel.ForeColor = Color.FromArgb(180, 83, 9);
+            regularStatusLabel.ForeColor = UiPalette.Warning;
             regularStatusLabel.Text = "规则波生成已取消。";
         }
         catch (Exception ex)
         {
-            regularStatusLabel.ForeColor = Color.FromArgb(220, 38, 38);
+            regularStatusLabel.ForeColor = UiPalette.Danger;
             regularStatusLabel.Text = "规则波生成失败：" + ex.Message;
         }
         finally
@@ -294,12 +295,12 @@ public partial class WaveformPage : UserControl
         }
         catch (OperationCanceledException)
         {
-            irregularStatusLabel.ForeColor = Color.FromArgb(180, 83, 9);
+            irregularStatusLabel.ForeColor = UiPalette.Warning;
             irregularStatusLabel.Text = "不规则波生成已取消。";
         }
         catch (Exception ex)
         {
-            irregularStatusLabel.ForeColor = Color.FromArgb(220, 38, 38);
+            irregularStatusLabel.ForeColor = UiPalette.Danger;
             irregularStatusLabel.Text = "不规则波生成失败：" + ex.Message;
         }
         finally
@@ -318,11 +319,11 @@ public partial class WaveformPage : UserControl
         irregularBrowseOutputButton.Enabled = !generating;
         if (generating)
         {
-            statusLabel.ForeColor = Color.FromArgb(37, 99, 235);
+            statusLabel.ForeColor = UiPalette.Primary;
         }
         else if (!statusLabel.Text.Contains("失败", StringComparison.Ordinal))
         {
-            statusLabel.ForeColor = Color.FromArgb(5, 150, 105);
+            statusLabel.ForeColor = UiPalette.Success;
         }
     }
 

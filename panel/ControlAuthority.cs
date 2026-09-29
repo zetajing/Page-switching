@@ -74,8 +74,8 @@ public sealed partial class ControlAuthority : UserControl
 
         _connectionValue.Text = _axisService.IsConnected ? "已连接" : "未连接";
         _connectionValue.ForeColor = _axisService.IsConnected
-            ? Color.FromArgb(5, 150, 105)
-            : Color.FromArgb(220, 38, 38);
+            ? UiPalette.Success
+            : UiPalette.Danger;
         _stationValue.Text = stationId;
         _ownerValue.Text = ownerConfigured ? "已配置，等待读取" : "待配置";
         _stateValue.Text = stateConfigured ? "已配置，等待读取" : "待配置";

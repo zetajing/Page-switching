@@ -104,13 +104,13 @@ public partial class Calibration : UserControl
             _profile.Points = points;
             _profile.Fit();
             result.Text = $"CH{_profile.Channel}：水位 = (原始值 - {_profile.ZeroRawCount:0.###}) × {_profile.Slope:0.######} + {_profile.Intercept:0.######} mm";
-            result.ForeColor = Color.FromArgb(5, 150, 105);
+            result.ForeColor = UiPalette.Success;
             return true;
         }
         catch (Exception ex)
         {
             result.Text = "计算失败：" + ex.Message;
-            result.ForeColor = Color.FromArgb(220, 38, 38);
+            result.ForeColor = UiPalette.Danger;
             return false;
         }
     }

@@ -238,6 +238,7 @@ partial class WaveformPage
         // 
         // waveformTabs
         // 
+        waveformTabs.BackColor = Color.FromArgb(241, 245, 249);
         waveformTabs.Controls.Add(regularTab);
         waveformTabs.Controls.Add(irregularTab);
         waveformTabs.Dock = DockStyle.Fill;
@@ -250,6 +251,7 @@ partial class WaveformPage
         // 
         // regularTab
         // 
+        regularTab.BackColor = Color.White;
         regularTab.Controls.Add(regularLayout);
         regularTab.Location = new Point(4, 29);
         regularTab.Name = "regularTab";
@@ -275,6 +277,7 @@ partial class WaveformPage
         // 
         // regularParameterGroup
         // 
+        regularParameterGroup.BackColor = Color.White;
         regularParameterGroup.Controls.Add(regularParameterLayout);
         regularParameterGroup.Dock = DockStyle.Fill;
         regularParameterGroup.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
@@ -345,6 +348,8 @@ partial class WaveformPage
         // regularSegmentComboBox
         // 
         regularSegmentComboBox.Location = new Point(87, 3);
+        regularSegmentComboBox.BackColor = Color.White;
+        regularSegmentComboBox.ForeColor = Color.FromArgb(15, 23, 42);
         regularSegmentComboBox.Name = "regularSegmentComboBox";
         regularSegmentComboBox.Size = new Size(100, 27);
         regularSegmentComboBox.TabIndex = 1;
@@ -360,6 +365,8 @@ partial class WaveformPage
         // regularTheoryComboBox
         // 
         regularTheoryComboBox.Location = new Point(277, 3);
+        regularTheoryComboBox.BackColor = Color.White;
+        regularTheoryComboBox.ForeColor = Color.FromArgb(15, 23, 42);
         regularTheoryComboBox.Name = "regularTheoryComboBox";
         regularTheoryComboBox.Size = new Size(99, 27);
         regularTheoryComboBox.TabIndex = 3;
@@ -375,6 +382,8 @@ partial class WaveformPage
         // regularDepthTextBox
         // 
         regularDepthTextBox.Location = new Point(87, 43);
+        regularDepthTextBox.BackColor = Color.White;
+        regularDepthTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         regularDepthTextBox.Name = "regularDepthTextBox";
         regularDepthTextBox.Size = new Size(100, 27);
         regularDepthTextBox.TabIndex = 5;
@@ -390,6 +399,8 @@ partial class WaveformPage
         // regularPeriodTextBox
         // 
         regularPeriodTextBox.Location = new Point(277, 43);
+        regularPeriodTextBox.BackColor = Color.White;
+        regularPeriodTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         regularPeriodTextBox.Name = "regularPeriodTextBox";
         regularPeriodTextBox.Size = new Size(99, 27);
         regularPeriodTextBox.TabIndex = 7;
@@ -405,6 +416,8 @@ partial class WaveformPage
         // regularHeightTextBox
         // 
         regularHeightTextBox.Location = new Point(87, 83);
+        regularHeightTextBox.BackColor = Color.White;
+        regularHeightTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         regularHeightTextBox.Name = "regularHeightTextBox";
         regularHeightTextBox.Size = new Size(100, 27);
         regularHeightTextBox.TabIndex = 9;
@@ -420,6 +433,8 @@ partial class WaveformPage
         // regularDirectionTextBox
         // 
         regularDirectionTextBox.Location = new Point(277, 83);
+        regularDirectionTextBox.BackColor = Color.White;
+        regularDirectionTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         regularDirectionTextBox.Name = "regularDirectionTextBox";
         regularDirectionTextBox.Size = new Size(99, 27);
         regularDirectionTextBox.TabIndex = 11;
@@ -435,6 +450,8 @@ partial class WaveformPage
         // regularTimeStepTextBox
         // 
         regularTimeStepTextBox.Location = new Point(87, 123);
+        regularTimeStepTextBox.BackColor = Color.White;
+        regularTimeStepTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         regularTimeStepTextBox.Name = "regularTimeStepTextBox";
         regularTimeStepTextBox.Size = new Size(100, 27);
         regularTimeStepTextBox.TabIndex = 13;
@@ -450,6 +467,8 @@ partial class WaveformPage
         // regularSampleCountTextBox
         // 
         regularSampleCountTextBox.Location = new Point(277, 123);
+        regularSampleCountTextBox.BackColor = Color.White;
+        regularSampleCountTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         regularSampleCountTextBox.Name = "regularSampleCountTextBox";
         regularSampleCountTextBox.Size = new Size(99, 27);
         regularSampleCountTextBox.TabIndex = 15;
@@ -465,6 +484,8 @@ partial class WaveformPage
         // regularCharacteristicFrequencyTextBox
         // 
         regularCharacteristicFrequencyTextBox.Location = new Point(87, 163);
+        regularCharacteristicFrequencyTextBox.BackColor = Color.White;
+        regularCharacteristicFrequencyTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         regularCharacteristicFrequencyTextBox.Name = "regularCharacteristicFrequencyTextBox";
         regularCharacteristicFrequencyTextBox.Size = new Size(100, 27);
         regularCharacteristicFrequencyTextBox.TabIndex = 17;
@@ -480,6 +501,8 @@ partial class WaveformPage
         // regularCharacteristicPeriodTextBox
         // 
         regularCharacteristicPeriodTextBox.Location = new Point(277, 163);
+        regularCharacteristicPeriodTextBox.BackColor = Color.White;
+        regularCharacteristicPeriodTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         regularCharacteristicPeriodTextBox.Name = "regularCharacteristicPeriodTextBox";
         regularCharacteristicPeriodTextBox.Size = new Size(99, 27);
         regularCharacteristicPeriodTextBox.TabIndex = 19;
@@ -496,32 +519,46 @@ partial class WaveformPage
         // 
         regularParameterLayout.SetColumnSpan(regularOutputTextBox, 2);
         regularOutputTextBox.Location = new Point(87, 203);
+        regularOutputTextBox.BackColor = Color.White;
+        regularOutputTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         regularOutputTextBox.Name = "regularOutputTextBox";
         regularOutputTextBox.Size = new Size(100, 27);
         regularOutputTextBox.TabIndex = 21;
         // 
         // regularBrowseOutputButton
         // 
+        regularBrowseOutputButton.BackColor = Color.FromArgb(226, 232, 240);
+        regularBrowseOutputButton.FlatAppearance.BorderSize = 0;
+        regularBrowseOutputButton.FlatStyle = FlatStyle.Flat;
+        regularBrowseOutputButton.ForeColor = Color.FromArgb(15, 23, 42);
         regularBrowseOutputButton.Location = new Point(277, 203);
         regularBrowseOutputButton.Name = "regularBrowseOutputButton";
         regularBrowseOutputButton.Size = new Size(75, 23);
         regularBrowseOutputButton.TabIndex = 22;
         regularBrowseOutputButton.Text = "浏览";
+        regularBrowseOutputButton.UseVisualStyleBackColor = false;
         regularBrowseOutputButton.Click += BrowseRegularOutputButton_Click;
         // 
         // regularGenerateButton
         // 
+        regularGenerateButton.BackColor = Color.FromArgb(29, 78, 216);
+        regularGenerateButton.FlatAppearance.BorderSize = 0;
+        regularGenerateButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(30, 64, 175);
+        regularGenerateButton.FlatStyle = FlatStyle.Flat;
+        regularGenerateButton.ForeColor = Color.White;
         regularParameterLayout.SetColumnSpan(regularGenerateButton, 2);
         regularGenerateButton.Location = new Point(3, 243);
         regularGenerateButton.Name = "regularGenerateButton";
         regularGenerateButton.Size = new Size(75, 23);
         regularGenerateButton.TabIndex = 23;
         regularGenerateButton.Text = "计算并保存";
+        regularGenerateButton.UseVisualStyleBackColor = false;
         regularGenerateButton.Click += GenerateRegularButton_Click;
         // 
         // regularStatusLabel
         // 
         regularParameterLayout.SetColumnSpan(regularStatusLabel, 2);
+        regularStatusLabel.ForeColor = Color.FromArgb(71, 85, 105);
         regularStatusLabel.Location = new Point(193, 240);
         regularStatusLabel.Name = "regularStatusLabel";
         regularStatusLabel.Size = new Size(100, 23);
@@ -530,6 +567,7 @@ partial class WaveformPage
         // 
         // regularPreviewGroup
         // 
+        regularPreviewGroup.BackColor = Color.White;
         regularPreviewGroup.Controls.Add(regularPreview);
         regularPreviewGroup.Dock = DockStyle.Fill;
         regularPreviewGroup.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
@@ -545,7 +583,7 @@ partial class WaveformPage
         // 
         regularPreview.BackColor = Color.White;
         regularPreview.Dock = DockStyle.Fill;
-        regularPreview.ForeColor = Color.FromArgb(30, 64, 175);
+        regularPreview.ForeColor = Color.FromArgb(29, 78, 216);
         regularPreview.Location = new Point(10, 38);
         regularPreview.MinimumSize = new Size(360, 260);
         regularPreview.Name = "regularPreview";
@@ -555,6 +593,7 @@ partial class WaveformPage
         // 
         // irregularTab
         // 
+        irregularTab.BackColor = Color.White;
         irregularTab.Controls.Add(irregularLayout);
         irregularTab.Location = new Point(4, 29);
         irregularTab.Name = "irregularTab";
@@ -580,6 +619,7 @@ partial class WaveformPage
         // 
         // irregularParameterGroup
         // 
+        irregularParameterGroup.BackColor = Color.White;
         irregularParameterGroup.Controls.Add(irregularParameterLayout);
         irregularParameterGroup.Dock = DockStyle.Fill;
         irregularParameterGroup.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
@@ -675,6 +715,8 @@ partial class WaveformPage
         // irregularModeComboBox
         // 
         irregularModeComboBox.Location = new Point(97, 3);
+        irregularModeComboBox.BackColor = Color.White;
+        irregularModeComboBox.ForeColor = Color.FromArgb(15, 23, 42);
         irregularModeComboBox.Name = "irregularModeComboBox";
         irregularModeComboBox.Size = new Size(104, 27);
         irregularModeComboBox.TabIndex = 1;
@@ -690,6 +732,8 @@ partial class WaveformPage
         // irregularTheoryComboBox
         // 
         irregularTheoryComboBox.Location = new Point(301, 3);
+        irregularTheoryComboBox.BackColor = Color.White;
+        irregularTheoryComboBox.ForeColor = Color.FromArgb(15, 23, 42);
         irregularTheoryComboBox.Name = "irregularTheoryComboBox";
         irregularTheoryComboBox.Size = new Size(120, 27);
         irregularTheoryComboBox.TabIndex = 3;
@@ -705,6 +749,8 @@ partial class WaveformPage
         // irregularSpectrumComboBox
         // 
         irregularSpectrumComboBox.Location = new Point(97, 37);
+        irregularSpectrumComboBox.BackColor = Color.White;
+        irregularSpectrumComboBox.ForeColor = Color.FromArgb(15, 23, 42);
         irregularSpectrumComboBox.Name = "irregularSpectrumComboBox";
         irregularSpectrumComboBox.Size = new Size(104, 27);
         irregularSpectrumComboBox.TabIndex = 5;
@@ -720,6 +766,8 @@ partial class WaveformPage
         // irregularSegmentComboBox
         // 
         irregularSegmentComboBox.Location = new Point(301, 37);
+        irregularSegmentComboBox.BackColor = Color.White;
+        irregularSegmentComboBox.ForeColor = Color.FromArgb(15, 23, 42);
         irregularSegmentComboBox.Name = "irregularSegmentComboBox";
         irregularSegmentComboBox.Size = new Size(120, 27);
         irregularSegmentComboBox.TabIndex = 7;
@@ -735,6 +783,8 @@ partial class WaveformPage
         // irregularDirectionTextBox
         // 
         irregularDirectionTextBox.Location = new Point(97, 71);
+        irregularDirectionTextBox.BackColor = Color.White;
+        irregularDirectionTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         irregularDirectionTextBox.Name = "irregularDirectionTextBox";
         irregularDirectionTextBox.Size = new Size(100, 27);
         irregularDirectionTextBox.TabIndex = 9;
@@ -750,6 +800,8 @@ partial class WaveformPage
         // irregularDepthTextBox
         // 
         irregularDepthTextBox.Location = new Point(301, 71);
+        irregularDepthTextBox.BackColor = Color.White;
+        irregularDepthTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         irregularDepthTextBox.Name = "irregularDepthTextBox";
         irregularDepthTextBox.Size = new Size(100, 27);
         irregularDepthTextBox.TabIndex = 11;
@@ -765,6 +817,8 @@ partial class WaveformPage
         // irregularSignificantPeriodTextBox
         // 
         irregularSignificantPeriodTextBox.Location = new Point(97, 105);
+        irregularSignificantPeriodTextBox.BackColor = Color.White;
+        irregularSignificantPeriodTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         irregularSignificantPeriodTextBox.Name = "irregularSignificantPeriodTextBox";
         irregularSignificantPeriodTextBox.Size = new Size(100, 27);
         irregularSignificantPeriodTextBox.TabIndex = 13;
@@ -780,6 +834,8 @@ partial class WaveformPage
         // irregularSignificantHeightTextBox
         // 
         irregularSignificantHeightTextBox.Location = new Point(301, 105);
+        irregularSignificantHeightTextBox.BackColor = Color.White;
+        irregularSignificantHeightTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         irregularSignificantHeightTextBox.Name = "irregularSignificantHeightTextBox";
         irregularSignificantHeightTextBox.Size = new Size(100, 27);
         irregularSignificantHeightTextBox.TabIndex = 15;
@@ -795,6 +851,8 @@ partial class WaveformPage
         // irregularTimeStepTextBox
         // 
         irregularTimeStepTextBox.Location = new Point(97, 139);
+        irregularTimeStepTextBox.BackColor = Color.White;
+        irregularTimeStepTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         irregularTimeStepTextBox.Name = "irregularTimeStepTextBox";
         irregularTimeStepTextBox.Size = new Size(100, 27);
         irregularTimeStepTextBox.TabIndex = 17;
@@ -810,6 +868,8 @@ partial class WaveformPage
         // irregularSampleCountTextBox
         // 
         irregularSampleCountTextBox.Location = new Point(301, 139);
+        irregularSampleCountTextBox.BackColor = Color.White;
+        irregularSampleCountTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         irregularSampleCountTextBox.Name = "irregularSampleCountTextBox";
         irregularSampleCountTextBox.Size = new Size(100, 27);
         irregularSampleCountTextBox.TabIndex = 19;
@@ -825,6 +885,8 @@ partial class WaveformPage
         // irregularCharacteristicFrequencyTextBox
         // 
         irregularCharacteristicFrequencyTextBox.Location = new Point(97, 173);
+        irregularCharacteristicFrequencyTextBox.BackColor = Color.White;
+        irregularCharacteristicFrequencyTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         irregularCharacteristicFrequencyTextBox.Name = "irregularCharacteristicFrequencyTextBox";
         irregularCharacteristicFrequencyTextBox.Size = new Size(100, 27);
         irregularCharacteristicFrequencyTextBox.TabIndex = 21;
@@ -840,6 +902,8 @@ partial class WaveformPage
         // irregularCharacteristicPeriodTextBox
         // 
         irregularCharacteristicPeriodTextBox.Location = new Point(301, 173);
+        irregularCharacteristicPeriodTextBox.BackColor = Color.White;
+        irregularCharacteristicPeriodTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         irregularCharacteristicPeriodTextBox.Name = "irregularCharacteristicPeriodTextBox";
         irregularCharacteristicPeriodTextBox.Size = new Size(100, 27);
         irregularCharacteristicPeriodTextBox.TabIndex = 23;
@@ -855,6 +919,8 @@ partial class WaveformPage
         // irregularPeakFactorTextBox
         // 
         irregularPeakFactorTextBox.Location = new Point(97, 207);
+        irregularPeakFactorTextBox.BackColor = Color.White;
+        irregularPeakFactorTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         irregularPeakFactorTextBox.Name = "irregularPeakFactorTextBox";
         irregularPeakFactorTextBox.Size = new Size(100, 27);
         irregularPeakFactorTextBox.TabIndex = 25;
@@ -870,6 +936,8 @@ partial class WaveformPage
         // irregularRandomSeedTextBox
         // 
         irregularRandomSeedTextBox.Location = new Point(301, 207);
+        irregularRandomSeedTextBox.BackColor = Color.White;
+        irregularRandomSeedTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         irregularRandomSeedTextBox.Name = "irregularRandomSeedTextBox";
         irregularRandomSeedTextBox.Size = new Size(100, 27);
         irregularRandomSeedTextBox.TabIndex = 27;
@@ -885,6 +953,8 @@ partial class WaveformPage
         // irregularMinimumPeriodTextBox
         // 
         irregularMinimumPeriodTextBox.Location = new Point(97, 241);
+        irregularMinimumPeriodTextBox.BackColor = Color.White;
+        irregularMinimumPeriodTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         irregularMinimumPeriodTextBox.Name = "irregularMinimumPeriodTextBox";
         irregularMinimumPeriodTextBox.Size = new Size(100, 27);
         irregularMinimumPeriodTextBox.TabIndex = 29;
@@ -900,6 +970,8 @@ partial class WaveformPage
         // irregularMaximumPeriodTextBox
         // 
         irregularMaximumPeriodTextBox.Location = new Point(301, 241);
+        irregularMaximumPeriodTextBox.BackColor = Color.White;
+        irregularMaximumPeriodTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         irregularMaximumPeriodTextBox.Name = "irregularMaximumPeriodTextBox";
         irregularMaximumPeriodTextBox.Size = new Size(100, 27);
         irregularMaximumPeriodTextBox.TabIndex = 31;
@@ -915,6 +987,8 @@ partial class WaveformPage
         // irregularMinimumDifferencePeriodTextBox
         // 
         irregularMinimumDifferencePeriodTextBox.Location = new Point(97, 275);
+        irregularMinimumDifferencePeriodTextBox.BackColor = Color.White;
+        irregularMinimumDifferencePeriodTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         irregularMinimumDifferencePeriodTextBox.Name = "irregularMinimumDifferencePeriodTextBox";
         irregularMinimumDifferencePeriodTextBox.Size = new Size(100, 27);
         irregularMinimumDifferencePeriodTextBox.TabIndex = 33;
@@ -930,6 +1004,8 @@ partial class WaveformPage
         // irregularMaximumDifferencePeriodTextBox
         // 
         irregularMaximumDifferencePeriodTextBox.Location = new Point(301, 275);
+        irregularMaximumDifferencePeriodTextBox.BackColor = Color.White;
+        irregularMaximumDifferencePeriodTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         irregularMaximumDifferencePeriodTextBox.Name = "irregularMaximumDifferencePeriodTextBox";
         irregularMaximumDifferencePeriodTextBox.Size = new Size(100, 27);
         irregularMaximumDifferencePeriodTextBox.TabIndex = 35;
@@ -945,6 +1021,8 @@ partial class WaveformPage
         // irregularNegativeDirectionTextBox
         // 
         irregularNegativeDirectionTextBox.Location = new Point(97, 309);
+        irregularNegativeDirectionTextBox.BackColor = Color.White;
+        irregularNegativeDirectionTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         irregularNegativeDirectionTextBox.Name = "irregularNegativeDirectionTextBox";
         irregularNegativeDirectionTextBox.Size = new Size(100, 27);
         irregularNegativeDirectionTextBox.TabIndex = 37;
@@ -960,6 +1038,8 @@ partial class WaveformPage
         // irregularPositiveDirectionTextBox
         // 
         irregularPositiveDirectionTextBox.Location = new Point(301, 309);
+        irregularPositiveDirectionTextBox.BackColor = Color.White;
+        irregularPositiveDirectionTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         irregularPositiveDirectionTextBox.Name = "irregularPositiveDirectionTextBox";
         irregularPositiveDirectionTextBox.Size = new Size(100, 27);
         irregularPositiveDirectionTextBox.TabIndex = 39;
@@ -976,32 +1056,46 @@ partial class WaveformPage
         // 
         irregularParameterLayout.SetColumnSpan(irregularOutputTextBox, 2);
         irregularOutputTextBox.Location = new Point(97, 343);
+        irregularOutputTextBox.BackColor = Color.White;
+        irregularOutputTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         irregularOutputTextBox.Name = "irregularOutputTextBox";
         irregularOutputTextBox.Size = new Size(100, 27);
         irregularOutputTextBox.TabIndex = 41;
         // 
         // irregularBrowseOutputButton
         // 
+        irregularBrowseOutputButton.BackColor = Color.FromArgb(226, 232, 240);
+        irregularBrowseOutputButton.FlatAppearance.BorderSize = 0;
+        irregularBrowseOutputButton.FlatStyle = FlatStyle.Flat;
+        irregularBrowseOutputButton.ForeColor = Color.FromArgb(15, 23, 42);
         irregularBrowseOutputButton.Location = new Point(301, 343);
         irregularBrowseOutputButton.Name = "irregularBrowseOutputButton";
         irregularBrowseOutputButton.Size = new Size(75, 23);
         irregularBrowseOutputButton.TabIndex = 42;
         irregularBrowseOutputButton.Text = "浏览";
+        irregularBrowseOutputButton.UseVisualStyleBackColor = false;
         irregularBrowseOutputButton.Click += BrowseIrregularOutputButton_Click;
         // 
         // irregularGenerateButton
         // 
+        irregularGenerateButton.BackColor = Color.FromArgb(29, 78, 216);
+        irregularGenerateButton.FlatAppearance.BorderSize = 0;
+        irregularGenerateButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(30, 64, 175);
+        irregularGenerateButton.FlatStyle = FlatStyle.Flat;
+        irregularGenerateButton.ForeColor = Color.White;
         irregularParameterLayout.SetColumnSpan(irregularGenerateButton, 2);
         irregularGenerateButton.Location = new Point(3, 377);
         irregularGenerateButton.Name = "irregularGenerateButton";
         irregularGenerateButton.Size = new Size(75, 23);
         irregularGenerateButton.TabIndex = 43;
         irregularGenerateButton.Text = "计算并保存";
+        irregularGenerateButton.UseVisualStyleBackColor = false;
         irregularGenerateButton.Click += GenerateIrregularButton_Click;
         // 
         // irregularStatusLabel
         // 
         irregularParameterLayout.SetColumnSpan(irregularStatusLabel, 2);
+        irregularStatusLabel.ForeColor = Color.FromArgb(71, 85, 105);
         irregularStatusLabel.Location = new Point(207, 374);
         irregularStatusLabel.Name = "irregularStatusLabel";
         irregularStatusLabel.Size = new Size(100, 23);
@@ -1010,6 +1104,7 @@ partial class WaveformPage
         // 
         // irregularPreviewGroup
         // 
+        irregularPreviewGroup.BackColor = Color.White;
         irregularPreviewGroup.Controls.Add(irregularPreview);
         irregularPreviewGroup.Dock = DockStyle.Fill;
         irregularPreviewGroup.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
@@ -1025,7 +1120,7 @@ partial class WaveformPage
         // 
         irregularPreview.BackColor = Color.White;
         irregularPreview.Dock = DockStyle.Fill;
-        irregularPreview.ForeColor = Color.FromArgb(30, 64, 175);
+        irregularPreview.ForeColor = Color.FromArgb(29, 78, 216);
         irregularPreview.Location = new Point(10, 38);
         irregularPreview.MinimumSize = new Size(360, 260);
         irregularPreview.Name = "irregularPreview";
@@ -1037,6 +1132,8 @@ partial class WaveformPage
         // 
         AutoScaleDimensions = new SizeF(9F, 20F);
         AutoScaleMode = AutoScaleMode.Font;
+        BackColor = Color.FromArgb(241, 245, 249);
+        ForeColor = Color.FromArgb(15, 23, 42);
         Controls.Add(rootLayout);
         Name = "WaveformPage";
         Size = new Size(1210, 796);
