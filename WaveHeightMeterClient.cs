@@ -314,15 +314,20 @@ public sealed class WaveHeightMeterClient : IDisposable
         socket.Dispose();
     }
 
-    private void RaiseSampleReceived(WaveHeightSampleEventArgs args)
+    private void RaiseSampleReceived(WaveHeightSampleEventArgs args) =>
+        NotifySubscribers(SampleReceived, args);
+
+    private void RaiseConnectionLost(Exception? error) =>
+        NotifySubscribers(ConnectionLost, new WaveHeightConnectionLostEventArgs(error));
+
+    private void NotifySubscribers<T>(EventHandler<T>? handlers, T args)
     {
-        var handlers = SampleReceived;
         if (handlers is null)
         {
             return;
         }
 
-        foreach (EventHandler<WaveHeightSampleEventArgs> handler in handlers.GetInvocationList())
+        foreach (EventHandler<T> handler in handlers.GetInvocationList())
         {
             try
             {
@@ -330,28 +335,7 @@ public sealed class WaveHeightMeterClient : IDisposable
             }
             catch
             {
-                // UI subscriber failures must not terminate the socket receive loop.
-            }
-        }
-    }
-
-    private void RaiseConnectionLost(Exception? error)
-    {
-        var handlers = ConnectionLost;
-        if (handlers is null)
-        {
-            return;
-        }
-
-        foreach (EventHandler<WaveHeightConnectionLostEventArgs> handler in handlers.GetInvocationList())
-        {
-            try
-            {
-                handler(this, new WaveHeightConnectionLostEventArgs(error));
-            }
-            catch
-            {
-                // Connection state is already reset even if a subscriber fails.
+                // A subscriber must not terminate the socket receive loop.
             }
         }
     }

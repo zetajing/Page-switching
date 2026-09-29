@@ -117,7 +117,6 @@ namespace Page_switching
 
                 _lastSnapshots = snapshots;
                 UpdateAxisOverview(snapshots);
-                UpdateSelectedAxisDetails();
                 UpdateConnectionState();
             }
             catch (OperationCanceledException)

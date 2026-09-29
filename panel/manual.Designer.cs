@@ -208,7 +208,7 @@ namespace Page_switching
             axis1NegativeLimitLamp.Font = new Font("Microsoft YaHei UI", 8F);
             axis1NegativeLimitLamp.ForeColor = Color.Gray;
             axis1NegativeLimitLamp.Location = new Point(2, 98);
-            axis1NegativeLimitLamp.Margin = new Padding(2, 2, 2, 2);
+            axis1NegativeLimitLamp.Margin = new Padding(2);
             axis1NegativeLimitLamp.Name = "axis1NegativeLimitLamp";
             axis1NegativeLimitLamp.Size = new Size(129, 20);
             axis1NegativeLimitLamp.TabIndex = 5;
@@ -222,7 +222,7 @@ namespace Page_switching
             axis1OriginLamp.Font = new Font("Microsoft YaHei UI", 8F);
             axis1OriginLamp.ForeColor = Color.Gray;
             axis1OriginLamp.Location = new Point(135, 98);
-            axis1OriginLamp.Margin = new Padding(2, 2, 2, 2);
+            axis1OriginLamp.Margin = new Padding(2);
             axis1OriginLamp.Name = "axis1OriginLamp";
             axis1OriginLamp.Size = new Size(129, 20);
             axis1OriginLamp.TabIndex = 6;
@@ -236,7 +236,7 @@ namespace Page_switching
             axis1PositiveLimitLamp.Font = new Font("Microsoft YaHei UI", 8F);
             axis1PositiveLimitLamp.ForeColor = Color.Gray;
             axis1PositiveLimitLamp.Location = new Point(268, 98);
-            axis1PositiveLimitLamp.Margin = new Padding(2, 2, 2, 2);
+            axis1PositiveLimitLamp.Margin = new Padding(2);
             axis1PositiveLimitLamp.Name = "axis1PositiveLimitLamp";
             axis1PositiveLimitLamp.Size = new Size(136, 20);
             axis1PositiveLimitLamp.TabIndex = 7;
@@ -292,7 +292,7 @@ namespace Page_switching
             axis2NegativeLimitLamp.Font = new Font("Microsoft YaHei UI", 8F);
             axis2NegativeLimitLamp.ForeColor = Color.Gray;
             axis2NegativeLimitLamp.Location = new Point(2, 98);
-            axis2NegativeLimitLamp.Margin = new Padding(2, 2, 2, 2);
+            axis2NegativeLimitLamp.Margin = new Padding(2);
             axis2NegativeLimitLamp.Name = "axis2NegativeLimitLamp";
             axis2NegativeLimitLamp.Size = new Size(129, 20);
             axis2NegativeLimitLamp.TabIndex = 8;
@@ -306,7 +306,7 @@ namespace Page_switching
             axis2OriginLamp.Font = new Font("Microsoft YaHei UI", 8F);
             axis2OriginLamp.ForeColor = Color.Gray;
             axis2OriginLamp.Location = new Point(135, 98);
-            axis2OriginLamp.Margin = new Padding(2, 2, 2, 2);
+            axis2OriginLamp.Margin = new Padding(2);
             axis2OriginLamp.Name = "axis2OriginLamp";
             axis2OriginLamp.Size = new Size(129, 20);
             axis2OriginLamp.TabIndex = 9;
@@ -320,7 +320,7 @@ namespace Page_switching
             axis2PositiveLimitLamp.Font = new Font("Microsoft YaHei UI", 8F);
             axis2PositiveLimitLamp.ForeColor = Color.Gray;
             axis2PositiveLimitLamp.Location = new Point(268, 98);
-            axis2PositiveLimitLamp.Margin = new Padding(2, 2, 2, 2);
+            axis2PositiveLimitLamp.Margin = new Padding(2);
             axis2PositiveLimitLamp.Name = "axis2PositiveLimitLamp";
             axis2PositiveLimitLamp.Size = new Size(136, 20);
             axis2PositiveLimitLamp.TabIndex = 10;
@@ -376,7 +376,7 @@ namespace Page_switching
             axis3NegativeLimitLamp.Font = new Font("Microsoft YaHei UI", 8F);
             axis3NegativeLimitLamp.ForeColor = Color.Gray;
             axis3NegativeLimitLamp.Location = new Point(2, 98);
-            axis3NegativeLimitLamp.Margin = new Padding(2, 2, 2, 2);
+            axis3NegativeLimitLamp.Margin = new Padding(2);
             axis3NegativeLimitLamp.Name = "axis3NegativeLimitLamp";
             axis3NegativeLimitLamp.Size = new Size(129, 20);
             axis3NegativeLimitLamp.TabIndex = 11;
@@ -390,7 +390,7 @@ namespace Page_switching
             axis3OriginLamp.Font = new Font("Microsoft YaHei UI", 8F);
             axis3OriginLamp.ForeColor = Color.Gray;
             axis3OriginLamp.Location = new Point(135, 98);
-            axis3OriginLamp.Margin = new Padding(2, 2, 2, 2);
+            axis3OriginLamp.Margin = new Padding(2);
             axis3OriginLamp.Name = "axis3OriginLamp";
             axis3OriginLamp.Size = new Size(129, 20);
             axis3OriginLamp.TabIndex = 12;
@@ -404,7 +404,7 @@ namespace Page_switching
             axis3PositiveLimitLamp.Font = new Font("Microsoft YaHei UI", 8F);
             axis3PositiveLimitLamp.ForeColor = Color.Gray;
             axis3PositiveLimitLamp.Location = new Point(268, 98);
-            axis3PositiveLimitLamp.Margin = new Padding(2, 2, 2, 2);
+            axis3PositiveLimitLamp.Margin = new Padding(2);
             axis3PositiveLimitLamp.Name = "axis3PositiveLimitLamp";
             axis3PositiveLimitLamp.Size = new Size(136, 20);
             axis3PositiveLimitLamp.TabIndex = 13;
@@ -460,7 +460,7 @@ namespace Page_switching
             axis4NegativeLimitLamp.Font = new Font("Microsoft YaHei UI", 8F);
             axis4NegativeLimitLamp.ForeColor = Color.Gray;
             axis4NegativeLimitLamp.Location = new Point(2, 98);
-            axis4NegativeLimitLamp.Margin = new Padding(2, 2, 2, 2);
+            axis4NegativeLimitLamp.Margin = new Padding(2);
             axis4NegativeLimitLamp.Name = "axis4NegativeLimitLamp";
             axis4NegativeLimitLamp.Size = new Size(129, 20);
             axis4NegativeLimitLamp.TabIndex = 14;
@@ -474,7 +474,7 @@ namespace Page_switching
             axis4OriginLamp.Font = new Font("Microsoft YaHei UI", 8F);
             axis4OriginLamp.ForeColor = Color.Gray;
             axis4OriginLamp.Location = new Point(135, 98);
-            axis4OriginLamp.Margin = new Padding(2, 2, 2, 2);
+            axis4OriginLamp.Margin = new Padding(2);
             axis4OriginLamp.Name = "axis4OriginLamp";
             axis4OriginLamp.Size = new Size(129, 20);
             axis4OriginLamp.TabIndex = 15;
@@ -488,7 +488,7 @@ namespace Page_switching
             axis4PositiveLimitLamp.Font = new Font("Microsoft YaHei UI", 8F);
             axis4PositiveLimitLamp.ForeColor = Color.Gray;
             axis4PositiveLimitLamp.Location = new Point(268, 98);
-            axis4PositiveLimitLamp.Margin = new Padding(2, 2, 2, 2);
+            axis4PositiveLimitLamp.Margin = new Padding(2);
             axis4PositiveLimitLamp.Name = "axis4PositiveLimitLamp";
             axis4PositiveLimitLamp.Size = new Size(136, 20);
             axis4PositiveLimitLamp.TabIndex = 16;

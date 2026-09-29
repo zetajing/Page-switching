@@ -439,18 +439,13 @@ public static class WaveformCsvReader
         var samples = new List<double>();
         foreach (var line in File.ReadLines(path))
         {
-            var values = line.Split(',', ';', '\t')
-                .Select(value => TryParse(value, out var number) ? number : (double?)null)
-                .Where(value => value.HasValue)
-                .Select(value => value!.Value)
-                .ToArray();
+            double? lastValue = null;
+            foreach (var field in line.Split(',', ';', '\t'))
+                if (TryParse(field, out var value))
+                    lastValue = value;
 
-            if (values.Length == 0)
-            {
-                continue;
-            }
-
-            samples.Add(values.Length == 1 ? values[0] : values[^1]);
+            if (lastValue.HasValue)
+                samples.Add(lastValue.Value);
         }
 
         return samples;

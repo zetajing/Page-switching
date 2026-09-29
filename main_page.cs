@@ -47,8 +47,7 @@ namespace Page_switching
             };
 
             // 启动时先显示默认页面，避免主区域空白。
-            ShowPage(_autoPage);
-            SetActiveNavigation(Bu_auto);
+            NavigateTo(_autoPage, Bu_auto);
             _headerStatusTimer.Start();
 
             // 窗体先显示，再异步建立 ADS 连接。
@@ -148,6 +147,12 @@ namespace Page_switching
             }
         }
 
+        private void NavigateTo(UserControl page, Button button)
+        {
+            ShowPage(page);
+            SetActiveNavigation(button);
+        }
+
         // 高亮当前页面对应的导航按钮，并恢复其他按钮的深色背景。
         private void SetActiveNavigation(Button activeButton)
         {
@@ -160,11 +165,11 @@ namespace Page_switching
                 button.ForeColor = isActive ? Color.White : Color.FromArgb(226, 232, 240);
             }
 
-            UpdateHeaderStatus(activeButton);
+            UpdateHeaderStatus();
         }
 
         // 更新顶部状态栏，显示 ADS 连接、当前页面、控制权和安全配置状态。
-        private void UpdateHeaderStatus(Button? activeButton = null)
+        private void UpdateHeaderStatus()
         {
             if (IsDisposed)
             {
@@ -177,12 +182,9 @@ namespace Page_switching
                 ? Color.FromArgb(74, 222, 128)
                 : Color.FromArgb(251, 146, 60);
 
-            var pageName = activeButton is null
-                ? GetCurrentPageName()
-                : GetPageName(activeButton);
             var ownerState = HasControlSetting("AdsControlOwnerStationId") ? "已配置" : "待配置";
             var safetyState = HasControlSetting("AdsSafetyOk") ? "已配置" : "待配置";
-            controlStatusLabel.Text = $"当前：{pageName}    控制权：{ownerState}    安全：{safetyState}";
+            controlStatusLabel.Text = $"当前：{GetCurrentPageName()}    控制权：{ownerState}    安全：{safetyState}";
         }
 
         // 根据当前缓存页面返回顶部状态栏要显示的页面名称。
@@ -199,75 +201,29 @@ namespace Page_switching
             _ => "系统"
         };
 
-        // 根据导航按钮返回简短的页面名称。
-        private string GetPageName(Button button) => button switch
-        {
-            var value when ReferenceEquals(value, Bu_auto) => "自动运行",
-            var value when ReferenceEquals(value, Bu_manual) => "手动控制",
-            var value when ReferenceEquals(value, button3) => "控制权申请",
-            var value when ReferenceEquals(value, Bu_Calibration) => "标定管理",
-            var value when ReferenceEquals(value, Bu_data) => "数据管理",
-            var value when ReferenceEquals(value, button2) => "波形生成",
-            var value when ReferenceEquals(value, bu_Configuration) => "系统配置",
-            var value when ReferenceEquals(value, button5) => "浪高监测",
-            _ => "系统"
-        };
-
         // 检查一个控制权相关配置项是否已经填入 PLC 变量名。
         private static bool HasControlSetting(string key) =>
             !string.IsNullOrWhiteSpace(ConfigurationManager.AppSettings[key]);
 
         // 切换到自动页面。
-        private void Bu_auto_Click(object sender, EventArgs e)
-        {
-            ShowPage(_autoPage);
-            SetActiveNavigation(Bu_auto);
-        }
+        private void Bu_auto_Click(object sender, EventArgs e) => NavigateTo(_autoPage, Bu_auto);
 
         // 切换到手动控制页面。
-        private void Bu_manual_Click(object sender, EventArgs e)
-        {
-            ShowPage(_manualPage);
-            SetActiveNavigation(Bu_manual);
-        }
+        private void Bu_manual_Click(object sender, EventArgs e) => NavigateTo(_manualPage, Bu_manual);
 
         // 切换到控制权申请页面。
-        private void ControlAuthorityButton_Click(object sender, EventArgs e)
-        {
-            ShowPage(_controlAuthorityPage);
-            SetActiveNavigation(button3);
-        }
+        private void ControlAuthorityButton_Click(object sender, EventArgs e) => NavigateTo(_controlAuthorityPage, button3);
 
         // 切换到配置页面。
-        private void bu_Configuration_Click(object sender, EventArgs e)
-        {
-            ShowPage(_config);
-            SetActiveNavigation(bu_Configuration);
-        }
+        private void bu_Configuration_Click(object sender, EventArgs e) => NavigateTo(_config, bu_Configuration);
 
         // 切换到波形生成页面。
-        private void WaveformButton_Click(object sender, EventArgs e)
-        {
-            ShowPage(_waveformPage);
-            SetActiveNavigation(button2);
-        }
+        private void WaveformButton_Click(object sender, EventArgs e) => NavigateTo(_waveformPage, button2);
 
-        private void button5_Click(object sender, EventArgs e)
-        {
-            ShowPage(_wave_Height_Meter);
-            SetActiveNavigation(button5);
-        }
+        private void button5_Click(object sender, EventArgs e) => NavigateTo(_wave_Height_Meter, button5);
 
-        private void Bu_data_Click(object sender, EventArgs e)
-        {
-            ShowPage(_data);
-            SetActiveNavigation(Bu_data);
-        }
+        private void Bu_data_Click(object sender, EventArgs e) => NavigateTo(_data, Bu_data);
 
-        private void Bu_Calibration_Click(object sender, EventArgs e)
-        {
-            ShowPage(_calibration);
-            SetActiveNavigation(Bu_Calibration);
-        }
+        private void Bu_Calibration_Click(object sender, EventArgs e) => NavigateTo(_calibration, Bu_Calibration);
     }
 }

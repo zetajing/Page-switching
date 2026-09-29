@@ -213,7 +213,7 @@ public partial class WaveformPage : UserControl
                 regularTheoryComboBox.SelectedIndex + 1,
                 GetSideCode(regularSegmentComboBox));
 
-            SetGenerationState(true, regularGenerateButton, regularStatusLabel);
+            SetGenerationState(true, regularStatusLabel);
             regularStatusLabel.Text = $"正在使用 {_generatorService.GenerationModeText} 生成规则波……";
             var result = await _generatorService.GenerateRegularAsync(
                 parameters,
@@ -235,7 +235,7 @@ public partial class WaveformPage : UserControl
         }
         finally
         {
-            SetGenerationState(false, regularGenerateButton, regularStatusLabel);
+            SetGenerationState(false, regularStatusLabel);
         }
     }
 
@@ -282,7 +282,7 @@ public partial class WaveformPage : UserControl
                 throw new InvalidOperationException("最小差频周期不能大于最大差频周期。");
             }
 
-            SetGenerationState(true, irregularGenerateButton, irregularStatusLabel);
+            SetGenerationState(true, irregularStatusLabel);
             irregularStatusLabel.Text = $"正在使用 {_generatorService.GenerationModeText} 生成不规则波……";
             var result = await _generatorService.GenerateIrregularAsync(
                 parameters,
@@ -304,15 +304,14 @@ public partial class WaveformPage : UserControl
         }
         finally
         {
-            SetGenerationState(false, irregularGenerateButton, irregularStatusLabel);
+            SetGenerationState(false, irregularStatusLabel);
         }
     }
 
     // 生成期间禁用操作按钮并更新状态提示。
-    private void SetGenerationState(bool generating, Button button, Label statusLabel)
+    private void SetGenerationState(bool generating, Label statusLabel)
     {
         _generationInProgress = generating;
-        button.Enabled = !generating;
         regularGenerateButton.Enabled = !generating;
         irregularGenerateButton.Enabled = !generating;
         regularBrowseOutputButton.Enabled = !generating;

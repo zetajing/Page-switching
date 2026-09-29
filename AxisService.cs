@@ -300,26 +300,12 @@ public sealed class AxisService : IDisposable
     // 将四根轴的 EnableCommand 全部写为 true。
     public Task EnableAllAsync(CancellationToken cancellationToken) =>
         WriteAllAsync(
-            [
-                _options.AxisSymbols[0].EnableCommand,
-                _options.AxisSymbols[1].EnableCommand,
-                _options.AxisSymbols[2].EnableCommand,
-                _options.AxisSymbols[3].EnableCommand
-            ],
-            true,
-            cancellationToken);
+            _options.AxisSymbols.Select(axis => axis.EnableCommand).ToArray(), true, cancellationToken);
 
     // 将四根轴的 EnableCommand 全部写为 false。
     public Task DisableAllAsync(CancellationToken cancellationToken) =>
         WriteAllAsync(
-            [
-                _options.AxisSymbols[0].EnableCommand,
-                _options.AxisSymbols[1].EnableCommand,
-                _options.AxisSymbols[2].EnableCommand,
-                _options.AxisSymbols[3].EnableCommand
-            ],
-            false,
-            cancellationToken);
+            _options.AxisSymbols.Select(axis => axis.EnableCommand).ToArray(), false, cancellationToken);
 
     // 将一组布尔变量批量写成指定值。
     private async Task WriteAllAsync(
@@ -344,35 +330,17 @@ public sealed class AxisService : IDisposable
     // 将四根轴的 ResetAlarmCommand 置位 50 毫秒后复位。
     public Task ResetAlarmsAsync(CancellationToken cancellationToken) =>
         PulseAllAsync(
-            [
-                _options.AxisSymbols[0].ResetAlarmCommand,
-                _options.AxisSymbols[1].ResetAlarmCommand,
-                _options.AxisSymbols[2].ResetAlarmCommand,
-                _options.AxisSymbols[3].ResetAlarmCommand
-            ],
-            cancellationToken);
+            _options.AxisSymbols.Select(axis => axis.ResetAlarmCommand).ToArray(), cancellationToken);
 
     // 将四根轴的 HomeCommand 置位 50 毫秒后复位。
     public Task HomeAllAsync(CancellationToken cancellationToken) =>
         PulseAllAsync(
-            [
-                _options.AxisSymbols[0].HomeCommand,
-                _options.AxisSymbols[1].HomeCommand,
-                _options.AxisSymbols[2].HomeCommand,
-                _options.AxisSymbols[3].HomeCommand
-            ],
-            cancellationToken);
+            _options.AxisSymbols.Select(axis => axis.HomeCommand).ToArray(), cancellationToken);
 
     // 将四根轴的 StopCommand 置位 50 毫秒后复位。
     public Task StopAllAsync(CancellationToken cancellationToken) =>
         PulseAllAsync(
-            [
-                _options.AxisSymbols[0].StopCommand,
-                _options.AxisSymbols[1].StopCommand,
-                _options.AxisSymbols[2].StopCommand,
-                _options.AxisSymbols[3].StopCommand
-            ],
-            cancellationToken);
+            _options.AxisSymbols.Select(axis => axis.StopCommand).ToArray(), cancellationToken);
 
     // 触发指定轴的 HomeCommand，使该轴开始回零。
     public Task HomeAxisAsync(int axisNumber, CancellationToken cancellationToken)

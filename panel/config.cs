@@ -97,15 +97,12 @@ public partial class Config : UserControl
 
             connectionString = AddSqlServerCredentials(connectionString, userName, password);
 
-            var configuration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            var settings = configuration.AppSettings.Settings;
-            Set(settings, "DatabaseEnabled", _databaseEnabledCheckBox.Checked.ToString().ToLowerInvariant());
-            Set(settings, "DatabaseProvider", "SQL Server");
-            Set(settings, "DatabaseConnectionString", connectionString);
-            Set(settings, "DatabaseUserName", userName);
-            Set(settings, "DatabasePassword", password);
-            configuration.Save(ConfigurationSaveMode.Modified);
-            ConfigurationManager.RefreshSection("appSettings");
+            SaveSettings(
+                ("DatabaseEnabled", _databaseEnabledCheckBox.Checked.ToString().ToLowerInvariant()),
+                ("DatabaseProvider", "SQL Server"),
+                ("DatabaseConnectionString", connectionString),
+                ("DatabaseUserName", userName),
+                ("DatabasePassword", password));
 
             _databaseConnectionTextBox.Text = connectionString;
 
@@ -171,12 +168,11 @@ public partial class Config : UserControl
                 throw new InvalidOperationException("WFast.exe 路径不存在。");
             }
 
-            var configuration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            Set(configuration.AppSettings.Settings, "WaveGeneratorMode",
-                useWaveMaker ? nameof(WaveformGeneratorMode.WaveMaker) : nameof(WaveformGeneratorMode.ExternalExe));
-            Set(configuration.AppSettings.Settings, "WaveGeneratorPath", path);
-            configuration.Save(ConfigurationSaveMode.Modified);
-            ConfigurationManager.RefreshSection("appSettings");
+            var mode = useWaveMaker ? nameof(WaveformGeneratorMode.WaveMaker)
+                : nameof(WaveformGeneratorMode.ExternalExe);
+            SaveSettings(
+                ("WaveGeneratorMode", mode),
+                ("WaveGeneratorPath", path));
 
             waveGeneratorStateLabel.Text = useWaveMaker
                 ? "已启用 WaveMaker 内置算法，不需要 WFast.exe"
@@ -249,23 +245,21 @@ public partial class Config : UserControl
         try
         {
             ValidateInputs();
-            var configuration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            var settings = configuration.AppSettings.Settings;
-            Set(settings, "WaveGeneratorMode",
-                IsWaveMakerModeSelected() ? nameof(WaveformGeneratorMode.WaveMaker) : nameof(WaveformGeneratorMode.ExternalExe));
-            Set(settings, "WaveGeneratorPath", waveGeneratorPathTextBox.Text.Trim());
-            Set(settings, "AdsTcpRouterEnabled", routerEnabledCheckBox.Checked.ToString().ToLowerInvariant());
-            Set(settings, "AdsTcpRouterName", routerNameTextBox.Text.Trim());
-            Set(settings, "AdsTcpRouterLocalNetId", localNetIdTextBox.Text.Trim());
-            Set(settings, "AdsTcpRouterTcpPort", decimal.ToInt32(routerTcpPortInput.Value).ToString());
-            Set(settings, "AdsTcpRouterLoopbackIp", "127.0.0.1");
-            Set(settings, "AdsTcpRouterLoopbackPort", decimal.ToInt32(routerTcpPortInput.Value).ToString());
-            Set(settings, "AdsTcpRouterRemoteName", remoteNameTextBox.Text.Trim());
-            Set(settings, "AdsTcpRouterRemoteAddress", remoteAddressTextBox.Text.Trim());
-            Set(settings, "AdsTcpRouterRemoteNetId", remoteNetIdTextBox.Text.Trim());
-            Set(settings, "AdsAmsNetId", remoteNetIdTextBox.Text.Trim());
-            configuration.Save(ConfigurationSaveMode.Modified);
-            ConfigurationManager.RefreshSection("appSettings");
+            var mode = IsWaveMakerModeSelected() ? nameof(WaveformGeneratorMode.WaveMaker)
+                : nameof(WaveformGeneratorMode.ExternalExe);
+            SaveSettings(
+                ("WaveGeneratorMode", mode),
+                ("WaveGeneratorPath", waveGeneratorPathTextBox.Text.Trim()),
+                ("AdsTcpRouterEnabled", routerEnabledCheckBox.Checked.ToString().ToLowerInvariant()),
+                ("AdsTcpRouterName", routerNameTextBox.Text.Trim()),
+                ("AdsTcpRouterLocalNetId", localNetIdTextBox.Text.Trim()),
+                ("AdsTcpRouterTcpPort", decimal.ToInt32(routerTcpPortInput.Value).ToString()),
+                ("AdsTcpRouterLoopbackIp", "127.0.0.1"),
+                ("AdsTcpRouterLoopbackPort", decimal.ToInt32(routerTcpPortInput.Value).ToString()),
+                ("AdsTcpRouterRemoteName", remoteNameTextBox.Text.Trim()),
+                ("AdsTcpRouterRemoteAddress", remoteAddressTextBox.Text.Trim()),
+                ("AdsTcpRouterRemoteNetId", remoteNetIdTextBox.Text.Trim()),
+                ("AdsAmsNetId", remoteNetIdTextBox.Text.Trim()));
 
             saveResultLabel.ForeColor = Color.FromArgb(5, 150, 105);
             saveResultLabel.Text = "保存成功；Router 和 ADS 配置重启后生效，波形生成方案立即可用。";
@@ -381,6 +375,15 @@ public partial class Config : UserControl
 
     // 判断当前是否选择 WaveMaker 内置方案。
     private bool IsWaveMakerModeSelected() => waveGeneratorModeComboBox.SelectedIndex == 1;
+
+    private static void SaveSettings(params (string Key, string Value)[] values)
+    {
+        var configuration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+        foreach (var (key, value) in values)
+            Set(configuration.AppSettings.Settings, key, value);
+        configuration.Save(ConfigurationSaveMode.Modified);
+        ConfigurationManager.RefreshSection("appSettings");
+    }
 
     // 新增或更新一个 App.config 配置项。
     private static void Set(KeyValueConfigurationCollection settings, string key, string value)
