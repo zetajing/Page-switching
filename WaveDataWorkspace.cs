@@ -122,18 +122,7 @@ public sealed class WaveDataWorkspace : IDisposable
         if (profile.Points.Count < 2 || !double.IsFinite(profile.Slope) || !double.IsFinite(profile.Intercept))
             throw new InvalidOperationException("请先完成有效的标定计算。");
         lock (_gate)
-        {
-            if (_activeManifest is not null)
-                throw new InvalidOperationException("请先结束采集，再保存标定参数。");
-            var path = Path.Combine(RootDirectory, "calibrations.json");
-            var merged = _profiles.ToDictionary(x => x.Key, x => CloneProfile(x.Value));
-            merged[profile.Channel] = CloneProfile(profile);
-            BackupDamagedCalibration(path);
-            WriteJsonAtomically(path, merged.Values.OrderBy(p => p.Channel).ToList());
-            CalibrationLoadError = null;
-            _profiles.Clear();
-            foreach (var item in merged) _profiles[item.Key] = item.Value;
-        }
+            SaveProfiles([profile]);
     }
 
     public WaveCaptureManifest StartSession(string deviceAddress, int sampleRateHz, IReadOnlyCollection<int> channels)
@@ -153,7 +142,7 @@ public sealed class WaveDataWorkspace : IDisposable
                 StartedAt = DateTimeOffset.Now,
                 SampleRateHz = sampleRateHz,
                 Channels = [1],
-                CalibrationVersion = GetCalibration(1).Version,
+                CalibrationVersion = _profiles.TryGetValue(1, out var profile) ? profile.Version : "",
                 CsvPath = Path.Combine(folder, "samples.csv")
             };
             _activeWriter = new StreamWriter(manifest.CsvPath, false, new UTF8Encoding(true));
@@ -172,11 +161,10 @@ public sealed class WaveDataWorkspace : IDisposable
         lock (_gate)
         {
             _latestRaw[channel] = rawCount;
-            var profile = GetCalibration(channel);
+            _profiles.TryGetValue(channel, out var profile);
             var manifest = _activeManifest;
             sample = new WaveSample(manifest?.SessionId ?? Guid.Empty, channel, timestamp, rawCount,
-                _profiles.ContainsKey(channel) ? profile.Convert(rawCount) : null,
-                _profiles.ContainsKey(channel) ? profile.Version : "");
+                profile?.Convert(rawCount), profile?.Version ?? "");
             if (manifest is not null && manifest.Channels.Contains(channel))
             {
                 _activeWriter!.WriteLine(SerializeSample(sample));
@@ -239,28 +227,16 @@ public sealed class WaveDataWorkspace : IDisposable
 
     public IReadOnlyList<WaveSample> ReadSamples(WaveCaptureManifest manifest, int? channel = null, int maxRows = 100000)
     {
-        if (!File.Exists(manifest.CsvPath)) throw new FileNotFoundException("采集文件不存在。", manifest.CsvPath);
-        var result = new List<WaveSample>();
-        foreach (var line in File.ReadLines(manifest.CsvPath).Skip(1))
-        {
-            if (string.IsNullOrWhiteSpace(line)) continue;
-            var sample = ParseSample(manifest.SessionId, line);
-            if (channel.HasValue && channel.Value != sample.Channel) continue;
-            result.Add(sample);
-            if (result.Count >= maxRows) break;
-        }
-        return result;
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxRows);
+        return EnumerateSamples(manifest, channel).Take(maxRows).ToList();
     }
 
     public IReadOnlyList<WaveSample> ReadRecentSamples(WaveCaptureManifest manifest, int? channel = null, int maxRows = 1000)
     {
-        if (!File.Exists(manifest.CsvPath)) throw new FileNotFoundException("采集文件不存在。", manifest.CsvPath);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxRows);
         var recent = new Queue<WaveSample>(maxRows);
-        foreach (var line in File.ReadLines(manifest.CsvPath).Skip(1))
+        foreach (var sample in EnumerateSamples(manifest, channel))
         {
-            if (string.IsNullOrWhiteSpace(line)) continue;
-            var sample = ParseSample(manifest.SessionId, line);
-            if (channel.HasValue && channel.Value != sample.Channel) continue;
             if (recent.Count == maxRows) recent.Dequeue();
             recent.Enqueue(sample);
         }
@@ -342,18 +318,7 @@ public sealed class WaveDataWorkspace : IDisposable
         }
         if (imported.Count == 0) throw new InvalidDataException("没有找到 COM1–COM6 标定列。");
         lock (_gate)
-        {
-            if (_activeManifest is not null)
-                throw new InvalidOperationException("请先结束采集，再导入标定参数。");
-            var merged = _profiles.ToDictionary(x => x.Key, x => CloneProfile(x.Value));
-            foreach (var profile in imported) merged[profile.Channel] = profile;
-            var calibrationPath = Path.Combine(RootDirectory, "calibrations.json");
-            BackupDamagedCalibration(calibrationPath);
-            WriteJsonAtomically(calibrationPath, merged.Values.OrderBy(p => p.Channel).ToList());
-            CalibrationLoadError = null;
-            _profiles.Clear();
-            foreach (var item in merged) _profiles[item.Key] = item.Value;
-        }
+            SaveProfiles(imported);
     }
 
     public void ExportLegacyCalibration(string path)
@@ -454,6 +419,38 @@ public sealed class WaveDataWorkspace : IDisposable
     }
 
     public void Dispose() => EndSession();
+
+    private void SaveProfiles(IEnumerable<WaveCalibrationProfile> profiles)
+    {
+        if (_activeManifest is not null)
+            throw new InvalidOperationException("请先结束采集，再修改标定参数。");
+
+        var merged = _profiles.ToDictionary(x => x.Key, x => CloneProfile(x.Value));
+        foreach (var profile in profiles)
+            merged[profile.Channel] = CloneProfile(profile);
+
+        var path = Path.Combine(RootDirectory, "calibrations.json");
+        BackupDamagedCalibration(path);
+        WriteJsonAtomically(path, merged.Values.OrderBy(p => p.Channel).ToList());
+        CalibrationLoadError = null;
+        _profiles.Clear();
+        foreach (var item in merged)
+            _profiles[item.Key] = item.Value;
+    }
+
+    private static IEnumerable<WaveSample> EnumerateSamples(WaveCaptureManifest manifest, int? channel)
+    {
+        if (!File.Exists(manifest.CsvPath))
+            throw new FileNotFoundException("采集文件不存在。", manifest.CsvPath);
+
+        foreach (var line in File.ReadLines(manifest.CsvPath).Skip(1))
+        {
+            if (string.IsNullOrWhiteSpace(line)) continue;
+            var sample = ParseSample(manifest.SessionId, line);
+            if (!channel.HasValue || channel.Value == sample.Channel)
+                yield return sample;
+        }
+    }
 
     private static WaveCalibrationProfile CloneProfile(WaveCalibrationProfile profile) => new()
     {

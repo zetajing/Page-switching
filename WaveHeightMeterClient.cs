@@ -39,14 +39,6 @@ public sealed class WaveHeightMeterClient : IDisposable
         _protocol = protocol ?? new LegacyChannelOneProtocol();
     }
 
-    /// <summary>Connects to channel 1 and starts streaming using the legacy JSON commands.</summary>
-    public async Task ConnectAsync(
-        string ipAddress,
-        int port,
-        int sampleRateHz,
-        CancellationToken cancellationToken) =>
-        await ConnectAsync(ipAddress, port, sampleRateHz, [1], cancellationToken);
-
     public async Task ConnectAsync(
         string ipAddress,
         int port,

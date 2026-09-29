@@ -10,7 +10,6 @@ namespace Page_switching.panel
         private const int PreviewCapacity = 1000;
         private readonly List<double> _previewSamples = new(PreviewCapacity);
         private readonly CancellationTokenSource _lifetimeCancellation = new();
-        private readonly CheckBox[] _channelSelectors;
         private WaveDataWorkspace? _workspace;
         private WaveCaptureManifest? _lastSession;
 
@@ -23,12 +22,6 @@ namespace Page_switching.panel
         public Wave_Height_Meter()
         {
             InitializeComponent();
-            _channelSelectors =
-            [
-                channel1Selector, channel2Selector, channel3Selector,
-                channel4Selector, channel5Selector, channel6Selector
-            ];
-
             if (System.ComponentModel.LicenseManager.UsageMode != System.ComponentModel.LicenseUsageMode.Designtime)
             {
                 _workspace = WaveDataWorkspace.Shared;
@@ -61,7 +54,7 @@ namespace Page_switching.panel
             {
                 return;
             }
-            if (!_channelSelectors[0].Checked)
+            if (!channel1Selector.Checked)
             {
                 _connectionStatusLabel.Text = "请先选择已验证的 CH1 通道。";
                 return;
@@ -72,7 +65,7 @@ namespace Page_switching.panel
             _totalSamplesReceived = 0;
             _sampleCountLabel.Text = "0";
             _latestValueLabel.Text = "--";
-            _channelSelectors[0].Text = "CH1\r\n等待采集";
+            channel1Selector.Text = "CH1\r\n等待采集";
             _previewSamples.Clear();
             _waveformPreview.ClearSamples();
             UpdateConnectionControls();
@@ -265,7 +258,7 @@ namespace Page_switching.panel
             latestValueDetail.Text = recorded.CalibratedValue is { } level
                 ? $"标定水位 {level:0.####} mm"
                 : "未标定 · 16 位无符号计数";
-            _channelSelectors[0].Text = $"CH1\r\n{sample.RawCount:N0}";
+            channel1Selector.Text = $"CH1\r\n{sample.RawCount:N0}";
             _sampleCountLabel.Text = _totalSamplesReceived.ToString("N0", CultureInfo.CurrentCulture);
 
             _previewSamples.Add(recorded.CalibratedValue ?? sample.RawCount);
@@ -406,7 +399,7 @@ namespace Page_switching.panel
             _sampleRateInput.Enabled = !_connecting && !connected;
             _sampleLimitInput.Enabled = !_connecting && !connected;
             _saveSettingsButton.Enabled = !_connecting && !connected;
-            _channelSelectors[0].Enabled = !_connecting && !connected;
+            channel1Selector.Enabled = !_connecting && !connected;
         }
 
         private static void SetNumericValue(NumericUpDown input, int value)
