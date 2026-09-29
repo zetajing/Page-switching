@@ -43,14 +43,14 @@ namespace Page_switching
             systemSectionLabel = new Label();
             toolsSectionLabel = new Label();
             controlSectionLabel = new Label();
-            bu_Configuration = new Button();
-            button5 = new Button();
-            button2 = new Button();
-            Bu_data = new Button();
-            Bu_Calibration = new Button();
-            button3 = new Button();
-            Bu_manual = new Button();
-            Bu_auto = new Button();
+            bu_Configuration = new NavigationButton();
+            button5 = new NavigationButton();
+            button2 = new NavigationButton();
+            Bu_data = new NavigationButton();
+            Bu_Calibration = new NavigationButton();
+            button3 = new NavigationButton();
+            Bu_manual = new NavigationButton();
+            Bu_auto = new NavigationButton();
             panelswitch = new Panel();
             panel1.SuspendLayout();
             headerStatusPanel.SuspendLayout();
@@ -66,7 +66,7 @@ namespace Page_switching
             panel1.Dock = DockStyle.Top;
             panel1.Location = new Point(0, 0);
             panel1.Name = "panel1";
-            panel1.Size = new Size(1400, 64);
+            panel1.Size = new Size(1400, 72);
             panel1.TabIndex = 0;
             // 
             // headerStatusPanel
@@ -78,7 +78,7 @@ namespace Page_switching
             headerStatusPanel.Location = new Point(1005, 0);
             headerStatusPanel.Name = "headerStatusPanel";
             headerStatusPanel.Padding = new Padding(10, 8, 18, 6);
-            headerStatusPanel.Size = new Size(395, 64);
+            headerStatusPanel.Size = new Size(395, 72);
             headerStatusPanel.TabIndex = 2;
             // 
             // controlStatusLabel
@@ -108,9 +108,9 @@ namespace Page_switching
             // appSubtitleLabel
             // 
             appSubtitleLabel.AutoSize = true;
-            appSubtitleLabel.Font = new Font("Segoe UI", 8F, FontStyle.Bold);
-            appSubtitleLabel.ForeColor = Color.FromArgb(29, 78, 216);
-            appSubtitleLabel.Location = new Point(226, 34);
+            appSubtitleLabel.Font = new Font("Segoe UI", 8F);
+            appSubtitleLabel.ForeColor = Color.FromArgb(100, 116, 139);
+            appSubtitleLabel.Location = new Point(24, 45);
             appSubtitleLabel.Name = "appSubtitleLabel";
             appSubtitleLabel.Size = new Size(186, 19);
             appSubtitleLabel.TabIndex = 1;
@@ -119,9 +119,9 @@ namespace Page_switching
             // appTitleLabel
             // 
             appTitleLabel.AutoSize = true;
-            appTitleLabel.Font = new Font("Microsoft YaHei UI", 16F, FontStyle.Bold);
+            appTitleLabel.Font = new Font("Microsoft YaHei UI", 15F, FontStyle.Bold);
             appTitleLabel.ForeColor = Color.FromArgb(15, 23, 42);
-            appTitleLabel.Location = new Point(20, 14);
+            appTitleLabel.Location = new Point(22, 8);
             appTitleLabel.Name = "appTitleLabel";
             appTitleLabel.Size = new Size(177, 36);
             appTitleLabel.TabIndex = 0;
@@ -142,41 +142,41 @@ namespace Page_switching
             panel2.Controls.Add(Bu_manual);
             panel2.Controls.Add(Bu_auto);
             panel2.Dock = DockStyle.Left;
-            panel2.Location = new Point(0, 64);
+            panel2.Location = new Point(0, 72);
             panel2.Name = "panel2";
             panel2.Padding = new Padding(15, 0, 15, 12);
-            panel2.Size = new Size(190, 796);
+            panel2.Size = new Size(206, 788);
             panel2.TabIndex = 1;
             // 
             // systemSectionLabel
             // 
             systemSectionLabel.Font = new Font("Segoe UI", 8F, FontStyle.Bold);
             systemSectionLabel.ForeColor = Color.FromArgb(100, 116, 139);
-            systemSectionLabel.Location = new Point(18, 531);
+            systemSectionLabel.Location = new Point(20, 474);
             systemSectionLabel.Name = "systemSectionLabel";
             systemSectionLabel.Size = new Size(154, 20);
             systemSectionLabel.TabIndex = 10;
-            systemSectionLabel.Text = "SYSTEM  系统";
+            systemSectionLabel.Text = "系统";
             // 
             // toolsSectionLabel
             // 
             toolsSectionLabel.Font = new Font("Segoe UI", 8F, FontStyle.Bold);
             toolsSectionLabel.ForeColor = Color.FromArgb(100, 116, 139);
-            toolsSectionLabel.Location = new Point(18, 175);
+            toolsSectionLabel.Location = new Point(20, 173);
             toolsSectionLabel.Name = "toolsSectionLabel";
             toolsSectionLabel.Size = new Size(154, 20);
             toolsSectionLabel.TabIndex = 9;
-            toolsSectionLabel.Text = "TOOLS  工具";
+            toolsSectionLabel.Text = "功能";
             // 
             // controlSectionLabel
             // 
             controlSectionLabel.Font = new Font("Segoe UI", 8F, FontStyle.Bold);
             controlSectionLabel.ForeColor = Color.FromArgb(100, 116, 139);
-            controlSectionLabel.Location = new Point(18, 16);
+            controlSectionLabel.Location = new Point(20, 16);
             controlSectionLabel.Name = "controlSectionLabel";
             controlSectionLabel.Size = new Size(154, 20);
             controlSectionLabel.TabIndex = 8;
-            controlSectionLabel.Text = "CONTROL  主控制";
+            controlSectionLabel.Text = "控制";
             // 
             // bu_Configuration
             // 
@@ -186,12 +186,12 @@ namespace Page_switching
             bu_Configuration.FlatStyle = FlatStyle.Flat;
             bu_Configuration.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
             bu_Configuration.ForeColor = Color.FromArgb(71, 85, 105);
-            bu_Configuration.Location = new Point(15, 557);
+            bu_Configuration.Location = new Point(14, 504);
             bu_Configuration.Name = "bu_Configuration";
             bu_Configuration.Padding = new Padding(12, 0, 0, 0);
-            bu_Configuration.Size = new Size(160, 52);
+            bu_Configuration.Size = new Size(178, 48);
             bu_Configuration.TabIndex = 7;
-            bu_Configuration.Text = "⚙  系统配置";
+            bu_Configuration.Text = "系统配置";
             bu_Configuration.TextAlign = ContentAlignment.MiddleLeft;
             bu_Configuration.UseVisualStyleBackColor = false;
             bu_Configuration.Click += bu_Configuration_Click;
@@ -204,12 +204,12 @@ namespace Page_switching
             button5.FlatStyle = FlatStyle.Flat;
             button5.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
             button5.ForeColor = Color.FromArgb(71, 85, 105);
-            button5.Location = new Point(15, 465);
+            button5.Location = new Point(14, 401);
             button5.Name = "button5";
             button5.Padding = new Padding(12, 0, 0, 0);
-            button5.Size = new Size(160, 48);
+            button5.Size = new Size(178, 44);
             button5.TabIndex = 6;
-            button5.Text = "◌  浪高监测";
+            button5.Text = "浪高监测";
             button5.TextAlign = ContentAlignment.MiddleLeft;
             button5.UseVisualStyleBackColor = false;
             button5.Click += button5_Click;
@@ -222,12 +222,12 @@ namespace Page_switching
             button2.FlatStyle = FlatStyle.Flat;
             button2.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
             button2.ForeColor = Color.FromArgb(71, 85, 105);
-            button2.Location = new Point(15, 411);
+            button2.Location = new Point(14, 352);
             button2.Name = "button2";
             button2.Padding = new Padding(12, 0, 0, 0);
-            button2.Size = new Size(160, 48);
+            button2.Size = new Size(178, 44);
             button2.TabIndex = 5;
-            button2.Text = "≈   波形生成";
+            button2.Text = "波形生成";
             button2.TextAlign = ContentAlignment.MiddleLeft;
             button2.UseVisualStyleBackColor = false;
             button2.Click += WaveformButton_Click;
@@ -240,12 +240,12 @@ namespace Page_switching
             Bu_data.FlatStyle = FlatStyle.Flat;
             Bu_data.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
             Bu_data.ForeColor = Color.FromArgb(71, 85, 105);
-            Bu_data.Location = new Point(15, 357);
+            Bu_data.Location = new Point(14, 303);
             Bu_data.Name = "Bu_data";
             Bu_data.Padding = new Padding(12, 0, 0, 0);
-            Bu_data.Size = new Size(160, 48);
+            Bu_data.Size = new Size(178, 44);
             Bu_data.TabIndex = 4;
-            Bu_data.Text = "▦  数据管理 ";
+            Bu_data.Text = "数据管理";
             Bu_data.TextAlign = ContentAlignment.MiddleLeft;
             Bu_data.UseVisualStyleBackColor = false;
             Bu_data.Click += Bu_data_Click;
@@ -258,12 +258,12 @@ namespace Page_switching
             Bu_Calibration.FlatStyle = FlatStyle.Flat;
             Bu_Calibration.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
             Bu_Calibration.ForeColor = Color.FromArgb(71, 85, 105);
-            Bu_Calibration.Location = new Point(15, 303);
+            Bu_Calibration.Location = new Point(14, 254);
             Bu_Calibration.Name = "Bu_Calibration";
             Bu_Calibration.Padding = new Padding(12, 0, 0, 0);
-            Bu_Calibration.Size = new Size(160, 48);
+            Bu_Calibration.Size = new Size(178, 44);
             Bu_Calibration.TabIndex = 3;
-            Bu_Calibration.Text = "⌖  标定管理";
+            Bu_Calibration.Text = "标定管理";
             Bu_Calibration.TextAlign = ContentAlignment.MiddleLeft;
             Bu_Calibration.UseVisualStyleBackColor = false;
             Bu_Calibration.Click += Bu_Calibration_Click;
@@ -276,12 +276,12 @@ namespace Page_switching
             button3.FlatStyle = FlatStyle.Flat;
             button3.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
             button3.ForeColor = Color.FromArgb(71, 85, 105);
-            button3.Location = new Point(15, 249);
+            button3.Location = new Point(14, 205);
             button3.Name = "button3";
             button3.Padding = new Padding(12, 0, 0, 0);
-            button3.Size = new Size(160, 48);
+            button3.Size = new Size(178, 44);
             button3.TabIndex = 2;
-            button3.Text = "◇   控制权申请";
+            button3.Text = "控制权申请";
             button3.TextAlign = ContentAlignment.MiddleLeft;
             button3.UseVisualStyleBackColor = false;
             button3.Click += ControlAuthorityButton_Click;
@@ -294,12 +294,12 @@ namespace Page_switching
             Bu_manual.FlatStyle = FlatStyle.Flat;
             Bu_manual.Font = new Font("Microsoft YaHei UI", 11F, FontStyle.Bold);
             Bu_manual.ForeColor = Color.FromArgb(71, 85, 105);
-            Bu_manual.Location = new Point(15, 105);
+            Bu_manual.Location = new Point(14, 102);
             Bu_manual.Name = "Bu_manual";
             Bu_manual.Padding = new Padding(12, 0, 0, 0);
-            Bu_manual.Size = new Size(160, 56);
+            Bu_manual.Size = new Size(178, 50);
             Bu_manual.TabIndex = 1;
-            Bu_manual.Text = "◆  手动控制";
+            Bu_manual.Text = "手动控制";
             Bu_manual.TextAlign = ContentAlignment.MiddleLeft;
             Bu_manual.UseVisualStyleBackColor = false;
             Bu_manual.Click += Bu_manual_Click;
@@ -307,17 +307,18 @@ namespace Page_switching
             // Bu_auto
             // 
             Bu_auto.BackColor = Color.FromArgb(219, 234, 254);
+            Bu_auto.IsActive = true;
             Bu_auto.Cursor = Cursors.Hand;
             Bu_auto.FlatAppearance.BorderSize = 0;
             Bu_auto.FlatStyle = FlatStyle.Flat;
             Bu_auto.Font = new Font("Microsoft YaHei UI", 11F, FontStyle.Bold);
             Bu_auto.ForeColor = Color.FromArgb(30, 64, 175);
-            Bu_auto.Location = new Point(15, 43);
+            Bu_auto.Location = new Point(14, 43);
             Bu_auto.Name = "Bu_auto";
             Bu_auto.Padding = new Padding(12, 0, 0, 0);
-            Bu_auto.Size = new Size(160, 56);
+            Bu_auto.Size = new Size(178, 50);
             Bu_auto.TabIndex = 0;
-            Bu_auto.Text = "●  自动运行";
+            Bu_auto.Text = "自动运行";
             Bu_auto.TextAlign = ContentAlignment.MiddleLeft;
             Bu_auto.UseVisualStyleBackColor = false;
             Bu_auto.Click += Bu_auto_Click;
@@ -326,9 +327,9 @@ namespace Page_switching
             // 
             panelswitch.BackColor = Color.FromArgb(241, 245, 249);
             panelswitch.Dock = DockStyle.Fill;
-            panelswitch.Location = new Point(190, 64);
+            panelswitch.Location = new Point(206, 72);
             panelswitch.Name = "panelswitch";
-            panelswitch.Size = new Size(1210, 796);
+            panelswitch.Size = new Size(1194, 788);
             panelswitch.TabIndex = 2;
             // 
             // Mainpage
@@ -361,14 +362,14 @@ namespace Page_switching
         private Panel headerStatusPanel;
         private Panel panel2;
         private Panel panelswitch;
-        private Button Bu_Calibration;
-        private Button button3;
-        private Button Bu_manual;
-        private Button Bu_auto;
-        private Button bu_Configuration;
-        private Button button5;
-        private Button button2;
-        private Button Bu_data;
+        private NavigationButton Bu_Calibration;
+        private NavigationButton button3;
+        private NavigationButton Bu_manual;
+        private NavigationButton Bu_auto;
+        private NavigationButton bu_Configuration;
+        private NavigationButton button5;
+        private NavigationButton button2;
+        private NavigationButton Bu_data;
         private Label appTitleLabel;
         private Label appSubtitleLabel;
         private Label controlSectionLabel;

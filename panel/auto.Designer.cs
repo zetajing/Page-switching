@@ -10,14 +10,14 @@
         private Panel headerPanel;
         private Label titleLabel;
         private Label subtitleLabel;
-        private GroupBox statusGroup;
+        private CardGroupBox statusGroup;
         private TableLayoutPanel statusLayout;
         private Label taskCaptionLabel;
         private Label _runStateLabel;
-        private GroupBox logGroup;
+        private CardGroupBox logGroup;
         private TableLayoutPanel logLayout;
         private ListBox _logList;
-        private Button clearLogButton;
+        private UiButton clearLogButton;
 
         /// <summary> 
         /// 清理所有正在使用的资源。
@@ -46,14 +46,14 @@
             headerPanel = new Panel();
             subtitleLabel = new Label();
             titleLabel = new Label();
-            statusGroup = new GroupBox();
+            statusGroup = new CardGroupBox();
             statusLayout = new TableLayoutPanel();
             taskCaptionLabel = new Label();
             _runStateLabel = new Label();
-            logGroup = new GroupBox();
+            logGroup = new CardGroupBox();
             logLayout = new TableLayoutPanel();
             _logList = new ListBox();
-            clearLogButton = new Button();
+            clearLogButton = new UiButton();
             rootLayout.SuspendLayout();
             headerPanel.SuspendLayout();
             statusGroup.SuspendLayout();
@@ -84,7 +84,7 @@
             // 
             // headerPanel
             // 
-            headerPanel.BackColor = Color.White;
+            headerPanel.BackColor = Color.FromArgb(241, 245, 249);
             headerPanel.Controls.Add(subtitleLabel);
             headerPanel.Controls.Add(titleLabel);
             headerPanel.Dock = DockStyle.Fill;
@@ -206,12 +206,12 @@
             // 
             // _logList
             // 
-            _logList.BackColor = Color.White;
-            _logList.BorderStyle = BorderStyle.FixedSingle;
+            _logList.BackColor = Color.FromArgb(248, 250, 252);
+            _logList.BorderStyle = BorderStyle.None;
             _logList.Dock = DockStyle.Fill;
-            _logList.Font = new Font("Consolas", 9F);
+            _logList.Font = new Font("Microsoft YaHei UI", 9F);
             _logList.IntegralHeight = false;
-            _logList.ItemHeight = 18;
+            _logList.ItemHeight = 24;
             _logList.Location = new Point(3, 3);
             _logList.Name = "_logList";
             _logList.Size = new Size(1136, 520);
@@ -219,7 +219,7 @@
             // 
             // clearLogButton
             // 
-            clearLogButton.Anchor = AnchorStyles.Left;
+            clearLogButton.Anchor = AnchorStyles.Right;
             clearLogButton.AutoSize = true;
             clearLogButton.BackColor = Color.FromArgb(226, 232, 240);
             clearLogButton.FlatAppearance.BorderSize = 0;

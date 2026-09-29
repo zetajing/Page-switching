@@ -6,19 +6,19 @@ partial class Calibration
     {
         root = new TableLayoutPanel();
         title = new Label();
-        toolbar = new FlowLayoutPanel();
+        toolbar = new CardFlowPanel();
         channelCaption = new Label();
         channelPicker = new ComboBox();
         rawCaption = new Label();
         rawValue = new Label();
-        zeroButton = new Button();
-        addButton = new Button();
-        removeButton = new Button();
-        fitButton = new Button();
-        saveButton = new Button();
-        importButton = new Button();
-        exportButton = new Button();
-        pointsGrid = new DataGridView();
+        zeroButton = new UiButton();
+        addButton = new UiButton();
+        removeButton = new UiButton();
+        fitButton = new UiButton();
+        saveButton = new UiButton();
+        importButton = new UiButton();
+        exportButton = new UiButton();
+        pointsGrid = new UiDataGridView();
         rawColumn = new DataGridViewTextBoxColumn();
         levelColumn = new DataGridViewTextBoxColumn();
         result = new Label();
@@ -45,7 +45,6 @@ partial class Calibration
         root.Controls.Add(title, 0, 0);
 
         toolbar.BackColor = Color.White;
-        toolbar.BorderStyle = BorderStyle.FixedSingle;
         toolbar.Dock = DockStyle.Fill;
         toolbar.Padding = new Padding(12, 10, 12, 8);
         toolbar.Name = "toolbar";
@@ -173,6 +172,7 @@ partial class Calibration
         pointsGrid.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
         pointsGrid.Columns.AddRange(rawColumn, levelColumn);
         pointsGrid.Dock = DockStyle.Fill;
+        pointsGrid.EmptyText = "录入标定点后显示在这里";
         pointsGrid.Margin = new Padding(0, 10, 0, 10);
         pointsGrid.Name = "pointsGrid";
         pointsGrid.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
@@ -183,7 +183,7 @@ partial class Calibration
         root.Controls.Add(pointsGrid, 0, 2);
 
         result.BackColor = Color.White;
-        result.BorderStyle = BorderStyle.FixedSingle;
+        result.BorderStyle = BorderStyle.None;
         result.Dock = DockStyle.Fill;
         result.Font = new Font("Microsoft YaHei UI", 10F);
         result.ForeColor = Color.FromArgb(71, 85, 105);
@@ -206,19 +206,19 @@ partial class Calibration
 
     private TableLayoutPanel root;
     private Label title;
-    private FlowLayoutPanel toolbar;
+    private CardFlowPanel toolbar;
     private Label channelCaption;
     private ComboBox channelPicker;
     private Label rawCaption;
     private Label rawValue;
-    private Button zeroButton;
-    private Button addButton;
-    private Button removeButton;
-    private Button fitButton;
-    private Button saveButton;
-    private Button importButton;
-    private Button exportButton;
-    private DataGridView pointsGrid;
+    private UiButton zeroButton;
+    private UiButton addButton;
+    private UiButton removeButton;
+    private UiButton fitButton;
+    private UiButton saveButton;
+    private UiButton importButton;
+    private UiButton exportButton;
+    private UiDataGridView pointsGrid;
     private DataGridViewTextBoxColumn rawColumn;
     private DataGridViewTextBoxColumn levelColumn;
     private Label result;

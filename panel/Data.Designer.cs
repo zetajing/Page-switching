@@ -6,25 +6,25 @@ partial class Data
     {
         root = new TableLayoutPanel();
         title = new Label();
-        filters = new FlowLayoutPanel();
+        filters = new CardFlowPanel();
         fromCaption = new Label();
         fromDate = new DateTimePicker();
         toCaption = new Label();
         toDate = new DateTimePicker();
         channelCaption = new Label();
         channelPicker = new ComboBox();
-        refreshButton = new Button();
-        importButton = new Button();
-        exportButton = new Button();
-        syncButton = new Button();
-        sessionGrid = new DataGridView();
+        refreshButton = new UiButton();
+        importButton = new UiButton();
+        exportButton = new UiButton();
+        syncButton = new UiButton();
+        sessionGrid = new UiDataGridView();
         sessionIdColumn = new DataGridViewTextBoxColumn();
         startedColumn = new DataGridViewTextBoxColumn();
         channelsColumn = new DataGridViewTextBoxColumn();
         countColumn = new DataGridViewTextBoxColumn();
         syncColumn = new DataGridViewTextBoxColumn();
         content = new TableLayoutPanel();
-        sampleGrid = new DataGridView();
+        sampleGrid = new UiDataGridView();
         timeColumn = new DataGridViewTextBoxColumn();
         sampleChannelColumn = new DataGridViewTextBoxColumn();
         rawColumn = new DataGridViewTextBoxColumn();
@@ -56,7 +56,6 @@ partial class Data
         root.Controls.Add(title, 0, 0);
 
         filters.BackColor = Color.White;
-        filters.BorderStyle = BorderStyle.FixedSingle;
         filters.Dock = DockStyle.Fill;
         filters.Padding = new Padding(10);
         filters.Name = "filters";
@@ -152,6 +151,8 @@ partial class Data
         sessionGrid.RowHeadersDefaultCellStyle.SelectionForeColor = Color.FromArgb(15, 23, 42);
         sessionGrid.Columns.AddRange(sessionIdColumn, startedColumn, channelsColumn, countColumn, syncColumn);
         sessionGrid.Dock = DockStyle.Fill;
+        sessionGrid.EmptyText = "暂无采集任务";
+        sessionGrid.Margin = new Padding(0, 8, 0, 8);
         sessionGrid.MultiSelect = false;
         sessionGrid.Name = "sessionGrid";
         sessionGrid.ReadOnly = true;
@@ -172,6 +173,7 @@ partial class Data
         content.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
         content.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
         content.Dock = DockStyle.Fill;
+        content.Margin = new Padding(0, 0, 0, 8);
         content.Name = "content";
         content.RowCount = 1;
         content.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
@@ -193,6 +195,8 @@ partial class Data
         sampleGrid.RowHeadersDefaultCellStyle.SelectionForeColor = Color.FromArgb(15, 23, 42);
         sampleGrid.Columns.AddRange(timeColumn, sampleChannelColumn, rawColumn, levelColumn);
         sampleGrid.Dock = DockStyle.Fill;
+        sampleGrid.EmptyText = "选择任务后显示采样数据";
+        sampleGrid.Margin = new Padding(0, 0, 8, 0);
         sampleGrid.Name = "sampleGrid";
         sampleGrid.ReadOnly = true;
         sampleGrid.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
@@ -206,6 +210,7 @@ partial class Data
         levelColumn.Name = "levelColumn";
         content.Controls.Add(sampleGrid, 0, 0);
         preview.Dock = DockStyle.Fill;
+        preview.Margin = new Padding(8, 0, 0, 0);
         preview.MinimumSize = new Size(300, 220);
         preview.Name = "preview";
         preview.UnitText = "mm";
@@ -232,25 +237,25 @@ partial class Data
 
     private TableLayoutPanel root;
     private Label title;
-    private FlowLayoutPanel filters;
+    private CardFlowPanel filters;
     private Label fromCaption;
     private DateTimePicker fromDate;
     private Label toCaption;
     private DateTimePicker toDate;
     private Label channelCaption;
     private ComboBox channelPicker;
-    private Button refreshButton;
-    private Button importButton;
-    private Button exportButton;
-    private Button syncButton;
-    private DataGridView sessionGrid;
+    private UiButton refreshButton;
+    private UiButton importButton;
+    private UiButton exportButton;
+    private UiButton syncButton;
+    private UiDataGridView sessionGrid;
     private DataGridViewTextBoxColumn sessionIdColumn;
     private DataGridViewTextBoxColumn startedColumn;
     private DataGridViewTextBoxColumn channelsColumn;
     private DataGridViewTextBoxColumn countColumn;
     private DataGridViewTextBoxColumn syncColumn;
     private TableLayoutPanel content;
-    private DataGridView sampleGrid;
+    private UiDataGridView sampleGrid;
     private DataGridViewTextBoxColumn timeColumn;
     private DataGridViewTextBoxColumn sampleChannelColumn;
     private DataGridViewTextBoxColumn rawColumn;

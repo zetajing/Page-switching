@@ -162,6 +162,7 @@ namespace Page_switching
                 button.BackColor = isActive ? UiPalette.Selection : UiPalette.Sidebar;
                 button.ForeColor = isActive ? UiPalette.PrimaryHover : UiPalette.SecondaryText;
                 button.FlatAppearance.MouseOverBackColor = UiPalette.Selection;
+                button.IsActive = isActive;
             }
 
             UpdateHeaderStatus();

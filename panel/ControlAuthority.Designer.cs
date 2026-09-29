@@ -6,7 +6,7 @@ public sealed partial class ControlAuthority
     private TableLayoutPanel rootLayout = null!;
     private Label titleLabel = null!;
     private Label subtitleLabel = null!;
-    private GroupBox statusGroup = null!;
+    private CardGroupBox statusGroup = null!;
     private TableLayoutPanel statusLayout = null!;
     private Label connectionCaptionLabel = null!;
     private Label stationCaptionLabel = null!;
@@ -20,10 +20,10 @@ public sealed partial class ControlAuthority
     private Label _stateValue = null!;
     private Label _safetyValue = null!;
     private Label _watchdogValue = null!;
-    private GroupBox actionGroup = null!;
+    private CardGroupBox actionGroup = null!;
     private TableLayoutPanel actionLayout = null!;
-    private Button _requestButton = null!;
-    private Button _releaseButton = null!;
+    private UiButton _requestButton = null!;
+    private UiButton _releaseButton = null!;
     private Label _hintLabel = null!;
 
     // 释放 Designer 创建的控件资源。
@@ -43,7 +43,7 @@ public sealed partial class ControlAuthority
         rootLayout = new TableLayoutPanel();
         titleLabel = new Label();
         subtitleLabel = new Label();
-        statusGroup = new GroupBox();
+        statusGroup = new CardGroupBox();
         statusLayout = new TableLayoutPanel();
         connectionCaptionLabel = new Label();
         _connectionValue = new Label();
@@ -57,10 +57,10 @@ public sealed partial class ControlAuthority
         _safetyValue = new Label();
         watchdogCaptionLabel = new Label();
         _watchdogValue = new Label();
-        actionGroup = new GroupBox();
+        actionGroup = new CardGroupBox();
         actionLayout = new TableLayoutPanel();
-        _requestButton = new Button();
-        _releaseButton = new Button();
+        _requestButton = new UiButton();
+        _releaseButton = new UiButton();
         _hintLabel = new Label();
         rootLayout.SuspendLayout();
         statusGroup.SuspendLayout();
@@ -82,10 +82,11 @@ public sealed partial class ControlAuthority
         rootLayout.Location = new Point(0, 0);
         rootLayout.Name = "rootLayout";
         rootLayout.Padding = new Padding(20);
-        rootLayout.RowCount = 4;
+        rootLayout.RowCount = 5;
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 44F));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 38F));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 210F));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 190F));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
         rootLayout.Size = new Size(1210, 796);
         rootLayout.TabIndex = 0;
