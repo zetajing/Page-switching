@@ -10,8 +10,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Update="main_page.cs">
+    <Compile Update="Forms\main_page.cs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>main_page.cs</TargetPath>
     </Compile>
   </ItemGroup>
 
