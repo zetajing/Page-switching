@@ -24,13 +24,13 @@ namespace Page_switching
         private Label titleLabel;
         private Label connectionStateLabel;
         private FlowLayoutPanel globalActionsPanel;
-        private UiButton enableAllButton;
-        private UiButton disableAllButton;
-        private UiButton resetAlarmButton;
-        private UiButton homeAllButton;
-        private UiButton stopAllButton;
+        private Button enableAllButton;
+        private Button disableAllButton;
+        private Button resetAlarmButton;
+        private Button homeAllButton;
+        private Button stopAllButton;
         private TableLayoutPanel contentLayout;
-        private CardGroupBox overviewGroup;
+        private GroupBox overviewGroup;
         private TableLayoutPanel axisOverviewLayout;
         private Label axisHeaderLabel;
         private Label positionHeaderLabel;
@@ -47,7 +47,7 @@ namespace Page_switching
         private ServoPositionIndicator axis2PositionIndicator;
         private ServoPositionIndicator axis3PositionIndicator;
         private ServoPositionIndicator axis4PositionIndicator;
-        private CardGroupBox controlGroup;
+        private GroupBox controlGroup;
         private TableLayoutPanel controlLayout;
         private Label selectedAxisCaptionLabel;
         private ComboBox axisSelector;
@@ -60,11 +60,11 @@ namespace Page_switching
         private Label jogSpeedCaptionLabel;
         private NumericUpDown jogSpeedInput;
         private Label jogSectionLabel;
-        private UiButton jogNegativeButton;
-        private UiButton jogPositiveButton;
+        private Button jogNegativeButton;
+        private Button jogPositiveButton;
         private Label singleAxisSectionLabel;
-        private UiButton homeSelectedButton;
-        private UiButton stopSelectedButton;
+        private Button homeSelectedButton;
+        private Button stopSelectedButton;
         private Label helperLabel;
 
         // 释放设计器创建的手动页面组件。
@@ -106,13 +106,13 @@ namespace Page_switching
             connectionStateLabel = new Label();
             titleLabel = new Label();
             globalActionsPanel = new FlowLayoutPanel();
-            enableAllButton = new UiButton();
-            disableAllButton = new UiButton();
-            resetAlarmButton = new UiButton();
-            homeAllButton = new UiButton();
-            stopAllButton = new UiButton();
+            enableAllButton = new Button();
+            disableAllButton = new Button();
+            resetAlarmButton = new Button();
+            homeAllButton = new Button();
+            stopAllButton = new Button();
             contentLayout = new TableLayoutPanel();
-            overviewGroup = new CardGroupBox();
+            overviewGroup = new GroupBox();
             axisOverviewLayout = new TableLayoutPanel();
             axisHeaderLabel = new Label();
             positionHeaderLabel = new Label();
@@ -125,7 +125,7 @@ namespace Page_switching
             axis3StatusLabel = new Label();
             axis4NameLabel = new Label();
             axis4StatusLabel = new Label();
-            controlGroup = new CardGroupBox();
+            controlGroup = new GroupBox();
             controlLayout = new TableLayoutPanel();
             selectedAxisCaptionLabel = new Label();
             axisSelector = new ComboBox();
@@ -138,11 +138,11 @@ namespace Page_switching
             jogSpeedCaptionLabel = new Label();
             jogSpeedInput = new NumericUpDown();
             jogSectionLabel = new Label();
-            jogNegativeButton = new UiButton();
-            jogPositiveButton = new UiButton();
+            jogNegativeButton = new Button();
+            jogPositiveButton = new Button();
             singleAxisSectionLabel = new Label();
-            homeSelectedButton = new UiButton();
-            stopSelectedButton = new UiButton();
+            homeSelectedButton = new Button();
+            stopSelectedButton = new Button();
             helperLabel = new Label();
             axis1FeedbackLayout.SuspendLayout();
             axis2FeedbackLayout.SuspendLayout();
@@ -517,7 +517,7 @@ namespace Page_switching
             // 
             // headerPanel
             // 
-            headerPanel.BackColor = Color.FromArgb(241, 245, 249);
+            headerPanel.BackColor = Color.White;
             headerPanel.Controls.Add(connectionStateLabel);
             headerPanel.Controls.Add(titleLabel);
             headerPanel.Dock = DockStyle.Fill;

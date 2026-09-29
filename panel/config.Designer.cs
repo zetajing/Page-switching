@@ -6,7 +6,7 @@ partial class Config
     private TableLayoutPanel rootLayout;
     private Label titleLabel;
     private Label subtitleLabel;
-    private CardGroupBox routerGroup;
+    private GroupBox routerGroup;
     private TableLayoutPanel routerLayout;
     private CheckBox routerEnabledCheckBox;
     private Label routerStateLabel;
@@ -22,19 +22,19 @@ partial class Config
     private TextBox remoteAddressTextBox;
     private Label remoteNetIdLabel;
     private TextBox remoteNetIdTextBox;
-    private UiButton saveRouterButton;
+    private Button saveRouterButton;
     private Label saveResultLabel;
     private Label routerNoticeLabel;
-    private CardGroupBox waveGeneratorGroup;
+    private GroupBox waveGeneratorGroup;
     private TableLayoutPanel waveGeneratorLayout;
     private Label waveGeneratorPathLabel;
     private TextBox waveGeneratorPathTextBox;
-    private UiButton browseWaveGeneratorButton;
-    private UiButton saveWaveGeneratorButton;
+    private Button browseWaveGeneratorButton;
+    private Button saveWaveGeneratorButton;
     private Label waveGeneratorStateLabel;
     private Label waveGeneratorModeLabel;
     private ComboBox waveGeneratorModeComboBox;
-    private CardGroupBox _databaseGroup;
+    private GroupBox _databaseGroup;
     private TableLayoutPanel _databaseLayout;
     private CheckBox _databaseEnabledCheckBox;
     private TextBox _databaseConnectionTextBox;
@@ -42,7 +42,7 @@ partial class Config
     private TextBox _databaseUserNameTextBox;
     private Label _databasePasswordLabel;
     private TextBox _databasePasswordTextBox;
-    private UiButton _saveDatabaseButton;
+    private Button _saveDatabaseButton;
     private Label _databaseStateLabel;
 
     // 释放设计器创建的配置页面组件。
@@ -62,7 +62,7 @@ partial class Config
         rootLayout = new TableLayoutPanel();
         titleLabel = new Label();
         subtitleLabel = new Label();
-        routerGroup = new CardGroupBox();
+        routerGroup = new GroupBox();
         routerLayout = new TableLayoutPanel();
         routerEnabledCheckBox = new CheckBox();
         routerStateLabel = new Label();
@@ -78,19 +78,19 @@ partial class Config
         remoteAddressTextBox = new TextBox();
         remoteNetIdLabel = new Label();
         remoteNetIdTextBox = new TextBox();
-        saveRouterButton = new UiButton();
+        saveRouterButton = new Button();
         saveResultLabel = new Label();
         routerNoticeLabel = new Label();
-        waveGeneratorGroup = new CardGroupBox();
+        waveGeneratorGroup = new GroupBox();
         waveGeneratorLayout = new TableLayoutPanel();
         waveGeneratorPathLabel = new Label();
         waveGeneratorPathTextBox = new TextBox();
-        browseWaveGeneratorButton = new UiButton();
-        saveWaveGeneratorButton = new UiButton();
+        browseWaveGeneratorButton = new Button();
+        saveWaveGeneratorButton = new Button();
         waveGeneratorStateLabel = new Label();
         waveGeneratorModeLabel = new Label();
         waveGeneratorModeComboBox = new ComboBox();
-        _databaseGroup = new CardGroupBox();
+        _databaseGroup = new GroupBox();
         _databaseLayout = new TableLayoutPanel();
         _databaseEnabledCheckBox = new CheckBox();
         _databaseConnectionTextBox = new TextBox();
@@ -98,7 +98,7 @@ partial class Config
         _databaseUserNameTextBox = new TextBox();
         _databasePasswordLabel = new Label();
         _databasePasswordTextBox = new TextBox();
-        _saveDatabaseButton = new UiButton();
+        _saveDatabaseButton = new Button();
         _databaseStateLabel = new Label();
         rootLayout.SuspendLayout();
         routerGroup.SuspendLayout();
@@ -227,7 +227,7 @@ partial class Config
         routerEnabledCheckBox.Name = "routerEnabledCheckBox";
         routerEnabledCheckBox.Size = new Size(144, 26);
         routerEnabledCheckBox.TabIndex = 0;
-        routerEnabledCheckBox.Text = "启用独立 Router";
+        routerEnabledCheckBox.Text = "启用独立 TCP Router";
         routerEnabledCheckBox.CheckedChanged += RouterEnabledCheckBox_CheckedChanged;
         // 
         // routerStateLabel
