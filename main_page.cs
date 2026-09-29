@@ -43,6 +43,7 @@ namespace Page_switching
                 _config.Dispose();
                 _waveformPage.Dispose();
                 _controlAuthorityPage.Dispose();
+                _wave_Height_Meter.Dispose();
             };
 
             // 启动时先显示默认页面，避免主区域空白。

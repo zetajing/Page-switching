@@ -70,7 +70,7 @@ public partial class Config : UserControl
         _databaseUserNameTextBox.Enabled = enabled;
         _databasePasswordTextBox.Enabled = enabled;
         _databaseStateLabel.Text = enabled
-            ? "数据库只用于运行日志和操作追溯，不参与 PLC 实时控制。"
+            ? "数据库保存采集任务及文件索引，不保存逐点数据，也不参与 PLC 实时控制。"
             : "数据库日志未启用。";
         _databaseStateLabel.ForeColor = enabled
             ? Color.FromArgb(5, 150, 105)
@@ -110,7 +110,7 @@ public partial class Config : UserControl
             _databaseConnectionTextBox.Text = connectionString;
 
             _databaseStateLabel.ForeColor = Color.FromArgb(5, 150, 105);
-            _databaseStateLabel.Text = "数据库配置保存成功，当前仅用于日志和追溯。";
+            _databaseStateLabel.Text = "数据库配置保存成功；采集任务索引可在数据管理页同步。";
             saveResultLabel.ForeColor = Color.FromArgb(5, 150, 105);
             saveResultLabel.Text = "数据库配置保存成功。";
         }

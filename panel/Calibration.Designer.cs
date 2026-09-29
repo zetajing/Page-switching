@@ -1,44 +1,192 @@
-﻿namespace Page_switching.panel
+namespace Page_switching.panel;
+
+partial class Calibration
 {
-    partial class Calibration
+    private void InitializeComponent()
     {
-        /// <summary> 
-        /// 必需的设计器变量。
-        /// </summary>
-        private System.ComponentModel.IContainer components = null;
+        root = new TableLayoutPanel();
+        title = new Label();
+        toolbar = new FlowLayoutPanel();
+        channelCaption = new Label();
+        channelPicker = new ComboBox();
+        rawCaption = new Label();
+        rawValue = new Label();
+        zeroButton = new Button();
+        addButton = new Button();
+        removeButton = new Button();
+        fitButton = new Button();
+        saveButton = new Button();
+        importButton = new Button();
+        exportButton = new Button();
+        pointsGrid = new DataGridView();
+        rawColumn = new DataGridViewTextBoxColumn();
+        levelColumn = new DataGridViewTextBoxColumn();
+        result = new Label();
+        ((System.ComponentModel.ISupportInitialize)pointsGrid).BeginInit();
+        SuspendLayout();
 
-        /// <summary> 
-        /// 清理所有正在使用的资源。
-        /// </summary>
-        /// <param name="disposing">如果应释放托管资源，为 true；否则为 false。</param>
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing && (components != null))
-            {
-                components.Dispose();
-            }
-            base.Dispose(disposing);
-        }
+        root.BackColor = Color.FromArgb(241, 245, 249);
+        root.ColumnCount = 1;
+        root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+        root.Dock = DockStyle.Fill;
+        root.Padding = new Padding(22, 18, 22, 18);
+        root.RowCount = 4;
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 62F));
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 112F));
+        root.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 70F));
+        root.Name = "root";
 
-        #region 组件设计器生成的代码
+        title.Dock = DockStyle.Fill;
+        title.Font = new Font("Microsoft YaHei UI", 18F, FontStyle.Bold);
+        title.ForeColor = Color.FromArgb(15, 23, 42);
+        title.Text = "传感器标定";
+        title.Name = "title";
+        root.Controls.Add(title, 0, 0);
 
-        /// <summary> 
-        /// 设计器支持所需的方法 - 不要修改
-        /// 使用代码编辑器修改此方法的内容。
-        /// </summary>
-        private void InitializeComponent()
-        {
-            SuspendLayout();
-            // 
-            // Calibration
-            // 
-            AutoScaleDimensions = new SizeF(9F, 20F);
-            AutoScaleMode = AutoScaleMode.Font;
-            Name = "Calibration";
-            Size = new Size(1210, 796);
-            ResumeLayout(false);
-        }
+        toolbar.BackColor = Color.White;
+        toolbar.BorderStyle = BorderStyle.FixedSingle;
+        toolbar.Dock = DockStyle.Fill;
+        toolbar.Padding = new Padding(12, 10, 12, 8);
+        toolbar.Name = "toolbar";
+        toolbar.AutoScroll = true;
+        toolbar.WrapContents = true;
+        root.Controls.Add(toolbar, 0, 1);
+        channelCaption.AutoSize = true;
+        channelCaption.Margin = new Padding(0, 12, 5, 0);
+        channelCaption.Text = "通道";
+        channelCaption.Name = "channelCaption";
+        toolbar.Controls.Add(channelCaption);
+        channelPicker.DropDownStyle = ComboBoxStyle.DropDownList;
+        channelPicker.Name = "channelPicker";
+        channelPicker.Size = new Size(92, 30);
+        toolbar.Controls.Add(channelPicker);
+        rawCaption.AutoSize = true;
+        rawCaption.Margin = new Padding(15, 12, 5, 0);
+        rawCaption.Text = "当前原始值";
+        rawCaption.Name = "rawCaption";
+        toolbar.Controls.Add(rawCaption);
+        rawValue.AutoSize = false;
+        rawValue.Margin = new Padding(0, 7, 10, 0);
+        rawValue.Name = "rawValue";
+        rawValue.Size = new Size(85, 32);
+        rawValue.Text = "--";
+        rawValue.TextAlign = ContentAlignment.MiddleLeft;
+        toolbar.Controls.Add(rawValue);
+        zeroButton.BackColor = Color.FromArgb(226, 232, 240);
+        zeroButton.FlatStyle = FlatStyle.Flat;
+        zeroButton.Font = new Font("Microsoft YaHei UI", 8.5F);
+        zeroButton.Margin = new Padding(0, 2, 8, 0);
+        zeroButton.Name = "zeroButton";
+        zeroButton.Size = new Size(106, 36);
+        zeroButton.Text = "当前值定零";
+        zeroButton.UseVisualStyleBackColor = false;
+        toolbar.Controls.Add(zeroButton);
+        addButton.BackColor = Color.FromArgb(226, 232, 240);
+        addButton.FlatStyle = FlatStyle.Flat;
+        addButton.Font = new Font("Microsoft YaHei UI", 8.5F);
+        addButton.Margin = new Padding(0, 2, 8, 0);
+        addButton.Name = "addButton";
+        addButton.Size = new Size(106, 36);
+        addButton.Text = "添加标定点";
+        addButton.UseVisualStyleBackColor = false;
+        toolbar.Controls.Add(addButton);
+        removeButton.BackColor = Color.FromArgb(226, 232, 240);
+        removeButton.FlatStyle = FlatStyle.Flat;
+        removeButton.Font = new Font("Microsoft YaHei UI", 8.5F);
+        removeButton.Margin = new Padding(0, 2, 8, 0);
+        removeButton.Name = "removeButton";
+        removeButton.Size = new Size(106, 36);
+        removeButton.Text = "删除选中点";
+        removeButton.UseVisualStyleBackColor = false;
+        toolbar.Controls.Add(removeButton);
+        fitButton.BackColor = Color.FromArgb(226, 232, 240);
+        fitButton.FlatStyle = FlatStyle.Flat;
+        fitButton.Font = new Font("Microsoft YaHei UI", 8.5F);
+        fitButton.Margin = new Padding(0, 2, 8, 0);
+        fitButton.Name = "fitButton";
+        fitButton.Size = new Size(100, 36);
+        fitButton.Text = "计算系数";
+        fitButton.UseVisualStyleBackColor = false;
+        toolbar.Controls.Add(fitButton);
+        saveButton.BackColor = Color.FromArgb(226, 232, 240);
+        saveButton.FlatStyle = FlatStyle.Flat;
+        saveButton.Font = new Font("Microsoft YaHei UI", 8.5F);
+        saveButton.Margin = new Padding(0, 2, 8, 0);
+        saveButton.Name = "saveButton";
+        saveButton.Size = new Size(100, 36);
+        saveButton.Text = "保存标定";
+        saveButton.UseVisualStyleBackColor = false;
+        toolbar.Controls.Add(saveButton);
+        importButton.BackColor = Color.FromArgb(226, 232, 240);
+        importButton.FlatStyle = FlatStyle.Flat;
+        importButton.Font = new Font("Microsoft YaHei UI", 8.5F);
+        importButton.Margin = new Padding(0, 2, 8, 0);
+        importButton.Name = "importButton";
+        importButton.Size = new Size(100, 36);
+        importButton.Text = "导入 .conf";
+        importButton.UseVisualStyleBackColor = false;
+        toolbar.Controls.Add(importButton);
+        exportButton.BackColor = Color.FromArgb(226, 232, 240);
+        exportButton.FlatStyle = FlatStyle.Flat;
+        exportButton.Font = new Font("Microsoft YaHei UI", 8.5F);
+        exportButton.Margin = new Padding(0, 2, 8, 0);
+        exportButton.Name = "exportButton";
+        exportButton.Size = new Size(100, 36);
+        exportButton.Text = "导出 .conf";
+        exportButton.UseVisualStyleBackColor = false;
+        toolbar.Controls.Add(exportButton);
 
-        #endregion
+        pointsGrid.AllowUserToAddRows = true;
+        pointsGrid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+        pointsGrid.BackgroundColor = Color.White;
+        pointsGrid.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+        pointsGrid.Columns.AddRange(rawColumn, levelColumn);
+        pointsGrid.Dock = DockStyle.Fill;
+        pointsGrid.Margin = new Padding(0, 10, 0, 10);
+        pointsGrid.Name = "pointsGrid";
+        rawColumn.HeaderText = "原始计数";
+        rawColumn.Name = "rawColumn";
+        levelColumn.HeaderText = "标定水位 (mm)";
+        levelColumn.Name = "levelColumn";
+        root.Controls.Add(pointsGrid, 0, 2);
+
+        result.BackColor = Color.White;
+        result.BorderStyle = BorderStyle.FixedSingle;
+        result.Dock = DockStyle.Fill;
+        result.Font = new Font("Microsoft YaHei UI", 10F);
+        result.ForeColor = Color.FromArgb(71, 85, 105);
+        result.Padding = new Padding(14);
+        result.Name = "result";
+        result.Text = "先录入至少两个不同原始计数的标定点，再计算并保存。";
+        root.Controls.Add(result, 0, 3);
+
+        Controls.Add(root);
+        Name = "Calibration";
+        Size = new Size(1210, 796);
+        AutoScaleDimensions = new SizeF(9F, 20F);
+        AutoScaleMode = AutoScaleMode.Font;
+        ((System.ComponentModel.ISupportInitialize)pointsGrid).EndInit();
+        ResumeLayout(false);
     }
+
+
+    private TableLayoutPanel root;
+    private Label title;
+    private FlowLayoutPanel toolbar;
+    private Label channelCaption;
+    private ComboBox channelPicker;
+    private Label rawCaption;
+    private Label rawValue;
+    private Button zeroButton;
+    private Button addButton;
+    private Button removeButton;
+    private Button fitButton;
+    private Button saveButton;
+    private Button importButton;
+    private Button exportButton;
+    private DataGridView pointsGrid;
+    private DataGridViewTextBoxColumn rawColumn;
+    private DataGridViewTextBoxColumn levelColumn;
+    private Label result;
 }

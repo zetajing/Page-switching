@@ -1,44 +1,205 @@
-﻿namespace Page_switching.panel
+namespace Page_switching.panel;
+
+partial class Data
 {
-    partial class Data
+    private void InitializeComponent()
     {
-        /// <summary> 
-        /// 必需的设计器变量。
-        /// </summary>
-        private System.ComponentModel.IContainer components = null;
+        root = new TableLayoutPanel();
+        title = new Label();
+        filters = new FlowLayoutPanel();
+        fromCaption = new Label();
+        fromDate = new DateTimePicker();
+        toCaption = new Label();
+        toDate = new DateTimePicker();
+        channelCaption = new Label();
+        channelPicker = new ComboBox();
+        refreshButton = new Button();
+        importButton = new Button();
+        exportButton = new Button();
+        syncButton = new Button();
+        sessionGrid = new DataGridView();
+        sessionIdColumn = new DataGridViewTextBoxColumn();
+        startedColumn = new DataGridViewTextBoxColumn();
+        channelsColumn = new DataGridViewTextBoxColumn();
+        countColumn = new DataGridViewTextBoxColumn();
+        syncColumn = new DataGridViewTextBoxColumn();
+        content = new TableLayoutPanel();
+        sampleGrid = new DataGridView();
+        timeColumn = new DataGridViewTextBoxColumn();
+        sampleChannelColumn = new DataGridViewTextBoxColumn();
+        rawColumn = new DataGridViewTextBoxColumn();
+        levelColumn = new DataGridViewTextBoxColumn();
+        preview = new WaveformPreviewControl();
+        status = new Label();
+        ((System.ComponentModel.ISupportInitialize)sessionGrid).BeginInit();
+        ((System.ComponentModel.ISupportInitialize)sampleGrid).BeginInit();
+        SuspendLayout();
 
-        /// <summary> 
-        /// 清理所有正在使用的资源。
-        /// </summary>
-        /// <param name="disposing">如果应释放托管资源，为 true；否则为 false。</param>
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing && (components != null))
-            {
-                components.Dispose();
-            }
-            base.Dispose(disposing);
-        }
+        root.BackColor = Color.FromArgb(241, 245, 249);
+        root.ColumnCount = 1;
+        root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+        root.Dock = DockStyle.Fill;
+        root.Padding = new Padding(22, 18, 22, 18);
+        root.RowCount = 5;
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 58F));
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 92F));
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 205F));
+        root.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 45F));
+        root.Name = "root";
 
-        #region 组件设计器生成的代码
+        title.Dock = DockStyle.Fill;
+        title.Font = new Font("Microsoft YaHei UI", 18F, FontStyle.Bold);
+        title.ForeColor = Color.FromArgb(15, 23, 42);
+        title.Name = "title";
+        title.Text = "采集数据管理";
+        root.Controls.Add(title, 0, 0);
 
-        /// <summary> 
-        /// 设计器支持所需的方法 - 不要修改
-        /// 使用代码编辑器修改此方法的内容。
-        /// </summary>
-        private void InitializeComponent()
-        {
-            SuspendLayout();
-            // 
-            // Data
-            // 
-            AutoScaleDimensions = new SizeF(9F, 20F);
-            AutoScaleMode = AutoScaleMode.Font;
-            Name = "Data";
-            Size = new Size(1210, 796);
-            ResumeLayout(false);
-        }
+        filters.BackColor = Color.White;
+        filters.BorderStyle = BorderStyle.FixedSingle;
+        filters.Dock = DockStyle.Fill;
+        filters.Padding = new Padding(10);
+        filters.Name = "filters";
+        filters.AutoScroll = true;
+        filters.WrapContents = true;
+        root.Controls.Add(filters, 0, 1);
+        fromCaption.AutoSize = true;
+        fromCaption.Margin = new Padding(0, 11, 4, 0);
+        fromCaption.Name = "fromCaption";
+        fromCaption.Text = "开始";
+        filters.Controls.Add(fromCaption);
+        fromDate.Format = DateTimePickerFormat.Short;
+        fromDate.Name = "fromDate";
+        fromDate.Size = new Size(115, 29);
+        filters.Controls.Add(fromDate);
+        toCaption.AutoSize = true;
+        toCaption.Margin = new Padding(10, 11, 4, 0);
+        toCaption.Name = "toCaption";
+        toCaption.Text = "结束";
+        filters.Controls.Add(toCaption);
+        toDate.Format = DateTimePickerFormat.Short;
+        toDate.Name = "toDate";
+        toDate.Size = new Size(115, 29);
+        filters.Controls.Add(toDate);
+        channelCaption.AutoSize = true;
+        channelCaption.Margin = new Padding(10, 11, 4, 0);
+        channelCaption.Name = "channelCaption";
+        channelCaption.Text = "通道";
+        filters.Controls.Add(channelCaption);
+        channelPicker.DropDownStyle = ComboBoxStyle.DropDownList;
+        channelPicker.Name = "channelPicker";
+        channelPicker.Size = new Size(88, 29);
+        filters.Controls.Add(channelPicker);
+        refreshButton.Name = "refreshButton";
+        refreshButton.Size = new Size(82, 32);
+        refreshButton.Text = "查询";
+        filters.Controls.Add(refreshButton);
+        importButton.Name = "importButton";
+        importButton.Size = new Size(110, 32);
+        importButton.Text = "导入旧数据";
+        filters.Controls.Add(importButton);
+        exportButton.Name = "exportButton";
+        exportButton.Size = new Size(96, 32);
+        exportButton.Text = "导出 CSV";
+        filters.Controls.Add(exportButton);
+        syncButton.Name = "syncButton";
+        syncButton.Size = new Size(110, 32);
+        syncButton.Text = "同步数据库";
+        filters.Controls.Add(syncButton);
 
-        #endregion
+        sessionGrid.AllowUserToAddRows = false;
+        sessionGrid.AllowUserToDeleteRows = false;
+        sessionGrid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+        sessionGrid.BackgroundColor = Color.White;
+        sessionGrid.Columns.AddRange(sessionIdColumn, startedColumn, channelsColumn, countColumn, syncColumn);
+        sessionGrid.Dock = DockStyle.Fill;
+        sessionGrid.MultiSelect = false;
+        sessionGrid.Name = "sessionGrid";
+        sessionGrid.ReadOnly = true;
+        sessionGrid.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+        sessionIdColumn.HeaderText = "任务 ID";
+        sessionIdColumn.Name = "sessionIdColumn";
+        startedColumn.HeaderText = "开始时间";
+        startedColumn.Name = "startedColumn";
+        channelsColumn.HeaderText = "通道";
+        channelsColumn.Name = "channelsColumn";
+        countColumn.HeaderText = "样本数";
+        countColumn.Name = "countColumn";
+        syncColumn.HeaderText = "数据库";
+        syncColumn.Name = "syncColumn";
+        root.Controls.Add(sessionGrid, 0, 2);
+
+        content.ColumnCount = 2;
+        content.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+        content.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+        content.Dock = DockStyle.Fill;
+        content.Name = "content";
+        content.RowCount = 1;
+        content.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+        root.Controls.Add(content, 0, 3);
+        sampleGrid.AllowUserToAddRows = false;
+        sampleGrid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+        sampleGrid.BackgroundColor = Color.White;
+        sampleGrid.Columns.AddRange(timeColumn, sampleChannelColumn, rawColumn, levelColumn);
+        sampleGrid.Dock = DockStyle.Fill;
+        sampleGrid.Name = "sampleGrid";
+        sampleGrid.ReadOnly = true;
+        timeColumn.HeaderText = "采样时间";
+        timeColumn.Name = "timeColumn";
+        sampleChannelColumn.HeaderText = "通道";
+        sampleChannelColumn.Name = "sampleChannelColumn";
+        rawColumn.HeaderText = "原始计数";
+        rawColumn.Name = "rawColumn";
+        levelColumn.HeaderText = "标定值 (mm)";
+        levelColumn.Name = "levelColumn";
+        content.Controls.Add(sampleGrid, 0, 0);
+        preview.Dock = DockStyle.Fill;
+        preview.MinimumSize = new Size(300, 220);
+        preview.Name = "preview";
+        preview.UnitText = "mm";
+        content.Controls.Add(preview, 1, 0);
+        status.BackColor = Color.White;
+        status.Dock = DockStyle.Fill;
+        status.Name = "status";
+        status.Padding = new Padding(10);
+        status.Text = "选择采集任务后查看数据。";
+        root.Controls.Add(status, 0, 4);
+
+        Controls.Add(root);
+        AutoScaleDimensions = new SizeF(9F, 20F);
+        AutoScaleMode = AutoScaleMode.Font;
+        Name = "Data";
+        Size = new Size(1210, 796);
+        ((System.ComponentModel.ISupportInitialize)sessionGrid).EndInit();
+        ((System.ComponentModel.ISupportInitialize)sampleGrid).EndInit();
+        ResumeLayout(false);
     }
+
+    private TableLayoutPanel root;
+    private Label title;
+    private FlowLayoutPanel filters;
+    private Label fromCaption;
+    private DateTimePicker fromDate;
+    private Label toCaption;
+    private DateTimePicker toDate;
+    private Label channelCaption;
+    private ComboBox channelPicker;
+    private Button refreshButton;
+    private Button importButton;
+    private Button exportButton;
+    private Button syncButton;
+    private DataGridView sessionGrid;
+    private DataGridViewTextBoxColumn sessionIdColumn;
+    private DataGridViewTextBoxColumn startedColumn;
+    private DataGridViewTextBoxColumn channelsColumn;
+    private DataGridViewTextBoxColumn countColumn;
+    private DataGridViewTextBoxColumn syncColumn;
+    private TableLayoutPanel content;
+    private DataGridView sampleGrid;
+    private DataGridViewTextBoxColumn timeColumn;
+    private DataGridViewTextBoxColumn sampleChannelColumn;
+    private DataGridViewTextBoxColumn rawColumn;
+    private DataGridViewTextBoxColumn levelColumn;
+    private WaveformPreviewControl preview;
+    private Label status;
 }
