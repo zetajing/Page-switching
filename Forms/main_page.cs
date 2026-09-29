@@ -1,4 +1,5 @@
 using System.Configuration;
+using System.ComponentModel;
 using System.Diagnostics;
 using InduLink.Storage;
 using Page_switching.panel;
@@ -18,13 +19,27 @@ namespace Page_switching
         private readonly Data _data;
         private readonly Calibration _calibration;
         private readonly System.Windows.Forms.Timer _headerStatusTimer = new() { Interval = 500 };
+        private readonly bool _recordOperations = LicenseManager.UsageMode != LicenseUsageMode.Designtime;
         private AdsTcpRouterHost? _adsTcpRouter;
         private UserControl? _currentPage;
+        private bool? _lastAdsConnected;
+        private static readonly HashSet<string> ResultLabels =
+        [
+            "helperLabel", "saveResultLabel", "regularStatusLabel", "irregularStatusLabel",
+            "result", "status", "_hintLabel", "_connectionStatusLabel"
+        ];
 
         // 初始化共享轴服务和各个页面，并显示默认页面。
         public Mainpage()
         {
             InitializeComponent();
+            if (_recordOperations)
+            {
+                operationPathLabel.Text = "日志保存位置：" + OperationJournal.FilePath;
+                OperationJournal.EntryAdded += AddOperationEntry;
+                LoadOperationHistory();
+                OperationJournal.Record("系统", "程序启动");
+            }
 
             _axisService = new AxisService(AxisServiceOptions.FromConfiguration());
             _autoPage = new Auto();
@@ -35,9 +50,17 @@ namespace Page_switching
             _wave_Height_Meter = new Wave_Height_Meter();
             _data = new Data();
             _calibration = new Calibration();
+            if (_recordOperations)
+                foreach (var page in new UserControl[]
+                {
+                    _autoPage, _manualPage, _controlAuthorityPage, _config,
+                    _waveformPage, _wave_Height_Meter, _data, _calibration
+                })
+                    TrackActions(page, page);
             _headerStatusTimer.Tick += (_, _) => UpdateHeaderStatus();
             Disposed += (_, _) =>
             {
+                OperationJournal.EntryAdded -= AddOperationEntry;
                 _headerStatusTimer.Stop();
                 _headerStatusTimer.Dispose();
                 _config.Dispose();
@@ -105,6 +128,7 @@ namespace Page_switching
         // 主窗体关闭时释放 ADS 连接和 Router。
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
+            if (_recordOperations) OperationJournal.Record("系统", "程序退出");
             try
             {
                 _axisService.Dispose();
@@ -149,8 +173,68 @@ namespace Page_switching
 
         private void NavigateTo(UserControl page, Button button)
         {
+            if (_recordOperations) OperationJournal.Record("页面切换", "打开" + GetPageName(page));
             ShowPage(page);
             SetActiveNavigation(button);
+        }
+
+        private void AddOperationEntry(string entry)
+        {
+            if (IsDisposed) return;
+            if (InvokeRequired)
+            {
+                BeginInvoke(() => AddOperationEntry(entry));
+                return;
+            }
+
+            operationList.Items.Add(entry);
+            if (operationList.Items.Count > 500)
+                operationList.Items.RemoveAt(0);
+            operationList.TopIndex = operationList.Items.Count - 1;
+            operationPathLabel.Text = "日志保存位置：" + OperationJournal.FilePath;
+        }
+
+        private void LoadOperationHistory()
+        {
+            try
+            {
+                if (File.Exists(OperationJournal.FilePath))
+                    foreach (var entry in File.ReadLines(OperationJournal.FilePath).TakeLast(500))
+                        operationList.Items.Add(entry);
+            }
+            catch (Exception ex)
+            {
+                operationList.Items.Add("读取历史操作记录失败：" + ex.Message);
+            }
+        }
+
+        private static void TrackActions(UserControl page, Control parent)
+        {
+            foreach (Control control in parent.Controls)
+            {
+                if (control is Button button && button.Name is not ("jogNegativeButton" or "jogPositiveButton"))
+                    button.Click += (_, _) => OperationJournal.Record(GetPageName(page),
+                        "点击" + button.Text.Replace("\r", " ").Replace("\n", " ").Trim());
+                else if (control is CheckBox checkBox)
+                    checkBox.CheckedChanged += (_, _) => OperationJournal.Record(GetPageName(page),
+                        $"{checkBox.Text.Trim()}：{(checkBox.Checked ? "选中" : "取消")}");
+                else if (control is ComboBox comboBox)
+                    comboBox.SelectionChangeCommitted += (_, _) => OperationJournal.Record(GetPageName(page),
+                        "选择" + comboBox.Text);
+                else if (control is RadioButton radioButton)
+                    radioButton.CheckedChanged += (_, _) =>
+                    {
+                        if (radioButton.Checked)
+                            OperationJournal.Record(GetPageName(page), "选择" + radioButton.Text);
+                    };
+                else if (control is TabControl tabs)
+                    tabs.SelectedIndexChanged += (_, _) => OperationJournal.Record(GetPageName(page),
+                        "切换到" + tabs.SelectedTab?.Text);
+                else if (control is Label label && ResultLabels.Contains(label.Name))
+                    label.TextChanged += (_, _) => OperationJournal.Record(GetPageName(page), label.Text);
+
+                TrackActions(page, control);
+            }
         }
 
         // 高亮当前页面对应的导航按钮。
@@ -176,6 +260,11 @@ namespace Page_switching
             }
 
             var connected = _axisService.IsConnected;
+            if (_recordOperations && _lastAdsConnected != connected)
+            {
+                OperationJournal.Record("系统", connected ? "ADS 已连接" : "ADS 未连接");
+                _lastAdsConnected = connected;
+            }
             adsStatusLabel.Text = connected ? "●  ADS 已连接" : "●  ADS 未连接";
             adsStatusLabel.ForeColor = connected ? UiPalette.Success : UiPalette.Warning;
 
@@ -185,7 +274,9 @@ namespace Page_switching
         }
 
         // 根据当前缓存页面返回顶部状态栏要显示的页面名称。
-        private string GetCurrentPageName() => _currentPage switch
+        private string GetCurrentPageName() => _currentPage is null ? "系统" : GetPageName(_currentPage);
+
+        private static string GetPageName(UserControl page) => page switch
         {
             Auto => "自动运行",
             Manual => "手动控制",

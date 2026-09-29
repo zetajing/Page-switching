@@ -313,6 +313,8 @@ namespace Page_switching
             _jogAxisNumber = SelectedAxisNumber;
             _jogPositive = positive;
             _jogActive = true;
+            OperationJournal.Record("手动控制",
+                $"请求轴 {_jogAxisNumber} {(positive ? "正向" : "负向")}点动，速度 {jogSpeedInput.Value:0.0}");
             try
             {
                 await _axisService.JogAsync(

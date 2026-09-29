@@ -30,6 +30,7 @@ namespace Page_switching
             }
 
             _logList.Items.Add($"{DateTime.Now:HH:mm:ss}  {message}");
+            OperationJournal.Record("自动运行", message);
             try
             {
                 LogDisplayHelper.ShowMsg($"[自动运行] {message}");

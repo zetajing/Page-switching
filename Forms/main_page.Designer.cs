@@ -51,10 +51,14 @@ namespace Page_switching
             button3 = new Button();
             Bu_manual = new Button();
             Bu_auto = new Button();
+            operationGroup = new GroupBox();
+            operationList = new ListBox();
+            operationPathLabel = new Label();
             panelswitch = new Panel();
             panel1.SuspendLayout();
             headerStatusPanel.SuspendLayout();
             panel2.SuspendLayout();
+            operationGroup.SuspendLayout();
             SuspendLayout();
             // 
             // panel1
@@ -328,8 +332,49 @@ namespace Page_switching
             panelswitch.Dock = DockStyle.Fill;
             panelswitch.Location = new Point(190, 64);
             panelswitch.Name = "panelswitch";
-            panelswitch.Size = new Size(1210, 796);
+            panelswitch.Size = new Size(1210, 646);
             panelswitch.TabIndex = 2;
+            //
+            // operationGroup
+            //
+            operationGroup.BackColor = Color.White;
+            operationGroup.Controls.Add(operationList);
+            operationGroup.Controls.Add(operationPathLabel);
+            operationGroup.Dock = DockStyle.Bottom;
+            operationGroup.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
+            operationGroup.ForeColor = Color.FromArgb(15, 23, 42);
+            operationGroup.Location = new Point(190, 710);
+            operationGroup.Name = "operationGroup";
+            operationGroup.Padding = new Padding(10, 18, 10, 5);
+            operationGroup.Size = new Size(1210, 150);
+            operationGroup.TabIndex = 3;
+            operationGroup.TabStop = false;
+            operationGroup.Text = "操作记录";
+            //
+            // operationList
+            //
+            operationList.BackColor = Color.White;
+            operationList.BorderStyle = BorderStyle.FixedSingle;
+            operationList.Dock = DockStyle.Fill;
+            operationList.Font = new Font("Consolas", 9F);
+            operationList.ForeColor = Color.FromArgb(15, 23, 42);
+            operationList.IntegralHeight = false;
+            operationList.Location = new Point(10, 38);
+            operationList.Name = "operationList";
+            operationList.Size = new Size(1190, 84);
+            operationList.TabIndex = 0;
+            //
+            // operationPathLabel
+            //
+            operationPathLabel.Dock = DockStyle.Bottom;
+            operationPathLabel.Font = new Font("Microsoft YaHei UI", 8F);
+            operationPathLabel.ForeColor = Color.FromArgb(71, 85, 105);
+            operationPathLabel.Location = new Point(10, 122);
+            operationPathLabel.Name = "operationPathLabel";
+            operationPathLabel.Size = new Size(1190, 23);
+            operationPathLabel.TabIndex = 1;
+            operationPathLabel.Text = "日志保存位置：";
+            operationPathLabel.TextAlign = ContentAlignment.MiddleLeft;
             // 
             // Mainpage
             // 
@@ -339,6 +384,7 @@ namespace Page_switching
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1400, 860);
             Controls.Add(panelswitch);
+            Controls.Add(operationGroup);
             Controls.Add(panel2);
             Controls.Add(panel1);
             FormBorderStyle = FormBorderStyle.SizableToolWindow;
@@ -352,6 +398,7 @@ namespace Page_switching
             panel1.PerformLayout();
             headerStatusPanel.ResumeLayout(false);
             panel2.ResumeLayout(false);
+            operationGroup.ResumeLayout(false);
             ResumeLayout(false);
         }
 
@@ -361,6 +408,9 @@ namespace Page_switching
         private Panel headerStatusPanel;
         private Panel panel2;
         private Panel panelswitch;
+        private GroupBox operationGroup;
+        private ListBox operationList;
+        private Label operationPathLabel;
         private Button Bu_Calibration;
         private Button button3;
         private Button Bu_manual;
