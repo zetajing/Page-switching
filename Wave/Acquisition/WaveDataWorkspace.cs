@@ -158,11 +158,21 @@ public sealed class WaveDataWorkspace : IDisposable
                 CalibrationVersion = _profiles.TryGetValue(1, out var profile) ? profile.Version : "",
                 CsvPath = Path.Combine(folder, "samples.csv")
             };
-            _activeWriter = new StreamWriter(manifest.CsvPath, false, new UTF8Encoding(true));
-            _activeWriter.WriteLine("Timestamp,Channel,RawCount,CalibratedValue,CalibrationVersion");
-            _activeWriter.Flush();
+            // 文件和会话信息都保存成功后，才发布活动状态。
+            var writer = new StreamWriter(manifest.CsvPath, false, new UTF8Encoding(true));
+            try
+            {
+                writer.WriteLine("Timestamp,Channel,RawCount,CalibratedValue,CalibrationVersion");
+                writer.Flush();
+                SaveManifest(manifest);
+            }
+            catch
+            {
+                writer.Dispose();
+                throw;
+            }
+            _activeWriter = writer;
             _activeManifest = manifest;
-            SaveManifest(manifest);
             return manifest;
         }
     }
@@ -206,12 +216,18 @@ public sealed class WaveDataWorkspace : IDisposable
         {
             var manifest = _activeManifest;
             if (manifest is null) return null;
-            _activeWriter?.Flush();
-            _activeWriter?.Dispose();
-            _activeWriter = null;
-            manifest.EndedAt = DateTimeOffset.Now;
-            SaveManifest(manifest);
-            _activeManifest = null;
+            try
+            {
+                // Dispose 会刷新剩余样本；写入失败仍应释放本次会话。
+                _activeWriter?.Dispose();
+                manifest.EndedAt = DateTimeOffset.Now;
+                SaveManifest(manifest);
+            }
+            finally
+            {
+                _activeWriter = null;
+                _activeManifest = null;
+            }
             return manifest;
         }
     }
@@ -268,6 +284,12 @@ public sealed class WaveDataWorkspace : IDisposable
         var channels = channelFields.Take(count).Select(x => int.Parse(x, CultureInfo.InvariantCulture)).ToArray();
         if (channels.Any(x => x is < 1 or > 6) || channels.Distinct().Count() != channels.Length)
             throw new InvalidDataException("旧采集文件的通道号无效。");
+        // 与分析页面采用同一规则，不把损坏文件导入成正常采集记录。
+        if (!int.TryParse(header[1], out var declaredRows) || declaredRows <= 0 || declaredRows != lines.Length - 2)
+            throw new InvalidDataException("旧文件声明的样本数与实际行数不一致。");
+        if (!TryLegacyDouble(header[2], out var interval) || !double.IsFinite(interval) || interval <= 0 ||
+            !double.IsFinite(1.0 / interval) || 1.0 / interval > int.MaxValue)
+            throw new InvalidDataException("旧采集文件的采样间隔无效。");
         var id = Guid.NewGuid();
         var folder = Path.Combine(RootDirectory, "sessions", id.ToString("N"));
         Directory.CreateDirectory(folder);
@@ -276,10 +298,7 @@ public sealed class WaveDataWorkspace : IDisposable
             SessionId = id, DeviceAddress = "旧文件导入", StartedAt = DateTimeOffset.Now,
             Channels = channels, CsvPath = Path.Combine(folder, "samples.csv"), IsLegacyImport = true
         };
-        var interval = double.TryParse(header[2], NumberStyles.Float, CultureInfo.CurrentCulture, out var parsed)
-            ? parsed : 0;
-        if (interval > 0)
-            manifest.SampleRateHz = (int)Math.Round(1.0 / interval);
+        manifest.SampleRateHz = (int)Math.Round(1.0 / interval);
         using (var writer = new StreamWriter(manifest.CsvPath, false, new UTF8Encoding(true)))
         {
             writer.WriteLine("Timestamp,Channel,RawCount,CalibratedValue,CalibrationVersion");
@@ -289,7 +308,7 @@ public sealed class WaveDataWorkspace : IDisposable
                 if (values.Length < count) throw new InvalidDataException($"旧采集文件第 {row + 1} 行列数不足。");
                 for (var col = 0; col < count; col++)
                 {
-                    if (!double.TryParse(values[col], NumberStyles.Float, CultureInfo.CurrentCulture, out var value))
+                    if (!TryLegacyDouble(values[col], out var value) || !double.IsFinite(value))
                         throw new InvalidDataException($"旧采集文件第 {row + 1} 行数值无效。");
                     var timestamp = manifest.StartedAt.AddSeconds(Math.Max(0, row - 2) * interval);
                     writer.WriteLine(SerializeSample(new WaveSample(id, channels[col], timestamp, null, value, "")));

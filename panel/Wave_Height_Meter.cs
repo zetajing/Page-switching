@@ -35,7 +35,8 @@ namespace Page_switching.panel
                 _lifetimeCancellation.Cancel();
                 _client?.Dispose();
                 _client = null;
-                _workspace?.EndSession();
+                // 结束文件失败也继续释放页面资源，错误写入主窗体操作日志。
+                CompleteSession();
                 _lifetimeCancellation.Dispose();
             };
         }
@@ -288,7 +289,6 @@ namespace Page_switching.panel
 
         private void ExportButton_Click(object? sender, EventArgs e)
         {
-            _workspace?.FlushActiveSession();
             var manifest = _workspace?.ActiveSession ?? _lastSession;
             if (manifest is null || manifest.SampleCount == 0 || !File.Exists(manifest.CsvPath))
             {
@@ -314,6 +314,8 @@ namespace Page_switching.panel
 
             try
             {
+                // 将文件刷新放在异常处理内，磁盘错误以状态提示呈现。
+                _workspace?.FlushActiveSession();
                 File.Copy(manifest.CsvPath, dialog.FileName, true);
                 _connectionStatusLabel.Text = $"已导出 {manifest.SampleCount:N0} 个采样点";
                 _connectionStatusLabel.ForeColor = UiPalette.Success;
@@ -346,11 +348,12 @@ namespace Page_switching.panel
                 var completed = _workspace?.EndSession();
                 if (completed is null) return;
                 _lastSession = completed;
-                _ = SynchronizeSessionAsync();
+                if (!_disposed) _ = SynchronizeSessionAsync();
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine("结束采集文件失败：" + ex);
+                OperationJournal.Record("浪高监测", "结束本地记录失败：" + ex.Message);
                 if (!IsDisposed)
                     _connectionStatusLabel.Text = "结束本地记录失败：" + ex.Message;
             }

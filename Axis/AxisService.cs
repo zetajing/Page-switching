@@ -405,11 +405,18 @@ public sealed class AxisService : IDisposable
         try
         {
             var client = GetConnectedClient() ?? throw new InvalidOperationException("ADS 尚未连接。");
-            await client.WriteManyAsync(CreateWriteRequests(client, symbols, true), cancellationToken)
-                .ConfigureAwait(false);
-            await Task.Delay(50, cancellationToken).ConfigureAwait(false);
-            await client.WriteManyAsync(CreateWriteRequests(client, symbols, false), cancellationToken)
-                .ConfigureAwait(false);
+            var setRequests = CreateWriteRequests(client, symbols, true);
+            var resetRequests = CreateWriteRequests(client, symbols, false);
+            try
+            {
+                await client.WriteManyAsync(setRequests, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(50, cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                // 置位可能部分成功；即使取消，也按原轴顺序尝试复位，超时由 ADS 客户端控制。
+                await client.WriteManyAsync(resetRequests, CancellationToken.None).ConfigureAwait(false);
+            }
         }
         finally
         {
@@ -434,13 +441,20 @@ public sealed class AxisService : IDisposable
                 throw new InvalidOperationException($"轴 {axisNumber} 尚未配置 ADS 控制符号。");
             }
 
-            await client.WriteAsync(
-                new WriteRequest(client.DeviceId, symbol, DataType.Bool, true), cancellationToken)
-                .ConfigureAwait(false);
-            await Task.Delay(50, cancellationToken).ConfigureAwait(false);
-            await client.WriteAsync(
-                new WriteRequest(client.DeviceId, symbol, DataType.Bool, false), cancellationToken)
-                .ConfigureAwait(false);
+            try
+            {
+                await client.WriteAsync(
+                    new WriteRequest(client.DeviceId, symbol, DataType.Bool, true), cancellationToken)
+                    .ConfigureAwait(false);
+                await Task.Delay(50, cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                // 页面取消不应跳过复位；断线时仍会向调用方报告写入失败。
+                await client.WriteAsync(
+                    new WriteRequest(client.DeviceId, symbol, DataType.Bool, false), CancellationToken.None)
+                    .ConfigureAwait(false);
+            }
         }
         finally
         {

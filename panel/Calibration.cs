@@ -53,12 +53,15 @@ public partial class Calibration : UserControl
 
     private void Workspace_SampleRecorded(object? sender, WaveSample sample)
     {
-        if (IsDisposed || channelPicker.SelectedIndex + 1 != sample.Channel) return;
+        // 先切回界面线程，再读取控件；关闭或尚未创建句柄时忽略刷新。
+        if (IsDisposed || Disposing || !IsHandleCreated) return;
         if (InvokeRequired)
         {
-            BeginInvoke(() => Workspace_SampleRecorded(sender, sample));
+            try { BeginInvoke(() => Workspace_SampleRecorded(sender, sample)); }
+            catch (InvalidOperationException) { /* 句柄可能在排队期间关闭。 */ }
             return;
         }
+        if (channelPicker.SelectedIndex + 1 != sample.Channel) return;
         rawValue.Text = sample.RawCount?.ToString(CultureInfo.CurrentCulture) ?? "--";
     }
 

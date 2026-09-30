@@ -20,6 +20,8 @@ namespace Page_switching
         private readonly WaveAnalysisPage _analysis;
         private readonly SignalCorrectionPage _correction;
         private readonly System.Windows.Forms.Timer _headerStatusTimer = new() { Interval = 500 };
+        private readonly CancellationTokenSource _lifetimeCancellation = new();
+        private bool _closing;
         private readonly bool _recordOperations = LicenseManager.UsageMode != LicenseUsageMode.Designtime;
         private AdsTcpRouterHost? _adsTcpRouter;
         private UserControl? _currentPage;
@@ -73,9 +75,15 @@ namespace Page_switching
             _headerStatusTimer.Tick += (_, _) => UpdateHeaderStatus();
             Disposed += (_, _) =>
             {
+                // 直接释放窗体时也取消后台启动，不能只依赖关闭事件。
+                _closing = true;
+                _lifetimeCancellation.Cancel();
                 OperationJournal.EntryAdded -= AddOperationEntry;
                 _headerStatusTimer.Stop();
                 _headerStatusTimer.Dispose();
+                // 隐藏页面已移出容器，需要和当前页面一起释放。
+                _autoPage.Dispose();
+                _manualPage.Dispose();
                 _config.Dispose();
                 _waveformPage.Dispose();
                 _wave_Height_Meter.Dispose();
@@ -84,6 +92,7 @@ namespace Page_switching
                 _data.Dispose();
                 _calibration.Dispose();
                 _batchCalibrationPage.Dispose();
+                _lifetimeCancellation.Dispose();
             };
 
             // 启动时先显示默认页面，避免主区域空白。
@@ -97,25 +106,32 @@ namespace Page_switching
         // 主窗体显示后启动可选 Router，并连接真实 ADS PLC。
         private async void Mainpage_Shown(object? sender, EventArgs e)
         {
-            _adsTcpRouter = await StartRouterInBackgroundAsync();
-
+            var cancellationToken = _lifetimeCancellation.Token;
             try
             {
+                var router = await StartRouterInBackgroundAsync(cancellationToken);
+                // 窗口关闭后返回的 Router 不能再交给已经释放的窗体。
+                if (_closing) { router?.Dispose(); return; }
+                _adsTcpRouter = router;
                 // 部分 ADS 客户端连接方法会在返回 Task 前同步等待；放到后台避免卡住界面绘制。
-                await Task.Run(() => _axisService.ConnectAsync(CancellationToken.None));
-                _autoPage.AddLog("ADS 连接成功");
+                await Task.Run(() => _axisService.ConnectAsync(cancellationToken), cancellationToken);
+                if (!_closing) _autoPage.AddLog("ADS 连接成功");
+            }
+            catch (OperationCanceledException) when (_closing)
+            {
+                // 关闭窗口时取消连接属于正常退出。
             }
             catch (Exception ex)
             {
                 Debug.WriteLine("ADS 连接失败：" + ex);
-                _autoPage.AddLog("ADS 连接失败：" + ex.Message);
+                if (!_closing) _autoPage.AddLog("ADS 连接失败：" + ex.Message);
             }
 
-            UpdateHeaderStatus();
+            if (!_closing) UpdateHeaderStatus();
         }
 
         // 在后台启动可选的 ADS TCP Router，避免启动阶段阻塞主界面。
-        private async Task<AdsTcpRouterHost?> StartRouterInBackgroundAsync()
+        private async Task<AdsTcpRouterHost?> StartRouterInBackgroundAsync(CancellationToken cancellationToken)
         {
             if (!AdsTcpRouterRuntime.IsEnabled)
             {
@@ -128,16 +144,25 @@ namespace Page_switching
                 var router = await Task.Run(async () =>
                 {
                     var host = AdsTcpRouterRuntime.Create();
-                    await host.StartAsync(CancellationToken.None).ConfigureAwait(false);
-                    return host;
-                });
-                _autoPage.AddLog("独立 ADS TCP Router 已启动");
+                    try
+                    {
+                        await host.StartAsync(cancellationToken).ConfigureAwait(false);
+                        return host;
+                    }
+                    catch
+                    {
+                        // 启动失败时释放尚未交给主窗体的 Router。
+                        host.Dispose();
+                        throw;
+                    }
+                }, cancellationToken);
+                if (!_closing) _autoPage.AddLog("独立 ADS TCP Router 已启动");
                 return router;
             }
             catch (Exception ex)
             {
                 Debug.WriteLine("ADS TCP Router 启动失败：" + ex);
-                _autoPage.AddLog("ADS TCP Router 启动失败：" + ex.Message);
+                if (!_closing) _autoPage.AddLog("ADS TCP Router 启动失败：" + ex.Message);
                 return null;
             }
         }
@@ -145,6 +170,9 @@ namespace Page_switching
         // 主窗体关闭时释放 ADS 连接和 Router。
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
+            _closing = true;
+            _lifetimeCancellation.Cancel();
+            _headerStatusTimer.Stop();
             if (_recordOperations) OperationJournal.Record("系统", "程序退出");
             try
             {

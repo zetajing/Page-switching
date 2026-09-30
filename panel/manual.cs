@@ -124,6 +124,7 @@ namespace Page_switching
             }
             catch (Exception ex)
             {
+                if (IsDisposed) return;
                 helperLabel.Text = "刷新失败：" + ex.Message;
                 UpdateAxisOverview(Array.Empty<AxisSnapshot>());
                 UpdateConnectionState();
@@ -322,12 +323,18 @@ namespace Page_switching
                     true,
                     decimal.ToDouble(jogSpeedInput.Value),
                     _lifetimeCancellation.Token);
-                helperLabel.Text = $"轴 {_jogAxisNumber} 正在{(positive ? "正向" : "负向")}点动";
+                if (!IsDisposed)
+                    helperLabel.Text = $"轴 {_jogAxisNumber} 正在{(positive ? "正向" : "负向")}点动";
             }
-            catch (Exception ex) when (ex is not OperationCanceledException)
+            catch (OperationCanceledException)
+            {
+                // 页面释放时取消请求，异常不能逃出鼠标事件。
+                _jogActive = false;
+            }
+            catch (Exception ex)
             {
                 _jogActive = false;
-                helperLabel.Text = "点动失败：" + ex.Message;
+                if (!IsDisposed) helperLabel.Text = "点动失败：" + ex.Message;
             }
         }
 
@@ -355,7 +362,11 @@ namespace Page_switching
                     helperLabel.Text = $"轴 {axisNumber} 点动已停止";
                 }
             }
-            catch (Exception ex) when (ex is not OperationCanceledException)
+            catch (OperationCanceledException)
+            {
+                // 页面释放时取消请求，异常不能逃出切换事件。
+            }
+            catch (Exception ex)
             {
                 if (!IsDisposed)
                 {
@@ -381,6 +392,7 @@ namespace Page_switching
             try
             {
                 await action(_lifetimeCancellation.Token);
+                if (IsDisposed) return;
                 helperLabel.Text = successMessage;
                 await RefreshValuesAsync();
             }
@@ -390,7 +402,7 @@ namespace Page_switching
             }
             catch (Exception ex)
             {
-                helperLabel.Text = "操作失败：" + ex.Message;
+                if (!IsDisposed) helperLabel.Text = "操作失败：" + ex.Message;
             }
             finally
             {

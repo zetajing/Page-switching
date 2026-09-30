@@ -29,8 +29,13 @@ public partial class Data : UserControl
         {
             var manifest = SelectedManifest();
             if (manifest is null) { status.Text = "请先选择采集任务。"; return; }
-            _workspace.FlushActiveSession();
-            AnalysisRequested?.Invoke(manifest, SelectedChannel());
+            try
+            {
+                // 刷新文件失败时留在当前页，避免异常逃出按钮事件。
+                _workspace.FlushActiveSession();
+                AnalysisRequested?.Invoke(manifest, SelectedChannel());
+            }
+            catch (Exception ex) { status.Text = "打开分析失败：" + ex.Message; }
         };
         VisibleChanged += (_, _) => { if (Visible) RefreshSessions(); };
         RefreshSessions();
@@ -123,7 +128,6 @@ public partial class Data : UserControl
     {
         var manifest = SelectedManifest();
         if (manifest is null) { status.Text = "请先选择采集任务。"; return; }
-        _workspace?.FlushActiveSession();
         using var dialog = new SaveFileDialog
         {
             Filter = "CSV 文件 (*.csv)|*.csv", DefaultExt = "csv", AddExtension = true,
@@ -132,6 +136,11 @@ public partial class Data : UserControl
         if (dialog.ShowDialog(this) != DialogResult.OK) return;
         try
         {
+            // 按通道导出会新建文件，必须先阻止覆盖原始采集文件。
+            if (string.Equals(Path.GetFullPath(manifest.CsvPath), Path.GetFullPath(dialog.FileName),
+                    StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("导出位置不能是原始采集文件，请选择其他文件名。");
+            _workspace?.FlushActiveSession();
             var channel = SelectedChannel();
             if (!channel.HasValue)
                 File.Copy(manifest.CsvPath, dialog.FileName, true);
