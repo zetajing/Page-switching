@@ -25,9 +25,6 @@
       <SubType>Code</SubType>
       <DependentUpon>$([System.String]::Copy('%(Filename)').Replace('.Designer', '')).cs</DependentUpon>
     </Compile>
-    <Compile Update="panel\WaveBatchCalibrationForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
     <EmbeddedResource Update="panel\*.resx">
       <DependentUpon>%(Filename).cs</DependentUpon>
     </EmbeddedResource>

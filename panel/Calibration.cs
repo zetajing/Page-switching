@@ -24,15 +24,20 @@ public partial class Calibration : UserControl
         saveButton.Click += (_, _) => Save();
         importButton.Click += (_, _) => Import();
         exportButton.Click += (_, _) => Export();
-        batchButton.Click += (_, _) =>
-        {
-            using var dialog = new WaveBatchCalibrationForm();
-            dialog.ShowDialog(this);
-            LoadChannel();
-        };
+        batchButton.Click += (_, _) => ShowBatchCalibration(true);
+        batchPage.BackRequested += (_, _) => ShowBatchCalibration(false);
         _workspace.SampleRecorded += Workspace_SampleRecorded;
         Disposed += (_, _) => _workspace.SampleRecorded -= Workspace_SampleRecorded;
         channelPicker.SelectedIndex = 0;
+    }
+
+    private void ShowBatchCalibration(bool show)
+    {
+        // 在同一个 Panel 内切换，保留批量表格输入；返回时刷新已保存的系数。
+        root.Visible = !show;
+        batchPage.Visible = show;
+        if (show) batchPage.BringToFront();
+        else LoadChannel();
     }
 
     private void LoadChannel()
