@@ -316,16 +316,18 @@ namespace Page_switching
             }
         }
 
-        // 高亮当前页面对应的导航按钮。
+        // 普通按钮保留白底边框；当前页面使用蓝底白字，并区分悬停和按下状态。
         private void SetActiveNavigation(Button activeButton)
         {
             foreach (var button in new[] { Bu_auto, Bu_manual, Bu_Calibration, Bu_data, button2, button5,
                          analysisButton, correctionButton, bu_Configuration })
             {
                 var isActive = ReferenceEquals(button, activeButton);
-                button.BackColor = isActive ? UiPalette.Selection : UiPalette.Sidebar;
-                button.ForeColor = isActive ? UiPalette.PrimaryHover : UiPalette.SecondaryText;
-                button.FlatAppearance.MouseOverBackColor = UiPalette.Selection;
+                button.BackColor = isActive ? UiPalette.Primary : UiPalette.Surface;
+                button.ForeColor = isActive ? Color.White : UiPalette.Text;
+                button.FlatAppearance.BorderColor = isActive ? UiPalette.Primary : UiPalette.Border;
+                button.FlatAppearance.MouseOverBackColor = isActive ? UiPalette.PrimaryHover : UiPalette.Selection;
+                button.FlatAppearance.MouseDownBackColor = isActive ? UiPalette.PrimaryHover : UiPalette.SecondaryButton;
             }
 
             navigationMarker.Top = activeButton.Top;

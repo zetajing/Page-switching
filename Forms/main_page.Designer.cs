@@ -1,4 +1,4 @@
-namespace Page_switching
+﻿namespace Page_switching
 {
     partial class Mainpage
     {
@@ -204,12 +204,15 @@ namespace Page_switching
             // 
             // bu_Configuration
             // 
-            bu_Configuration.BackColor = Color.FromArgb(248, 250, 252);
+            bu_Configuration.BackColor = Color.White;
             bu_Configuration.Cursor = Cursors.Hand;
-            bu_Configuration.FlatAppearance.BorderSize = 0;
+            bu_Configuration.FlatAppearance.BorderSize = 1;
+            bu_Configuration.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
+            bu_Configuration.FlatAppearance.MouseOverBackColor = Color.FromArgb(219, 234, 254);
+            bu_Configuration.FlatAppearance.MouseDownBackColor = Color.FromArgb(226, 232, 240);
             bu_Configuration.FlatStyle = FlatStyle.Flat;
-            bu_Configuration.Font = new Font("Microsoft YaHei UI", 9.5F);
-            bu_Configuration.ForeColor = Color.FromArgb(71, 85, 105);
+            bu_Configuration.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
+            bu_Configuration.ForeColor = Color.FromArgb(15, 23, 42);
             bu_Configuration.Location = new Point(12, 522);
             bu_Configuration.Name = "bu_Configuration";
             bu_Configuration.Padding = new Padding(12, 0, 0, 0);
@@ -222,12 +225,15 @@ namespace Page_switching
             // 
             // button5
             // 
-            button5.BackColor = Color.FromArgb(248, 250, 252);
+            button5.BackColor = Color.White;
             button5.Cursor = Cursors.Hand;
-            button5.FlatAppearance.BorderSize = 0;
+            button5.FlatAppearance.BorderSize = 1;
+            button5.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
+            button5.FlatAppearance.MouseOverBackColor = Color.FromArgb(219, 234, 254);
+            button5.FlatAppearance.MouseDownBackColor = Color.FromArgb(226, 232, 240);
             button5.FlatStyle = FlatStyle.Flat;
-            button5.Font = new Font("Microsoft YaHei UI", 9.5F);
-            button5.ForeColor = Color.FromArgb(71, 85, 105);
+            button5.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
+            button5.ForeColor = Color.FromArgb(15, 23, 42);
             button5.Location = new Point(12, 336);
             button5.Name = "button5";
             button5.Padding = new Padding(12, 0, 0, 0);
@@ -240,12 +246,15 @@ namespace Page_switching
             // 
             // button2
             // 
-            button2.BackColor = Color.FromArgb(248, 250, 252);
+            button2.BackColor = Color.White;
             button2.Cursor = Cursors.Hand;
-            button2.FlatAppearance.BorderSize = 0;
+            button2.FlatAppearance.BorderSize = 1;
+            button2.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
+            button2.FlatAppearance.MouseOverBackColor = Color.FromArgb(219, 234, 254);
+            button2.FlatAppearance.MouseDownBackColor = Color.FromArgb(226, 232, 240);
             button2.FlatStyle = FlatStyle.Flat;
-            button2.Font = new Font("Microsoft YaHei UI", 9.5F);
-            button2.ForeColor = Color.FromArgb(71, 85, 105);
+            button2.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
+            button2.ForeColor = Color.FromArgb(15, 23, 42);
             button2.Location = new Point(12, 286);
             button2.Name = "button2";
             button2.Padding = new Padding(12, 0, 0, 0);
@@ -258,12 +267,15 @@ namespace Page_switching
             // 
             // Bu_data
             // 
-            Bu_data.BackColor = Color.FromArgb(248, 250, 252);
+            Bu_data.BackColor = Color.White;
             Bu_data.Cursor = Cursors.Hand;
-            Bu_data.FlatAppearance.BorderSize = 0;
+            Bu_data.FlatAppearance.BorderSize = 1;
+            Bu_data.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
+            Bu_data.FlatAppearance.MouseOverBackColor = Color.FromArgb(219, 234, 254);
+            Bu_data.FlatAppearance.MouseDownBackColor = Color.FromArgb(226, 232, 240);
             Bu_data.FlatStyle = FlatStyle.Flat;
-            Bu_data.Font = new Font("Microsoft YaHei UI", 9.5F);
-            Bu_data.ForeColor = Color.FromArgb(71, 85, 105);
+            Bu_data.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
+            Bu_data.ForeColor = Color.FromArgb(15, 23, 42);
             Bu_data.Location = new Point(12, 236);
             Bu_data.Name = "Bu_data";
             Bu_data.Padding = new Padding(12, 0, 0, 0);
@@ -276,12 +288,15 @@ namespace Page_switching
             // 
             // Bu_Calibration
             // 
-            Bu_Calibration.BackColor = Color.FromArgb(248, 250, 252);
+            Bu_Calibration.BackColor = Color.White;
             Bu_Calibration.Cursor = Cursors.Hand;
-            Bu_Calibration.FlatAppearance.BorderSize = 0;
+            Bu_Calibration.FlatAppearance.BorderSize = 1;
+            Bu_Calibration.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
+            Bu_Calibration.FlatAppearance.MouseOverBackColor = Color.FromArgb(219, 234, 254);
+            Bu_Calibration.FlatAppearance.MouseDownBackColor = Color.FromArgb(226, 232, 240);
             Bu_Calibration.FlatStyle = FlatStyle.Flat;
-            Bu_Calibration.Font = new Font("Microsoft YaHei UI", 9.5F);
-            Bu_Calibration.ForeColor = Color.FromArgb(71, 85, 105);
+            Bu_Calibration.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
+            Bu_Calibration.ForeColor = Color.FromArgb(15, 23, 42);
             Bu_Calibration.Location = new Point(12, 186);
             Bu_Calibration.Name = "Bu_Calibration";
             Bu_Calibration.Padding = new Padding(12, 0, 0, 0);
@@ -294,12 +309,15 @@ namespace Page_switching
             // 
             // Bu_manual
             // 
-            Bu_manual.BackColor = Color.FromArgb(248, 250, 252);
+            Bu_manual.BackColor = Color.White;
             Bu_manual.Cursor = Cursors.Hand;
-            Bu_manual.FlatAppearance.BorderSize = 0;
+            Bu_manual.FlatAppearance.BorderSize = 1;
+            Bu_manual.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
+            Bu_manual.FlatAppearance.MouseOverBackColor = Color.FromArgb(219, 234, 254);
+            Bu_manual.FlatAppearance.MouseDownBackColor = Color.FromArgb(226, 232, 240);
             Bu_manual.FlatStyle = FlatStyle.Flat;
-            Bu_manual.Font = new Font("Microsoft YaHei UI", 9.5F);
-            Bu_manual.ForeColor = Color.FromArgb(71, 85, 105);
+            Bu_manual.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
+            Bu_manual.ForeColor = Color.FromArgb(15, 23, 42);
             Bu_manual.Location = new Point(12, 94);
             Bu_manual.Name = "Bu_manual";
             Bu_manual.Padding = new Padding(12, 0, 0, 0);
@@ -312,12 +330,15 @@ namespace Page_switching
             // 
             // Bu_auto
             // 
-            Bu_auto.BackColor = Color.FromArgb(219, 234, 254);
+            Bu_auto.BackColor = Color.FromArgb(29, 78, 216);
             Bu_auto.Cursor = Cursors.Hand;
-            Bu_auto.FlatAppearance.BorderSize = 0;
+            Bu_auto.FlatAppearance.BorderSize = 1;
+            Bu_auto.FlatAppearance.BorderColor = Color.FromArgb(29, 78, 216);
+            Bu_auto.FlatAppearance.MouseOverBackColor = Color.FromArgb(30, 64, 175);
+            Bu_auto.FlatAppearance.MouseDownBackColor = Color.FromArgb(30, 64, 175);
             Bu_auto.FlatStyle = FlatStyle.Flat;
-            Bu_auto.Font = new Font("Microsoft YaHei UI", 9.5F);
-            Bu_auto.ForeColor = Color.FromArgb(30, 64, 175);
+            Bu_auto.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
+            Bu_auto.ForeColor = Color.White;
             Bu_auto.Location = new Point(12, 44);
             Bu_auto.Name = "Bu_auto";
             Bu_auto.Padding = new Padding(12, 0, 0, 0);
@@ -508,26 +529,34 @@ namespace Page_switching
             analysisButton.Location = new Point(12, 386);
             analysisButton.Size = new Size(145, 44);
             analysisButton.Padding = new Padding(12, 0, 0, 0);
-            analysisButton.Font = new Font("Microsoft YaHei UI", 9.5F);
+            analysisButton.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
             analysisButton.Cursor = Cursors.Hand;
             analysisButton.FlatStyle = FlatStyle.Flat;
-            analysisButton.FlatAppearance.BorderSize = 0;
+            analysisButton.FlatAppearance.BorderSize = 1;
+            analysisButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
+            analysisButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(219, 234, 254);
+            analysisButton.FlatAppearance.MouseDownBackColor = Color.FromArgb(226, 232, 240);
             analysisButton.TextAlign = ContentAlignment.MiddleLeft;
-            analysisButton.BackColor = Color.FromArgb(248, 250, 252);
-            analysisButton.ForeColor = Color.FromArgb(71, 85, 105);
+            analysisButton.UseVisualStyleBackColor = false;
+            analysisButton.BackColor = Color.White;
+            analysisButton.ForeColor = Color.FromArgb(15, 23, 42);
             analysisButton.Click += AnalysisButton_Click;
             correctionButton.Name = "correctionButton";
             correctionButton.Text = "信号修正";
             correctionButton.Location = new Point(12, 436);
             correctionButton.Size = new Size(145, 44);
             correctionButton.Padding = new Padding(12, 0, 0, 0);
-            correctionButton.Font = new Font("Microsoft YaHei UI", 9.5F);
+            correctionButton.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
             correctionButton.Cursor = Cursors.Hand;
             correctionButton.FlatStyle = FlatStyle.Flat;
-            correctionButton.FlatAppearance.BorderSize = 0;
+            correctionButton.FlatAppearance.BorderSize = 1;
+            correctionButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
+            correctionButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(219, 234, 254);
+            correctionButton.FlatAppearance.MouseDownBackColor = Color.FromArgb(226, 232, 240);
             correctionButton.TextAlign = ContentAlignment.MiddleLeft;
-            correctionButton.BackColor = Color.FromArgb(248, 250, 252);
-            correctionButton.ForeColor = Color.FromArgb(71, 85, 105);
+            correctionButton.UseVisualStyleBackColor = false;
+            correctionButton.BackColor = Color.White;
+            correctionButton.ForeColor = Color.FromArgb(15, 23, 42);
             correctionButton.Click += CorrectionButton_Click;
             Controls.Add(contentSplit);
             Controls.Add(panel2);
