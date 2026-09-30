@@ -174,11 +174,15 @@ namespace Page_switching
             {
                 if (_currentPage is not null)
                 {
+                    // 先隐藏再移出容器，让各页的显示事件正确停止刷新。
+                    _currentPage.Visible = false;
                     panelswitch.Controls.Remove(_currentPage);
                 }
 
                 page.Dock = DockStyle.Fill;
                 panelswitch.Controls.Add(page);
+                // 复用已有页面并恢复显示，保留输入和标签选择，触发需要的刷新。
+                page.Visible = true;
                 page.BringToFront();
                 _currentPage = page;
             }
