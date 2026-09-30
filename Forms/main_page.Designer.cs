@@ -176,9 +176,9 @@ namespace Page_switching
             // 
             systemSectionLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
             systemSectionLabel.ForeColor = Color.FromArgb(100, 116, 139);
-            systemSectionLabel.Location = new Point(16, 494);
+            systemSectionLabel.Location = new Point(29, 494);
             systemSectionLabel.Name = "systemSectionLabel";
-            systemSectionLabel.Size = new Size(154, 20);
+            systemSectionLabel.Size = new Size(135, 20);
             systemSectionLabel.TabIndex = 10;
             systemSectionLabel.Text = "系统";
             // 
@@ -186,9 +186,9 @@ namespace Page_switching
             // 
             toolsSectionLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
             toolsSectionLabel.ForeColor = Color.FromArgb(100, 116, 139);
-            toolsSectionLabel.Location = new Point(16, 158);
+            toolsSectionLabel.Location = new Point(29, 158);
             toolsSectionLabel.Name = "toolsSectionLabel";
-            toolsSectionLabel.Size = new Size(154, 20);
+            toolsSectionLabel.Size = new Size(135, 20);
             toolsSectionLabel.TabIndex = 9;
             toolsSectionLabel.Text = "数据工具";
             // 
@@ -196,9 +196,9 @@ namespace Page_switching
             // 
             controlSectionLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
             controlSectionLabel.ForeColor = Color.FromArgb(100, 116, 139);
-            controlSectionLabel.Location = new Point(16, 16);
+            controlSectionLabel.Location = new Point(29, 16);
             controlSectionLabel.Name = "controlSectionLabel";
-            controlSectionLabel.Size = new Size(154, 20);
+            controlSectionLabel.Size = new Size(135, 20);
             controlSectionLabel.TabIndex = 8;
             controlSectionLabel.Text = "设备控制";
             // 
@@ -213,7 +213,7 @@ namespace Page_switching
             bu_Configuration.Location = new Point(12, 522);
             bu_Configuration.Name = "bu_Configuration";
             bu_Configuration.Padding = new Padding(12, 0, 0, 0);
-            bu_Configuration.Size = new Size(152, 44);
+            bu_Configuration.Size = new Size(145, 44);
             bu_Configuration.TabIndex = 7;
             bu_Configuration.Text = "系统配置";
             bu_Configuration.TextAlign = ContentAlignment.MiddleLeft;
@@ -231,7 +231,7 @@ namespace Page_switching
             button5.Location = new Point(12, 336);
             button5.Name = "button5";
             button5.Padding = new Padding(12, 0, 0, 0);
-            button5.Size = new Size(152, 44);
+            button5.Size = new Size(145, 44);
             button5.TabIndex = 6;
             button5.Text = "浪高监测";
             button5.TextAlign = ContentAlignment.MiddleLeft;
@@ -249,7 +249,7 @@ namespace Page_switching
             button2.Location = new Point(12, 286);
             button2.Name = "button2";
             button2.Padding = new Padding(12, 0, 0, 0);
-            button2.Size = new Size(152, 44);
+            button2.Size = new Size(145, 44);
             button2.TabIndex = 5;
             button2.Text = "波形生成";
             button2.TextAlign = ContentAlignment.MiddleLeft;
@@ -267,7 +267,7 @@ namespace Page_switching
             Bu_data.Location = new Point(12, 236);
             Bu_data.Name = "Bu_data";
             Bu_data.Padding = new Padding(12, 0, 0, 0);
-            Bu_data.Size = new Size(152, 44);
+            Bu_data.Size = new Size(145, 44);
             Bu_data.TabIndex = 4;
             Bu_data.Text = "数据管理";
             Bu_data.TextAlign = ContentAlignment.MiddleLeft;
@@ -285,7 +285,7 @@ namespace Page_switching
             Bu_Calibration.Location = new Point(12, 186);
             Bu_Calibration.Name = "Bu_Calibration";
             Bu_Calibration.Padding = new Padding(12, 0, 0, 0);
-            Bu_Calibration.Size = new Size(152, 44);
+            Bu_Calibration.Size = new Size(145, 44);
             Bu_Calibration.TabIndex = 3;
             Bu_Calibration.Text = "标定管理";
             Bu_Calibration.TextAlign = ContentAlignment.MiddleLeft;
@@ -303,7 +303,7 @@ namespace Page_switching
             Bu_manual.Location = new Point(12, 94);
             Bu_manual.Name = "Bu_manual";
             Bu_manual.Padding = new Padding(12, 0, 0, 0);
-            Bu_manual.Size = new Size(152, 44);
+            Bu_manual.Size = new Size(145, 44);
             Bu_manual.TabIndex = 1;
             Bu_manual.Text = "手动控制";
             Bu_manual.TextAlign = ContentAlignment.MiddleLeft;
@@ -321,7 +321,7 @@ namespace Page_switching
             Bu_auto.Location = new Point(12, 44);
             Bu_auto.Name = "Bu_auto";
             Bu_auto.Padding = new Padding(12, 0, 0, 0);
-            Bu_auto.Size = new Size(152, 44);
+            Bu_auto.Size = new Size(145, 44);
             Bu_auto.TabIndex = 0;
             Bu_auto.Text = "自动运行";
             Bu_auto.TextAlign = ContentAlignment.MiddleLeft;
@@ -506,7 +506,10 @@ namespace Page_switching
             analysisButton.Name = "analysisButton";
             analysisButton.Text = "波浪分析";
             analysisButton.Location = new Point(12, 386);
-            analysisButton.Size = new Size(145, 40);
+            analysisButton.Size = new Size(145, 44);
+            analysisButton.Padding = new Padding(12, 0, 0, 0);
+            analysisButton.Font = new Font("Microsoft YaHei UI", 9.5F);
+            analysisButton.Cursor = Cursors.Hand;
             analysisButton.FlatStyle = FlatStyle.Flat;
             analysisButton.FlatAppearance.BorderSize = 0;
             analysisButton.TextAlign = ContentAlignment.MiddleLeft;
@@ -516,20 +519,16 @@ namespace Page_switching
             correctionButton.Name = "correctionButton";
             correctionButton.Text = "信号修正";
             correctionButton.Location = new Point(12, 436);
-            correctionButton.Size = new Size(145, 40);
+            correctionButton.Size = new Size(145, 44);
+            correctionButton.Padding = new Padding(12, 0, 0, 0);
+            correctionButton.Font = new Font("Microsoft YaHei UI", 9.5F);
+            correctionButton.Cursor = Cursors.Hand;
             correctionButton.FlatStyle = FlatStyle.Flat;
             correctionButton.FlatAppearance.BorderSize = 0;
             correctionButton.TextAlign = ContentAlignment.MiddleLeft;
             correctionButton.BackColor = Color.FromArgb(248, 250, 252);
             correctionButton.ForeColor = Color.FromArgb(71, 85, 105);
             correctionButton.Click += CorrectionButton_Click;
-            Bu_auto.Width = 145;
-            Bu_manual.Width = 145;
-            Bu_Calibration.Width = 145;
-            Bu_data.Width = 145;
-            button2.Width = 145;
-            button5.Width = 145;
-            bu_Configuration.Width = 145;
             Controls.Add(contentSplit);
             Controls.Add(panel2);
             Controls.Add(panel1);
