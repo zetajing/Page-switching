@@ -21,7 +21,7 @@ public partial class WaveformPage : UserControl
     private void InitializeWaveformChoices()
     {
         regularSegmentComboBox.Items.AddRange(["X轴+Y轴", "X轴", "Y轴"]);
-        regularTheoryComboBox.Items.AddRange(["线性理论", "椭圆余弦波", "孤立波"]);
+        regularTheoryComboBox.Items.AddRange(["线性理论", "二阶Stokes（内置）", "孤立波", "流函数波（旧程序）", "椭圆余弦波（旧程序）"]);
         irregularModeComboBox.Items.AddRange(["单向不规则波", "多向不规则波"]);
         irregularSpectrumComboBox.Items.AddRange([
             "JONSWAP", "Scott", "ITTC", "B谱", "Wallops", "P-M", "规范谱", "Darbyshire"]);
@@ -104,6 +104,10 @@ public partial class WaveformPage : UserControl
 
         try
         {
+            if (_generatorService.GenerationModeText == "WFast.exe" && regularTheoryComboBox.SelectedIndex >= 3)
+                throw new InvalidOperationException("流函数和椭圆余弦选项请使用旧WP-5-6.exe方案。");
+            if (_generatorService.GenerationModeText != "WaveMaker 内置算法" && regularTheoryComboBox.SelectedIndex == 1)
+                throw new InvalidOperationException("二阶Stokes选项仅用于WaveMaker内置算法。");
             var outputPath = RequireOutputPath(regularOutputTextBox);
             var parameters = new RegularWaveParameters(
                 ParseDouble(regularDepthTextBox, "水深", 0),
@@ -123,7 +127,8 @@ public partial class WaveformPage : UserControl
                 parameters,
                 outputPath,
                 _lifetimeCancellation.Token);
-            regularPreview.SetSamples(result.Samples, parameters.TimeStep);
+            regularPreview.UnitText = result.Unit;
+            regularPreview.SetSamples(result.Samples, result.SampleInterval ?? parameters.TimeStep);
             regularStatusLabel.Text =
                 $"生成成功：{result.Samples.Count:n0} 点，耗时 {result.Elapsed.TotalSeconds:0.##} 秒";
         }
@@ -192,7 +197,8 @@ public partial class WaveformPage : UserControl
                 parameters,
                 outputPath,
                 _lifetimeCancellation.Token);
-            irregularPreview.SetSamples(result.Samples, parameters.TimeStep);
+            irregularPreview.UnitText = result.Unit;
+            irregularPreview.SetSamples(result.Samples, result.SampleInterval ?? parameters.TimeStep);
             irregularStatusLabel.Text =
                 $"生成成功：{result.Samples.Count:n0} 点，耗时 {result.Elapsed.TotalSeconds:0.##} 秒";
         }

@@ -6,6 +6,7 @@ namespace Page_switching.panel;
 public partial class Data : UserControl
 {
     private WaveDataWorkspace? _workspace;
+    internal event Action<WaveCaptureManifest, int?>? AnalysisRequested;
 
     public Data()
     {
@@ -23,6 +24,14 @@ public partial class Data : UserControl
         importButton.Click += (_, _) => ImportLegacy();
         exportButton.Click += (_, _) => ExportSelected();
         syncButton.Click += async (_, _) => await SyncAsync();
+        legacyExportButton.Click += async (_, _) => await ExportLegacyAsync();
+        analyzeButton.Click += (_, _) =>
+        {
+            var manifest = SelectedManifest();
+            if (manifest is null) { status.Text = "请先选择采集任务。"; return; }
+            _workspace.FlushActiveSession();
+            AnalysisRequested?.Invoke(manifest, SelectedChannel());
+        };
         VisibleChanged += (_, _) => { if (Visible) RefreshSessions(); };
         RefreshSessions();
     }
@@ -137,7 +146,9 @@ public partial class Data : UserControl
                         writer.WriteLine(line);
                 }
             }
-            status.Text = "已导出：" + dialog.FileName;
+            File.WriteAllText(dialog.FileName + ".session.json", System.Text.Json.JsonSerializer.Serialize(manifest,
+                new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
+            status.Text = "已导出：" + dialog.FileName + "；会话信息已保存在同名.session.json。";
         }
         catch (Exception ex) { status.Text = "导出失败：" + ex.Message; }
     }
@@ -154,5 +165,25 @@ public partial class Data : UserControl
         }
         catch (Exception ex) { status.Text = "数据库同步失败，本地文件已保留：" + ex.Message; }
         finally { syncButton.Enabled = true; }
+    }
+
+    private async Task ExportLegacyAsync()
+    {
+        var manifest = SelectedManifest();
+        if (_workspace is null || manifest is null) { status.Text = "请先选择采集任务。"; return; }
+        if (_workspace.ActiveSession?.SessionId == manifest.SessionId)
+        { status.Text = "请先结束采集再导出旧格式，以保持各通道样本数量一致。"; return; }
+        using var dialog = new SaveFileDialog { Filter = "旧采集文件 (*.txt)|*.txt", DefaultExt = "txt", AddExtension = true };
+        if (dialog.ShowDialog(this) != DialogResult.OK) return;
+        var channel = SelectedChannel();
+        legacyExportButton.Enabled = false;
+        try
+        {
+            await Task.Run(() => _workspace.ExportLegacyCapture(manifest, dialog.FileName, channel));
+            if (!IsDisposed) status.Text = "已导出旧格式：" + dialog.FileName + "；标定值单位保持不变，未转换单位。";
+            OperationJournal.Record("数据管理", "旧格式导出：" + dialog.FileName);
+        }
+        catch (Exception ex) { if (!IsDisposed) status.Text = "旧格式导出失败：" + ex.Message; OperationJournal.Record("数据管理", ex.Message); }
+        finally { if (!IsDisposed) legacyExportButton.Enabled = true; }
     }
 }

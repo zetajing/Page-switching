@@ -46,13 +46,16 @@ public sealed class WaveformGenerationResult
     public required string OutputPath { get; init; }
     public required IReadOnlyList<double> Samples { get; init; }
     public required TimeSpan Elapsed { get; init; }
+    public string Unit { get; init; } = "m";
+    public double? SampleInterval { get; init; }
 }
 
 // 选择波形生成方式：调用外部 WFast.exe，或使用内置 WaveMaker 算法。
 public enum WaveformGeneratorMode
 {
     ExternalExe,
-    WaveMaker
+    WaveMaker,
+    LegacyExe
 }
 
 public sealed class WaveformGeneratorOptions
@@ -90,16 +93,21 @@ public sealed class WaveformGeneratorService : IDisposable
     }
 
     // 当前选中的生成方式，供界面显示。
-    public string GenerationModeText => CurrentMode == WaveformGeneratorMode.WaveMaker
-        ? "WaveMaker 内置算法"
-        : "WFast.exe";
+    public string GenerationModeText => CurrentMode switch
+    {
+        WaveformGeneratorMode.WaveMaker => "WaveMaker 内置算法",
+        WaveformGeneratorMode.LegacyExe => "旧 WP-5-6.exe",
+        _ => "WFast.exe"
+    };
 
     // 根据规则波参数生成波形，并按当前方式写出 CSV 文件。
     public Task<WaveformGenerationResult> GenerateRegularAsync(
         RegularWaveParameters parameters,
         string outputPath,
         CancellationToken cancellationToken) =>
-        CurrentMode == WaveformGeneratorMode.WaveMaker
+        CurrentMode == WaveformGeneratorMode.LegacyExe
+            ? GenerateLegacyAsync(parameters, null, outputPath, cancellationToken)
+            : CurrentMode == WaveformGeneratorMode.WaveMaker
             ? GenerateBuiltInAsync(
                 () => WaveMakerWaveGenerator.GenerateRegular(parameters),
                 outputPath,
@@ -112,13 +120,59 @@ public sealed class WaveformGeneratorService : IDisposable
         IrregularWaveParameters parameters,
         string outputPath,
         CancellationToken cancellationToken) =>
-        CurrentMode == WaveformGeneratorMode.WaveMaker
+        CurrentMode == WaveformGeneratorMode.LegacyExe
+            ? GenerateLegacyAsync(null, parameters, outputPath, cancellationToken)
+            : CurrentMode == WaveformGeneratorMode.WaveMaker
             ? GenerateBuiltInAsync(
                 () => WaveMakerWaveGenerator.GenerateIrregular(parameters),
                 outputPath,
                 parameters.TimeStep,
                 cancellationToken)
             : GenerateAsync(BuildIrregularParameterFile(parameters, outputPath), outputPath, cancellationToken);
+
+    // 使用内置 WaveMaker 算法生成采样点并保存为 CSV。
+    private async Task<WaveformGenerationResult> GenerateLegacyAsync(RegularWaveParameters? regular,
+        IrregularWaveParameters? irregular, string outputPath, CancellationToken token)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        var destination = ValidateOutputPath(outputPath);
+        var settings = LegacyProjectSettings.Load();
+        var count = regular?.SampleCount ?? irregular!.SampleCount;
+        if (count > 131072) throw new InvalidOperationException("旧程序时序总数不能超过131072。");
+        var step = settings.GenerateAbsorptionSignal ? 0.002 : regular?.TimeStep ?? irregular!.TimeStep;
+        string[] prefix;
+        if (regular is { } r)
+        {
+            if (settings.GenerateAbsorptionSignal && r.TheoryCode != 1)
+                throw new InvalidOperationException("旧源码的吸收式规则波固定采用线性理论，请调整生成设置或理论选项。");
+            var theory = r.TheoryCode switch { 1 => 1, 3 => 4, 4 => 2, 5 => 3,
+                _ => throw new InvalidOperationException("旧程序不提供独立的二阶Stokes选项，请选择线性、流函数、椭圆余弦或孤立波。") };
+            prefix = [Format(r.WaterDepth), Format(r.Period), Format(r.WaveHeight), "90", "0.1", "10", "0", "0", "1", "0", "0", "0", "0",
+                Format(step), count.ToString(CultureInfo.InvariantCulture), Format(r.CharacteristicFrequency), Format(r.CharacteristicPeriod),
+                theory.ToString(CultureInfo.InvariantCulture), "1", r.SideCode.ToString(CultureInfo.InvariantCulture), "W3"];
+        }
+        else
+        {
+            var p = irregular!;
+            prefix = [Format(p.WaterDepth), Format(p.SignificantPeriod), Format(p.SignificantHeight), "90",
+                Format(p.MinimumPeriod), Format(p.MaximumPeriod), Format(p.NegativeDirection), Format(p.PositiveDirection),
+                p.WaveModeCode.ToString(CultureInfo.InvariantCulture), p.SpectrumCode.ToString(CultureInfo.InvariantCulture),
+                Format(p.PeakFactor), p.RandomSeed.ToString(CultureInfo.InvariantCulture), "2", Format(step),
+                count.ToString(CultureInfo.InvariantCulture), Format(p.CharacteristicFrequency), Format(p.CharacteristicPeriod), "0",
+                p.TheoryCode.ToString(CultureInfo.InvariantCulture), p.SideCode.ToString(CultureInfo.InvariantCulture), "W3"];
+        }
+        await _operationGate.WaitAsync(token);
+        try
+        {
+            var watch = Stopwatch.StartNew();
+            await LegacyProgramRunner.RunAsync("WP-5-6.exe", "BasicParameters.dat",
+                work => [.. prefix, Path.Combine(work, "output.csv")], destination, token);
+            var result = LegacyWaveSignal.Read(destination);
+            return new WaveformGenerationResult { OutputPath = destination, Samples = result.Displacement,
+                Elapsed = watch.Elapsed, Unit = "mm", SampleInterval = result.Interval };
+        }
+        finally { _operationGate.Release(); }
+    }
 
     // 使用内置 WaveMaker 算法生成采样点并保存为 CSV。
     private async Task<WaveformGenerationResult> GenerateBuiltInAsync(

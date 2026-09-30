@@ -17,6 +17,8 @@ partial class Data
         importButton = new Button();
         exportButton = new Button();
         syncButton = new Button();
+        legacyExportButton = new Button();
+        analyzeButton = new Button();
         sessionGrid = new DataGridView();
         sessionIdColumn = new DataGridViewTextBoxColumn();
         startedColumn = new DataGridViewTextBoxColumn();
@@ -34,6 +36,18 @@ partial class Data
         ((System.ComponentModel.ISupportInitialize)sessionGrid).BeginInit();
         ((System.ComponentModel.ISupportInitialize)sampleGrid).BeginInit();
         SuspendLayout();
+        legacyExportButton.Name = "legacyExportButton";
+        legacyExportButton.Text = "导出旧TXT";
+        legacyExportButton.Size = new Size(112, 34);
+        legacyExportButton.FlatStyle = FlatStyle.Flat;
+        legacyExportButton.BackColor = Color.FromArgb(248, 250, 252);
+        legacyExportButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
+        analyzeButton.Name = "analyzeButton";
+        analyzeButton.Text = "分析所选记录";
+        analyzeButton.Size = new Size(125, 34);
+        analyzeButton.FlatStyle = FlatStyle.Flat;
+        analyzeButton.BackColor = Color.FromArgb(29, 78, 216);
+        analyzeButton.ForeColor = Color.White;
 
         root.BackColor = Color.FromArgb(241, 245, 249);
         root.ColumnCount = 1;
@@ -151,6 +165,8 @@ partial class Data
         syncButton.Text = "同步数据库";
         syncButton.UseVisualStyleBackColor = false;
         filters.Controls.Add(syncButton);
+        filters.Controls.Add(legacyExportButton);
+        filters.Controls.Add(analyzeButton);
 
         sessionGrid.AllowUserToAddRows = false;
         sessionGrid.AllowUserToDeleteRows = false;
@@ -298,6 +314,8 @@ partial class Data
     private Button importButton;
     private Button exportButton;
     private Button syncButton;
+    private Button legacyExportButton;
+    private Button analyzeButton;
     private DataGridView sessionGrid;
     private DataGridViewTextBoxColumn sessionIdColumn;
     private DataGridViewTextBoxColumn startedColumn;

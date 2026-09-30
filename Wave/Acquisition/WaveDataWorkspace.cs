@@ -125,6 +125,19 @@ public sealed class WaveDataWorkspace : IDisposable
             SaveProfiles([profile]);
     }
 
+    internal void SaveBatchCalibration(IReadOnlyList<WaveCalibrationProfile> profiles)
+    {
+        if (profiles.Count == 0 || profiles.Select(x => x.Channel).Distinct().Count() != profiles.Count)
+            throw new InvalidOperationException("请至少选择一个不同的通道。");
+        foreach (var profile in profiles)
+        {
+            ValidateChannel(profile.Channel);
+            if (profile.Points.Count < 2 || !double.IsFinite(profile.Slope) || !double.IsFinite(profile.Intercept))
+                throw new InvalidOperationException($"CH{profile.Channel}标定系数无效。");
+        }
+        lock (_gate) SaveProfiles(profiles);
+    }
+
     public WaveCaptureManifest StartSession(string deviceAddress, int sampleRateHz, IReadOnlyCollection<int> channels)
     {
         if (channels.Count != 1 || !channels.Contains(1))
@@ -339,6 +352,54 @@ public sealed class WaveDataWorkspace : IDisposable
         {
             Format(p.Slope), Format(p.Intercept - p.ZeroRawCount * p.Slope)
         })));
+    }
+
+    internal void ExportLegacyCapture(WaveCaptureManifest manifest, string path, int? channel)
+    {
+        if (manifest.SampleRateHz <= 0) throw new InvalidOperationException("任务没有有效的采样频率，不能导出旧格式。");
+        var channels = channel.HasValue ? new[] { channel.Value } : manifest.Channels;
+        if (channels.Length == 0 || channels.Any(x => !manifest.Channels.Contains(x)))
+            throw new InvalidOperationException("所选通道不属于此任务。");
+        var counts = channels.ToDictionary(x => x, _ => 0L);
+        foreach (var sample in EnumerateSamples(manifest, channel))
+        {
+            if (!counts.ContainsKey(sample.Channel)) continue;
+            if (!sample.CalibratedValue.HasValue || !double.IsFinite(sample.CalibratedValue.Value))
+                throw new InvalidOperationException("旧波浪文件只能保存有效的标定值，不能把原始计数当成波高。");
+            counts[sample.Channel]++;
+        }
+        var count = counts.Values.First();
+        if (count == 0 || counts.Values.Any(x => x != count))
+            throw new InvalidOperationException("所选通道样本为空或数量不一致，不能组合成旧格式。");
+        var destination = Path.GetFullPath(path);
+        if (string.Equals(destination, Path.GetFullPath(manifest.CsvPath), StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("旧格式导出不能覆盖原始采集文件。");
+        var temporary = destination + "." + Guid.NewGuid().ToString("N") + ".tmp";
+        var readers = channels.Select(x => EnumerateSamples(manifest, x).GetEnumerator()).ToArray();
+        try
+        {
+            using (var writer = new StreamWriter(temporary, false, new UTF8Encoding(false)))
+            {
+                writer.WriteLine($"{channels.Length}\t{count}\t{Format(1.0 / manifest.SampleRateHz)}");
+                writer.WriteLine(string.Join("\t", channels));
+                for (long row = 0; row < count; row++)
+                {
+                    var values = new string[readers.Length];
+                    for (var col = 0; col < readers.Length; col++)
+                    {
+                        if (!readers[col].MoveNext()) throw new InvalidDataException("采集文件在导出过程中发生变化。");
+                        values[col] = Format(readers[col].Current.CalibratedValue!.Value);
+                    }
+                    writer.WriteLine(string.Join("\t", values));
+                }
+            }
+            File.Move(temporary, destination, true);
+        }
+        finally
+        {
+            foreach (var reader in readers) reader.Dispose();
+            if (File.Exists(temporary)) File.Delete(temporary);
+        }
     }
 
     public async Task<int> SynchronizeSessionsAsync(CancellationToken cancellationToken = default)

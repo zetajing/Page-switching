@@ -7,6 +7,8 @@ partial class WaveformPage
     private Label titleLabel;
     private Label subtitleLabel;
     private TabControl waveformTabs;
+    private TabPage customTab;
+    private CustomSpectrumPage customSpectrumPage;
     private TabPage regularTab;
     private TabPage irregularTab;
     private TableLayoutPanel regularLayout;
@@ -97,6 +99,8 @@ partial class WaveformPage
         titleLabel = new Label();
         subtitleLabel = new Label();
         waveformTabs = new TabControl();
+        customTab = new TabPage();
+        customSpectrumPage = new CustomSpectrumPage();
         regularTab = new TabPage();
         regularLayout = new TableLayoutPanel();
         regularParameterGroup = new GroupBox();
@@ -1433,6 +1437,11 @@ partial class WaveformPage
         AutoScrollMinSize = new Size(1000, 600);
         BackColor = Color.FromArgb(241, 245, 249);
         ForeColor = Color.FromArgb(15, 23, 42);
+        customTab.Text = "自定义谱";
+        customTab.Name = "customTab";
+        customSpectrumPage.Dock = DockStyle.Fill;
+        customTab.Controls.Add(customSpectrumPage);
+        waveformTabs.Controls.Add(customTab);
         Controls.Add(rootLayout);
         Name = "WaveformPage";
         Size = new Size(1104, 606);

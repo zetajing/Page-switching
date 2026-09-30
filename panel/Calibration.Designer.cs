@@ -20,12 +20,20 @@ partial class Calibration
         saveButton = new Button();
         importButton = new Button();
         exportButton = new Button();
+        batchButton = new Button();
         pointsGrid = new DataGridView();
         rawColumn = new DataGridViewTextBoxColumn();
         levelColumn = new DataGridViewTextBoxColumn();
         result = new Label();
         ((System.ComponentModel.ISupportInitialize)pointsGrid).BeginInit();
         SuspendLayout();
+        batchButton.Name = "batchButton";
+        batchButton.Text = "批量标定";
+        batchButton.Size = new Size(105, 34);
+        batchButton.FlatStyle = FlatStyle.Flat;
+        batchButton.BackColor = Color.FromArgb(248, 250, 252);
+        batchButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
+        pointActions.Controls.Add(batchButton);
 
         root.BackColor = Color.FromArgb(241, 245, 249);
         root.ColumnCount = 1;
@@ -277,6 +285,7 @@ partial class Calibration
     private Button saveButton;
     private Button importButton;
     private Button exportButton;
+    private Button batchButton;
     private DataGridView pointsGrid;
     private DataGridViewTextBoxColumn rawColumn;
     private DataGridViewTextBoxColumn levelColumn;

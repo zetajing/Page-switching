@@ -24,6 +24,12 @@ public partial class Calibration : UserControl
         saveButton.Click += (_, _) => Save();
         importButton.Click += (_, _) => Import();
         exportButton.Click += (_, _) => Export();
+        batchButton.Click += (_, _) =>
+        {
+            using var dialog = new WaveBatchCalibrationForm();
+            dialog.ShowDialog(this);
+            LoadChannel();
+        };
         _workspace.SampleRecorded += Workspace_SampleRecorded;
         Disposed += (_, _) => _workspace.SampleRecorded -= Workspace_SampleRecorded;
         channelPicker.SelectedIndex = 0;

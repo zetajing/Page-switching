@@ -32,7 +32,7 @@ internal static class WaveMakerWaveGenerator
                 1 => parameters.WaveHeight / 2.0 * Math.Cos(phase),
                 2 => GetStokesValue(parameters.WaveHeight, phase, waveNumber, parameters.WaterDepth),
                 3 => GetSolitaryValue(parameters.WaveHeight, parameters.WaterDepth, duration / 2.0, time),
-                _ => throw new InvalidOperationException($"不支持的内置规则波理论编号：{parameters.TheoryCode}。")
+                _ => throw new InvalidOperationException("流函数和椭圆余弦波请在系统配置中选择旧WP-5-6.exe方案。")
             };
         }
 
@@ -120,7 +120,7 @@ internal static class WaveMakerWaveGenerator
     }
 
     // 根据界面选择创建 WaveMaker 频谱函数。
-    private static Func<double, double> CreateSpectrum(IrregularWaveParameters parameters) =>
+    internal static Func<double, double> CreateSpectrum(IrregularWaveParameters parameters) =>
         parameters.SpectrumCode switch
         {
             1 => CreateJonswapSpectrum(parameters.SignificantHeight, parameters.SignificantPeriod, parameters.PeakFactor),

@@ -33,6 +33,9 @@ namespace Page_switching
         // 创建设计器中的控件并设置布局和事件。
         private void InitializeComponent()
         {
+            analysisButton = new Button();
+            correctionButton = new Button();
+            equipmentButton = new Button();
             panel1 = new Panel();
             headerStatusPanel = new Panel();
             controlStatusLabel = new Label();
@@ -163,6 +166,9 @@ namespace Page_switching
             panel2.Controls.Add(Bu_manual);
             panel2.Controls.Add(Bu_auto);
             panel2.Controls.Add(navigationMarker);
+            panel2.Controls.Add(analysisButton);
+            panel2.Controls.Add(correctionButton);
+            panel2.Controls.Add(equipmentButton);
             panel2.Dock = DockStyle.Left;
             panel2.Location = new Point(0, 64);
             panel2.Name = "panel2";
@@ -174,7 +180,7 @@ namespace Page_switching
             // 
             systemSectionLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
             systemSectionLabel.ForeColor = Color.FromArgb(100, 116, 139);
-            systemSectionLabel.Location = new Point(16, 448);
+            systemSectionLabel.Location = new Point(16, 544);
             systemSectionLabel.Name = "systemSectionLabel";
             systemSectionLabel.Size = new Size(154, 20);
             systemSectionLabel.TabIndex = 10;
@@ -208,7 +214,7 @@ namespace Page_switching
             bu_Configuration.FlatStyle = FlatStyle.Flat;
             bu_Configuration.Font = new Font("Microsoft YaHei UI", 9.5F);
             bu_Configuration.ForeColor = Color.FromArgb(71, 85, 105);
-            bu_Configuration.Location = new Point(12, 476);
+            bu_Configuration.Location = new Point(12, 622);
             bu_Configuration.Name = "bu_Configuration";
             bu_Configuration.Padding = new Padding(12, 0, 0, 0);
             bu_Configuration.Size = new Size(152, 44);
@@ -517,6 +523,46 @@ namespace Page_switching
             AutoScaleMode = AutoScaleMode.Dpi;
             ClientSize = new Size(1280, 820);
             MinimumSize = new Size(1080, 720);
+            panel2.AutoScroll = true;
+            panel2.AutoScrollMinSize = new Size(0, 680);
+            analysisButton.Name = "analysisButton";
+            analysisButton.Text = "波浪分析";
+            analysisButton.Location = new Point(12, 436);
+            analysisButton.Size = new Size(145, 40);
+            analysisButton.FlatStyle = FlatStyle.Flat;
+            analysisButton.FlatAppearance.BorderSize = 0;
+            analysisButton.TextAlign = ContentAlignment.MiddleLeft;
+            analysisButton.BackColor = Color.FromArgb(248, 250, 252);
+            analysisButton.ForeColor = Color.FromArgb(71, 85, 105);
+            analysisButton.Click += AnalysisButton_Click;
+            correctionButton.Name = "correctionButton";
+            correctionButton.Text = "信号修正";
+            correctionButton.Location = new Point(12, 486);
+            correctionButton.Size = new Size(145, 40);
+            correctionButton.FlatStyle = FlatStyle.Flat;
+            correctionButton.FlatAppearance.BorderSize = 0;
+            correctionButton.TextAlign = ContentAlignment.MiddleLeft;
+            correctionButton.BackColor = Color.FromArgb(248, 250, 252);
+            correctionButton.ForeColor = Color.FromArgb(71, 85, 105);
+            correctionButton.Click += CorrectionButton_Click;
+            equipmentButton.Name = "equipmentButton";
+            equipmentButton.Text = "旧设备配置";
+            equipmentButton.Location = new Point(12, 572);
+            equipmentButton.Size = new Size(145, 40);
+            equipmentButton.FlatStyle = FlatStyle.Flat;
+            equipmentButton.FlatAppearance.BorderSize = 0;
+            equipmentButton.TextAlign = ContentAlignment.MiddleLeft;
+            equipmentButton.BackColor = Color.FromArgb(248, 250, 252);
+            equipmentButton.ForeColor = Color.FromArgb(71, 85, 105);
+            equipmentButton.Click += EquipmentButton_Click;
+            Bu_auto.Width = 145;
+            Bu_manual.Width = 145;
+            button3.Width = 145;
+            Bu_Calibration.Width = 145;
+            Bu_data.Width = 145;
+            button2.Width = 145;
+            button5.Width = 145;
+            bu_Configuration.Width = 145;
             Controls.Add(contentSplit);
             Controls.Add(panel2);
             Controls.Add(panel1);
@@ -543,6 +589,9 @@ namespace Page_switching
 
         #endregion
 
+        private Button analysisButton;
+        private Button correctionButton;
+        private Button equipmentButton;
         private Panel panel1;
         private Panel headerStatusPanel;
         private Panel panel2;

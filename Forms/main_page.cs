@@ -18,6 +18,9 @@ namespace Page_switching
         private readonly Wave_Height_Meter _wave_Height_Meter;
         private readonly Data _data;
         private readonly Calibration _calibration;
+        private readonly WaveAnalysisPage _analysis;
+        private readonly SignalCorrectionPage _correction;
+        private readonly LegacyEquipmentPage _equipment;
         private readonly System.Windows.Forms.Timer _headerStatusTimer = new() { Interval = 500 };
         private readonly bool _recordOperations = LicenseManager.UsageMode != LicenseUsageMode.Designtime;
         private AdsTcpRouterHost? _adsTcpRouter;
@@ -50,11 +53,20 @@ namespace Page_switching
             _wave_Height_Meter = new Wave_Height_Meter();
             _data = new Data();
             _calibration = new Calibration();
+            _analysis = new WaveAnalysisPage();
+            _correction = new SignalCorrectionPage();
+            _equipment = new LegacyEquipmentPage();
+            _data.AnalysisRequested += (manifest, channel) =>
+            {
+                _analysis.OpenSession(manifest, channel);
+                NavigateTo(_analysis, analysisButton);
+            };
             if (_recordOperations)
                 foreach (var page in new UserControl[]
                 {
                     _autoPage, _manualPage, _controlAuthorityPage, _config,
-                    _waveformPage, _wave_Height_Meter, _data, _calibration
+                    _waveformPage, _wave_Height_Meter, _data, _calibration,
+                    _analysis, _correction, _equipment
                 })
                     TrackActions(page, page);
             _headerStatusTimer.Tick += (_, _) => UpdateHeaderStatus();
@@ -67,6 +79,11 @@ namespace Page_switching
                 _waveformPage.Dispose();
                 _controlAuthorityPage.Dispose();
                 _wave_Height_Meter.Dispose();
+                _analysis.Dispose();
+                _correction.Dispose();
+                _equipment.Dispose();
+                _data.Dispose();
+                _calibration.Dispose();
             };
 
             // 启动时先显示默认页面，避免主区域空白。
@@ -298,7 +315,8 @@ namespace Page_switching
         // 高亮当前页面对应的导航按钮。
         private void SetActiveNavigation(Button activeButton)
         {
-            foreach (var button in new[] { Bu_auto, Bu_manual, button3, Bu_Calibration, Bu_data, button2, button5, bu_Configuration })
+            foreach (var button in new[] { Bu_auto, Bu_manual, button3, Bu_Calibration, Bu_data, button2, button5,
+                         analysisButton, correctionButton, equipmentButton, bu_Configuration })
             {
                 var isActive = ReferenceEquals(button, activeButton);
                 button.BackColor = isActive ? UiPalette.Selection : UiPalette.Sidebar;
@@ -347,6 +365,9 @@ namespace Page_switching
             WaveformPage => "波形生成",
             Config => "系统配置",
             Wave_Height_Meter => "浪高监测",
+            WaveAnalysisPage => "波浪分析",
+            SignalCorrectionPage => "信号修正",
+            LegacyEquipmentPage => "旧设备配置",
             _ => "系统"
         };
 
@@ -382,5 +403,9 @@ namespace Page_switching
         private void Bu_data_Click(object sender, EventArgs e) => NavigateTo(_data, Bu_data);
 
         private void Bu_Calibration_Click(object sender, EventArgs e) => NavigateTo(_calibration, Bu_Calibration);
+
+        private void AnalysisButton_Click(object sender, EventArgs e) => NavigateTo(_analysis, analysisButton);
+        private void CorrectionButton_Click(object sender, EventArgs e) => NavigateTo(_correction, correctionButton);
+        private void EquipmentButton_Click(object sender, EventArgs e) => NavigateTo(_equipment, equipmentButton);
     }
 }

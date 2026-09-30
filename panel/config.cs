@@ -17,11 +17,11 @@ public partial class Config : UserControl
     // 将 Router 和波形生成器配置加载到界面控件。
     private void LoadSettings()
     {
-        waveGeneratorModeComboBox.Items.AddRange(["外部 WFast.exe", "WaveMaker 内置算法"]);
-        waveGeneratorModeComboBox.SelectedIndex = string.Equals(
-            Read("WaveGeneratorMode", "ExternalExe"),
-            nameof(WaveformGeneratorMode.WaveMaker),
-            StringComparison.OrdinalIgnoreCase) ? 1 : 0;
+        waveGeneratorModeComboBox.Items.AddRange(["外部 WFast.exe", "WaveMaker 内置算法", "旧 WP-5-6.exe"]);
+        waveGeneratorModeComboBox.SelectedIndex = Read("WaveGeneratorMode", "ExternalExe") switch
+        {
+            "WaveMaker" => 1, "LegacyExe" => 2, _ => 0
+        };
         waveGeneratorPathTextBox.Text = Read("WaveGeneratorPath");
         routerEnabledCheckBox.Checked = ReadBool("AdsTcpRouterEnabled", false);
         routerNameTextBox.Text = Read("AdsTcpRouterName", "PageSwitchingRouter");
@@ -156,6 +156,16 @@ public partial class Config : UserControl
         {
             var path = waveGeneratorPathTextBox.Text.Trim();
             var useWaveMaker = IsWaveMakerModeSelected();
+            if (IsLegacyModeSelected())
+            {
+                var program = Path.Combine(LegacyProjectSettings.Load().ProgramDirectory, "WP-5-6.exe");
+                if (!File.Exists(program)) throw new FileNotFoundException("请先在旧设备配置中选择包含WP-5-6.exe的目录。");
+                SaveSettings(("WaveGeneratorMode", nameof(WaveformGeneratorMode.LegacyExe)));
+                saveResultLabel.Text = "已启用旧WP-5-6.exe，输出旧格式造波板位移。";
+                saveResultLabel.ForeColor = UiPalette.Success;
+                UpdateWaveGeneratorState();
+                return;
+            }
             if (!useWaveMaker && string.IsNullOrWhiteSpace(path))
             {
                 throw new InvalidOperationException("请先选择 WFast.exe 文件。");
@@ -190,8 +200,14 @@ public partial class Config : UserControl
     private void UpdateWaveGeneratorState()
     {
         var useWaveMaker = IsWaveMakerModeSelected();
-        waveGeneratorPathTextBox.Enabled = !useWaveMaker;
-        browseWaveGeneratorButton.Enabled = !useWaveMaker;
+        waveGeneratorPathTextBox.Enabled = !useWaveMaker && !IsLegacyModeSelected();
+        browseWaveGeneratorButton.Enabled = !useWaveMaker && !IsLegacyModeSelected();
+        if (IsLegacyModeSelected())
+        {
+            waveGeneratorStateLabel.Text = "旧程序目录在“旧设备配置”页设置；生成旧格式造波板位移，不执行自动造波。";
+            waveGeneratorStateLabel.ForeColor = UiPalette.SecondaryText;
+            return;
+        }
         if (useWaveMaker)
         {
             waveGeneratorStateLabel.Text = "已选择 WaveMaker 内置算法，不需要配置 WFast.exe";
@@ -243,8 +259,8 @@ public partial class Config : UserControl
         try
         {
             ValidateInputs();
-            var mode = IsWaveMakerModeSelected() ? nameof(WaveformGeneratorMode.WaveMaker)
-                : nameof(WaveformGeneratorMode.ExternalExe);
+            var mode = IsLegacyModeSelected() ? nameof(WaveformGeneratorMode.LegacyExe)
+                : IsWaveMakerModeSelected() ? nameof(WaveformGeneratorMode.WaveMaker) : nameof(WaveformGeneratorMode.ExternalExe);
             SaveSettings(
                 ("WaveGeneratorMode", mode),
                 ("WaveGeneratorPath", waveGeneratorPathTextBox.Text.Trim()),
@@ -301,7 +317,7 @@ public partial class Config : UserControl
     // 检查波形生成程序路径是否为空且文件是否存在。
     private void ValidateWaveGeneratorPath()
     {
-        if (IsWaveMakerModeSelected())
+        if (IsWaveMakerModeSelected() || IsLegacyModeSelected())
         {
             return;
         }
@@ -373,6 +389,7 @@ public partial class Config : UserControl
 
     // 判断当前是否选择 WaveMaker 内置方案。
     private bool IsWaveMakerModeSelected() => waveGeneratorModeComboBox.SelectedIndex == 1;
+    private bool IsLegacyModeSelected() => waveGeneratorModeComboBox.SelectedIndex == 2;
 
     private static void SaveSettings(params (string Key, string Value)[] values)
     {
