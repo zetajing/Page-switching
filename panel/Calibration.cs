@@ -24,23 +24,17 @@ public partial class Calibration : UserControl
         saveButton.Click += (_, _) => Save();
         importButton.Click += (_, _) => Import();
         exportButton.Click += (_, _) => Export();
-        batchButton.Click += (_, _) => ShowBatchCalibration(true);
-        batchPage.BackRequested += (_, _) => ShowBatchCalibration(false);
+        batchButton.Click += (_, _) => BatchCalibrationRequested?.Invoke(this, EventArgs.Empty);
         _workspace.SampleRecorded += Workspace_SampleRecorded;
         Disposed += (_, _) => _workspace.SampleRecorded -= Workspace_SampleRecorded;
         channelPicker.SelectedIndex = 0;
     }
 
-    private void ShowBatchCalibration(bool show)
-    {
-        // 在同一个 Panel 内切换，保留批量表格输入；返回时刷新已保存的系数。
-        root.Visible = !show;
-        batchPage.Visible = show;
-        if (show) batchPage.BringToFront();
-        else LoadChannel();
-    }
+    // 页面只发出切换请求，具体显示由主窗体处理。
+    internal event EventHandler? BatchCalibrationRequested;
 
-    private void LoadChannel()
+    // 批量标定保存成功后，主窗体同步刷新这里的通道系数。
+    internal void LoadChannel()
     {
         if (_workspace is null || channelPicker.SelectedIndex < 0) return;
         var channel = channelPicker.SelectedIndex + 1;

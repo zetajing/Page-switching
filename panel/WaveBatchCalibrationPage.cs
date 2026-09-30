@@ -33,6 +33,8 @@
         }
 
         internal event EventHandler? BackRequested;
+        // 保存成功后通知主窗体，避免单通道页面显示旧系数。
+        internal event EventHandler? CalibrationSaved;
 
         private void BackButton_Click(object? sender, EventArgs e) =>
             BackRequested?.Invoke(this, e);
@@ -74,6 +76,7 @@
                 workspace.SaveBatchCalibration(profiles);
                 status.Text = "批量标定已保存：" + string.Join("、", profiles.Select(x => $"CH{x.Channel} k={x.Slope:0.######} b={x.Intercept:0.######}"));
                 OperationJournal.Record("批量标定", status.Text);
+                CalibrationSaved?.Invoke(this, EventArgs.Empty);
             }
             catch (Exception ex) { status.Text = "批量标定失败：" + ex.Message; OperationJournal.Record("批量标定", status.Text); }
         }

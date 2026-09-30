@@ -3,12 +3,10 @@ namespace Page_switching.panel;
 partial class Calibration
 {
     private Panel pagePanel;
-    private WaveBatchCalibrationPage batchPage;
 
     private void InitializeComponent()
     {
         pagePanel = new Panel();
-        batchPage = new WaveBatchCalibrationPage();
         root = new TableLayoutPanel();
         title = new Label();
         toolbar = new TableLayoutPanel();
@@ -264,10 +262,6 @@ partial class Calibration
         pagePanel.Name = "pagePanel";
         pagePanel.Dock = DockStyle.Fill;
         pagePanel.Controls.Add(root);
-        batchPage.Name = "batchPage";
-        batchPage.Dock = DockStyle.Fill;
-        batchPage.Visible = false;
-        pagePanel.Controls.Add(batchPage);
         Name = "Calibration";
         Controls.Add(pagePanel);
         Size = new Size(1104, 606);

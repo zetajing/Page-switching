@@ -16,6 +16,7 @@ namespace Page_switching
         private readonly Wave_Height_Meter _wave_Height_Meter;
         private readonly Data _data;
         private readonly Calibration _calibration;
+        private readonly WaveBatchCalibrationPage _batchCalibrationPage;
         private readonly WaveAnalysisPage _analysis;
         private readonly SignalCorrectionPage _correction;
         private readonly System.Windows.Forms.Timer _headerStatusTimer = new() { Interval = 500 };
@@ -49,8 +50,13 @@ namespace Page_switching
             _wave_Height_Meter = new Wave_Height_Meter();
             _data = new Data();
             _calibration = new Calibration();
+            _batchCalibrationPage = new WaveBatchCalibrationPage();
             _analysis = new WaveAnalysisPage();
             _correction = new SignalCorrectionPage();
+            // 批量标定由主窗体管理，使用同一个 panelswitch 显示和返回。
+            _calibration.BatchCalibrationRequested += (_, _) => NavigateTo(_batchCalibrationPage, Bu_Calibration);
+            _batchCalibrationPage.BackRequested += (_, _) => NavigateTo(_calibration, Bu_Calibration);
+            _batchCalibrationPage.CalibrationSaved += (_, _) => _calibration.LoadChannel();
             _data.AnalysisRequested += (manifest, channel) =>
             {
                 _analysis.OpenSession(manifest, channel);
@@ -60,7 +66,7 @@ namespace Page_switching
                 foreach (var page in new UserControl[]
                 {
                     _autoPage, _manualPage, _config,
-                    _waveformPage, _wave_Height_Meter, _data, _calibration,
+                    _waveformPage, _wave_Height_Meter, _data, _calibration, _batchCalibrationPage,
                     _analysis, _correction
                 })
                     TrackActions(page, page);
@@ -77,6 +83,7 @@ namespace Page_switching
                 _correction.Dispose();
                 _data.Dispose();
                 _calibration.Dispose();
+                _batchCalibrationPage.Dispose();
             };
 
             // 启动时先显示默认页面，避免主区域空白。
@@ -351,6 +358,7 @@ namespace Page_switching
             Auto => "自动运行",
             Manual => "手动控制",
             Calibration => "标定管理",
+            WaveBatchCalibrationPage => "批量标定",
             Data => "数据管理",
             WaveformPage => "波形生成",
             Config => "系统配置",
