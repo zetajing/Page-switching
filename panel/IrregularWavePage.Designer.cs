@@ -63,7 +63,6 @@ namespace Page_switching.panel
 
         private void InitializeComponent()
         {
-            components = new System.ComponentModel.Container();
             pagePanel = new Panel();
             irregularLayout = new TableLayoutPanel();
             irregularParameterGroup = new GroupBox();
@@ -122,6 +121,16 @@ namespace Page_switching.panel
             irregularPreviewGroup.SuspendLayout();
             SuspendLayout();
             //
+            // pagePanel
+            //
+            pagePanel.Controls.Add(irregularLayout);
+            pagePanel.Dock = DockStyle.Fill;
+            pagePanel.Location = new Point(0, 0);
+            pagePanel.Name = "pagePanel";
+            pagePanel.Padding = new Padding(8);
+            pagePanel.Size = new Size(1104, 606);
+            pagePanel.TabIndex = 0;
+            //
             // irregularLayout
             //
             irregularLayout.ColumnCount = 2;
@@ -135,7 +144,7 @@ namespace Page_switching.panel
             irregularLayout.Name = "irregularLayout";
             irregularLayout.RowCount = 1;
             irregularLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            irregularLayout.Size = new Size(930, 460);
+            irregularLayout.Size = new Size(1088, 590);
             irregularLayout.TabIndex = 0;
             //
             // irregularParameterGroup
@@ -147,7 +156,7 @@ namespace Page_switching.panel
             irregularParameterGroup.Location = new Point(3, 3);
             irregularParameterGroup.Name = "irregularParameterGroup";
             irregularParameterGroup.Padding = new Padding(10, 16, 10, 10);
-            irregularParameterGroup.Size = new Size(474, 454);
+            irregularParameterGroup.Size = new Size(474, 584);
             irregularParameterGroup.TabIndex = 0;
             irregularParameterGroup.TabStop = false;
             irregularParameterGroup.Text = "不规则波参数";
@@ -244,6 +253,7 @@ namespace Page_switching.panel
             irregularModeComboBox.FlatStyle = FlatStyle.Flat;
             irregularModeComboBox.Font = new Font("Microsoft YaHei UI", 9F);
             irregularModeComboBox.ForeColor = Color.FromArgb(15, 23, 42);
+            irregularModeComboBox.Items.AddRange(new object[] { "单向不规则波", "多向不规则波" });
             irregularModeComboBox.Location = new Point(103, 5);
             irregularModeComboBox.Margin = new Padding(3, 5, 3, 5);
             irregularModeComboBox.Name = "irregularModeComboBox";
@@ -269,6 +279,7 @@ namespace Page_switching.panel
             irregularTheoryComboBox.FlatStyle = FlatStyle.Flat;
             irregularTheoryComboBox.Font = new Font("Microsoft YaHei UI", 9F);
             irregularTheoryComboBox.ForeColor = Color.FromArgb(15, 23, 42);
+            irregularTheoryComboBox.Items.AddRange(new object[] { "线性理论", "非线性理论" });
             irregularTheoryComboBox.Location = new Point(318, 5);
             irregularTheoryComboBox.Margin = new Padding(3, 5, 3, 5);
             irregularTheoryComboBox.Name = "irregularTheoryComboBox";
@@ -294,6 +305,7 @@ namespace Page_switching.panel
             irregularSpectrumComboBox.FlatStyle = FlatStyle.Flat;
             irregularSpectrumComboBox.Font = new Font("Microsoft YaHei UI", 9F);
             irregularSpectrumComboBox.ForeColor = Color.FromArgb(15, 23, 42);
+            irregularSpectrumComboBox.Items.AddRange(new object[] { "JONSWAP", "Scott", "ITTC", "B谱", "Wallops", "P-M", "规范谱", "Darbyshire" });
             irregularSpectrumComboBox.Location = new Point(103, 39);
             irregularSpectrumComboBox.Margin = new Padding(3, 5, 3, 5);
             irregularSpectrumComboBox.Name = "irregularSpectrumComboBox";
@@ -319,6 +331,7 @@ namespace Page_switching.panel
             irregularSegmentComboBox.FlatStyle = FlatStyle.Flat;
             irregularSegmentComboBox.Font = new Font("Microsoft YaHei UI", 9F);
             irregularSegmentComboBox.ForeColor = Color.FromArgb(15, 23, 42);
+            irregularSegmentComboBox.Items.AddRange(new object[] { "X轴+Y轴", "X轴", "Y轴" });
             irregularSegmentComboBox.Location = new Point(318, 39);
             irregularSegmentComboBox.Margin = new Padding(3, 5, 3, 5);
             irregularSegmentComboBox.Name = "irregularSegmentComboBox";
@@ -349,6 +362,7 @@ namespace Page_switching.panel
             irregularDirectionTextBox.Name = "irregularDirectionTextBox";
             irregularDirectionTextBox.Size = new Size(109, 23);
             irregularDirectionTextBox.TabIndex = 9;
+            irregularDirectionTextBox.Text = "90";
             //
             // irregularDepthLabel
             //
@@ -374,6 +388,7 @@ namespace Page_switching.panel
             irregularDepthTextBox.Name = "irregularDepthTextBox";
             irregularDepthTextBox.Size = new Size(133, 23);
             irregularDepthTextBox.TabIndex = 11;
+            irregularDepthTextBox.Text = "0.5";
             //
             // irregularSignificantPeriodLabel
             //
@@ -399,6 +414,7 @@ namespace Page_switching.panel
             irregularSignificantPeriodTextBox.Name = "irregularSignificantPeriodTextBox";
             irregularSignificantPeriodTextBox.Size = new Size(109, 23);
             irregularSignificantPeriodTextBox.TabIndex = 13;
+            irregularSignificantPeriodTextBox.Text = "1.5";
             //
             // irregularSignificantHeightLabel
             //
@@ -424,6 +440,7 @@ namespace Page_switching.panel
             irregularSignificantHeightTextBox.Name = "irregularSignificantHeightTextBox";
             irregularSignificantHeightTextBox.Size = new Size(133, 23);
             irregularSignificantHeightTextBox.TabIndex = 15;
+            irregularSignificantHeightTextBox.Text = "0.1";
             //
             // irregularTimeStepLabel
             //
@@ -449,6 +466,7 @@ namespace Page_switching.panel
             irregularTimeStepTextBox.Name = "irregularTimeStepTextBox";
             irregularTimeStepTextBox.Size = new Size(109, 23);
             irregularTimeStepTextBox.TabIndex = 17;
+            irregularTimeStepTextBox.Text = "0.02";
             //
             // irregularSampleCountLabel
             //
@@ -474,6 +492,7 @@ namespace Page_switching.panel
             irregularSampleCountTextBox.Name = "irregularSampleCountTextBox";
             irregularSampleCountTextBox.Size = new Size(133, 23);
             irregularSampleCountTextBox.TabIndex = 19;
+            irregularSampleCountTextBox.Text = "8192";
             //
             // irregularFrequencyLabel
             //
@@ -499,6 +518,7 @@ namespace Page_switching.panel
             irregularCharacteristicFrequencyTextBox.Name = "irregularCharacteristicFrequencyTextBox";
             irregularCharacteristicFrequencyTextBox.Size = new Size(109, 23);
             irregularCharacteristicFrequencyTextBox.TabIndex = 21;
+            irregularCharacteristicFrequencyTextBox.Text = "0.514";
             //
             // irregularCharacteristicPeriodLabel
             //
@@ -524,6 +544,7 @@ namespace Page_switching.panel
             irregularCharacteristicPeriodTextBox.Name = "irregularCharacteristicPeriodTextBox";
             irregularCharacteristicPeriodTextBox.Size = new Size(133, 23);
             irregularCharacteristicPeriodTextBox.TabIndex = 23;
+            irregularCharacteristicPeriodTextBox.Text = "3.00";
             //
             // irregularPeakFactorLabel
             //
@@ -549,6 +570,7 @@ namespace Page_switching.panel
             irregularPeakFactorTextBox.Name = "irregularPeakFactorTextBox";
             irregularPeakFactorTextBox.Size = new Size(109, 23);
             irregularPeakFactorTextBox.TabIndex = 25;
+            irregularPeakFactorTextBox.Text = "3.3";
             //
             // irregularRandomSeedLabel
             //
@@ -574,6 +596,7 @@ namespace Page_switching.panel
             irregularRandomSeedTextBox.Name = "irregularRandomSeedTextBox";
             irregularRandomSeedTextBox.Size = new Size(133, 23);
             irregularRandomSeedTextBox.TabIndex = 27;
+            irregularRandomSeedTextBox.Text = "12345";
             //
             // irregularMinimumPeriodLabel
             //
@@ -599,6 +622,7 @@ namespace Page_switching.panel
             irregularMinimumPeriodTextBox.Name = "irregularMinimumPeriodTextBox";
             irregularMinimumPeriodTextBox.Size = new Size(109, 23);
             irregularMinimumPeriodTextBox.TabIndex = 29;
+            irregularMinimumPeriodTextBox.Text = "0.5";
             //
             // irregularMaximumPeriodLabel
             //
@@ -624,6 +648,7 @@ namespace Page_switching.panel
             irregularMaximumPeriodTextBox.Name = "irregularMaximumPeriodTextBox";
             irregularMaximumPeriodTextBox.Size = new Size(133, 23);
             irregularMaximumPeriodTextBox.TabIndex = 31;
+            irregularMaximumPeriodTextBox.Text = "4.0";
             //
             // irregularMinimumDifferencePeriodLabel
             //
@@ -649,6 +674,7 @@ namespace Page_switching.panel
             irregularMinimumDifferencePeriodTextBox.Name = "irregularMinimumDifferencePeriodTextBox";
             irregularMinimumDifferencePeriodTextBox.Size = new Size(109, 23);
             irregularMinimumDifferencePeriodTextBox.TabIndex = 33;
+            irregularMinimumDifferencePeriodTextBox.Text = "0.2";
             //
             // irregularMaximumDifferencePeriodLabel
             //
@@ -674,6 +700,7 @@ namespace Page_switching.panel
             irregularMaximumDifferencePeriodTextBox.Name = "irregularMaximumDifferencePeriodTextBox";
             irregularMaximumDifferencePeriodTextBox.Size = new Size(133, 23);
             irregularMaximumDifferencePeriodTextBox.TabIndex = 35;
+            irregularMaximumDifferencePeriodTextBox.Text = "10";
             //
             // irregularNegativeDirectionLabel
             //
@@ -699,6 +726,7 @@ namespace Page_switching.panel
             irregularNegativeDirectionTextBox.Name = "irregularNegativeDirectionTextBox";
             irregularNegativeDirectionTextBox.Size = new Size(109, 23);
             irregularNegativeDirectionTextBox.TabIndex = 37;
+            irregularNegativeDirectionTextBox.Text = "-25";
             //
             // irregularPositiveDirectionLabel
             //
@@ -724,6 +752,7 @@ namespace Page_switching.panel
             irregularPositiveDirectionTextBox.Name = "irregularPositiveDirectionTextBox";
             irregularPositiveDirectionTextBox.Size = new Size(133, 23);
             irregularPositiveDirectionTextBox.TabIndex = 39;
+            irregularPositiveDirectionTextBox.Text = "25";
             //
             // irregularOutputLabel
             //
@@ -810,7 +839,7 @@ namespace Page_switching.panel
             irregularPreviewGroup.Location = new Point(483, 3);
             irregularPreviewGroup.Name = "irregularPreviewGroup";
             irregularPreviewGroup.Padding = new Padding(10, 18, 10, 10);
-            irregularPreviewGroup.Size = new Size(444, 454);
+            irregularPreviewGroup.Size = new Size(602, 584);
             irregularPreviewGroup.TabIndex = 1;
             irregularPreviewGroup.TabStop = false;
             irregularPreviewGroup.Text = "波形预览";
@@ -823,56 +852,29 @@ namespace Page_switching.panel
             irregularPreview.Location = new Point(10, 34);
             irregularPreview.MinimumSize = new Size(300, 180);
             irregularPreview.Name = "irregularPreview";
-            irregularPreview.Size = new Size(424, 410);
+            irregularPreview.Size = new Size(582, 540);
             irregularPreview.TabIndex = 0;
             irregularPreview.UnitText = "m";
-            irregularModeComboBox.Items.AddRange(new object[] {"单向不规则波", "多向不规则波"});
-            irregularSpectrumComboBox.Items.AddRange(new object[] { "JONSWAP", "Scott", "ITTC", "B谱", "Wallops", "P-M", "规范谱", "Darbyshire"});
-            irregularTheoryComboBox.Items.AddRange(new object[] {"线性理论", "非线性理论"});
-            irregularSegmentComboBox.Items.AddRange(new object[] {"X轴+Y轴", "X轴", "Y轴"});
-            irregularModeComboBox.SelectedIndex = 0;
-            irregularSpectrumComboBox.SelectedIndex = 0;
-            irregularTheoryComboBox.SelectedIndex = 0;
-            irregularSegmentComboBox.SelectedIndex = 0;
-            irregularDirectionTextBox.Text = "90";
-            irregularDepthTextBox.Text = "0.5";
-            irregularSignificantPeriodTextBox.Text = "1.5";
-            irregularSignificantHeightTextBox.Text = "0.1";
-            irregularTimeStepTextBox.Text = "0.02";
-            irregularSampleCountTextBox.Text = "8192";
-            irregularCharacteristicFrequencyTextBox.Text = "0.514";
-            irregularCharacteristicPeriodTextBox.Text = "3.00";
-            irregularPeakFactorTextBox.Text = "3.3";
-            irregularRandomSeedTextBox.Text = "12345";
-            irregularMinimumPeriodTextBox.Text = "0.5";
-            irregularMaximumPeriodTextBox.Text = "4.0";
-            irregularMinimumDifferencePeriodTextBox.Text = "0.2";
-            irregularMaximumDifferencePeriodTextBox.Text = "10";
-            irregularNegativeDirectionTextBox.Text = "-25";
-            irregularPositiveDirectionTextBox.Text = "25";
-            pagePanel.Name = "pagePanel";
-            pagePanel.Dock = DockStyle.Fill;
-            pagePanel.Padding = new Padding(8);
-            pagePanel.Controls.Add(irregularLayout);
+            //
+            // IrregularWavePage
+            //
             AutoScaleDimensions = new SizeF(96F, 96F);
             AutoScaleMode = AutoScaleMode.Dpi;
             AutoScroll = true;
             AutoScrollMinSize = new Size(946, 476);
             BackColor = Color.FromArgb(241, 245, 249);
+            Controls.Add(pagePanel);
             Font = new Font("Microsoft YaHei UI", 9F);
             ForeColor = Color.FromArgb(15, 23, 42);
             Name = "IrregularWavePage";
             Size = new Size(1104, 606);
-            Controls.Add(pagePanel);
-            irregularPreviewGroup.ResumeLayout(false);
-            irregularPreviewGroup.PerformLayout();
-            irregularParameterLayout.ResumeLayout(false);
-            irregularParameterLayout.PerformLayout();
+            pagePanel.ResumeLayout(false);
+            irregularLayout.ResumeLayout(false);
             irregularParameterGroup.ResumeLayout(false);
             irregularParameterGroup.PerformLayout();
-            irregularLayout.ResumeLayout(false);
-            irregularLayout.PerformLayout();
-            pagePanel.ResumeLayout(false);
+            irregularParameterLayout.ResumeLayout(false);
+            irregularParameterLayout.PerformLayout();
+            irregularPreviewGroup.ResumeLayout(false);
             ResumeLayout(false);
         }
     }
