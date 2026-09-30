@@ -99,8 +99,6 @@ partial class WaveformPage
         titleLabel = new Label();
         subtitleLabel = new Label();
         waveformTabs = new TabControl();
-        customTab = new TabPage();
-        customSpectrumPage = new CustomSpectrumPage();
         regularTab = new TabPage();
         regularLayout = new TableLayoutPanel();
         regularParameterGroup = new GroupBox();
@@ -183,6 +181,8 @@ partial class WaveformPage
         irregularStatusLabel = new Label();
         irregularPreviewGroup = new GroupBox();
         irregularPreview = new WaveformPreviewControl();
+        customTab = new TabPage();
+        customSpectrumPage = new CustomSpectrumPage();
         rootLayout.SuspendLayout();
         waveformTabs.SuspendLayout();
         regularTab.SuspendLayout();
@@ -195,6 +195,7 @@ partial class WaveformPage
         irregularParameterGroup.SuspendLayout();
         irregularParameterLayout.SuspendLayout();
         irregularPreviewGroup.SuspendLayout();
+        customTab.SuspendLayout();
         SuspendLayout();
         // 
         // rootLayout
@@ -239,7 +240,7 @@ partial class WaveformPage
         subtitleLabel.Name = "subtitleLabel";
         subtitleLabel.Size = new Size(863, 32);
         subtitleLabel.TabIndex = 1;
-        subtitleLabel.Text = "规则波和不规则波参数设置、外部 WFast / 内置 WaveMaker 生成与曲线预览";
+        subtitleLabel.Text = "规则波、不规则波与自定义谱；参数设置、信号生成和曲线预览";
         subtitleLabel.TextAlign = ContentAlignment.MiddleLeft;
         // 
         // waveformTabs
@@ -247,6 +248,7 @@ partial class WaveformPage
         waveformTabs.BackColor = Color.FromArgb(241, 245, 249);
         waveformTabs.Controls.Add(regularTab);
         waveformTabs.Controls.Add(irregularTab);
+        waveformTabs.Controls.Add(customTab);
         waveformTabs.Dock = DockStyle.Fill;
         waveformTabs.Font = new Font("Microsoft YaHei UI", 9F);
         waveformTabs.Location = new Point(21, 95);
@@ -1428,8 +1430,27 @@ partial class WaveformPage
         irregularPreview.TabIndex = 0;
         irregularPreview.UnitText = "m";
         // 
+        // customTab
+        //
+        customTab.Controls.Add(customSpectrumPage);
+        customTab.Location = new Point(4, 26);
+        customTab.Name = "customTab";
+        customTab.Padding = new Padding(0);
+        customTab.Size = new Size(1058, 470);
+        customTab.TabIndex = 2;
+        customTab.Text = "自定义谱";
+        customTab.UseVisualStyleBackColor = true;
+        //
+        // customSpectrumPage
+        //
+        customSpectrumPage.Dock = DockStyle.Fill;
+        customSpectrumPage.Location = new Point(0, 0);
+        customSpectrumPage.Name = "customSpectrumPage";
+        customSpectrumPage.Size = new Size(1058, 470);
+        customSpectrumPage.TabIndex = 0;
+        //
         // WaveformPage
-        // 
+        //
         Font = new Font("Microsoft YaHei UI", 9F);
         AutoScaleDimensions = new SizeF(96F, 96F);
         AutoScaleMode = AutoScaleMode.Dpi;
@@ -1437,11 +1458,6 @@ partial class WaveformPage
         AutoScrollMinSize = new Size(1000, 600);
         BackColor = Color.FromArgb(241, 245, 249);
         ForeColor = Color.FromArgb(15, 23, 42);
-        customTab.Text = "自定义谱";
-        customTab.Name = "customTab";
-        customSpectrumPage.Dock = DockStyle.Fill;
-        customTab.Controls.Add(customSpectrumPage);
-        waveformTabs.Controls.Add(customTab);
         Controls.Add(rootLayout);
         Name = "WaveformPage";
         Size = new Size(1104, 606);
@@ -1461,6 +1477,7 @@ partial class WaveformPage
         irregularParameterLayout.ResumeLayout(false);
         irregularParameterLayout.PerformLayout();
         irregularPreviewGroup.ResumeLayout(false);
+        customTab.ResumeLayout(false);
         ResumeLayout(false);
     }
 

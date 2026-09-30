@@ -136,15 +136,12 @@ public sealed class WaveformGeneratorService : IDisposable
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         var destination = ValidateOutputPath(outputPath);
-        var settings = LegacyProjectSettings.Load();
         var count = regular?.SampleCount ?? irregular!.SampleCount;
         if (count > 131072) throw new InvalidOperationException("旧程序时序总数不能超过131072。");
-        var step = settings.GenerateAbsorptionSignal ? 0.002 : regular?.TimeStep ?? irregular!.TimeStep;
+        var step = regular?.TimeStep ?? irregular!.TimeStep;
         string[] prefix;
         if (regular is { } r)
         {
-            if (settings.GenerateAbsorptionSignal && r.TheoryCode != 1)
-                throw new InvalidOperationException("旧源码的吸收式规则波固定采用线性理论，请调整生成设置或理论选项。");
             var theory = r.TheoryCode switch { 1 => 1, 3 => 4, 4 => 2, 5 => 3,
                 _ => throw new InvalidOperationException("旧程序不提供独立的二阶Stokes选项，请选择线性、流函数、椭圆余弦或孤立波。") };
             prefix = [Format(r.WaterDepth), Format(r.Period), Format(r.WaveHeight), "90", "0.1", "10", "0", "0", "1", "0", "0", "0", "0",

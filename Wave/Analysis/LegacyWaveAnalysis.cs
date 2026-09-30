@@ -34,7 +34,7 @@ internal static class LegacyWaveAnalysis
             throw new InvalidOperationException("旧分析程序要求至少64点，且样本数为2的幂。");
         WaveAnalysisResult? result = null;
         string? elements = null;
-        var destination = Path.Combine(LegacyProjectSettings.DirectoryPath, "analysis", Guid.NewGuid().ToString("N"), "Spectra.dat");
+        var destination = Path.Combine(WaveProgramSettings.WorkDirectory, "analysis", Guid.NewGuid().ToString("N"), "Spectra.dat");
         await LegacyProgramRunner.RunAsync("WaveTJU-6m-11.exe", "SpecAnaParamaters.dat", work =>
         {
             var capture = Path.Combine(work, "measured.txt");

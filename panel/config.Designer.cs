@@ -34,6 +34,10 @@ partial class Config
     private Label waveGeneratorStateLabel;
     private Label waveGeneratorModeLabel;
     private ComboBox waveGeneratorModeComboBox;
+    private Label waveProgramDirectoryLabel;
+    private TextBox waveProgramDirectoryTextBox;
+    private Button browseWaveProgramDirectoryButton;
+    private Button saveWaveProgramDirectoryButton;
     private GroupBox _databaseGroup;
     private TableLayoutPanel _databaseLayout;
     private CheckBox _databaseEnabledCheckBox;
@@ -90,6 +94,10 @@ partial class Config
         waveGeneratorStateLabel = new Label();
         waveGeneratorModeLabel = new Label();
         waveGeneratorModeComboBox = new ComboBox();
+        waveProgramDirectoryLabel = new Label();
+        waveProgramDirectoryTextBox = new TextBox();
+        browseWaveProgramDirectoryButton = new Button();
+        saveWaveProgramDirectoryButton = new Button();
         _databaseGroup = new GroupBox();
         _databaseLayout = new TableLayoutPanel();
         _databaseEnabledCheckBox = new CheckBox();
@@ -131,7 +139,7 @@ partial class Config
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 42F));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 26F));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 292F));
-        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 132F));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 172F));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 156F));
         rootLayout.Size = new Size(941, 677);
         rootLayout.TabIndex = 0;
@@ -159,7 +167,7 @@ partial class Config
         subtitleLabel.Name = "subtitleLabel";
         subtitleLabel.Size = new Size(913, 27);
         subtitleLabel.TabIndex = 1;
-        subtitleLabel.Text = "ADS 路由、波形生成方案和数据库连接";
+        subtitleLabel.Text = "手动控制 ADS 路由、波形程序和数据库连接";
         subtitleLabel.TextAlign = ContentAlignment.MiddleLeft;
         // 
         // routerGroup
@@ -176,7 +184,7 @@ partial class Config
         routerGroup.Size = new Size(913, 361);
         routerGroup.TabIndex = 2;
         routerGroup.TabStop = false;
-        routerGroup.Text = "ADS 通信与路由";
+        routerGroup.Text = "手动控制 ADS 路由";
         // 
         // routerLayout
         // 
@@ -480,17 +488,54 @@ partial class Config
         waveGeneratorLayout.Controls.Add(waveGeneratorStateLabel, 1, 1);
         waveGeneratorLayout.Controls.Add(waveGeneratorModeLabel, 0, 2);
         waveGeneratorLayout.Controls.Add(waveGeneratorModeComboBox, 1, 2);
+        waveGeneratorLayout.Controls.Add(waveProgramDirectoryLabel, 0, 3);
+        waveGeneratorLayout.Controls.Add(waveProgramDirectoryTextBox, 1, 3);
+        waveGeneratorLayout.Controls.Add(browseWaveProgramDirectoryButton, 2, 3);
+        waveGeneratorLayout.Controls.Add(saveWaveProgramDirectoryButton, 3, 3);
         waveGeneratorLayout.Dock = DockStyle.Fill;
         waveGeneratorLayout.Location = new Point(11, 32);
         waveGeneratorLayout.Margin = new Padding(2, 3, 2, 3);
         waveGeneratorLayout.Name = "waveGeneratorLayout";
-        waveGeneratorLayout.RowCount = 3;
+        waveGeneratorLayout.RowCount = 4;
 
         waveGeneratorLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
         waveGeneratorLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 24F));
         waveGeneratorLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
         waveGeneratorLayout.Size = new Size(891, 76);
         waveGeneratorLayout.TabIndex = 0;
+        waveGeneratorLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
+        waveProgramDirectoryLabel.Dock = DockStyle.Fill;
+        waveProgramDirectoryLabel.Font = new Font("Microsoft YaHei UI", 9F);
+        waveProgramDirectoryLabel.ForeColor = Color.FromArgb(71, 85, 105);
+        waveProgramDirectoryLabel.Name = "waveProgramDirectoryLabel";
+        waveProgramDirectoryLabel.Text = "波形程序目录";
+        waveProgramDirectoryLabel.TextAlign = ContentAlignment.MiddleLeft;
+        waveProgramDirectoryTextBox.BackColor = Color.White;
+        waveProgramDirectoryTextBox.BorderStyle = BorderStyle.FixedSingle;
+        waveProgramDirectoryTextBox.Dock = DockStyle.Fill;
+        waveProgramDirectoryTextBox.Font = new Font("Microsoft YaHei UI", 9F);
+        waveProgramDirectoryTextBox.ForeColor = Color.FromArgb(15, 23, 42);
+        waveProgramDirectoryTextBox.Name = "waveProgramDirectoryTextBox";
+        waveProgramDirectoryTextBox.TabIndex = 6;
+        browseWaveProgramDirectoryButton.BackColor = Color.FromArgb(248, 250, 252);
+        browseWaveProgramDirectoryButton.Dock = DockStyle.Fill;
+        browseWaveProgramDirectoryButton.FlatStyle = FlatStyle.Flat;
+        browseWaveProgramDirectoryButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
+        browseWaveProgramDirectoryButton.Font = new Font("Microsoft YaHei UI", 9F);
+        browseWaveProgramDirectoryButton.Name = "browseWaveProgramDirectoryButton";
+        browseWaveProgramDirectoryButton.TabIndex = 7;
+        browseWaveProgramDirectoryButton.Text = "浏览目录";
+        browseWaveProgramDirectoryButton.Click += BrowseWaveProgramDirectoryButton_Click;
+        saveWaveProgramDirectoryButton.BackColor = Color.FromArgb(29, 78, 216);
+        saveWaveProgramDirectoryButton.Dock = DockStyle.Fill;
+        saveWaveProgramDirectoryButton.FlatStyle = FlatStyle.Flat;
+        saveWaveProgramDirectoryButton.FlatAppearance.BorderSize = 0;
+        saveWaveProgramDirectoryButton.Font = new Font("Microsoft YaHei UI", 9F);
+        saveWaveProgramDirectoryButton.ForeColor = Color.White;
+        saveWaveProgramDirectoryButton.Name = "saveWaveProgramDirectoryButton";
+        saveWaveProgramDirectoryButton.TabIndex = 8;
+        saveWaveProgramDirectoryButton.Text = "保存目录";
+        saveWaveProgramDirectoryButton.Click += SaveWaveProgramDirectoryButton_Click;
         // 
         // waveGeneratorPathLabel
         // 
@@ -554,7 +599,7 @@ partial class Config
         saveWaveGeneratorButton.Cursor = Cursors.Hand;
         saveWaveGeneratorButton.Size = new Size(82, 23);
         saveWaveGeneratorButton.TabIndex = 3;
-        saveWaveGeneratorButton.Text = "保存设置";
+        saveWaveGeneratorButton.Text = "保存方案";
         saveWaveGeneratorButton.UseVisualStyleBackColor = false;
         saveWaveGeneratorButton.Click += SaveWaveGeneratorButton_Click;
         // 
@@ -766,7 +811,7 @@ partial class Config
         AutoScaleDimensions = new SizeF(96F, 96F);
         AutoScaleMode = AutoScaleMode.Dpi;
         AutoScroll = true;
-        AutoScrollMinSize = new Size(860, 676);
+        AutoScrollMinSize = new Size(860, 720);
         BackColor = Color.FromArgb(241, 245, 249);
         ForeColor = Color.FromArgb(15, 23, 42);
         Controls.Add(rootLayout);

@@ -1,4 +1,3 @@
-using System.Configuration;
 using System.ComponentModel;
 using System.Diagnostics;
 using InduLink.Storage;
@@ -11,7 +10,6 @@ namespace Page_switching
     {
         private readonly Auto _autoPage;
         private readonly Manual _manualPage;
-        private readonly ControlAuthority _controlAuthorityPage;
         private readonly Config _config;
         private readonly WaveformPage _waveformPage;
         private readonly AxisService _axisService;
@@ -20,7 +18,6 @@ namespace Page_switching
         private readonly Calibration _calibration;
         private readonly WaveAnalysisPage _analysis;
         private readonly SignalCorrectionPage _correction;
-        private readonly LegacyEquipmentPage _equipment;
         private readonly System.Windows.Forms.Timer _headerStatusTimer = new() { Interval = 500 };
         private readonly bool _recordOperations = LicenseManager.UsageMode != LicenseUsageMode.Designtime;
         private AdsTcpRouterHost? _adsTcpRouter;
@@ -47,7 +44,6 @@ namespace Page_switching
             _axisService = new AxisService(AxisServiceOptions.FromConfiguration());
             _autoPage = new Auto();
             _manualPage = new Manual(_axisService);
-            _controlAuthorityPage = new ControlAuthority(_axisService);
             _config = new Config();
             _waveformPage = new WaveformPage();
             _wave_Height_Meter = new Wave_Height_Meter();
@@ -55,7 +51,6 @@ namespace Page_switching
             _calibration = new Calibration();
             _analysis = new WaveAnalysisPage();
             _correction = new SignalCorrectionPage();
-            _equipment = new LegacyEquipmentPage();
             _data.AnalysisRequested += (manifest, channel) =>
             {
                 _analysis.OpenSession(manifest, channel);
@@ -64,9 +59,9 @@ namespace Page_switching
             if (_recordOperations)
                 foreach (var page in new UserControl[]
                 {
-                    _autoPage, _manualPage, _controlAuthorityPage, _config,
+                    _autoPage, _manualPage, _config,
                     _waveformPage, _wave_Height_Meter, _data, _calibration,
-                    _analysis, _correction, _equipment
+                    _analysis, _correction
                 })
                     TrackActions(page, page);
             _headerStatusTimer.Tick += (_, _) => UpdateHeaderStatus();
@@ -77,11 +72,9 @@ namespace Page_switching
                 _headerStatusTimer.Dispose();
                 _config.Dispose();
                 _waveformPage.Dispose();
-                _controlAuthorityPage.Dispose();
                 _wave_Height_Meter.Dispose();
                 _analysis.Dispose();
                 _correction.Dispose();
-                _equipment.Dispose();
                 _data.Dispose();
                 _calibration.Dispose();
             };
@@ -315,8 +308,8 @@ namespace Page_switching
         // 高亮当前页面对应的导航按钮。
         private void SetActiveNavigation(Button activeButton)
         {
-            foreach (var button in new[] { Bu_auto, Bu_manual, button3, Bu_Calibration, Bu_data, button2, button5,
-                         analysisButton, correctionButton, equipmentButton, bu_Configuration })
+            foreach (var button in new[] { Bu_auto, Bu_manual, Bu_Calibration, Bu_data, button2, button5,
+                         analysisButton, correctionButton, bu_Configuration })
             {
                 var isActive = ReferenceEquals(button, activeButton);
                 button.BackColor = isActive ? UiPalette.Selection : UiPalette.Sidebar;
@@ -330,7 +323,7 @@ namespace Page_switching
             UpdateHeaderStatus();
         }
 
-        // 更新顶部状态栏，显示 ADS 连接、当前页面、控制权和安全配置状态。
+        // 更新顶部状态栏，显示手动控制的 ADS 连接和当前页面。
         private void UpdateHeaderStatus()
         {
             if (IsDisposed)
@@ -347,9 +340,7 @@ namespace Page_switching
             adsStatusLabel.Text = connected ? "●  ADS 已连接" : "●  ADS 未连接";
             adsStatusLabel.ForeColor = connected ? UiPalette.Success : UiPalette.Warning;
 
-            var ownerState = HasControlSetting("AdsControlOwnerStationId") ? "已配置" : "待配置";
-            var safetyState = HasControlSetting("AdsSafetyOk") ? "已配置" : "待配置";
-            controlStatusLabel.Text = $"当前：{GetCurrentPageName()}    控制权：{ownerState}    安全：{safetyState}";
+            controlStatusLabel.Text = $"当前：{GetCurrentPageName()}    PLC：仅手动控制";
         }
 
         // 根据当前缓存页面返回顶部状态栏要显示的页面名称。
@@ -359,7 +350,6 @@ namespace Page_switching
         {
             Auto => "自动运行",
             Manual => "手动控制",
-            ControlAuthority => "控制权申请",
             Calibration => "标定管理",
             Data => "数据管理",
             WaveformPage => "波形生成",
@@ -367,13 +357,8 @@ namespace Page_switching
             Wave_Height_Meter => "浪高监测",
             WaveAnalysisPage => "波浪分析",
             SignalCorrectionPage => "信号修正",
-            LegacyEquipmentPage => "旧设备配置",
             _ => "系统"
         };
-
-        // 检查一个控制权相关配置项是否已经填入 PLC 变量名。
-        private static bool HasControlSetting(string key) =>
-            !string.IsNullOrWhiteSpace(ConfigurationManager.AppSettings[key]);
 
         protected override void OnLoad(EventArgs e)
         {
@@ -389,9 +374,6 @@ namespace Page_switching
         // 切换到手动控制页面。
         private void Bu_manual_Click(object sender, EventArgs e) => NavigateTo(_manualPage, Bu_manual);
 
-        // 切换到控制权申请页面。
-        private void ControlAuthorityButton_Click(object sender, EventArgs e) => NavigateTo(_controlAuthorityPage, button3);
-
         // 切换到配置页面。
         private void bu_Configuration_Click(object sender, EventArgs e) => NavigateTo(_config, bu_Configuration);
 
@@ -406,6 +388,5 @@ namespace Page_switching
 
         private void AnalysisButton_Click(object sender, EventArgs e) => NavigateTo(_analysis, analysisButton);
         private void CorrectionButton_Click(object sender, EventArgs e) => NavigateTo(_correction, correctionButton);
-        private void EquipmentButton_Click(object sender, EventArgs e) => NavigateTo(_equipment, equipmentButton);
     }
 }

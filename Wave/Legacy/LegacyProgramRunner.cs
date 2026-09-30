@@ -10,15 +10,16 @@ internal static class LegacyProgramRunner
         Func<string, string[]> prepare, string destination, CancellationToken cancellationToken,
         Action<string>? validate = null)
     {
-        var settings = LegacyProjectSettings.Load();
-        var executable = Path.Combine(settings.ProgramDirectory, program);
-        if (!File.Exists(executable)) throw new FileNotFoundException("请在旧设备配置中选择包含 " + program + " 的目录。", executable);
+        var directory = WaveProgramSettings.ProgramDirectory;
+        var executable = Path.Combine(directory, program);
+        if (string.IsNullOrWhiteSpace(directory) || !File.Exists(executable))
+            throw new FileNotFoundException("请在系统配置的波形程序目录中选择包含 " + program + " 的目录。", executable);
         var fullDestination = Path.GetFullPath(destination);
         Directory.CreateDirectory(Path.GetDirectoryName(fullDestination)!);
-        var work = Path.Combine(LegacyProjectSettings.DirectoryPath, "runtime", Guid.NewGuid().ToString("N"));
+        var work = Path.Combine(WaveProgramSettings.WorkDirectory, "runtime", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(work);
         var output = Path.Combine(work, "output.csv");
-        foreach (var source in Directory.EnumerateFiles(settings.ProgramDirectory))
+        foreach (var source in Directory.EnumerateFiles(directory))
             if (new[] { ".dll", ".dat", ".csv" }.Contains(Path.GetExtension(source).ToLowerInvariant()))
                 File.Copy(source, Path.Combine(work, Path.GetFileName(source)), true);
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);

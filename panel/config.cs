@@ -23,6 +23,7 @@ public partial class Config : UserControl
             "WaveMaker" => 1, "LegacyExe" => 2, _ => 0
         };
         waveGeneratorPathTextBox.Text = Read("WaveGeneratorPath");
+        waveProgramDirectoryTextBox.Text = WaveProgramSettings.ProgramDirectory;
         routerEnabledCheckBox.Checked = ReadBool("AdsTcpRouterEnabled", false);
         routerNameTextBox.Text = Read("AdsTcpRouterName", "PageSwitchingRouter");
         localNetIdTextBox.Text = Read("AdsTcpRouterLocalNetId");
@@ -137,6 +138,33 @@ public partial class Config : UserControl
         }
     }
 
+    private void BrowseWaveProgramDirectoryButton_Click(object? sender, EventArgs e)
+    {
+        using var dialog = new FolderBrowserDialog
+        {
+            Description = "选择包含WP-5-6.exe、WP-7.exe或WC-12.exe的波形程序目录",
+            SelectedPath = waveProgramDirectoryTextBox.Text.Trim(),
+            UseDescriptionForTitle = true
+        };
+        if (dialog.ShowDialog(this) == DialogResult.OK) waveProgramDirectoryTextBox.Text = dialog.SelectedPath;
+    }
+
+    private void SaveWaveProgramDirectoryButton_Click(object? sender, EventArgs e)
+    {
+        try
+        {
+            ValidateWaveProgramDirectory();
+            SaveSettings(("WaveProgramDirectory", waveProgramDirectoryTextBox.Text.Trim()));
+            saveResultLabel.ForeColor = UiPalette.Success;
+            saveResultLabel.Text = "波形程序目录已保存，供波形生成、分析和修正使用。";
+        }
+        catch (Exception ex)
+        {
+            saveResultLabel.ForeColor = UiPalette.Danger;
+            saveResultLabel.Text = "波形程序目录保存失败：" + ex.Message;
+        }
+    }
+
     // 路径文字变化后重新检查波形生成程序是否有效。
     private void WaveGeneratorPathTextBox_TextChanged(object? sender, EventArgs e)
     {
@@ -156,11 +184,11 @@ public partial class Config : UserControl
         {
             var path = waveGeneratorPathTextBox.Text.Trim();
             var useWaveMaker = IsWaveMakerModeSelected();
+            ValidateWaveProgramDirectory(requireGenerator: true);
             if (IsLegacyModeSelected())
             {
-                var program = Path.Combine(LegacyProjectSettings.Load().ProgramDirectory, "WP-5-6.exe");
-                if (!File.Exists(program)) throw new FileNotFoundException("请先在旧设备配置中选择包含WP-5-6.exe的目录。");
-                SaveSettings(("WaveGeneratorMode", nameof(WaveformGeneratorMode.LegacyExe)));
+                SaveSettings(("WaveGeneratorMode", nameof(WaveformGeneratorMode.LegacyExe)),
+                    ("WaveProgramDirectory", waveProgramDirectoryTextBox.Text.Trim()));
                 saveResultLabel.Text = "已启用旧WP-5-6.exe，输出旧格式造波板位移。";
                 saveResultLabel.ForeColor = UiPalette.Success;
                 UpdateWaveGeneratorState();
@@ -180,7 +208,8 @@ public partial class Config : UserControl
                 : nameof(WaveformGeneratorMode.ExternalExe);
             SaveSettings(
                 ("WaveGeneratorMode", mode),
-                ("WaveGeneratorPath", path));
+                ("WaveGeneratorPath", path),
+                ("WaveProgramDirectory", waveProgramDirectoryTextBox.Text.Trim()));
 
             waveGeneratorStateLabel.Text = useWaveMaker
                 ? "已启用 WaveMaker 内置算法，不需要 WFast.exe"
@@ -192,7 +221,7 @@ public partial class Config : UserControl
         catch (Exception ex)
         {
             saveResultLabel.ForeColor = UiPalette.Danger;
-            saveResultLabel.Text = "WFast 路径保存失败：" + ex.Message;
+            saveResultLabel.Text = "波形程序设置保存失败：" + ex.Message;
         }
     }
 
@@ -204,7 +233,7 @@ public partial class Config : UserControl
         browseWaveGeneratorButton.Enabled = !useWaveMaker && !IsLegacyModeSelected();
         if (IsLegacyModeSelected())
         {
-            waveGeneratorStateLabel.Text = "旧程序目录在“旧设备配置”页设置；生成旧格式造波板位移，不执行自动造波。";
+            waveGeneratorStateLabel.Text = "从下方波形程序目录调用WP-5-6.exe，生成旧格式造波板位移。";
             waveGeneratorStateLabel.ForeColor = UiPalette.SecondaryText;
             return;
         }
@@ -259,11 +288,7 @@ public partial class Config : UserControl
         try
         {
             ValidateInputs();
-            var mode = IsLegacyModeSelected() ? nameof(WaveformGeneratorMode.LegacyExe)
-                : IsWaveMakerModeSelected() ? nameof(WaveformGeneratorMode.WaveMaker) : nameof(WaveformGeneratorMode.ExternalExe);
             SaveSettings(
-                ("WaveGeneratorMode", mode),
-                ("WaveGeneratorPath", waveGeneratorPathTextBox.Text.Trim()),
                 ("AdsTcpRouterEnabled", routerEnabledCheckBox.Checked.ToString().ToLowerInvariant()),
                 ("AdsTcpRouterName", routerNameTextBox.Text.Trim()),
                 ("AdsTcpRouterLocalNetId", localNetIdTextBox.Text.Trim()),
@@ -276,7 +301,7 @@ public partial class Config : UserControl
                 ("AdsAmsNetId", remoteNetIdTextBox.Text.Trim()));
 
             saveResultLabel.ForeColor = UiPalette.Success;
-            saveResultLabel.Text = "保存成功；Router 和 ADS 配置重启后生效，波形生成方案立即可用。";
+            saveResultLabel.Text = "保存成功；手动控制的Router和ADS配置重启后生效。";
         }
         catch (Exception ex)
         {
@@ -290,7 +315,6 @@ public partial class Config : UserControl
     {
         if (!routerEnabledCheckBox.Checked)
         {
-            ValidateWaveGeneratorPath();
             return;
         }
 
@@ -311,22 +335,15 @@ public partial class Config : UserControl
         }
 
         ValidateAmsNetId(remoteNetIdTextBox.Text, "PLC AMS Net ID");
-        ValidateWaveGeneratorPath();
     }
 
-    // 检查波形生成程序路径是否为空且文件是否存在。
-    private void ValidateWaveGeneratorPath()
+    private void ValidateWaveProgramDirectory(bool requireGenerator = false)
     {
-        if (IsWaveMakerModeSelected() || IsLegacyModeSelected())
-        {
-            return;
-        }
-
-        var path = waveGeneratorPathTextBox.Text.Trim();
-        if (!string.IsNullOrWhiteSpace(path) && !File.Exists(path))
-        {
-            throw new InvalidOperationException("WFast.exe 路径不存在。");
-        }
+        var directory = waveProgramDirectoryTextBox.Text.Trim();
+        if (directory.Length > 0 && !Directory.Exists(directory))
+            throw new InvalidOperationException("波形程序目录不存在。");
+        if (requireGenerator && IsLegacyModeSelected() && (directory.Length == 0 || !File.Exists(Path.Combine(directory, "WP-5-6.exe"))))
+            throw new InvalidOperationException("请在波形程序目录中选择包含WP-5-6.exe的文件夹。");
     }
 
     // 检查 AMS Net ID 是否为六段字节数字。

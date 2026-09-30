@@ -35,7 +35,6 @@ namespace Page_switching
         {
             analysisButton = new Button();
             correctionButton = new Button();
-            equipmentButton = new Button();
             panel1 = new Panel();
             headerStatusPanel = new Panel();
             controlStatusLabel = new Label();
@@ -51,7 +50,6 @@ namespace Page_switching
             button2 = new Button();
             Bu_data = new Button();
             Bu_Calibration = new Button();
-            button3 = new Button();
             Bu_manual = new Button();
             Bu_auto = new Button();
             contentSplit = new SplitContainer();
@@ -114,7 +112,7 @@ namespace Page_switching
             controlStatusLabel.AutoEllipsis = true;
             controlStatusLabel.Size = new Size(367, 25);
             controlStatusLabel.TabIndex = 1;
-            controlStatusLabel.Text = "控制权：待配置    安全状态：待配置";
+            controlStatusLabel.Text = "当前：自动运行    PLC：仅手动控制";
             controlStatusLabel.TextAlign = ContentAlignment.MiddleRight;
             // 
             // adsStatusLabel
@@ -162,13 +160,11 @@ namespace Page_switching
             panel2.Controls.Add(button2);
             panel2.Controls.Add(Bu_data);
             panel2.Controls.Add(Bu_Calibration);
-            panel2.Controls.Add(button3);
             panel2.Controls.Add(Bu_manual);
             panel2.Controls.Add(Bu_auto);
             panel2.Controls.Add(navigationMarker);
             panel2.Controls.Add(analysisButton);
             panel2.Controls.Add(correctionButton);
-            panel2.Controls.Add(equipmentButton);
             panel2.Dock = DockStyle.Left;
             panel2.Location = new Point(0, 64);
             panel2.Name = "panel2";
@@ -180,7 +176,7 @@ namespace Page_switching
             // 
             systemSectionLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
             systemSectionLabel.ForeColor = Color.FromArgb(100, 116, 139);
-            systemSectionLabel.Location = new Point(16, 544);
+            systemSectionLabel.Location = new Point(16, 494);
             systemSectionLabel.Name = "systemSectionLabel";
             systemSectionLabel.Size = new Size(154, 20);
             systemSectionLabel.TabIndex = 10;
@@ -190,7 +186,7 @@ namespace Page_switching
             // 
             toolsSectionLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
             toolsSectionLabel.ForeColor = Color.FromArgb(100, 116, 139);
-            toolsSectionLabel.Location = new Point(16, 208);
+            toolsSectionLabel.Location = new Point(16, 158);
             toolsSectionLabel.Name = "toolsSectionLabel";
             toolsSectionLabel.Size = new Size(154, 20);
             toolsSectionLabel.TabIndex = 9;
@@ -214,7 +210,7 @@ namespace Page_switching
             bu_Configuration.FlatStyle = FlatStyle.Flat;
             bu_Configuration.Font = new Font("Microsoft YaHei UI", 9.5F);
             bu_Configuration.ForeColor = Color.FromArgb(71, 85, 105);
-            bu_Configuration.Location = new Point(12, 622);
+            bu_Configuration.Location = new Point(12, 522);
             bu_Configuration.Name = "bu_Configuration";
             bu_Configuration.Padding = new Padding(12, 0, 0, 0);
             bu_Configuration.Size = new Size(152, 44);
@@ -232,7 +228,7 @@ namespace Page_switching
             button5.FlatStyle = FlatStyle.Flat;
             button5.Font = new Font("Microsoft YaHei UI", 9.5F);
             button5.ForeColor = Color.FromArgb(71, 85, 105);
-            button5.Location = new Point(12, 386);
+            button5.Location = new Point(12, 336);
             button5.Name = "button5";
             button5.Padding = new Padding(12, 0, 0, 0);
             button5.Size = new Size(152, 44);
@@ -250,7 +246,7 @@ namespace Page_switching
             button2.FlatStyle = FlatStyle.Flat;
             button2.Font = new Font("Microsoft YaHei UI", 9.5F);
             button2.ForeColor = Color.FromArgb(71, 85, 105);
-            button2.Location = new Point(12, 336);
+            button2.Location = new Point(12, 286);
             button2.Name = "button2";
             button2.Padding = new Padding(12, 0, 0, 0);
             button2.Size = new Size(152, 44);
@@ -268,7 +264,7 @@ namespace Page_switching
             Bu_data.FlatStyle = FlatStyle.Flat;
             Bu_data.Font = new Font("Microsoft YaHei UI", 9.5F);
             Bu_data.ForeColor = Color.FromArgb(71, 85, 105);
-            Bu_data.Location = new Point(12, 286);
+            Bu_data.Location = new Point(12, 236);
             Bu_data.Name = "Bu_data";
             Bu_data.Padding = new Padding(12, 0, 0, 0);
             Bu_data.Size = new Size(152, 44);
@@ -286,7 +282,7 @@ namespace Page_switching
             Bu_Calibration.FlatStyle = FlatStyle.Flat;
             Bu_Calibration.Font = new Font("Microsoft YaHei UI", 9.5F);
             Bu_Calibration.ForeColor = Color.FromArgb(71, 85, 105);
-            Bu_Calibration.Location = new Point(12, 236);
+            Bu_Calibration.Location = new Point(12, 186);
             Bu_Calibration.Name = "Bu_Calibration";
             Bu_Calibration.Padding = new Padding(12, 0, 0, 0);
             Bu_Calibration.Size = new Size(152, 44);
@@ -295,24 +291,6 @@ namespace Page_switching
             Bu_Calibration.TextAlign = ContentAlignment.MiddleLeft;
             Bu_Calibration.UseVisualStyleBackColor = false;
             Bu_Calibration.Click += Bu_Calibration_Click;
-            // 
-            // button3
-            // 
-            button3.BackColor = Color.FromArgb(248, 250, 252);
-            button3.Cursor = Cursors.Hand;
-            button3.FlatAppearance.BorderSize = 0;
-            button3.FlatStyle = FlatStyle.Flat;
-            button3.Font = new Font("Microsoft YaHei UI", 9.5F);
-            button3.ForeColor = Color.FromArgb(71, 85, 105);
-            button3.Location = new Point(12, 144);
-            button3.Name = "button3";
-            button3.Padding = new Padding(12, 0, 0, 0);
-            button3.Size = new Size(152, 44);
-            button3.TabIndex = 2;
-            button3.Text = "控制权申请";
-            button3.TextAlign = ContentAlignment.MiddleLeft;
-            button3.UseVisualStyleBackColor = false;
-            button3.Click += ControlAuthorityButton_Click;
             // 
             // Bu_manual
             // 
@@ -524,10 +502,10 @@ namespace Page_switching
             ClientSize = new Size(1280, 820);
             MinimumSize = new Size(1080, 720);
             panel2.AutoScroll = true;
-            panel2.AutoScrollMinSize = new Size(0, 680);
+            panel2.AutoScrollMinSize = new Size(0, 580);
             analysisButton.Name = "analysisButton";
             analysisButton.Text = "波浪分析";
-            analysisButton.Location = new Point(12, 436);
+            analysisButton.Location = new Point(12, 386);
             analysisButton.Size = new Size(145, 40);
             analysisButton.FlatStyle = FlatStyle.Flat;
             analysisButton.FlatAppearance.BorderSize = 0;
@@ -537,7 +515,7 @@ namespace Page_switching
             analysisButton.Click += AnalysisButton_Click;
             correctionButton.Name = "correctionButton";
             correctionButton.Text = "信号修正";
-            correctionButton.Location = new Point(12, 486);
+            correctionButton.Location = new Point(12, 436);
             correctionButton.Size = new Size(145, 40);
             correctionButton.FlatStyle = FlatStyle.Flat;
             correctionButton.FlatAppearance.BorderSize = 0;
@@ -545,19 +523,8 @@ namespace Page_switching
             correctionButton.BackColor = Color.FromArgb(248, 250, 252);
             correctionButton.ForeColor = Color.FromArgb(71, 85, 105);
             correctionButton.Click += CorrectionButton_Click;
-            equipmentButton.Name = "equipmentButton";
-            equipmentButton.Text = "旧设备配置";
-            equipmentButton.Location = new Point(12, 572);
-            equipmentButton.Size = new Size(145, 40);
-            equipmentButton.FlatStyle = FlatStyle.Flat;
-            equipmentButton.FlatAppearance.BorderSize = 0;
-            equipmentButton.TextAlign = ContentAlignment.MiddleLeft;
-            equipmentButton.BackColor = Color.FromArgb(248, 250, 252);
-            equipmentButton.ForeColor = Color.FromArgb(71, 85, 105);
-            equipmentButton.Click += EquipmentButton_Click;
             Bu_auto.Width = 145;
             Bu_manual.Width = 145;
-            button3.Width = 145;
             Bu_Calibration.Width = 145;
             Bu_data.Width = 145;
             button2.Width = 145;
@@ -591,7 +558,6 @@ namespace Page_switching
 
         private Button analysisButton;
         private Button correctionButton;
-        private Button equipmentButton;
         private Panel panel1;
         private Panel headerStatusPanel;
         private Panel panel2;
@@ -610,7 +576,6 @@ namespace Page_switching
         private Panel navigationMarker;
         private Label operationPathLabel;
         private Button Bu_Calibration;
-        private Button button3;
         private Button Bu_manual;
         private Button Bu_auto;
         private Button bu_Configuration;
