@@ -2,6 +2,8 @@ namespace Page_switching
 {
     partial class Auto
     {
+        private Panel pagePanel;
+
         /// <summary> 
         /// 必需的设计器变量。
         /// </summary>
@@ -42,6 +44,7 @@ namespace Page_switching
         // 创建设计器中的自动页面控件并设置布局。
         private void InitializeComponent()
         {
+            pagePanel = new Panel();
             rootLayout = new TableLayoutPanel();
             headerPanel = new Panel();
             subtitleLabel = new Label();
@@ -247,8 +250,11 @@ namespace Page_switching
             AutoScrollMinSize = new Size(860, 460);
             BackColor = Color.FromArgb(241, 245, 249);
             ForeColor = Color.FromArgb(15, 23, 42);
-            Controls.Add(rootLayout);
+            pagePanel.Name = "pagePanel";
+            pagePanel.Dock = DockStyle.Fill;
+            pagePanel.Controls.Add(rootLayout);
             Name = "Auto";
+            Controls.Add(pagePanel);
             Size = new Size(1104, 606);
             rootLayout.ResumeLayout(false);
             headerPanel.ResumeLayout(false);

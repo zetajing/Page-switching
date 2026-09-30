@@ -2,6 +2,8 @@ namespace Page_switching.panel
 {
     partial class Wave_Height_Meter
     {
+        private Panel pagePanel;
+
         private System.ComponentModel.IContainer components = null;
 
         protected override void Dispose(bool disposing)
@@ -12,6 +14,7 @@ namespace Page_switching.panel
 
         private void InitializeComponent()
         {
+            pagePanel = new Panel();
             SuspendLayout();
             rootLayout = new TableLayoutPanel();
             rootLayout.BackColor = Color.FromArgb(241, 245, 249);
@@ -635,8 +638,11 @@ namespace Page_switching.panel
             AutoScrollMinSize = new Size(860, 600);
             BackColor = Color.FromArgb(241, 245, 249);
             ForeColor = Color.FromArgb(15, 23, 42);
-            Controls.Add(rootLayout);
+            pagePanel.Name = "pagePanel";
+            pagePanel.Dock = DockStyle.Fill;
+            pagePanel.Controls.Add(rootLayout);
             Name = "Wave_Height_Meter";
+            Controls.Add(pagePanel);
             Size = new Size(1104, 606);
             ResumeLayout(false);
         }

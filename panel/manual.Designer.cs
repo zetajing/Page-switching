@@ -2,6 +2,8 @@ namespace Page_switching
 {
     partial class Manual
     {
+        private Panel pagePanel;
+
         private System.ComponentModel.IContainer components = null!;
         private TableLayoutPanel axis1FeedbackLayout;
         private Label axis1NegativeLimitLamp;
@@ -81,6 +83,7 @@ namespace Page_switching
         // 创建设计器中的手动页面控件并绑定事件。
         private void InitializeComponent()
         {
+            pagePanel = new Panel();
             axis1FeedbackLayout = new TableLayoutPanel();
             axis1PositionIndicator = new ServoPositionIndicator();
             axis1NegativeLimitLamp = new Label();
@@ -1201,9 +1204,12 @@ namespace Page_switching
             AutoScrollMinSize = new Size(860, 600);
             BackColor = Color.FromArgb(241, 245, 249);
             ForeColor = Color.FromArgb(15, 23, 42);
-            Controls.Add(rootLayout);
-            Margin = new Padding(2, 3, 2, 3);
+            pagePanel.Name = "pagePanel";
+            pagePanel.Dock = DockStyle.Fill;
+            pagePanel.Controls.Add(rootLayout);
             Name = "Manual";
+            Controls.Add(pagePanel);
+            Margin = new Padding(2, 3, 2, 3);
             Size = new Size(1104, 606);
             axis1FeedbackLayout.ResumeLayout(false);
             axis2FeedbackLayout.ResumeLayout(false);

@@ -2,8 +2,11 @@ namespace Page_switching.panel;
 
 partial class Data
 {
+    private Panel pagePanel;
+
     private void InitializeComponent()
     {
+        pagePanel = new Panel();
         root = new TableLayoutPanel();
         title = new Label();
         filters = new FlowLayoutPanel();
@@ -288,13 +291,16 @@ partial class Data
 
         BackColor = Color.FromArgb(241, 245, 249);
         ForeColor = Color.FromArgb(15, 23, 42);
-        Controls.Add(root);
+        pagePanel.Name = "pagePanel";
+        pagePanel.Dock = DockStyle.Fill;
+        pagePanel.Controls.Add(root);
+        Name = "Data";
+        Controls.Add(pagePanel);
         Font = new Font("Microsoft YaHei UI", 9F);
         AutoScaleDimensions = new SizeF(96F, 96F);
         AutoScaleMode = AutoScaleMode.Dpi;
         AutoScroll = true;
         AutoScrollMinSize = new Size(860, 580);
-        Name = "Data";
         Size = new Size(1104, 606);
         ((System.ComponentModel.ISupportInitialize)sessionGrid).EndInit();
         ((System.ComponentModel.ISupportInitialize)sampleGrid).EndInit();

@@ -2,8 +2,11 @@ namespace Page_switching.panel;
 
 partial class Calibration
 {
+    private Panel pagePanel;
+
     private void InitializeComponent()
     {
+        pagePanel = new Panel();
         root = new TableLayoutPanel();
         title = new Label();
         toolbar = new TableLayoutPanel();
@@ -256,8 +259,11 @@ partial class Calibration
 
         BackColor = Color.FromArgb(241, 245, 249);
         ForeColor = Color.FromArgb(15, 23, 42);
-        Controls.Add(root);
+        pagePanel.Name = "pagePanel";
+        pagePanel.Dock = DockStyle.Fill;
+        pagePanel.Controls.Add(root);
         Name = "Calibration";
+        Controls.Add(pagePanel);
         Size = new Size(1104, 606);
         Font = new Font("Microsoft YaHei UI", 9F);
         AutoScaleDimensions = new SizeF(96F, 96F);

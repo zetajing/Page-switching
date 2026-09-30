@@ -2,6 +2,8 @@ namespace Page_switching.panel;
 
 partial class Config
 {
+    private Panel pagePanel;
+
     private System.ComponentModel.IContainer components = null!;
     private TableLayoutPanel rootLayout;
     private Label titleLabel;
@@ -63,6 +65,7 @@ partial class Config
     // 创建设计器中的配置页面控件并绑定事件。
     private void InitializeComponent()
     {
+        pagePanel = new Panel();
         rootLayout = new TableLayoutPanel();
         titleLabel = new Label();
         subtitleLabel = new Label();
@@ -814,9 +817,12 @@ partial class Config
         AutoScrollMinSize = new Size(860, 720);
         BackColor = Color.FromArgb(241, 245, 249);
         ForeColor = Color.FromArgb(15, 23, 42);
-        Controls.Add(rootLayout);
-        Margin = new Padding(2, 3, 2, 3);
+        pagePanel.Name = "pagePanel";
+        pagePanel.Dock = DockStyle.Fill;
+        pagePanel.Controls.Add(rootLayout);
         Name = "Config";
+        Controls.Add(pagePanel);
+        Margin = new Padding(2, 3, 2, 3);
         Size = new Size(1104, 606);
         rootLayout.ResumeLayout(false);
         routerGroup.ResumeLayout(false);

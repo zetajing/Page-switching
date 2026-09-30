@@ -2,6 +2,8 @@ namespace Page_switching.panel;
 
 partial class WaveBatchCalibrationForm
 {
+    private Panel pagePanel;
+
     private TableLayoutPanel root = null!;
     private FlowLayoutPanel tools = null!;
     private CheckedListBox channels = null!;
@@ -14,6 +16,7 @@ partial class WaveBatchCalibrationForm
 
     private void InitializeComponent()
     {
+        pagePanel = new Panel();
         root = new TableLayoutPanel();
         tools = new FlowLayoutPanel();
         channels = new CheckedListBox();
@@ -77,6 +80,10 @@ partial class WaveBatchCalibrationForm
         MinimumSize = new Size(900, 500);
         StartPosition = FormStartPosition.CenterParent;
         Text = "多传感器批量标定";
-        Controls.Add(root);
+        pagePanel.Name = "pagePanel";
+        pagePanel.Dock = DockStyle.Fill;
+        pagePanel.Controls.Add(root);
+        Name = "WaveBatchCalibrationForm";
+        Controls.Add(pagePanel);
     }
 }

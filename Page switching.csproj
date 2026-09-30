@@ -11,9 +11,26 @@
 
   <ItemGroup>
     <Compile Update="Forms\main_page.cs">
+      <SubType>Form</SubType>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <TargetPath>main_page.cs</TargetPath>
     </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="panel\*.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="panel\*.Designer.cs">
+      <SubType>Code</SubType>
+      <DependentUpon>$([System.String]::Copy('%(Filename)').Replace('.Designer', '')).cs</DependentUpon>
+    </Compile>
+    <Compile Update="panel\WaveBatchCalibrationForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <EmbeddedResource Update="panel\*.resx">
+      <DependentUpon>%(Filename).cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>
