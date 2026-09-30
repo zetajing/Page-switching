@@ -8,6 +8,10 @@ namespace Page_switching.panel
         public CustomSpectrumPage()
         {
             InitializeComponent();
+            // 设计预览和运行时均保留原默认选项，不依赖设计器序列化。
+            theoryInput.SelectedIndex = 0;
+            sideInput.SelectedIndex = 0;
+            modeInput.SelectedIndex = 0;
             if (System.ComponentModel.LicenseManager.UsageMode == System.ComponentModel.LicenseUsageMode.Designtime) return;
             spectrumBrowse.Click += (_, _) => Browse(false);
             outputBrowse.Click += (_, _) => Browse(true);

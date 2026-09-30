@@ -5,6 +5,11 @@ namespace Page_switching.panel
         public IrregularWavePage()
         {
             InitializeComponent();
+            // 默认选择放在页面初始化中，避免设计器保存时丢失。
+            irregularModeComboBox.SelectedIndex = 0;
+            irregularTheoryComboBox.SelectedIndex = 0;
+            irregularSpectrumComboBox.SelectedIndex = 0;
+            irregularSegmentComboBox.SelectedIndex = 0;
         }
 
         internal event EventHandler? GenerateRequested;

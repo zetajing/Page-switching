@@ -5,6 +5,9 @@ namespace Page_switching.panel
         public RegularWavePage()
         {
             InitializeComponent();
+            // 默认选择放在页面初始化中，避免设计器保存时丢失。
+            regularSegmentComboBox.SelectedIndex = 0;
+            regularTheoryComboBox.SelectedIndex = 0;
         }
 
         internal event EventHandler? GenerateRequested;

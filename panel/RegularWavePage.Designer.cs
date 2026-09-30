@@ -43,7 +43,6 @@ namespace Page_switching.panel
 
         private void InitializeComponent()
         {
-            components = new System.ComponentModel.Container();
             pagePanel = new Panel();
             regularLayout = new TableLayoutPanel();
             regularParameterGroup = new GroupBox();
@@ -82,6 +81,16 @@ namespace Page_switching.panel
             regularPreviewGroup.SuspendLayout();
             SuspendLayout();
             //
+            // pagePanel
+            //
+            pagePanel.Controls.Add(regularLayout);
+            pagePanel.Dock = DockStyle.Fill;
+            pagePanel.Location = new Point(0, 0);
+            pagePanel.Name = "pagePanel";
+            pagePanel.Padding = new Padding(8);
+            pagePanel.Size = new Size(1104, 606);
+            pagePanel.TabIndex = 0;
+            //
             // regularLayout
             //
             regularLayout.ColumnCount = 2;
@@ -95,7 +104,7 @@ namespace Page_switching.panel
             regularLayout.Name = "regularLayout";
             regularLayout.RowCount = 1;
             regularLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            regularLayout.Size = new Size(1042, 454);
+            regularLayout.Size = new Size(1088, 590);
             regularLayout.TabIndex = 0;
             //
             // regularParameterGroup
@@ -107,7 +116,7 @@ namespace Page_switching.panel
             regularParameterGroup.Location = new Point(3, 3);
             regularParameterGroup.Name = "regularParameterGroup";
             regularParameterGroup.Padding = new Padding(10, 16, 10, 10);
-            regularParameterGroup.Size = new Size(439, 448);
+            regularParameterGroup.Size = new Size(439, 584);
             regularParameterGroup.TabIndex = 0;
             regularParameterGroup.TabStop = false;
             regularParameterGroup.Text = "规则波参数";
@@ -179,6 +188,7 @@ namespace Page_switching.panel
             regularSegmentComboBox.FlatStyle = FlatStyle.Flat;
             regularSegmentComboBox.Font = new Font("Microsoft YaHei UI", 9F);
             regularSegmentComboBox.ForeColor = Color.FromArgb(15, 23, 42);
+            regularSegmentComboBox.Items.AddRange(new object[] { "X轴+Y轴", "X轴", "Y轴" });
             regularSegmentComboBox.Location = new Point(93, 5);
             regularSegmentComboBox.Margin = new Padding(3, 5, 3, 5);
             regularSegmentComboBox.Name = "regularSegmentComboBox";
@@ -204,6 +214,7 @@ namespace Page_switching.panel
             regularTheoryComboBox.FlatStyle = FlatStyle.Flat;
             regularTheoryComboBox.Font = new Font("Microsoft YaHei UI", 9F);
             regularTheoryComboBox.ForeColor = Color.FromArgb(15, 23, 42);
+            regularTheoryComboBox.Items.AddRange(new object[] { "线性理论", "二阶Stokes（内置）", "孤立波", "流函数波（旧程序）", "椭圆余弦波（旧程序）" });
             regularTheoryComboBox.Location = new Point(293, 5);
             regularTheoryComboBox.Margin = new Padding(3, 5, 3, 5);
             regularTheoryComboBox.Name = "regularTheoryComboBox";
@@ -234,6 +245,7 @@ namespace Page_switching.panel
             regularDepthTextBox.Name = "regularDepthTextBox";
             regularDepthTextBox.Size = new Size(104, 23);
             regularDepthTextBox.TabIndex = 5;
+            regularDepthTextBox.Text = "0.5";
             //
             // regularPeriodLabel
             //
@@ -259,6 +271,7 @@ namespace Page_switching.panel
             regularPeriodTextBox.Name = "regularPeriodTextBox";
             regularPeriodTextBox.Size = new Size(123, 23);
             regularPeriodTextBox.TabIndex = 7;
+            regularPeriodTextBox.Text = "1.5";
             //
             // regularHeightLabel
             //
@@ -284,6 +297,7 @@ namespace Page_switching.panel
             regularHeightTextBox.Name = "regularHeightTextBox";
             regularHeightTextBox.Size = new Size(104, 23);
             regularHeightTextBox.TabIndex = 9;
+            regularHeightTextBox.Text = "0.1";
             //
             // regularDirectionLabel
             //
@@ -309,6 +323,7 @@ namespace Page_switching.panel
             regularDirectionTextBox.Name = "regularDirectionTextBox";
             regularDirectionTextBox.Size = new Size(123, 23);
             regularDirectionTextBox.TabIndex = 11;
+            regularDirectionTextBox.Text = "90";
             //
             // regularTimeStepLabel
             //
@@ -334,6 +349,7 @@ namespace Page_switching.panel
             regularTimeStepTextBox.Name = "regularTimeStepTextBox";
             regularTimeStepTextBox.Size = new Size(104, 23);
             regularTimeStepTextBox.TabIndex = 13;
+            regularTimeStepTextBox.Text = "0.02";
             //
             // regularSampleCountLabel
             //
@@ -359,6 +375,7 @@ namespace Page_switching.panel
             regularSampleCountTextBox.Name = "regularSampleCountTextBox";
             regularSampleCountTextBox.Size = new Size(123, 23);
             regularSampleCountTextBox.TabIndex = 15;
+            regularSampleCountTextBox.Text = "4096";
             //
             // regularFrequencyLabel
             //
@@ -384,6 +401,7 @@ namespace Page_switching.panel
             regularCharacteristicFrequencyTextBox.Name = "regularCharacteristicFrequencyTextBox";
             regularCharacteristicFrequencyTextBox.Size = new Size(104, 23);
             regularCharacteristicFrequencyTextBox.TabIndex = 17;
+            regularCharacteristicFrequencyTextBox.Text = "0.514";
             //
             // regularCharacteristicPeriodLabel
             //
@@ -409,6 +427,7 @@ namespace Page_switching.panel
             regularCharacteristicPeriodTextBox.Name = "regularCharacteristicPeriodTextBox";
             regularCharacteristicPeriodTextBox.Size = new Size(123, 23);
             regularCharacteristicPeriodTextBox.TabIndex = 19;
+            regularCharacteristicPeriodTextBox.Text = "4.00";
             //
             // regularOutputLabel
             //
@@ -495,7 +514,7 @@ namespace Page_switching.panel
             regularPreviewGroup.Location = new Point(448, 3);
             regularPreviewGroup.Name = "regularPreviewGroup";
             regularPreviewGroup.Padding = new Padding(10, 18, 10, 10);
-            regularPreviewGroup.Size = new Size(591, 448);
+            regularPreviewGroup.Size = new Size(637, 584);
             regularPreviewGroup.TabIndex = 1;
             regularPreviewGroup.TabStop = false;
             regularPreviewGroup.Text = "波形预览";
@@ -508,44 +527,29 @@ namespace Page_switching.panel
             regularPreview.Location = new Point(10, 34);
             regularPreview.MinimumSize = new Size(300, 180);
             regularPreview.Name = "regularPreview";
-            regularPreview.Size = new Size(571, 404);
+            regularPreview.Size = new Size(617, 540);
             regularPreview.TabIndex = 0;
             regularPreview.UnitText = "m";
-            regularSegmentComboBox.Items.AddRange(new object[] {"X轴+Y轴", "X轴", "Y轴"});
-            regularTheoryComboBox.Items.AddRange(new object[] {"线性理论", "二阶Stokes（内置）", "孤立波", "流函数波（旧程序）", "椭圆余弦波（旧程序）"});
-            regularSegmentComboBox.SelectedIndex = 0;
-            regularTheoryComboBox.SelectedIndex = 0;
-            regularDepthTextBox.Text = "0.5";
-            regularPeriodTextBox.Text = "1.5";
-            regularHeightTextBox.Text = "0.1";
-            regularDirectionTextBox.Text = "90";
-            regularTimeStepTextBox.Text = "0.02";
-            regularSampleCountTextBox.Text = "4096";
-            regularCharacteristicFrequencyTextBox.Text = "0.514";
-            regularCharacteristicPeriodTextBox.Text = "4.00";
-            pagePanel.Name = "pagePanel";
-            pagePanel.Dock = DockStyle.Fill;
-            pagePanel.Padding = new Padding(8);
-            pagePanel.Controls.Add(regularLayout);
+            //
+            // RegularWavePage
+            //
             AutoScaleDimensions = new SizeF(96F, 96F);
             AutoScaleMode = AutoScaleMode.Dpi;
             AutoScroll = true;
             AutoScrollMinSize = new Size(900, 416);
             BackColor = Color.FromArgb(241, 245, 249);
+            Controls.Add(pagePanel);
             Font = new Font("Microsoft YaHei UI", 9F);
             ForeColor = Color.FromArgb(15, 23, 42);
             Name = "RegularWavePage";
             Size = new Size(1104, 606);
-            Controls.Add(pagePanel);
-            regularPreviewGroup.ResumeLayout(false);
-            regularPreviewGroup.PerformLayout();
-            regularParameterLayout.ResumeLayout(false);
-            regularParameterLayout.PerformLayout();
+            pagePanel.ResumeLayout(false);
+            regularLayout.ResumeLayout(false);
             regularParameterGroup.ResumeLayout(false);
             regularParameterGroup.PerformLayout();
-            regularLayout.ResumeLayout(false);
-            regularLayout.PerformLayout();
-            pagePanel.ResumeLayout(false);
+            regularParameterLayout.ResumeLayout(false);
+            regularParameterLayout.PerformLayout();
+            regularPreviewGroup.ResumeLayout(false);
             ResumeLayout(false);
         }
     }
