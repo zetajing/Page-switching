@@ -163,17 +163,344 @@ namespace Page_switching
             ((System.ComponentModel.ISupportInitialize)jogSpeedInput).BeginInit();
             SuspendLayout();
             // 
-            // pagePanel
+            // axis1FeedbackLayout
             // 
-            pagePanel.Controls.Add(rootLayout);
-            pagePanel.Dock = DockStyle.Fill;
-            pagePanel.Location = new Point(0, 0);
-            pagePanel.Name = "pagePanel";
-            pagePanel.Size = new Size(1104, 606);
-            pagePanel.TabIndex = 0;
+            axis1FeedbackLayout.ColumnCount = 3;
+            axis1FeedbackLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33F));
+            axis1FeedbackLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33F));
+            axis1FeedbackLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 34F));
+            axis1FeedbackLayout.Controls.Add(axis1PositionIndicator, 0, 0);
+            axis1FeedbackLayout.Controls.Add(axis1NegativeLimitLamp, 0, 1);
+            axis1FeedbackLayout.Controls.Add(axis1OriginLamp, 1, 1);
+            axis1FeedbackLayout.Controls.Add(axis1PositiveLimitLamp, 2, 1);
+            axis1FeedbackLayout.Dock = DockStyle.Fill;
+            axis1FeedbackLayout.Location = new Point(45, 26);
+            axis1FeedbackLayout.Margin = new Padding(0);
+            axis1FeedbackLayout.Name = "axis1FeedbackLayout";
+            axis1FeedbackLayout.RowCount = 2;
+            axis1FeedbackLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            axis1FeedbackLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 24F));
+            axis1FeedbackLayout.Size = new Size(406, 120);
+            axis1FeedbackLayout.TabIndex = 4;
+            // 
+            // axis1PositionIndicator
+            // 
+            axis1PositionIndicator.ActualPosition = null;
+            axis1PositionIndicator.BackColor = Color.White;
+            axis1FeedbackLayout.SetColumnSpan(axis1PositionIndicator, 3);
+            axis1PositionIndicator.Dock = DockStyle.Fill;
+            axis1PositionIndicator.ForeColor = Color.FromArgb(15, 23, 42);
+            axis1PositionIndicator.HasAlarm = false;
+            axis1PositionIndicator.IsConnected = false;
+            axis1PositionIndicator.Location = new Point(3, 5);
+            axis1PositionIndicator.Margin = new Padding(3, 5, 3, 5);
+            axis1PositionIndicator.MaximumPosition = 20D;
+            axis1PositionIndicator.MinimumPosition = -20D;
+            axis1PositionIndicator.MinimumSize = new Size(140, 56);
+            axis1PositionIndicator.Name = "axis1PositionIndicator";
+            axis1PositionIndicator.NegativeLimit = false;
+            axis1PositionIndicator.PositiveLimit = false;
+            axis1PositionIndicator.Size = new Size(400, 86);
+            axis1PositionIndicator.TabIndex = 4;
+            axis1PositionIndicator.TabStop = false;
+            axis1PositionIndicator.UnitText = "°";
+            // 
+            // axis1NegativeLimitLamp
+            // 
+            axis1NegativeLimitLamp.BackColor = Color.FromArgb(241, 245, 249);
+            axis1NegativeLimitLamp.Dock = DockStyle.Fill;
+            axis1NegativeLimitLamp.Font = new Font("Microsoft YaHei UI", 8F);
+            axis1NegativeLimitLamp.ForeColor = Color.FromArgb(100, 116, 139);
+            axis1NegativeLimitLamp.Location = new Point(2, 98);
+            axis1NegativeLimitLamp.Margin = new Padding(2);
+            axis1NegativeLimitLamp.Name = "axis1NegativeLimitLamp";
+            axis1NegativeLimitLamp.Size = new Size(129, 20);
+            axis1NegativeLimitLamp.TabIndex = 5;
+            axis1NegativeLimitLamp.Text = "● 负限位 --";
+            axis1NegativeLimitLamp.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // axis1OriginLamp
+            // 
+            axis1OriginLamp.BackColor = Color.FromArgb(241, 245, 249);
+            axis1OriginLamp.Dock = DockStyle.Fill;
+            axis1OriginLamp.Font = new Font("Microsoft YaHei UI", 8F);
+            axis1OriginLamp.ForeColor = Color.FromArgb(100, 116, 139);
+            axis1OriginLamp.Location = new Point(135, 98);
+            axis1OriginLamp.Margin = new Padding(2);
+            axis1OriginLamp.Name = "axis1OriginLamp";
+            axis1OriginLamp.Size = new Size(129, 20);
+            axis1OriginLamp.TabIndex = 6;
+            axis1OriginLamp.Text = "● 原点 --";
+            axis1OriginLamp.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // axis1PositiveLimitLamp
+            // 
+            axis1PositiveLimitLamp.BackColor = Color.FromArgb(241, 245, 249);
+            axis1PositiveLimitLamp.Dock = DockStyle.Fill;
+            axis1PositiveLimitLamp.Font = new Font("Microsoft YaHei UI", 8F);
+            axis1PositiveLimitLamp.ForeColor = Color.FromArgb(100, 116, 139);
+            axis1PositiveLimitLamp.Location = new Point(268, 98);
+            axis1PositiveLimitLamp.Margin = new Padding(2);
+            axis1PositiveLimitLamp.Name = "axis1PositiveLimitLamp";
+            axis1PositiveLimitLamp.Size = new Size(136, 20);
+            axis1PositiveLimitLamp.TabIndex = 7;
+            axis1PositiveLimitLamp.Text = "● 正限位 --";
+            axis1PositiveLimitLamp.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // axis2FeedbackLayout
+            // 
+            axis2FeedbackLayout.ColumnCount = 3;
+            axis2FeedbackLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33F));
+            axis2FeedbackLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33F));
+            axis2FeedbackLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 34F));
+            axis2FeedbackLayout.Controls.Add(axis2PositionIndicator, 0, 0);
+            axis2FeedbackLayout.Controls.Add(axis2NegativeLimitLamp, 0, 1);
+            axis2FeedbackLayout.Controls.Add(axis2OriginLamp, 1, 1);
+            axis2FeedbackLayout.Controls.Add(axis2PositiveLimitLamp, 2, 1);
+            axis2FeedbackLayout.Dock = DockStyle.Fill;
+            axis2FeedbackLayout.Location = new Point(45, 146);
+            axis2FeedbackLayout.Margin = new Padding(0);
+            axis2FeedbackLayout.Name = "axis2FeedbackLayout";
+            axis2FeedbackLayout.RowCount = 2;
+            axis2FeedbackLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            axis2FeedbackLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 24F));
+            axis2FeedbackLayout.Size = new Size(406, 120);
+            axis2FeedbackLayout.TabIndex = 7;
+            // 
+            // axis2PositionIndicator
+            // 
+            axis2PositionIndicator.ActualPosition = null;
+            axis2PositionIndicator.BackColor = Color.White;
+            axis2FeedbackLayout.SetColumnSpan(axis2PositionIndicator, 3);
+            axis2PositionIndicator.Dock = DockStyle.Fill;
+            axis2PositionIndicator.ForeColor = Color.FromArgb(15, 23, 42);
+            axis2PositionIndicator.HasAlarm = false;
+            axis2PositionIndicator.IsConnected = false;
+            axis2PositionIndicator.Location = new Point(3, 5);
+            axis2PositionIndicator.Margin = new Padding(3, 5, 3, 5);
+            axis2PositionIndicator.MaximumPosition = 20D;
+            axis2PositionIndicator.MinimumPosition = -20D;
+            axis2PositionIndicator.MinimumSize = new Size(140, 56);
+            axis2PositionIndicator.Name = "axis2PositionIndicator";
+            axis2PositionIndicator.NegativeLimit = false;
+            axis2PositionIndicator.PositiveLimit = false;
+            axis2PositionIndicator.Size = new Size(400, 86);
+            axis2PositionIndicator.TabIndex = 7;
+            axis2PositionIndicator.TabStop = false;
+            axis2PositionIndicator.UnitText = "°";
+            // 
+            // axis2NegativeLimitLamp
+            // 
+            axis2NegativeLimitLamp.BackColor = Color.FromArgb(241, 245, 249);
+            axis2NegativeLimitLamp.Dock = DockStyle.Fill;
+            axis2NegativeLimitLamp.Font = new Font("Microsoft YaHei UI", 8F);
+            axis2NegativeLimitLamp.ForeColor = Color.FromArgb(100, 116, 139);
+            axis2NegativeLimitLamp.Location = new Point(2, 98);
+            axis2NegativeLimitLamp.Margin = new Padding(2);
+            axis2NegativeLimitLamp.Name = "axis2NegativeLimitLamp";
+            axis2NegativeLimitLamp.Size = new Size(129, 20);
+            axis2NegativeLimitLamp.TabIndex = 8;
+            axis2NegativeLimitLamp.Text = "● 负限位 --";
+            axis2NegativeLimitLamp.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // axis2OriginLamp
+            // 
+            axis2OriginLamp.BackColor = Color.FromArgb(241, 245, 249);
+            axis2OriginLamp.Dock = DockStyle.Fill;
+            axis2OriginLamp.Font = new Font("Microsoft YaHei UI", 8F);
+            axis2OriginLamp.ForeColor = Color.FromArgb(100, 116, 139);
+            axis2OriginLamp.Location = new Point(135, 98);
+            axis2OriginLamp.Margin = new Padding(2);
+            axis2OriginLamp.Name = "axis2OriginLamp";
+            axis2OriginLamp.Size = new Size(129, 20);
+            axis2OriginLamp.TabIndex = 9;
+            axis2OriginLamp.Text = "● 原点 --";
+            axis2OriginLamp.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // axis2PositiveLimitLamp
+            // 
+            axis2PositiveLimitLamp.BackColor = Color.FromArgb(241, 245, 249);
+            axis2PositiveLimitLamp.Dock = DockStyle.Fill;
+            axis2PositiveLimitLamp.Font = new Font("Microsoft YaHei UI", 8F);
+            axis2PositiveLimitLamp.ForeColor = Color.FromArgb(100, 116, 139);
+            axis2PositiveLimitLamp.Location = new Point(268, 98);
+            axis2PositiveLimitLamp.Margin = new Padding(2);
+            axis2PositiveLimitLamp.Name = "axis2PositiveLimitLamp";
+            axis2PositiveLimitLamp.Size = new Size(136, 20);
+            axis2PositiveLimitLamp.TabIndex = 10;
+            axis2PositiveLimitLamp.Text = "● 正限位 --";
+            axis2PositiveLimitLamp.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // axis3FeedbackLayout
+            // 
+            axis3FeedbackLayout.ColumnCount = 3;
+            axis3FeedbackLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33F));
+            axis3FeedbackLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33F));
+            axis3FeedbackLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 34F));
+            axis3FeedbackLayout.Controls.Add(axis3PositionIndicator, 0, 0);
+            axis3FeedbackLayout.Controls.Add(axis3NegativeLimitLamp, 0, 1);
+            axis3FeedbackLayout.Controls.Add(axis3OriginLamp, 1, 1);
+            axis3FeedbackLayout.Controls.Add(axis3PositiveLimitLamp, 2, 1);
+            axis3FeedbackLayout.Dock = DockStyle.Fill;
+            axis3FeedbackLayout.Location = new Point(45, 266);
+            axis3FeedbackLayout.Margin = new Padding(0);
+            axis3FeedbackLayout.Name = "axis3FeedbackLayout";
+            axis3FeedbackLayout.RowCount = 2;
+            axis3FeedbackLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            axis3FeedbackLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 24F));
+            axis3FeedbackLayout.Size = new Size(406, 120);
+            axis3FeedbackLayout.TabIndex = 10;
+            // 
+            // axis3PositionIndicator
+            // 
+            axis3PositionIndicator.ActualPosition = null;
+            axis3PositionIndicator.BackColor = Color.White;
+            axis3FeedbackLayout.SetColumnSpan(axis3PositionIndicator, 3);
+            axis3PositionIndicator.Dock = DockStyle.Fill;
+            axis3PositionIndicator.ForeColor = Color.FromArgb(15, 23, 42);
+            axis3PositionIndicator.HasAlarm = false;
+            axis3PositionIndicator.IsConnected = false;
+            axis3PositionIndicator.Location = new Point(3, 5);
+            axis3PositionIndicator.Margin = new Padding(3, 5, 3, 5);
+            axis3PositionIndicator.MaximumPosition = 20D;
+            axis3PositionIndicator.MinimumPosition = -20D;
+            axis3PositionIndicator.MinimumSize = new Size(140, 56);
+            axis3PositionIndicator.Name = "axis3PositionIndicator";
+            axis3PositionIndicator.NegativeLimit = false;
+            axis3PositionIndicator.PositiveLimit = false;
+            axis3PositionIndicator.Size = new Size(400, 86);
+            axis3PositionIndicator.TabIndex = 10;
+            axis3PositionIndicator.TabStop = false;
+            axis3PositionIndicator.UnitText = "°";
+            // 
+            // axis3NegativeLimitLamp
+            // 
+            axis3NegativeLimitLamp.BackColor = Color.FromArgb(241, 245, 249);
+            axis3NegativeLimitLamp.Dock = DockStyle.Fill;
+            axis3NegativeLimitLamp.Font = new Font("Microsoft YaHei UI", 8F);
+            axis3NegativeLimitLamp.ForeColor = Color.FromArgb(100, 116, 139);
+            axis3NegativeLimitLamp.Location = new Point(2, 98);
+            axis3NegativeLimitLamp.Margin = new Padding(2);
+            axis3NegativeLimitLamp.Name = "axis3NegativeLimitLamp";
+            axis3NegativeLimitLamp.Size = new Size(129, 20);
+            axis3NegativeLimitLamp.TabIndex = 11;
+            axis3NegativeLimitLamp.Text = "● 负限位 --";
+            axis3NegativeLimitLamp.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // axis3OriginLamp
+            // 
+            axis3OriginLamp.BackColor = Color.FromArgb(241, 245, 249);
+            axis3OriginLamp.Dock = DockStyle.Fill;
+            axis3OriginLamp.Font = new Font("Microsoft YaHei UI", 8F);
+            axis3OriginLamp.ForeColor = Color.FromArgb(100, 116, 139);
+            axis3OriginLamp.Location = new Point(135, 98);
+            axis3OriginLamp.Margin = new Padding(2);
+            axis3OriginLamp.Name = "axis3OriginLamp";
+            axis3OriginLamp.Size = new Size(129, 20);
+            axis3OriginLamp.TabIndex = 12;
+            axis3OriginLamp.Text = "● 原点 --";
+            axis3OriginLamp.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // axis3PositiveLimitLamp
+            // 
+            axis3PositiveLimitLamp.BackColor = Color.FromArgb(241, 245, 249);
+            axis3PositiveLimitLamp.Dock = DockStyle.Fill;
+            axis3PositiveLimitLamp.Font = new Font("Microsoft YaHei UI", 8F);
+            axis3PositiveLimitLamp.ForeColor = Color.FromArgb(100, 116, 139);
+            axis3PositiveLimitLamp.Location = new Point(268, 98);
+            axis3PositiveLimitLamp.Margin = new Padding(2);
+            axis3PositiveLimitLamp.Name = "axis3PositiveLimitLamp";
+            axis3PositiveLimitLamp.Size = new Size(136, 20);
+            axis3PositiveLimitLamp.TabIndex = 13;
+            axis3PositiveLimitLamp.Text = "● 正限位 --";
+            axis3PositiveLimitLamp.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // axis4FeedbackLayout
+            // 
+            axis4FeedbackLayout.ColumnCount = 3;
+            axis4FeedbackLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33F));
+            axis4FeedbackLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33F));
+            axis4FeedbackLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 34F));
+            axis4FeedbackLayout.Controls.Add(axis4PositionIndicator, 0, 0);
+            axis4FeedbackLayout.Controls.Add(axis4NegativeLimitLamp, 0, 1);
+            axis4FeedbackLayout.Controls.Add(axis4OriginLamp, 1, 1);
+            axis4FeedbackLayout.Controls.Add(axis4PositiveLimitLamp, 2, 1);
+            axis4FeedbackLayout.Dock = DockStyle.Fill;
+            axis4FeedbackLayout.Location = new Point(45, 386);
+            axis4FeedbackLayout.Margin = new Padding(0);
+            axis4FeedbackLayout.Name = "axis4FeedbackLayout";
+            axis4FeedbackLayout.RowCount = 2;
+            axis4FeedbackLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            axis4FeedbackLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 24F));
+            axis4FeedbackLayout.Size = new Size(406, 120);
+            axis4FeedbackLayout.TabIndex = 13;
+            // 
+            // axis4PositionIndicator
+            // 
+            axis4PositionIndicator.ActualPosition = null;
+            axis4PositionIndicator.BackColor = Color.White;
+            axis4FeedbackLayout.SetColumnSpan(axis4PositionIndicator, 3);
+            axis4PositionIndicator.Dock = DockStyle.Fill;
+            axis4PositionIndicator.ForeColor = Color.FromArgb(15, 23, 42);
+            axis4PositionIndicator.HasAlarm = false;
+            axis4PositionIndicator.IsConnected = false;
+            axis4PositionIndicator.Location = new Point(3, 5);
+            axis4PositionIndicator.Margin = new Padding(3, 5, 3, 5);
+            axis4PositionIndicator.MaximumPosition = 20D;
+            axis4PositionIndicator.MinimumPosition = -20D;
+            axis4PositionIndicator.MinimumSize = new Size(140, 56);
+            axis4PositionIndicator.Name = "axis4PositionIndicator";
+            axis4PositionIndicator.NegativeLimit = false;
+            axis4PositionIndicator.PositiveLimit = false;
+            axis4PositionIndicator.Size = new Size(400, 86);
+            axis4PositionIndicator.TabIndex = 13;
+            axis4PositionIndicator.TabStop = false;
+            axis4PositionIndicator.UnitText = "°";
+            // 
+            // axis4NegativeLimitLamp
+            // 
+            axis4NegativeLimitLamp.BackColor = Color.FromArgb(241, 245, 249);
+            axis4NegativeLimitLamp.Dock = DockStyle.Fill;
+            axis4NegativeLimitLamp.Font = new Font("Microsoft YaHei UI", 8F);
+            axis4NegativeLimitLamp.ForeColor = Color.FromArgb(100, 116, 139);
+            axis4NegativeLimitLamp.Location = new Point(2, 98);
+            axis4NegativeLimitLamp.Margin = new Padding(2);
+            axis4NegativeLimitLamp.Name = "axis4NegativeLimitLamp";
+            axis4NegativeLimitLamp.Size = new Size(129, 20);
+            axis4NegativeLimitLamp.TabIndex = 14;
+            axis4NegativeLimitLamp.Text = "● 负限位 --";
+            axis4NegativeLimitLamp.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // axis4OriginLamp
+            // 
+            axis4OriginLamp.BackColor = Color.FromArgb(241, 245, 249);
+            axis4OriginLamp.Dock = DockStyle.Fill;
+            axis4OriginLamp.Font = new Font("Microsoft YaHei UI", 8F);
+            axis4OriginLamp.ForeColor = Color.FromArgb(100, 116, 139);
+            axis4OriginLamp.Location = new Point(135, 98);
+            axis4OriginLamp.Margin = new Padding(2);
+            axis4OriginLamp.Name = "axis4OriginLamp";
+            axis4OriginLamp.Size = new Size(129, 20);
+            axis4OriginLamp.TabIndex = 15;
+            axis4OriginLamp.Text = "● 原点 --";
+            axis4OriginLamp.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // axis4PositiveLimitLamp
+            // 
+            axis4PositiveLimitLamp.BackColor = Color.FromArgb(241, 245, 249);
+            axis4PositiveLimitLamp.Dock = DockStyle.Fill;
+            axis4PositiveLimitLamp.Font = new Font("Microsoft YaHei UI", 8F);
+            axis4PositiveLimitLamp.ForeColor = Color.FromArgb(100, 116, 139);
+            axis4PositiveLimitLamp.Location = new Point(268, 98);
+            axis4PositiveLimitLamp.Margin = new Padding(2);
+            axis4PositiveLimitLamp.Name = "axis4PositiveLimitLamp";
+            axis4PositiveLimitLamp.Size = new Size(136, 20);
+            axis4PositiveLimitLamp.TabIndex = 16;
+            axis4PositiveLimitLamp.Text = "● 正限位 --";
+            axis4PositiveLimitLamp.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // rootLayout
-            // 
+            //
             rootLayout.BackColor = Color.FromArgb(241, 245, 249);
             rootLayout.ColumnCount = 1;
             rootLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
@@ -191,9 +518,9 @@ namespace Page_switching
             rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             rootLayout.Size = new Size(1104, 606);
             rootLayout.TabIndex = 0;
-            // 
+            //
             // headerPanel
-            // 
+            //
             headerPanel.BackColor = Color.FromArgb(241, 245, 249);
             headerPanel.Controls.Add(connectionStateLabel);
             headerPanel.Controls.Add(titleLabel);
@@ -204,9 +531,9 @@ namespace Page_switching
             headerPanel.Padding = new Padding(11, 0, 11, 0);
             headerPanel.Size = new Size(1068, 42);
             headerPanel.TabIndex = 0;
-            // 
+            //
             // connectionStateLabel
-            // 
+            //
             connectionStateLabel.Dock = DockStyle.Right;
             connectionStateLabel.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
             connectionStateLabel.ForeColor = Color.FromArgb(185, 28, 28);
@@ -217,9 +544,9 @@ namespace Page_switching
             connectionStateLabel.TabIndex = 1;
             connectionStateLabel.Text = "ADS 未连接";
             connectionStateLabel.TextAlign = ContentAlignment.MiddleRight;
-            // 
+            //
             // titleLabel
-            // 
+            //
             titleLabel.Dock = DockStyle.Left;
             titleLabel.Font = new Font("Microsoft YaHei UI", 16F, FontStyle.Bold);
             titleLabel.ForeColor = Color.FromArgb(15, 23, 42);
@@ -230,10 +557,9 @@ namespace Page_switching
             titleLabel.TabIndex = 0;
             titleLabel.Text = "造波板轴 · 手动控制";
             titleLabel.TextAlign = ContentAlignment.MiddleLeft;
-            // 
+            //
             // globalActionsPanel
             // 
-            globalActionsPanel.AutoScroll = true;
             globalActionsPanel.Controls.Add(enableAllButton);
             globalActionsPanel.Controls.Add(disableAllButton);
             globalActionsPanel.Controls.Add(resetAlarmButton);
@@ -247,9 +573,9 @@ namespace Page_switching
             globalActionsPanel.Size = new Size(1068, 42);
             globalActionsPanel.TabIndex = 1;
             globalActionsPanel.WrapContents = false;
-            // 
+            //
             // enableAllButton
-            // 
+            //
             enableAllButton.BackColor = Color.FromArgb(4, 120, 87);
             enableAllButton.Cursor = Cursors.Hand;
             enableAllButton.FlatAppearance.BorderSize = 0;
@@ -264,9 +590,9 @@ namespace Page_switching
             enableAllButton.Text = "全部使能";
             enableAllButton.UseVisualStyleBackColor = false;
             enableAllButton.Click += EnableAllButton_Click;
-            // 
+            //
             // disableAllButton
-            // 
+            //
             disableAllButton.BackColor = Color.FromArgb(248, 250, 252);
             disableAllButton.Cursor = Cursors.Hand;
             disableAllButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
@@ -281,9 +607,9 @@ namespace Page_switching
             disableAllButton.Text = "取消使能";
             disableAllButton.UseVisualStyleBackColor = false;
             disableAllButton.Click += DisableAllButton_Click;
-            // 
+            //
             // resetAlarmButton
-            // 
+            //
             resetAlarmButton.BackColor = Color.FromArgb(255, 247, 237);
             resetAlarmButton.Cursor = Cursors.Hand;
             resetAlarmButton.FlatAppearance.BorderColor = Color.FromArgb(254, 215, 170);
@@ -298,9 +624,9 @@ namespace Page_switching
             resetAlarmButton.Text = "全部复位报警";
             resetAlarmButton.UseVisualStyleBackColor = false;
             resetAlarmButton.Click += ResetAlarmButton_Click;
-            // 
+            //
             // homeAllButton
-            // 
+            //
             homeAllButton.BackColor = Color.FromArgb(248, 250, 252);
             homeAllButton.Cursor = Cursors.Hand;
             homeAllButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
@@ -316,9 +642,9 @@ namespace Page_switching
             homeAllButton.Text = "全部回零";
             homeAllButton.UseVisualStyleBackColor = false;
             homeAllButton.Click += HomeAllButton_Click;
-            // 
+            //
             // stopAllButton
-            // 
+            //
             stopAllButton.BackColor = Color.FromArgb(185, 28, 28);
             stopAllButton.Cursor = Cursors.Hand;
             stopAllButton.FlatAppearance.BorderSize = 0;
@@ -333,9 +659,9 @@ namespace Page_switching
             stopAllButton.Text = "全部停止";
             stopAllButton.UseVisualStyleBackColor = false;
             stopAllButton.Click += StopAllButton_Click;
-            // 
+            //
             // contentLayout
-            // 
+            //
             contentLayout.ColumnCount = 2;
             contentLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 58F));
             contentLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 42F));
@@ -350,9 +676,9 @@ namespace Page_switching
             contentLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             contentLayout.Size = new Size(1068, 472);
             contentLayout.TabIndex = 2;
-            // 
+            //
             // overviewGroup
-            // 
+            //
             overviewGroup.BackColor = Color.White;
             overviewGroup.Controls.Add(axisOverviewLayout);
             overviewGroup.Dock = DockStyle.Fill;
@@ -366,9 +692,9 @@ namespace Page_switching
             overviewGroup.TabIndex = 0;
             overviewGroup.TabStop = false;
             overviewGroup.Text = "四轴位置总览";
-            // 
+            //
             // axisOverviewLayout
-            // 
+            //
             axisOverviewLayout.BackColor = Color.White;
             axisOverviewLayout.ColumnCount = 3;
             axisOverviewLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 58F));
@@ -401,9 +727,9 @@ namespace Page_switching
             axisOverviewLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 25F));
             axisOverviewLayout.Size = new Size(599, 427);
             axisOverviewLayout.TabIndex = 0;
-            // 
+            //
             // axisHeaderLabel
-            // 
+            //
             axisHeaderLabel.Dock = DockStyle.Fill;
             axisHeaderLabel.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
             axisHeaderLabel.ForeColor = Color.FromArgb(71, 85, 105);
@@ -414,9 +740,9 @@ namespace Page_switching
             axisHeaderLabel.TabIndex = 0;
             axisHeaderLabel.Text = "轴号";
             axisHeaderLabel.TextAlign = ContentAlignment.MiddleCenter;
-            // 
+            //
             // positionHeaderLabel
-            // 
+            //
             positionHeaderLabel.Dock = DockStyle.Fill;
             positionHeaderLabel.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
             positionHeaderLabel.ForeColor = Color.FromArgb(71, 85, 105);
@@ -427,9 +753,9 @@ namespace Page_switching
             positionHeaderLabel.TabIndex = 1;
             positionHeaderLabel.Text = "当前位置";
             positionHeaderLabel.TextAlign = ContentAlignment.MiddleCenter;
-            // 
+            //
             // statusHeaderLabel
-            // 
+            //
             statusHeaderLabel.Dock = DockStyle.Fill;
             statusHeaderLabel.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
             statusHeaderLabel.ForeColor = Color.FromArgb(71, 85, 105);
@@ -440,9 +766,9 @@ namespace Page_switching
             statusHeaderLabel.TabIndex = 2;
             statusHeaderLabel.Text = "状态";
             statusHeaderLabel.TextAlign = ContentAlignment.MiddleCenter;
-            // 
+            //
             // axis1NameLabel
-            // 
+            //
             axis1NameLabel.Dock = DockStyle.Fill;
             axis1NameLabel.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
             axis1NameLabel.ForeColor = Color.FromArgb(15, 23, 42);
@@ -454,92 +780,8 @@ namespace Page_switching
             axis1NameLabel.Text = "轴 1";
             axis1NameLabel.TextAlign = ContentAlignment.MiddleCenter;
             // 
-            // axis1FeedbackLayout
-            // 
-            axis1FeedbackLayout.ColumnCount = 3;
-            axis1FeedbackLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33F));
-            axis1FeedbackLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33F));
-            axis1FeedbackLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 34F));
-            axis1FeedbackLayout.Controls.Add(axis1PositionIndicator, 0, 0);
-            axis1FeedbackLayout.Controls.Add(axis1NegativeLimitLamp, 0, 1);
-            axis1FeedbackLayout.Controls.Add(axis1OriginLamp, 1, 1);
-            axis1FeedbackLayout.Controls.Add(axis1PositiveLimitLamp, 2, 1);
-            axis1FeedbackLayout.Dock = DockStyle.Fill;
-            axis1FeedbackLayout.Location = new Point(58, 26);
-            axis1FeedbackLayout.Margin = new Padding(0);
-            axis1FeedbackLayout.Name = "axis1FeedbackLayout";
-            axis1FeedbackLayout.RowCount = 2;
-            axis1FeedbackLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            axis1FeedbackLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 24F));
-            axis1FeedbackLayout.Size = new Size(463, 100);
-            axis1FeedbackLayout.TabIndex = 4;
-            // 
-            // axis1PositionIndicator
-            // 
-            axis1PositionIndicator.ActualPosition = null;
-            axis1PositionIndicator.BackColor = Color.White;
-            axis1FeedbackLayout.SetColumnSpan(axis1PositionIndicator, 3);
-            axis1PositionIndicator.Dock = DockStyle.Fill;
-            axis1PositionIndicator.ForeColor = Color.FromArgb(15, 23, 42);
-            axis1PositionIndicator.HasAlarm = false;
-            axis1PositionIndicator.IsConnected = false;
-            axis1PositionIndicator.Location = new Point(3, 5);
-            axis1PositionIndicator.Margin = new Padding(3, 5, 3, 5);
-            axis1PositionIndicator.MaximumPosition = 20D;
-            axis1PositionIndicator.MinimumPosition = -20D;
-            axis1PositionIndicator.MinimumSize = new Size(140, 56);
-            axis1PositionIndicator.Name = "axis1PositionIndicator";
-            axis1PositionIndicator.NegativeLimit = false;
-            axis1PositionIndicator.PositiveLimit = false;
-            axis1PositionIndicator.Size = new Size(457, 66);
-            axis1PositionIndicator.TabIndex = 4;
-            axis1PositionIndicator.TabStop = false;
-            axis1PositionIndicator.UnitText = "°";
-            // 
-            // axis1NegativeLimitLamp
-            // 
-            axis1NegativeLimitLamp.BackColor = Color.FromArgb(241, 245, 249);
-            axis1NegativeLimitLamp.Dock = DockStyle.Fill;
-            axis1NegativeLimitLamp.Font = new Font("Microsoft YaHei UI", 8F);
-            axis1NegativeLimitLamp.ForeColor = Color.FromArgb(100, 116, 139);
-            axis1NegativeLimitLamp.Location = new Point(2, 78);
-            axis1NegativeLimitLamp.Margin = new Padding(2);
-            axis1NegativeLimitLamp.Name = "axis1NegativeLimitLamp";
-            axis1NegativeLimitLamp.Size = new Size(148, 20);
-            axis1NegativeLimitLamp.TabIndex = 5;
-            axis1NegativeLimitLamp.Text = "● 负限位 --";
-            axis1NegativeLimitLamp.TextAlign = ContentAlignment.MiddleCenter;
-            // 
-            // axis1OriginLamp
-            // 
-            axis1OriginLamp.BackColor = Color.FromArgb(241, 245, 249);
-            axis1OriginLamp.Dock = DockStyle.Fill;
-            axis1OriginLamp.Font = new Font("Microsoft YaHei UI", 8F);
-            axis1OriginLamp.ForeColor = Color.FromArgb(100, 116, 139);
-            axis1OriginLamp.Location = new Point(154, 78);
-            axis1OriginLamp.Margin = new Padding(2);
-            axis1OriginLamp.Name = "axis1OriginLamp";
-            axis1OriginLamp.Size = new Size(148, 20);
-            axis1OriginLamp.TabIndex = 6;
-            axis1OriginLamp.Text = "● 原点 --";
-            axis1OriginLamp.TextAlign = ContentAlignment.MiddleCenter;
-            // 
-            // axis1PositiveLimitLamp
-            // 
-            axis1PositiveLimitLamp.BackColor = Color.FromArgb(241, 245, 249);
-            axis1PositiveLimitLamp.Dock = DockStyle.Fill;
-            axis1PositiveLimitLamp.Font = new Font("Microsoft YaHei UI", 8F);
-            axis1PositiveLimitLamp.ForeColor = Color.FromArgb(100, 116, 139);
-            axis1PositiveLimitLamp.Location = new Point(306, 78);
-            axis1PositiveLimitLamp.Margin = new Padding(2);
-            axis1PositiveLimitLamp.Name = "axis1PositiveLimitLamp";
-            axis1PositiveLimitLamp.Size = new Size(155, 20);
-            axis1PositiveLimitLamp.TabIndex = 7;
-            axis1PositiveLimitLamp.Text = "● 正限位 --";
-            axis1PositiveLimitLamp.TextAlign = ContentAlignment.MiddleCenter;
-            // 
             // axis1StatusLabel
-            // 
+            //
             axis1StatusLabel.Dock = DockStyle.Fill;
             axis1StatusLabel.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
             axis1StatusLabel.ForeColor = Color.FromArgb(100, 116, 139);
@@ -550,9 +792,9 @@ namespace Page_switching
             axis1StatusLabel.TabIndex = 5;
             axis1StatusLabel.Text = "未连接";
             axis1StatusLabel.TextAlign = ContentAlignment.MiddleCenter;
-            // 
+            //
             // axis2NameLabel
-            // 
+            //
             axis2NameLabel.Dock = DockStyle.Fill;
             axis2NameLabel.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
             axis2NameLabel.ForeColor = Color.FromArgb(15, 23, 42);
@@ -564,92 +806,8 @@ namespace Page_switching
             axis2NameLabel.Text = "轴 2";
             axis2NameLabel.TextAlign = ContentAlignment.MiddleCenter;
             // 
-            // axis2FeedbackLayout
-            // 
-            axis2FeedbackLayout.ColumnCount = 3;
-            axis2FeedbackLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33F));
-            axis2FeedbackLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33F));
-            axis2FeedbackLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 34F));
-            axis2FeedbackLayout.Controls.Add(axis2PositionIndicator, 0, 0);
-            axis2FeedbackLayout.Controls.Add(axis2NegativeLimitLamp, 0, 1);
-            axis2FeedbackLayout.Controls.Add(axis2OriginLamp, 1, 1);
-            axis2FeedbackLayout.Controls.Add(axis2PositiveLimitLamp, 2, 1);
-            axis2FeedbackLayout.Dock = DockStyle.Fill;
-            axis2FeedbackLayout.Location = new Point(58, 126);
-            axis2FeedbackLayout.Margin = new Padding(0);
-            axis2FeedbackLayout.Name = "axis2FeedbackLayout";
-            axis2FeedbackLayout.RowCount = 2;
-            axis2FeedbackLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            axis2FeedbackLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 24F));
-            axis2FeedbackLayout.Size = new Size(463, 100);
-            axis2FeedbackLayout.TabIndex = 7;
-            // 
-            // axis2PositionIndicator
-            // 
-            axis2PositionIndicator.ActualPosition = null;
-            axis2PositionIndicator.BackColor = Color.White;
-            axis2FeedbackLayout.SetColumnSpan(axis2PositionIndicator, 3);
-            axis2PositionIndicator.Dock = DockStyle.Fill;
-            axis2PositionIndicator.ForeColor = Color.FromArgb(15, 23, 42);
-            axis2PositionIndicator.HasAlarm = false;
-            axis2PositionIndicator.IsConnected = false;
-            axis2PositionIndicator.Location = new Point(3, 5);
-            axis2PositionIndicator.Margin = new Padding(3, 5, 3, 5);
-            axis2PositionIndicator.MaximumPosition = 20D;
-            axis2PositionIndicator.MinimumPosition = -20D;
-            axis2PositionIndicator.MinimumSize = new Size(140, 56);
-            axis2PositionIndicator.Name = "axis2PositionIndicator";
-            axis2PositionIndicator.NegativeLimit = false;
-            axis2PositionIndicator.PositiveLimit = false;
-            axis2PositionIndicator.Size = new Size(457, 66);
-            axis2PositionIndicator.TabIndex = 7;
-            axis2PositionIndicator.TabStop = false;
-            axis2PositionIndicator.UnitText = "°";
-            // 
-            // axis2NegativeLimitLamp
-            // 
-            axis2NegativeLimitLamp.BackColor = Color.FromArgb(241, 245, 249);
-            axis2NegativeLimitLamp.Dock = DockStyle.Fill;
-            axis2NegativeLimitLamp.Font = new Font("Microsoft YaHei UI", 8F);
-            axis2NegativeLimitLamp.ForeColor = Color.FromArgb(100, 116, 139);
-            axis2NegativeLimitLamp.Location = new Point(2, 78);
-            axis2NegativeLimitLamp.Margin = new Padding(2);
-            axis2NegativeLimitLamp.Name = "axis2NegativeLimitLamp";
-            axis2NegativeLimitLamp.Size = new Size(148, 20);
-            axis2NegativeLimitLamp.TabIndex = 8;
-            axis2NegativeLimitLamp.Text = "● 负限位 --";
-            axis2NegativeLimitLamp.TextAlign = ContentAlignment.MiddleCenter;
-            // 
-            // axis2OriginLamp
-            // 
-            axis2OriginLamp.BackColor = Color.FromArgb(241, 245, 249);
-            axis2OriginLamp.Dock = DockStyle.Fill;
-            axis2OriginLamp.Font = new Font("Microsoft YaHei UI", 8F);
-            axis2OriginLamp.ForeColor = Color.FromArgb(100, 116, 139);
-            axis2OriginLamp.Location = new Point(154, 78);
-            axis2OriginLamp.Margin = new Padding(2);
-            axis2OriginLamp.Name = "axis2OriginLamp";
-            axis2OriginLamp.Size = new Size(148, 20);
-            axis2OriginLamp.TabIndex = 9;
-            axis2OriginLamp.Text = "● 原点 --";
-            axis2OriginLamp.TextAlign = ContentAlignment.MiddleCenter;
-            // 
-            // axis2PositiveLimitLamp
-            // 
-            axis2PositiveLimitLamp.BackColor = Color.FromArgb(241, 245, 249);
-            axis2PositiveLimitLamp.Dock = DockStyle.Fill;
-            axis2PositiveLimitLamp.Font = new Font("Microsoft YaHei UI", 8F);
-            axis2PositiveLimitLamp.ForeColor = Color.FromArgb(100, 116, 139);
-            axis2PositiveLimitLamp.Location = new Point(306, 78);
-            axis2PositiveLimitLamp.Margin = new Padding(2);
-            axis2PositiveLimitLamp.Name = "axis2PositiveLimitLamp";
-            axis2PositiveLimitLamp.Size = new Size(155, 20);
-            axis2PositiveLimitLamp.TabIndex = 10;
-            axis2PositiveLimitLamp.Text = "● 正限位 --";
-            axis2PositiveLimitLamp.TextAlign = ContentAlignment.MiddleCenter;
-            // 
             // axis2StatusLabel
-            // 
+            //
             axis2StatusLabel.Dock = DockStyle.Fill;
             axis2StatusLabel.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
             axis2StatusLabel.ForeColor = Color.FromArgb(100, 116, 139);
@@ -660,9 +818,9 @@ namespace Page_switching
             axis2StatusLabel.TabIndex = 8;
             axis2StatusLabel.Text = "未连接";
             axis2StatusLabel.TextAlign = ContentAlignment.MiddleCenter;
-            // 
+            //
             // axis3NameLabel
-            // 
+            //
             axis3NameLabel.Dock = DockStyle.Fill;
             axis3NameLabel.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
             axis3NameLabel.ForeColor = Color.FromArgb(15, 23, 42);
@@ -674,92 +832,8 @@ namespace Page_switching
             axis3NameLabel.Text = "轴 3";
             axis3NameLabel.TextAlign = ContentAlignment.MiddleCenter;
             // 
-            // axis3FeedbackLayout
-            // 
-            axis3FeedbackLayout.ColumnCount = 3;
-            axis3FeedbackLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33F));
-            axis3FeedbackLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33F));
-            axis3FeedbackLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 34F));
-            axis3FeedbackLayout.Controls.Add(axis3PositionIndicator, 0, 0);
-            axis3FeedbackLayout.Controls.Add(axis3NegativeLimitLamp, 0, 1);
-            axis3FeedbackLayout.Controls.Add(axis3OriginLamp, 1, 1);
-            axis3FeedbackLayout.Controls.Add(axis3PositiveLimitLamp, 2, 1);
-            axis3FeedbackLayout.Dock = DockStyle.Fill;
-            axis3FeedbackLayout.Location = new Point(58, 226);
-            axis3FeedbackLayout.Margin = new Padding(0);
-            axis3FeedbackLayout.Name = "axis3FeedbackLayout";
-            axis3FeedbackLayout.RowCount = 2;
-            axis3FeedbackLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            axis3FeedbackLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 24F));
-            axis3FeedbackLayout.Size = new Size(463, 100);
-            axis3FeedbackLayout.TabIndex = 10;
-            // 
-            // axis3PositionIndicator
-            // 
-            axis3PositionIndicator.ActualPosition = null;
-            axis3PositionIndicator.BackColor = Color.White;
-            axis3FeedbackLayout.SetColumnSpan(axis3PositionIndicator, 3);
-            axis3PositionIndicator.Dock = DockStyle.Fill;
-            axis3PositionIndicator.ForeColor = Color.FromArgb(15, 23, 42);
-            axis3PositionIndicator.HasAlarm = false;
-            axis3PositionIndicator.IsConnected = false;
-            axis3PositionIndicator.Location = new Point(3, 5);
-            axis3PositionIndicator.Margin = new Padding(3, 5, 3, 5);
-            axis3PositionIndicator.MaximumPosition = 20D;
-            axis3PositionIndicator.MinimumPosition = -20D;
-            axis3PositionIndicator.MinimumSize = new Size(140, 56);
-            axis3PositionIndicator.Name = "axis3PositionIndicator";
-            axis3PositionIndicator.NegativeLimit = false;
-            axis3PositionIndicator.PositiveLimit = false;
-            axis3PositionIndicator.Size = new Size(457, 66);
-            axis3PositionIndicator.TabIndex = 10;
-            axis3PositionIndicator.TabStop = false;
-            axis3PositionIndicator.UnitText = "°";
-            // 
-            // axis3NegativeLimitLamp
-            // 
-            axis3NegativeLimitLamp.BackColor = Color.FromArgb(241, 245, 249);
-            axis3NegativeLimitLamp.Dock = DockStyle.Fill;
-            axis3NegativeLimitLamp.Font = new Font("Microsoft YaHei UI", 8F);
-            axis3NegativeLimitLamp.ForeColor = Color.FromArgb(100, 116, 139);
-            axis3NegativeLimitLamp.Location = new Point(2, 78);
-            axis3NegativeLimitLamp.Margin = new Padding(2);
-            axis3NegativeLimitLamp.Name = "axis3NegativeLimitLamp";
-            axis3NegativeLimitLamp.Size = new Size(148, 20);
-            axis3NegativeLimitLamp.TabIndex = 11;
-            axis3NegativeLimitLamp.Text = "● 负限位 --";
-            axis3NegativeLimitLamp.TextAlign = ContentAlignment.MiddleCenter;
-            // 
-            // axis3OriginLamp
-            // 
-            axis3OriginLamp.BackColor = Color.FromArgb(241, 245, 249);
-            axis3OriginLamp.Dock = DockStyle.Fill;
-            axis3OriginLamp.Font = new Font("Microsoft YaHei UI", 8F);
-            axis3OriginLamp.ForeColor = Color.FromArgb(100, 116, 139);
-            axis3OriginLamp.Location = new Point(154, 78);
-            axis3OriginLamp.Margin = new Padding(2);
-            axis3OriginLamp.Name = "axis3OriginLamp";
-            axis3OriginLamp.Size = new Size(148, 20);
-            axis3OriginLamp.TabIndex = 12;
-            axis3OriginLamp.Text = "● 原点 --";
-            axis3OriginLamp.TextAlign = ContentAlignment.MiddleCenter;
-            // 
-            // axis3PositiveLimitLamp
-            // 
-            axis3PositiveLimitLamp.BackColor = Color.FromArgb(241, 245, 249);
-            axis3PositiveLimitLamp.Dock = DockStyle.Fill;
-            axis3PositiveLimitLamp.Font = new Font("Microsoft YaHei UI", 8F);
-            axis3PositiveLimitLamp.ForeColor = Color.FromArgb(100, 116, 139);
-            axis3PositiveLimitLamp.Location = new Point(306, 78);
-            axis3PositiveLimitLamp.Margin = new Padding(2);
-            axis3PositiveLimitLamp.Name = "axis3PositiveLimitLamp";
-            axis3PositiveLimitLamp.Size = new Size(155, 20);
-            axis3PositiveLimitLamp.TabIndex = 13;
-            axis3PositiveLimitLamp.Text = "● 正限位 --";
-            axis3PositiveLimitLamp.TextAlign = ContentAlignment.MiddleCenter;
-            // 
             // axis3StatusLabel
-            // 
+            //
             axis3StatusLabel.Dock = DockStyle.Fill;
             axis3StatusLabel.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
             axis3StatusLabel.ForeColor = Color.FromArgb(100, 116, 139);
@@ -770,9 +844,9 @@ namespace Page_switching
             axis3StatusLabel.TabIndex = 11;
             axis3StatusLabel.Text = "未连接";
             axis3StatusLabel.TextAlign = ContentAlignment.MiddleCenter;
-            // 
+            //
             // axis4NameLabel
-            // 
+            //
             axis4NameLabel.Dock = DockStyle.Fill;
             axis4NameLabel.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
             axis4NameLabel.ForeColor = Color.FromArgb(15, 23, 42);
@@ -784,92 +858,8 @@ namespace Page_switching
             axis4NameLabel.Text = "轴 4";
             axis4NameLabel.TextAlign = ContentAlignment.MiddleCenter;
             // 
-            // axis4FeedbackLayout
-            // 
-            axis4FeedbackLayout.ColumnCount = 3;
-            axis4FeedbackLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33F));
-            axis4FeedbackLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33F));
-            axis4FeedbackLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 34F));
-            axis4FeedbackLayout.Controls.Add(axis4PositionIndicator, 0, 0);
-            axis4FeedbackLayout.Controls.Add(axis4NegativeLimitLamp, 0, 1);
-            axis4FeedbackLayout.Controls.Add(axis4OriginLamp, 1, 1);
-            axis4FeedbackLayout.Controls.Add(axis4PositiveLimitLamp, 2, 1);
-            axis4FeedbackLayout.Dock = DockStyle.Fill;
-            axis4FeedbackLayout.Location = new Point(58, 326);
-            axis4FeedbackLayout.Margin = new Padding(0);
-            axis4FeedbackLayout.Name = "axis4FeedbackLayout";
-            axis4FeedbackLayout.RowCount = 2;
-            axis4FeedbackLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            axis4FeedbackLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 24F));
-            axis4FeedbackLayout.Size = new Size(463, 101);
-            axis4FeedbackLayout.TabIndex = 13;
-            // 
-            // axis4PositionIndicator
-            // 
-            axis4PositionIndicator.ActualPosition = null;
-            axis4PositionIndicator.BackColor = Color.White;
-            axis4FeedbackLayout.SetColumnSpan(axis4PositionIndicator, 3);
-            axis4PositionIndicator.Dock = DockStyle.Fill;
-            axis4PositionIndicator.ForeColor = Color.FromArgb(15, 23, 42);
-            axis4PositionIndicator.HasAlarm = false;
-            axis4PositionIndicator.IsConnected = false;
-            axis4PositionIndicator.Location = new Point(3, 5);
-            axis4PositionIndicator.Margin = new Padding(3, 5, 3, 5);
-            axis4PositionIndicator.MaximumPosition = 20D;
-            axis4PositionIndicator.MinimumPosition = -20D;
-            axis4PositionIndicator.MinimumSize = new Size(140, 56);
-            axis4PositionIndicator.Name = "axis4PositionIndicator";
-            axis4PositionIndicator.NegativeLimit = false;
-            axis4PositionIndicator.PositiveLimit = false;
-            axis4PositionIndicator.Size = new Size(457, 67);
-            axis4PositionIndicator.TabIndex = 13;
-            axis4PositionIndicator.TabStop = false;
-            axis4PositionIndicator.UnitText = "°";
-            // 
-            // axis4NegativeLimitLamp
-            // 
-            axis4NegativeLimitLamp.BackColor = Color.FromArgb(241, 245, 249);
-            axis4NegativeLimitLamp.Dock = DockStyle.Fill;
-            axis4NegativeLimitLamp.Font = new Font("Microsoft YaHei UI", 8F);
-            axis4NegativeLimitLamp.ForeColor = Color.FromArgb(100, 116, 139);
-            axis4NegativeLimitLamp.Location = new Point(2, 79);
-            axis4NegativeLimitLamp.Margin = new Padding(2);
-            axis4NegativeLimitLamp.Name = "axis4NegativeLimitLamp";
-            axis4NegativeLimitLamp.Size = new Size(148, 20);
-            axis4NegativeLimitLamp.TabIndex = 14;
-            axis4NegativeLimitLamp.Text = "● 负限位 --";
-            axis4NegativeLimitLamp.TextAlign = ContentAlignment.MiddleCenter;
-            // 
-            // axis4OriginLamp
-            // 
-            axis4OriginLamp.BackColor = Color.FromArgb(241, 245, 249);
-            axis4OriginLamp.Dock = DockStyle.Fill;
-            axis4OriginLamp.Font = new Font("Microsoft YaHei UI", 8F);
-            axis4OriginLamp.ForeColor = Color.FromArgb(100, 116, 139);
-            axis4OriginLamp.Location = new Point(154, 79);
-            axis4OriginLamp.Margin = new Padding(2);
-            axis4OriginLamp.Name = "axis4OriginLamp";
-            axis4OriginLamp.Size = new Size(148, 20);
-            axis4OriginLamp.TabIndex = 15;
-            axis4OriginLamp.Text = "● 原点 --";
-            axis4OriginLamp.TextAlign = ContentAlignment.MiddleCenter;
-            // 
-            // axis4PositiveLimitLamp
-            // 
-            axis4PositiveLimitLamp.BackColor = Color.FromArgb(241, 245, 249);
-            axis4PositiveLimitLamp.Dock = DockStyle.Fill;
-            axis4PositiveLimitLamp.Font = new Font("Microsoft YaHei UI", 8F);
-            axis4PositiveLimitLamp.ForeColor = Color.FromArgb(100, 116, 139);
-            axis4PositiveLimitLamp.Location = new Point(306, 79);
-            axis4PositiveLimitLamp.Margin = new Padding(2);
-            axis4PositiveLimitLamp.Name = "axis4PositiveLimitLamp";
-            axis4PositiveLimitLamp.Size = new Size(155, 20);
-            axis4PositiveLimitLamp.TabIndex = 16;
-            axis4PositiveLimitLamp.Text = "● 正限位 --";
-            axis4PositiveLimitLamp.TextAlign = ContentAlignment.MiddleCenter;
-            // 
             // axis4StatusLabel
-            // 
+            //
             axis4StatusLabel.Dock = DockStyle.Fill;
             axis4StatusLabel.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
             axis4StatusLabel.ForeColor = Color.FromArgb(100, 116, 139);
@@ -880,9 +870,9 @@ namespace Page_switching
             axis4StatusLabel.TabIndex = 14;
             axis4StatusLabel.Text = "未连接";
             axis4StatusLabel.TextAlign = ContentAlignment.MiddleCenter;
-            // 
+            //
             // controlGroup
-            // 
+            //
             controlGroup.BackColor = Color.White;
             controlGroup.Controls.Add(controlLayout);
             controlGroup.Dock = DockStyle.Fill;
@@ -896,9 +886,9 @@ namespace Page_switching
             controlGroup.TabIndex = 1;
             controlGroup.TabStop = false;
             controlGroup.Text = "选定轴手动操作";
-            // 
+            //
             // controlLayout
-            // 
+            //
             controlLayout.ColumnCount = 2;
             controlLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 42F));
             controlLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 58F));
@@ -936,9 +926,9 @@ namespace Page_switching
             controlLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             controlLayout.Size = new Size(427, 425);
             controlLayout.TabIndex = 0;
-            // 
+            //
             // selectedAxisCaptionLabel
-            // 
+            //
             selectedAxisCaptionLabel.Dock = DockStyle.Fill;
             selectedAxisCaptionLabel.Font = new Font("Microsoft YaHei UI", 9F);
             selectedAxisCaptionLabel.ForeColor = Color.FromArgb(71, 85, 105);
@@ -949,10 +939,9 @@ namespace Page_switching
             selectedAxisCaptionLabel.TabIndex = 0;
             selectedAxisCaptionLabel.Text = "控制轴";
             selectedAxisCaptionLabel.TextAlign = ContentAlignment.MiddleLeft;
-            // 
+            //
             // axisSelector
             // 
-            axisSelector.BackColor = Color.White;
             axisSelector.Dock = DockStyle.Fill;
             axisSelector.DropDownStyle = ComboBoxStyle.DropDownList;
             axisSelector.FlatStyle = FlatStyle.Flat;
@@ -966,9 +955,9 @@ namespace Page_switching
             axisSelector.Size = new Size(244, 27);
             axisSelector.TabIndex = 0;
             axisSelector.SelectedIndexChanged += AxisSelector_SelectedIndexChanged;
-            // 
+            //
             // selectedStatusCaptionLabel
-            // 
+            //
             selectedStatusCaptionLabel.Dock = DockStyle.Fill;
             selectedStatusCaptionLabel.Font = new Font("Microsoft YaHei UI", 9F);
             selectedStatusCaptionLabel.ForeColor = Color.FromArgb(71, 85, 105);
@@ -979,9 +968,9 @@ namespace Page_switching
             selectedStatusCaptionLabel.TabIndex = 1;
             selectedStatusCaptionLabel.Text = "当前状态";
             selectedStatusCaptionLabel.TextAlign = ContentAlignment.MiddleLeft;
-            // 
+            //
             // selectedStatusLabel
-            // 
+            //
             selectedStatusLabel.Dock = DockStyle.Fill;
             selectedStatusLabel.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
             selectedStatusLabel.ForeColor = Color.FromArgb(100, 116, 139);
@@ -992,9 +981,9 @@ namespace Page_switching
             selectedStatusLabel.TabIndex = 2;
             selectedStatusLabel.Text = "未连接";
             selectedStatusLabel.TextAlign = ContentAlignment.MiddleLeft;
-            // 
+            //
             // selectedActualCaptionLabel
-            // 
+            //
             selectedActualCaptionLabel.Dock = DockStyle.Fill;
             selectedActualCaptionLabel.Font = new Font("Microsoft YaHei UI", 9F);
             selectedActualCaptionLabel.ForeColor = Color.FromArgb(71, 85, 105);
@@ -1005,9 +994,9 @@ namespace Page_switching
             selectedActualCaptionLabel.TabIndex = 3;
             selectedActualCaptionLabel.Text = "实际位置";
             selectedActualCaptionLabel.TextAlign = ContentAlignment.MiddleLeft;
-            // 
+            //
             // selectedActualLabel
-            // 
+            //
             selectedActualLabel.Dock = DockStyle.Fill;
             selectedActualLabel.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
             selectedActualLabel.ForeColor = Color.FromArgb(29, 78, 216);
@@ -1018,9 +1007,9 @@ namespace Page_switching
             selectedActualLabel.TabIndex = 4;
             selectedActualLabel.Text = "--";
             selectedActualLabel.TextAlign = ContentAlignment.MiddleLeft;
-            // 
+            //
             // selectedSpeedCaptionLabel
-            // 
+            //
             selectedSpeedCaptionLabel.Dock = DockStyle.Fill;
             selectedSpeedCaptionLabel.Font = new Font("Microsoft YaHei UI", 9F);
             selectedSpeedCaptionLabel.ForeColor = Color.FromArgb(71, 85, 105);
@@ -1031,9 +1020,9 @@ namespace Page_switching
             selectedSpeedCaptionLabel.TabIndex = 7;
             selectedSpeedCaptionLabel.Text = "当前速度";
             selectedSpeedCaptionLabel.TextAlign = ContentAlignment.MiddleLeft;
-            // 
+            //
             // selectedSpeedLabel
-            // 
+            //
             selectedSpeedLabel.Dock = DockStyle.Fill;
             selectedSpeedLabel.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
             selectedSpeedLabel.ForeColor = Color.FromArgb(71, 85, 105);
@@ -1044,9 +1033,9 @@ namespace Page_switching
             selectedSpeedLabel.TabIndex = 8;
             selectedSpeedLabel.Text = "--";
             selectedSpeedLabel.TextAlign = ContentAlignment.MiddleLeft;
-            // 
+            //
             // jogSpeedCaptionLabel
-            // 
+            //
             jogSpeedCaptionLabel.Dock = DockStyle.Fill;
             jogSpeedCaptionLabel.Font = new Font("Microsoft YaHei UI", 9F);
             jogSpeedCaptionLabel.ForeColor = Color.FromArgb(71, 85, 105);
@@ -1057,11 +1046,9 @@ namespace Page_switching
             jogSpeedCaptionLabel.TabIndex = 9;
             jogSpeedCaptionLabel.Text = "点动速度";
             jogSpeedCaptionLabel.TextAlign = ContentAlignment.MiddleLeft;
-            // 
+            //
             // jogSpeedInput
             // 
-            jogSpeedInput.BackColor = Color.White;
-            jogSpeedInput.BorderStyle = BorderStyle.FixedSingle;
             jogSpeedInput.DecimalPlaces = 1;
             jogSpeedInput.Dock = DockStyle.Fill;
             jogSpeedInput.Font = new Font("Microsoft YaHei UI", 10F);
@@ -1075,9 +1062,9 @@ namespace Page_switching
             jogSpeedInput.Size = new Size(244, 24);
             jogSpeedInput.TabIndex = 1;
             jogSpeedInput.Value = new decimal(new int[] { 10, 0, 0, 0 });
-            // 
+            //
             // jogSectionLabel
-            // 
+            //
             controlLayout.SetColumnSpan(jogSectionLabel, 2);
             jogSectionLabel.Dock = DockStyle.Fill;
             jogSectionLabel.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
@@ -1090,9 +1077,9 @@ namespace Page_switching
             jogSectionLabel.TabIndex = 10;
             jogSectionLabel.Text = "点动控制";
             jogSectionLabel.TextAlign = ContentAlignment.MiddleLeft;
-            // 
+            //
             // jogNegativeButton
-            // 
+            //
             jogNegativeButton.BackColor = Color.FromArgb(248, 250, 252);
             jogNegativeButton.Cursor = Cursors.Hand;
             jogNegativeButton.Dock = DockStyle.Fill;
@@ -1110,9 +1097,9 @@ namespace Page_switching
             jogNegativeButton.MouseDown += JogNegativeButton_MouseDown;
             jogNegativeButton.MouseLeave += JogButton_MouseUp;
             jogNegativeButton.MouseUp += JogButton_MouseUp;
-            // 
+            //
             // jogPositiveButton
-            // 
+            //
             jogPositiveButton.BackColor = Color.FromArgb(248, 250, 252);
             jogPositiveButton.Cursor = Cursors.Hand;
             jogPositiveButton.Dock = DockStyle.Fill;
@@ -1130,9 +1117,9 @@ namespace Page_switching
             jogPositiveButton.MouseDown += JogPositiveButton_MouseDown;
             jogPositiveButton.MouseLeave += JogButton_MouseUp;
             jogPositiveButton.MouseUp += JogButton_MouseUp;
-            // 
+            //
             // singleAxisSectionLabel
-            // 
+            //
             controlLayout.SetColumnSpan(singleAxisSectionLabel, 2);
             singleAxisSectionLabel.Dock = DockStyle.Fill;
             singleAxisSectionLabel.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
@@ -1145,9 +1132,9 @@ namespace Page_switching
             singleAxisSectionLabel.TabIndex = 13;
             singleAxisSectionLabel.Text = "单轴动作";
             singleAxisSectionLabel.TextAlign = ContentAlignment.MiddleLeft;
-            // 
+            //
             // homeSelectedButton
-            // 
+            //
             homeSelectedButton.BackColor = Color.FromArgb(248, 250, 252);
             homeSelectedButton.Cursor = Cursors.Hand;
             homeSelectedButton.Dock = DockStyle.Fill;
@@ -1163,9 +1150,9 @@ namespace Page_switching
             homeSelectedButton.Text = "选定轴回零";
             homeSelectedButton.UseVisualStyleBackColor = false;
             homeSelectedButton.Click += HomeSelectedButton_Click;
-            // 
+            //
             // stopSelectedButton
-            // 
+            //
             stopSelectedButton.BackColor = Color.FromArgb(185, 28, 28);
             stopSelectedButton.Cursor = Cursors.Hand;
             stopSelectedButton.Dock = DockStyle.Fill;
@@ -1180,10 +1167,9 @@ namespace Page_switching
             stopSelectedButton.Text = "选定轴停止";
             stopSelectedButton.UseVisualStyleBackColor = false;
             stopSelectedButton.Click += StopSelectedButton_Click;
-            // 
+            //
             // helperLabel
             // 
-            helperLabel.AutoEllipsis = true;
             controlLayout.SetColumnSpan(helperLabel, 2);
             helperLabel.Dock = DockStyle.Fill;
             helperLabel.Font = new Font("Microsoft YaHei UI", 9F);
@@ -1195,9 +1181,10 @@ namespace Page_switching
             helperLabel.Size = new Size(423, 122);
             helperLabel.TabIndex = 10;
             helperLabel.Text = "提示：点动按钮按下运行，松开立即停止。";
-            // 
+            //
             // Manual
             // 
+            Font = new Font("Microsoft YaHei UI", 9F);
             AutoScaleDimensions = new SizeF(96F, 96F);
             AutoScaleMode = AutoScaleMode.Dpi;
             AutoScroll = true;
