@@ -187,11 +187,69 @@ namespace Page_switching
                 return;
             }
 
-            operationList.Items.Add(entry);
-            if (operationList.Items.Count > 500)
-                operationList.Items.RemoveAt(0);
-            operationList.TopIndex = operationList.Items.Count - 1;
+            AppendOperationRow(entry);
+            if (operationList.Rows.Count > 500)
+                operationList.Rows.RemoveAt(0);
+            ScrollOperationsToLatest();
             operationPathLabel.Text = "日志保存位置：" + OperationJournal.FilePath;
+        }
+
+        private void AppendOperationRow(string entry)
+        {
+            var pageStart = entry.IndexOf("  [", StringComparison.Ordinal);
+            var pageEnd = pageStart >= 0 ? entry.IndexOf(']', pageStart + 3) : -1;
+            var index = pageEnd >= 0
+                ? operationList.Rows.Add(entry[..pageStart], entry[(pageStart + 3)..pageEnd], entry[(pageEnd + 1)..].TrimStart())
+                : operationList.Rows.Add("", "系统", entry);
+            var row = operationList.Rows[index];
+            row.Tag = entry;
+            if (entry.Contains("失败", StringComparison.Ordinal) || entry.Contains("中断", StringComparison.Ordinal))
+                row.Cells[2].Style.ForeColor = UiPalette.Danger;
+        }
+
+        private void ScrollOperationsToLatest()
+        {
+            if (operationAutoScroll.Checked && operationList.IsHandleCreated && operationList.Rows.Count > 0)
+                operationList.FirstDisplayedScrollingRowIndex = operationList.Rows.Count - 1;
+        }
+
+        private void OperationAutoScroll_CheckedChanged(object? sender, EventArgs e)
+        {
+            ScrollOperationsToLatest();
+            if (_recordOperations)
+                OperationJournal.Record("操作记录", operationAutoScroll.Checked ? "开启自动滚动" : "暂停自动滚动");
+        }
+
+        private void CopyOperationButton_Click(object? sender, EventArgs e)
+        {
+            try
+            {
+                var entries = operationList.SelectedRows.Cast<DataGridViewRow>()
+                    .OrderBy(row => row.Index).Select(row => Convert.ToString(row.Tag));
+                var text = string.Join(Environment.NewLine, entries);
+                if (text.Length == 0) return;
+                Clipboard.SetText(text);
+                OperationJournal.Record("操作记录", "已复制选中的记录");
+            }
+            catch (Exception ex)
+            {
+                OperationJournal.Record("操作记录", "复制失败：" + ex.Message);
+            }
+        }
+
+        private void OpenOperationFolderButton_Click(object? sender, EventArgs e)
+        {
+            try
+            {
+                var directory = Path.GetDirectoryName(OperationJournal.FilePath)!;
+                Directory.CreateDirectory(directory);
+                Process.Start(new ProcessStartInfo(directory) { UseShellExecute = true });
+                OperationJournal.Record("操作记录", "已打开日志目录");
+            }
+            catch (Exception ex)
+            {
+                OperationJournal.Record("操作记录", "打开目录失败：" + ex.Message);
+            }
         }
 
         private void LoadOperationHistory()
@@ -200,11 +258,11 @@ namespace Page_switching
             {
                 if (File.Exists(OperationJournal.FilePath))
                     foreach (var entry in File.ReadLines(OperationJournal.FilePath).TakeLast(500))
-                        operationList.Items.Add(entry);
+                        AppendOperationRow(entry);
             }
             catch (Exception ex)
             {
-                operationList.Items.Add("读取历史操作记录失败：" + ex.Message);
+                AppendOperationRow("读取历史操作记录失败：" + ex.Message);
             }
         }
 
@@ -247,6 +305,9 @@ namespace Page_switching
                 button.ForeColor = isActive ? UiPalette.PrimaryHover : UiPalette.SecondaryText;
                 button.FlatAppearance.MouseOverBackColor = UiPalette.Selection;
             }
+
+            navigationMarker.Top = activeButton.Top;
+            navigationMarker.Height = activeButton.Height;
 
             UpdateHeaderStatus();
         }
@@ -292,6 +353,14 @@ namespace Page_switching
         // 检查一个控制权相关配置项是否已经填入 PLC 变量名。
         private static bool HasControlSetting(string key) =>
             !string.IsNullOrWhiteSpace(ConfigurationManager.AppSettings[key]);
+
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+            var area = Screen.FromControl(this).WorkingArea;
+            Size = new Size(Math.Min(Width, area.Width), Math.Min(Height, area.Height));
+            CenterToScreen();
+        }
 
         // 切换到自动页面。
         private void Bu_auto_Click(object sender, EventArgs e) => NavigateTo(_autoPage, Bu_auto);

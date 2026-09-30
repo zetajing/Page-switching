@@ -38,7 +38,6 @@ namespace Page_switching
             _ownsAxisService = ownsAxisService;
 
             InitializeComponent();
-            Size = new Size(1210, 796);
 
             _positionIndicators =
             [

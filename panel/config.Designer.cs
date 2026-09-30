@@ -112,7 +112,7 @@ partial class Config
         // 
         // rootLayout
         // 
-        rootLayout.AutoScroll = true;
+        rootLayout.AutoScroll = false;
         rootLayout.BackColor = Color.FromArgb(241, 245, 249);
         rootLayout.ColumnCount = 1;
         rootLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
@@ -125,13 +125,14 @@ partial class Config
         rootLayout.Location = new Point(0, 0);
         rootLayout.Margin = new Padding(2, 3, 2, 3);
         rootLayout.Name = "rootLayout";
-        rootLayout.Padding = new Padding(12, 14, 12, 14);
+        rootLayout.Padding = new Padding(16);
         rootLayout.RowCount = 5;
-        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 36F));
-        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 27F));
-        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 367F));
-        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 122F));
-        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 97F));
+
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 42F));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 26F));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 292F));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 132F));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 156F));
         rootLayout.Size = new Size(941, 677);
         rootLayout.TabIndex = 0;
         // 
@@ -145,7 +146,7 @@ partial class Config
         titleLabel.Name = "titleLabel";
         titleLabel.Size = new Size(913, 36);
         titleLabel.TabIndex = 0;
-        titleLabel.Text = "通信配置";
+        titleLabel.Text = "系统配置";
         titleLabel.TextAlign = ContentAlignment.MiddleLeft;
         // 
         // subtitleLabel
@@ -158,7 +159,7 @@ partial class Config
         subtitleLabel.Name = "subtitleLabel";
         subtitleLabel.Size = new Size(913, 27);
         subtitleLabel.TabIndex = 1;
-        subtitleLabel.Text = "TwinCAT ADS TCP Router 与倍福 PLC 路由参数";
+        subtitleLabel.Text = "ADS 路由、波形生成方案和数据库连接";
         subtitleLabel.TextAlign = ContentAlignment.MiddleLeft;
         // 
         // routerGroup
@@ -171,49 +172,51 @@ partial class Config
         routerGroup.Location = new Point(14, 80);
         routerGroup.Margin = new Padding(2, 3, 2, 3);
         routerGroup.Name = "routerGroup";
-        routerGroup.Padding = new Padding(11, 15, 11, 12);
+        routerGroup.Padding = new Padding(16, 12, 16, 12);
         routerGroup.Size = new Size(913, 361);
         routerGroup.TabIndex = 2;
         routerGroup.TabStop = false;
-        routerGroup.Text = "TwinCAT.Ads.TcpRouter";
+        routerGroup.Text = "ADS 通信与路由";
         // 
         // routerLayout
         // 
-        routerLayout.ColumnCount = 3;
-        routerLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 148F));
-        routerLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 298F));
-        routerLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+        routerLayout.ColumnCount = 4;
+
+        routerLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 130F));
+        routerLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+        routerLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 130F));
+        routerLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
         routerLayout.Controls.Add(routerEnabledCheckBox, 0, 0);
-        routerLayout.Controls.Add(routerStateLabel, 1, 0);
+        routerLayout.Controls.Add(routerStateLabel, 2, 0);
         routerLayout.Controls.Add(routerNameLabel, 0, 1);
         routerLayout.Controls.Add(routerNameTextBox, 1, 1);
         routerLayout.Controls.Add(localNetIdLabel, 0, 2);
         routerLayout.Controls.Add(localNetIdTextBox, 1, 2);
         routerLayout.Controls.Add(routerTcpPortLabel, 0, 3);
         routerLayout.Controls.Add(routerTcpPortInput, 1, 3);
-        routerLayout.Controls.Add(remoteNameLabel, 0, 4);
-        routerLayout.Controls.Add(remoteNameTextBox, 1, 4);
-        routerLayout.Controls.Add(remoteAddressLabel, 0, 5);
-        routerLayout.Controls.Add(remoteAddressTextBox, 1, 5);
-        routerLayout.Controls.Add(remoteNetIdLabel, 0, 6);
-        routerLayout.Controls.Add(remoteNetIdTextBox, 1, 6);
-        routerLayout.Controls.Add(saveRouterButton, 1, 7);
-        routerLayout.Controls.Add(saveResultLabel, 1, 8);
-        routerLayout.Controls.Add(routerNoticeLabel, 0, 9);
+        routerLayout.Controls.Add(remoteNameLabel, 2, 1);
+        routerLayout.Controls.Add(remoteNameTextBox, 3, 1);
+        routerLayout.Controls.Add(remoteAddressLabel, 2, 2);
+        routerLayout.Controls.Add(remoteAddressTextBox, 3, 2);
+        routerLayout.Controls.Add(remoteNetIdLabel, 2, 3);
+        routerLayout.Controls.Add(remoteNetIdTextBox, 3, 3);
+        routerLayout.Controls.Add(saveRouterButton, 1, 4);
+        routerLayout.Controls.Add(saveResultLabel, 2, 4);
+        routerLayout.Controls.Add(routerNoticeLabel, 0, 5);
         routerLayout.Dock = DockStyle.Fill;
         routerLayout.Location = new Point(11, 32);
         routerLayout.Margin = new Padding(2, 3, 2, 3);
         routerLayout.Name = "routerLayout";
-        routerLayout.RowCount = 10;
+        routerLayout.SetColumnSpan(routerEnabledCheckBox, 2);
+        routerLayout.SetColumnSpan(routerStateLabel, 2);
+        routerLayout.SetColumnSpan(saveResultLabel, 2);
+        routerLayout.RowCount = 6;
+
         routerLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
-        routerLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
-        routerLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
-        routerLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
-        routerLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
-        routerLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
-        routerLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
-        routerLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 39F));
-        routerLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 26F));
+        routerLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 38F));
+        routerLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 38F));
+        routerLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 38F));
+        routerLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 42F));
         routerLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
         routerLayout.Size = new Size(891, 317);
         routerLayout.TabIndex = 0;
@@ -263,6 +266,7 @@ partial class Config
         routerNameTextBox.BackColor = Color.White;
         routerNameTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         routerNameTextBox.Name = "routerNameTextBox";
+        routerNameTextBox.BorderStyle = BorderStyle.FixedSingle;
         routerNameTextBox.Size = new Size(294, 24);
         routerNameTextBox.TabIndex = 3;
         // 
@@ -288,6 +292,7 @@ partial class Config
         localNetIdTextBox.BackColor = Color.White;
         localNetIdTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         localNetIdTextBox.Name = "localNetIdTextBox";
+        localNetIdTextBox.BorderStyle = BorderStyle.FixedSingle;
         localNetIdTextBox.Size = new Size(294, 24);
         localNetIdTextBox.TabIndex = 5;
         // 
@@ -315,6 +320,7 @@ partial class Config
         routerTcpPortInput.BackColor = Color.White;
         routerTcpPortInput.ForeColor = Color.FromArgb(15, 23, 42);
         routerTcpPortInput.Name = "routerTcpPortInput";
+        routerTcpPortInput.BorderStyle = BorderStyle.FixedSingle;
         routerTcpPortInput.Size = new Size(294, 24);
         routerTcpPortInput.TabIndex = 7;
         routerTcpPortInput.Value = new decimal(new int[] { 48898, 0, 0, 0 });
@@ -341,6 +347,7 @@ partial class Config
         remoteNameTextBox.BackColor = Color.White;
         remoteNameTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         remoteNameTextBox.Name = "remoteNameTextBox";
+        remoteNameTextBox.BorderStyle = BorderStyle.FixedSingle;
         remoteNameTextBox.Size = new Size(294, 24);
         remoteNameTextBox.TabIndex = 9;
         // 
@@ -366,6 +373,7 @@ partial class Config
         remoteAddressTextBox.BackColor = Color.White;
         remoteAddressTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         remoteAddressTextBox.Name = "remoteAddressTextBox";
+        remoteAddressTextBox.BorderStyle = BorderStyle.FixedSingle;
         remoteAddressTextBox.Size = new Size(294, 24);
         remoteAddressTextBox.TabIndex = 11;
         // 
@@ -391,6 +399,7 @@ partial class Config
         remoteNetIdTextBox.BackColor = Color.White;
         remoteNetIdTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         remoteNetIdTextBox.Name = "remoteNetIdTextBox";
+        remoteNetIdTextBox.BorderStyle = BorderStyle.FixedSingle;
         remoteNetIdTextBox.Size = new Size(294, 24);
         remoteNetIdTextBox.TabIndex = 13;
         // 
@@ -406,7 +415,8 @@ partial class Config
         saveRouterButton.Location = new Point(150, 227);
         saveRouterButton.Margin = new Padding(2, 3, 2, 3);
         saveRouterButton.Name = "saveRouterButton";
-        saveRouterButton.Size = new Size(124, 32);
+        saveRouterButton.Cursor = Cursors.Hand;
+        saveRouterButton.Size = new Size(140, 34);
         saveRouterButton.TabIndex = 14;
         saveRouterButton.Text = "保存 Router 配置";
         saveRouterButton.UseVisualStyleBackColor = false;
@@ -425,17 +435,18 @@ partial class Config
         // 
         // routerNoticeLabel
         // 
-        routerLayout.SetColumnSpan(routerNoticeLabel, 3);
+        routerLayout.SetColumnSpan(routerNoticeLabel, 4);
         routerNoticeLabel.Dock = DockStyle.Fill;
         routerNoticeLabel.Font = new Font("Microsoft YaHei UI", 9F);
-        routerNoticeLabel.ForeColor = Color.FromArgb(154, 52, 18);
+        routerNoticeLabel.ForeColor = Color.FromArgb(100, 116, 139);
         routerNoticeLabel.Location = new Point(2, 289);
         routerNoticeLabel.Margin = new Padding(2, 0, 2, 0);
         routerNoticeLabel.Name = "routerNoticeLabel";
+        routerNoticeLabel.AutoEllipsis = true;
         routerNoticeLabel.Padding = new Padding(0, 3, 0, 0);
         routerNoticeLabel.Size = new Size(887, 28);
         routerNoticeLabel.TabIndex = 16;
-        routerNoticeLabel.Text = "提示：系统 TwinCAT Router 已运行时请关闭独立 Router，否则 TCP 48898 端口会冲突。远程 PLC 还需要配置返回本机 AMS Net ID 的路由。";
+        routerNoticeLabel.Text = "系统 TwinCAT Router 运行时应关闭独立 Router；PLC 需配置到本机 AMS Net ID 的返回路由。";
         // 
         // waveGeneratorGroup
         // 
@@ -456,11 +467,12 @@ partial class Config
         // waveGeneratorLayout
         // 
         waveGeneratorLayout.ColumnCount = 5;
-        waveGeneratorLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 171F));
-        waveGeneratorLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 506F));
-        waveGeneratorLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 68F));
-        waveGeneratorLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 86F));
+
+        waveGeneratorLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 140F));
         waveGeneratorLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+        waveGeneratorLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 90F));
+        waveGeneratorLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 112F));
+        waveGeneratorLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 0F));
         waveGeneratorLayout.Controls.Add(waveGeneratorPathLabel, 0, 0);
         waveGeneratorLayout.Controls.Add(waveGeneratorPathTextBox, 1, 0);
         waveGeneratorLayout.Controls.Add(browseWaveGeneratorButton, 2, 0);
@@ -473,9 +485,10 @@ partial class Config
         waveGeneratorLayout.Margin = new Padding(2, 3, 2, 3);
         waveGeneratorLayout.Name = "waveGeneratorLayout";
         waveGeneratorLayout.RowCount = 3;
-        waveGeneratorLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 29F));
-        waveGeneratorLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 17F));
-        waveGeneratorLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 29F));
+
+        waveGeneratorLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
+        waveGeneratorLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 24F));
+        waveGeneratorLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
         waveGeneratorLayout.Size = new Size(891, 76);
         waveGeneratorLayout.TabIndex = 0;
         // 
@@ -501,21 +514,25 @@ partial class Config
         waveGeneratorPathTextBox.BackColor = Color.White;
         waveGeneratorPathTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         waveGeneratorPathTextBox.Name = "waveGeneratorPathTextBox";
+        waveGeneratorPathTextBox.BorderStyle = BorderStyle.FixedSingle;
         waveGeneratorPathTextBox.Size = new Size(502, 23);
         waveGeneratorPathTextBox.TabIndex = 1;
         waveGeneratorPathTextBox.TextChanged += WaveGeneratorPathTextBox_TextChanged;
         // 
         // browseWaveGeneratorButton
         // 
-        browseWaveGeneratorButton.BackColor = Color.FromArgb(226, 232, 240);
+        browseWaveGeneratorButton.BackColor = Color.FromArgb(248, 250, 252);
         browseWaveGeneratorButton.Dock = DockStyle.Fill;
-        browseWaveGeneratorButton.FlatAppearance.BorderSize = 0;
+        browseWaveGeneratorButton.FlatAppearance.BorderSize = 1;
         browseWaveGeneratorButton.FlatStyle = FlatStyle.Flat;
         browseWaveGeneratorButton.ForeColor = Color.FromArgb(15, 23, 42);
         browseWaveGeneratorButton.Font = new Font("Microsoft YaHei UI", 9F);
         browseWaveGeneratorButton.Location = new Point(679, 3);
         browseWaveGeneratorButton.Margin = new Padding(2, 3, 2, 3);
         browseWaveGeneratorButton.Name = "browseWaveGeneratorButton";
+        browseWaveGeneratorButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(226, 232, 240);
+        browseWaveGeneratorButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
+        browseWaveGeneratorButton.Cursor = Cursors.Hand;
         browseWaveGeneratorButton.Size = new Size(64, 23);
         browseWaveGeneratorButton.TabIndex = 2;
         browseWaveGeneratorButton.Text = "浏览...";
@@ -534,6 +551,7 @@ partial class Config
         saveWaveGeneratorButton.Location = new Point(747, 3);
         saveWaveGeneratorButton.Margin = new Padding(2, 3, 2, 3);
         saveWaveGeneratorButton.Name = "saveWaveGeneratorButton";
+        saveWaveGeneratorButton.Cursor = Cursors.Hand;
         saveWaveGeneratorButton.Size = new Size(82, 23);
         saveWaveGeneratorButton.TabIndex = 3;
         saveWaveGeneratorButton.Text = "保存设置";
@@ -577,7 +595,8 @@ partial class Config
         waveGeneratorModeComboBox.BackColor = Color.White;
         waveGeneratorModeComboBox.ForeColor = Color.FromArgb(15, 23, 42);
         waveGeneratorModeComboBox.Name = "waveGeneratorModeComboBox";
-        waveGeneratorModeComboBox.Size = new Size(101, 25);
+        waveGeneratorModeComboBox.FlatStyle = FlatStyle.Flat;
+        waveGeneratorModeComboBox.Size = new Size(280, 27);
         waveGeneratorModeComboBox.TabIndex = 5;
         waveGeneratorModeComboBox.SelectedIndexChanged += WaveGeneratorModeComboBox_SelectedIndexChanged;
         // 
@@ -595,34 +614,35 @@ partial class Config
         _databaseGroup.Size = new Size(913, 91);
         _databaseGroup.TabIndex = 4;
         _databaseGroup.TabStop = false;
-        _databaseGroup.Text = "数据库日志";
+        _databaseGroup.Text = "SQL Server 任务索引";
         // 
         // _databaseLayout
         // 
-        _databaseLayout.ColumnCount = 8;
-        _databaseLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 124F));
-        _databaseLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 311F));
-        _databaseLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 39F));
-        _databaseLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 117F));
-        _databaseLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 39F));
-        _databaseLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 117F));
-        _databaseLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 78F));
-        _databaseLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+        _databaseLayout.ColumnCount = 5;
+
+        _databaseLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 128F));
+        _databaseLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+        _databaseLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 88F));
+        _databaseLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+        _databaseLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 112F));
         _databaseLayout.Controls.Add(_databaseEnabledCheckBox, 0, 0);
         _databaseLayout.Controls.Add(_databaseConnectionTextBox, 1, 0);
-        _databaseLayout.Controls.Add(_databaseUserNameLabel, 2, 0);
-        _databaseLayout.Controls.Add(_databaseUserNameTextBox, 3, 0);
-        _databaseLayout.Controls.Add(_databasePasswordLabel, 4, 0);
-        _databaseLayout.Controls.Add(_databasePasswordTextBox, 5, 0);
-        _databaseLayout.Controls.Add(_saveDatabaseButton, 6, 0);
-        _databaseLayout.Controls.Add(_databaseStateLabel, 1, 1);
+        _databaseLayout.Controls.Add(_databaseUserNameLabel, 0, 1);
+        _databaseLayout.Controls.Add(_databaseUserNameTextBox, 1, 1);
+        _databaseLayout.Controls.Add(_databasePasswordLabel, 2, 1);
+        _databaseLayout.Controls.Add(_databasePasswordTextBox, 3, 1);
+        _databaseLayout.Controls.Add(_saveDatabaseButton, 4, 0);
+        _databaseLayout.Controls.Add(_databaseStateLabel, 0, 2);
         _databaseLayout.Dock = DockStyle.Fill;
         _databaseLayout.Location = new Point(11, 32);
         _databaseLayout.Margin = new Padding(2, 3, 2, 3);
         _databaseLayout.Name = "_databaseLayout";
-        _databaseLayout.RowCount = 2;
-        _databaseLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 29F));
-        _databaseLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+        _databaseLayout.SetColumnSpan(_databaseConnectionTextBox, 3);
+        _databaseLayout.RowCount = 3;
+
+        _databaseLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 36F));
+        _databaseLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 36F));
+        _databaseLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
         _databaseLayout.Size = new Size(891, 51);
         _databaseLayout.TabIndex = 0;
         // 
@@ -635,7 +655,7 @@ partial class Config
         _databaseEnabledCheckBox.Name = "_databaseEnabledCheckBox";
         _databaseEnabledCheckBox.Size = new Size(120, 23);
         _databaseEnabledCheckBox.TabIndex = 0;
-        _databaseEnabledCheckBox.Text = "启用 SQL 日志";
+        _databaseEnabledCheckBox.Text = "启用数据库";
         _databaseEnabledCheckBox.CheckedChanged += DatabaseEnabledCheckBox_CheckedChanged;
         // 
         // _databaseConnectionTextBox
@@ -647,6 +667,7 @@ partial class Config
         _databaseConnectionTextBox.BackColor = Color.White;
         _databaseConnectionTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         _databaseConnectionTextBox.Name = "_databaseConnectionTextBox";
+        _databaseConnectionTextBox.BorderStyle = BorderStyle.FixedSingle;
         _databaseConnectionTextBox.PlaceholderText = "SQL Server 连接字符串";
         _databaseConnectionTextBox.Size = new Size(307, 23);
         _databaseConnectionTextBox.TabIndex = 1;
@@ -673,6 +694,7 @@ partial class Config
         _databaseUserNameTextBox.BackColor = Color.White;
         _databaseUserNameTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         _databaseUserNameTextBox.Name = "_databaseUserNameTextBox";
+        _databaseUserNameTextBox.BorderStyle = BorderStyle.FixedSingle;
         _databaseUserNameTextBox.PlaceholderText = "SQL Server 账号";
         _databaseUserNameTextBox.Size = new Size(113, 23);
         _databaseUserNameTextBox.TabIndex = 3;
@@ -699,6 +721,7 @@ partial class Config
         _databasePasswordTextBox.BackColor = Color.White;
         _databasePasswordTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         _databasePasswordTextBox.Name = "_databasePasswordTextBox";
+        _databasePasswordTextBox.BorderStyle = BorderStyle.FixedSingle;
         _databasePasswordTextBox.PlaceholderText = "SQL Server 密码";
         _databasePasswordTextBox.Size = new Size(113, 23);
         _databasePasswordTextBox.TabIndex = 5;
@@ -716,6 +739,7 @@ partial class Config
         _saveDatabaseButton.Location = new Point(749, 3);
         _saveDatabaseButton.Margin = new Padding(2, 3, 2, 3);
         _saveDatabaseButton.Name = "_saveDatabaseButton";
+        _saveDatabaseButton.Cursor = Cursors.Hand;
         _saveDatabaseButton.Size = new Size(74, 23);
         _saveDatabaseButton.TabIndex = 2;
         _saveDatabaseButton.Text = "保存数据库";
@@ -724,7 +748,7 @@ partial class Config
         // 
         // _databaseStateLabel
         // 
-        _databaseLayout.SetColumnSpan(_databaseStateLabel, 6);
+        _databaseLayout.SetColumnSpan(_databaseStateLabel, 5);
         _databaseStateLabel.Dock = DockStyle.Fill;
         _databaseStateLabel.Font = new Font("Microsoft YaHei UI", 8F);
         _databaseStateLabel.ForeColor = Color.FromArgb(100, 116, 139);
@@ -738,14 +762,17 @@ partial class Config
         // 
         // Config
         // 
-        AutoScaleDimensions = new SizeF(7F, 17F);
-        AutoScaleMode = AutoScaleMode.Font;
+        Font = new Font("Microsoft YaHei UI", 9F);
+        AutoScaleDimensions = new SizeF(96F, 96F);
+        AutoScaleMode = AutoScaleMode.Dpi;
+        AutoScroll = true;
+        AutoScrollMinSize = new Size(860, 676);
         BackColor = Color.FromArgb(241, 245, 249);
         ForeColor = Color.FromArgb(15, 23, 42);
         Controls.Add(rootLayout);
         Margin = new Padding(2, 3, 2, 3);
         Name = "Config";
-        Size = new Size(941, 677);
+        Size = new Size(1104, 606);
         rootLayout.ResumeLayout(false);
         routerGroup.ResumeLayout(false);
         routerLayout.ResumeLayout(false);

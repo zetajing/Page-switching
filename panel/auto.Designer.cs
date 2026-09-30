@@ -1,4 +1,4 @@
-﻿namespace Page_switching
+namespace Page_switching
 {
     partial class Auto
     {
@@ -74,7 +74,8 @@
             rootLayout.Location = new Point(0, 0);
             rootLayout.Margin = new Padding(0);
             rootLayout.Name = "rootLayout";
-            rootLayout.Padding = new Padding(20);
+            rootLayout.AutoScroll = false;
+            rootLayout.Padding = new Padding(16);
             rootLayout.RowCount = 3;
             rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 56F));
             rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 78F));
@@ -84,7 +85,7 @@
             // 
             // headerPanel
             // 
-            headerPanel.BackColor = Color.White;
+            headerPanel.BackColor = Color.FromArgb(241, 245, 249);
             headerPanel.Controls.Add(subtitleLabel);
             headerPanel.Controls.Add(titleLabel);
             headerPanel.Dock = DockStyle.Fill;
@@ -103,7 +104,7 @@
             subtitleLabel.Name = "subtitleLabel";
             subtitleLabel.Size = new Size(1170, 22);
             subtitleLabel.TabIndex = 1;
-            subtitleLabel.Text = "自动任务状态、PLC 连接和运行日志";
+            subtitleLabel.Text = "自动任务状态与本页消息";
             subtitleLabel.TextAlign = ContentAlignment.MiddleLeft;
             // 
             // titleLabel
@@ -187,7 +188,7 @@
             logGroup.Size = new Size(1170, 614);
             logGroup.TabIndex = 2;
             logGroup.TabStop = false;
-            logGroup.Text = "运行日志";
+            logGroup.Text = "自动运行消息";
             // 
             // logLayout
             // 
@@ -207,9 +208,9 @@
             // _logList
             // 
             _logList.BackColor = Color.White;
-            _logList.BorderStyle = BorderStyle.FixedSingle;
+            _logList.BorderStyle = BorderStyle.None;
             _logList.Dock = DockStyle.Fill;
-            _logList.Font = new Font("Consolas", 9F);
+            _logList.Font = new Font("Microsoft YaHei UI", 9F);
             _logList.IntegralHeight = false;
             _logList.ItemHeight = 18;
             _logList.Location = new Point(3, 3);
@@ -221,27 +222,34 @@
             // 
             clearLogButton.Anchor = AnchorStyles.Left;
             clearLogButton.AutoSize = true;
-            clearLogButton.BackColor = Color.FromArgb(226, 232, 240);
-            clearLogButton.FlatAppearance.BorderSize = 0;
+            clearLogButton.BackColor = Color.FromArgb(248, 250, 252);
+            clearLogButton.FlatAppearance.BorderSize = 1;
             clearLogButton.FlatStyle = FlatStyle.Flat;
             clearLogButton.ForeColor = Color.FromArgb(15, 23, 42);
             clearLogButton.Location = new Point(3, 530);
             clearLogButton.Name = "clearLogButton";
+            clearLogButton.MinimumSize = new Size(114, 32);
+            clearLogButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(226, 232, 240);
+            clearLogButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
+            clearLogButton.Cursor = Cursors.Hand;
             clearLogButton.Size = new Size(79, 29);
             clearLogButton.TabIndex = 1;
-            clearLogButton.Text = "清空日志";
+            clearLogButton.Text = "清空本页消息";
             clearLogButton.UseVisualStyleBackColor = false;
             clearLogButton.Click += ClearLogButton_Click;
             // 
             // Auto
             // 
-            AutoScaleDimensions = new SizeF(9F, 20F);
-            AutoScaleMode = AutoScaleMode.Font;
+            Font = new Font("Microsoft YaHei UI", 9F);
+            AutoScaleDimensions = new SizeF(96F, 96F);
+            AutoScaleMode = AutoScaleMode.Dpi;
+            AutoScroll = true;
+            AutoScrollMinSize = new Size(860, 460);
             BackColor = Color.FromArgb(241, 245, 249);
             ForeColor = Color.FromArgb(15, 23, 42);
             Controls.Add(rootLayout);
             Name = "Auto";
-            Size = new Size(1210, 796);
+            Size = new Size(1104, 606);
             rootLayout.ResumeLayout(false);
             headerPanel.ResumeLayout(false);
             statusGroup.ResumeLayout(false);

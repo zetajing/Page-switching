@@ -507,7 +507,8 @@ namespace Page_switching
             rootLayout.Location = new Point(0, 0);
             rootLayout.Margin = new Padding(2, 3, 2, 3);
             rootLayout.Name = "rootLayout";
-            rootLayout.Padding = new Padding(11, 12, 11, 12);
+            rootLayout.AutoScroll = false;
+            rootLayout.Padding = new Padding(16);
             rootLayout.RowCount = 3;
             rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 48F));
             rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 48F));
@@ -517,7 +518,7 @@ namespace Page_switching
             // 
             // headerPanel
             // 
-            headerPanel.BackColor = Color.White;
+            headerPanel.BackColor = Color.FromArgb(241, 245, 249);
             headerPanel.Controls.Add(connectionStateLabel);
             headerPanel.Controls.Add(titleLabel);
             headerPanel.Dock = DockStyle.Fill;
@@ -532,7 +533,7 @@ namespace Page_switching
             // 
             connectionStateLabel.Dock = DockStyle.Right;
             connectionStateLabel.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
-            connectionStateLabel.ForeColor = Color.FromArgb(4, 120, 87);
+            connectionStateLabel.ForeColor = Color.FromArgb(185, 28, 28);
             connectionStateLabel.Location = new Point(780, 0);
             connectionStateLabel.Margin = new Padding(2, 0, 2, 0);
             connectionStateLabel.Name = "connectionStateLabel";
@@ -544,7 +545,7 @@ namespace Page_switching
             // titleLabel
             // 
             titleLabel.Dock = DockStyle.Left;
-            titleLabel.Font = new Font("Microsoft YaHei UI", 15F, FontStyle.Bold);
+            titleLabel.Font = new Font("Microsoft YaHei UI", 16F, FontStyle.Bold);
             titleLabel.ForeColor = Color.FromArgb(15, 23, 42);
             titleLabel.Location = new Point(11, 0);
             titleLabel.Margin = new Padding(2, 0, 2, 0);
@@ -565,6 +566,7 @@ namespace Page_switching
             globalActionsPanel.Location = new Point(13, 63);
             globalActionsPanel.Margin = new Padding(2, 3, 2, 3);
             globalActionsPanel.Name = "globalActionsPanel";
+            globalActionsPanel.AutoScroll = true;
             globalActionsPanel.Padding = new Padding(0, 7, 0, 0);
             globalActionsPanel.Size = new Size(915, 42);
             globalActionsPanel.TabIndex = 1;
@@ -580,7 +582,8 @@ namespace Page_switching
             enableAllButton.Location = new Point(0, 7);
             enableAllButton.Margin = new Padding(0, 0, 8, 0);
             enableAllButton.Name = "enableAllButton";
-            enableAllButton.Size = new Size(98, 32);
+            enableAllButton.Cursor = Cursors.Hand;
+            enableAllButton.Size = new Size(104, 34);
             enableAllButton.TabIndex = 0;
             enableAllButton.Text = "全部使能";
             enableAllButton.UseVisualStyleBackColor = false;
@@ -588,15 +591,17 @@ namespace Page_switching
             // 
             // disableAllButton
             // 
-            disableAllButton.BackColor = Color.FromArgb(154, 52, 18);
-            disableAllButton.FlatAppearance.BorderSize = 0;
+            disableAllButton.BackColor = Color.FromArgb(248, 250, 252);
+            disableAllButton.FlatAppearance.BorderSize = 1;
             disableAllButton.FlatStyle = FlatStyle.Flat;
             disableAllButton.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
-            disableAllButton.ForeColor = Color.White;
+            disableAllButton.ForeColor = Color.FromArgb(71, 85, 105);
             disableAllButton.Location = new Point(106, 7);
             disableAllButton.Margin = new Padding(0, 0, 8, 0);
             disableAllButton.Name = "disableAllButton";
-            disableAllButton.Size = new Size(98, 32);
+            disableAllButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
+            disableAllButton.Cursor = Cursors.Hand;
+            disableAllButton.Size = new Size(104, 34);
             disableAllButton.TabIndex = 1;
             disableAllButton.Text = "取消使能";
             disableAllButton.UseVisualStyleBackColor = false;
@@ -604,15 +609,17 @@ namespace Page_switching
             // 
             // resetAlarmButton
             // 
-            resetAlarmButton.BackColor = Color.FromArgb(154, 52, 18);
-            resetAlarmButton.FlatAppearance.BorderSize = 0;
+            resetAlarmButton.BackColor = Color.FromArgb(255, 247, 237);
+            resetAlarmButton.FlatAppearance.BorderSize = 1;
             resetAlarmButton.FlatStyle = FlatStyle.Flat;
             resetAlarmButton.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
-            resetAlarmButton.ForeColor = Color.White;
+            resetAlarmButton.ForeColor = Color.FromArgb(154, 52, 18);
             resetAlarmButton.Location = new Point(212, 7);
             resetAlarmButton.Margin = new Padding(0, 0, 8, 0);
             resetAlarmButton.Name = "resetAlarmButton";
-            resetAlarmButton.Size = new Size(98, 32);
+            resetAlarmButton.FlatAppearance.BorderColor = Color.FromArgb(254, 215, 170);
+            resetAlarmButton.Cursor = Cursors.Hand;
+            resetAlarmButton.Size = new Size(120, 34);
             resetAlarmButton.TabIndex = 2;
             resetAlarmButton.Text = "全部复位报警";
             resetAlarmButton.UseVisualStyleBackColor = false;
@@ -620,15 +627,18 @@ namespace Page_switching
             // 
             // homeAllButton
             // 
-            homeAllButton.BackColor = Color.FromArgb(226, 232, 240);
-            homeAllButton.FlatAppearance.BorderSize = 0;
+            homeAllButton.BackColor = Color.FromArgb(248, 250, 252);
+            homeAllButton.FlatAppearance.BorderSize = 1;
             homeAllButton.FlatStyle = FlatStyle.Flat;
             homeAllButton.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
             homeAllButton.ForeColor = Color.FromArgb(15, 23, 42);
             homeAllButton.Location = new Point(318, 7);
             homeAllButton.Margin = new Padding(0, 0, 8, 0);
             homeAllButton.Name = "homeAllButton";
-            homeAllButton.Size = new Size(98, 32);
+            homeAllButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(226, 232, 240);
+            homeAllButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
+            homeAllButton.Cursor = Cursors.Hand;
+            homeAllButton.Size = new Size(104, 34);
             homeAllButton.TabIndex = 3;
             homeAllButton.Text = "全部回零";
             homeAllButton.UseVisualStyleBackColor = false;
@@ -644,7 +654,8 @@ namespace Page_switching
             stopAllButton.Location = new Point(424, 7);
             stopAllButton.Margin = new Padding(0, 0, 8, 0);
             stopAllButton.Name = "stopAllButton";
-            stopAllButton.Size = new Size(98, 32);
+            stopAllButton.Cursor = Cursors.Hand;
+            stopAllButton.Size = new Size(104, 34);
             stopAllButton.TabIndex = 4;
             stopAllButton.Text = "全部停止";
             stopAllButton.UseVisualStyleBackColor = false;
@@ -661,6 +672,7 @@ namespace Page_switching
             contentLayout.Location = new Point(13, 111);
             contentLayout.Margin = new Padding(2, 3, 2, 3);
             contentLayout.Name = "contentLayout";
+            contentLayout.MinimumSize = new Size(820, 420);
             contentLayout.RowCount = 1;
             contentLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             contentLayout.Size = new Size(915, 551);
@@ -686,9 +698,10 @@ namespace Page_switching
             // 
             axisOverviewLayout.BackColor = Color.White;
             axisOverviewLayout.ColumnCount = 3;
-            axisOverviewLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 45F));
+
+            axisOverviewLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 58F));
             axisOverviewLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            axisOverviewLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 59F));
+            axisOverviewLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 78F));
             axisOverviewLayout.Controls.Add(axisHeaderLabel, 0, 0);
             axisOverviewLayout.Controls.Add(positionHeaderLabel, 1, 0);
             axisOverviewLayout.Controls.Add(statusHeaderLabel, 2, 0);
@@ -879,8 +892,9 @@ namespace Page_switching
             // controlLayout
             // 
             controlLayout.ColumnCount = 2;
-            controlLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            controlLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+
+            controlLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 42F));
+            controlLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 58F));
             controlLayout.Controls.Add(selectedAxisCaptionLabel, 0, 0);
             controlLayout.Controls.Add(axisSelector, 1, 0);
             controlLayout.Controls.Add(selectedStatusCaptionLabel, 0, 1);
@@ -941,6 +955,7 @@ namespace Page_switching
             axisSelector.BackColor = Color.White;
             axisSelector.ForeColor = Color.FromArgb(15, 23, 42);
             axisSelector.Name = "axisSelector";
+            axisSelector.FlatStyle = FlatStyle.Flat;
             axisSelector.Size = new Size(178, 27);
             axisSelector.TabIndex = 0;
             axisSelector.SelectedIndexChanged += AxisSelector_SelectedIndexChanged;
@@ -1049,6 +1064,7 @@ namespace Page_switching
             jogSpeedInput.BackColor = Color.White;
             jogSpeedInput.ForeColor = Color.FromArgb(15, 23, 42);
             jogSpeedInput.Name = "jogSpeedInput";
+            jogSpeedInput.BorderStyle = BorderStyle.FixedSingle;
             jogSpeedInput.Size = new Size(178, 24);
             jogSpeedInput.TabIndex = 1;
             jogSpeedInput.Value = new decimal(new int[] { 10, 0, 0, 0 });
@@ -1070,14 +1086,17 @@ namespace Page_switching
             // 
             // jogNegativeButton
             // 
-            jogNegativeButton.BackColor = Color.FromArgb(226, 232, 240);
+            jogNegativeButton.BackColor = Color.FromArgb(248, 250, 252);
             jogNegativeButton.Dock = DockStyle.Fill;
-            jogNegativeButton.FlatAppearance.BorderSize = 0;
+            jogNegativeButton.FlatAppearance.BorderSize = 1;
             jogNegativeButton.FlatStyle = FlatStyle.Flat;
             jogNegativeButton.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
             jogNegativeButton.ForeColor = Color.FromArgb(15, 23, 42);
             jogNegativeButton.Location = new Point(3, 179);
             jogNegativeButton.Name = "jogNegativeButton";
+            jogNegativeButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(226, 232, 240);
+            jogNegativeButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
+            jogNegativeButton.Cursor = Cursors.Hand;
             jogNegativeButton.Size = new Size(175, 40);
             jogNegativeButton.TabIndex = 11;
             jogNegativeButton.Text = "◀ 负向点动";
@@ -1088,14 +1107,17 @@ namespace Page_switching
             // 
             // jogPositiveButton
             // 
-            jogPositiveButton.BackColor = Color.FromArgb(226, 232, 240);
+            jogPositiveButton.BackColor = Color.FromArgb(248, 250, 252);
             jogPositiveButton.Dock = DockStyle.Fill;
-            jogPositiveButton.FlatAppearance.BorderSize = 0;
+            jogPositiveButton.FlatAppearance.BorderSize = 1;
             jogPositiveButton.FlatStyle = FlatStyle.Flat;
             jogPositiveButton.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
             jogPositiveButton.ForeColor = Color.FromArgb(15, 23, 42);
             jogPositiveButton.Location = new Point(184, 179);
             jogPositiveButton.Name = "jogPositiveButton";
+            jogPositiveButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(226, 232, 240);
+            jogPositiveButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
+            jogPositiveButton.Cursor = Cursors.Hand;
             jogPositiveButton.Size = new Size(176, 40);
             jogPositiveButton.TabIndex = 12;
             jogPositiveButton.Text = "正向点动 ▶";
@@ -1121,14 +1143,17 @@ namespace Page_switching
             // 
             // homeSelectedButton
             // 
-            homeSelectedButton.BackColor = Color.FromArgb(226, 232, 240);
+            homeSelectedButton.BackColor = Color.FromArgb(248, 250, 252);
             homeSelectedButton.Dock = DockStyle.Fill;
-            homeSelectedButton.FlatAppearance.BorderSize = 0;
+            homeSelectedButton.FlatAppearance.BorderSize = 1;
             homeSelectedButton.FlatStyle = FlatStyle.Flat;
             homeSelectedButton.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
             homeSelectedButton.ForeColor = Color.FromArgb(15, 23, 42);
             homeSelectedButton.Location = new Point(3, 252);
             homeSelectedButton.Name = "homeSelectedButton";
+            homeSelectedButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(226, 232, 240);
+            homeSelectedButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
+            homeSelectedButton.Cursor = Cursors.Hand;
             homeSelectedButton.Size = new Size(175, 48);
             homeSelectedButton.TabIndex = 14;
             homeSelectedButton.Text = "选定轴回零";
@@ -1145,6 +1170,7 @@ namespace Page_switching
             stopSelectedButton.ForeColor = Color.White;
             stopSelectedButton.Location = new Point(184, 252);
             stopSelectedButton.Name = "stopSelectedButton";
+            stopSelectedButton.Cursor = Cursors.Hand;
             stopSelectedButton.Size = new Size(176, 48);
             stopSelectedButton.TabIndex = 15;
             stopSelectedButton.Text = "选定轴停止";
@@ -1160,6 +1186,7 @@ namespace Page_switching
             helperLabel.Location = new Point(2, 303);
             helperLabel.Margin = new Padding(2, 0, 2, 0);
             helperLabel.Name = "helperLabel";
+            helperLabel.AutoEllipsis = true;
             helperLabel.Padding = new Padding(0, 10, 0, 0);
             helperLabel.Size = new Size(359, 201);
             helperLabel.TabIndex = 10;
@@ -1167,14 +1194,17 @@ namespace Page_switching
             // 
             // Manual
             // 
-            AutoScaleDimensions = new SizeF(7F, 17F);
-            AutoScaleMode = AutoScaleMode.Font;
+            Font = new Font("Microsoft YaHei UI", 9F);
+            AutoScaleDimensions = new SizeF(96F, 96F);
+            AutoScaleMode = AutoScaleMode.Dpi;
+            AutoScroll = true;
+            AutoScrollMinSize = new Size(860, 600);
             BackColor = Color.FromArgb(241, 245, 249);
             ForeColor = Color.FromArgb(15, 23, 42);
             Controls.Add(rootLayout);
             Margin = new Padding(2, 3, 2, 3);
             Name = "Manual";
-            Size = new Size(941, 677);
+            Size = new Size(1104, 606);
             axis1FeedbackLayout.ResumeLayout(false);
             axis2FeedbackLayout.ResumeLayout(false);
             axis3FeedbackLayout.ResumeLayout(false);

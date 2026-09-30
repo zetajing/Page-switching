@@ -81,11 +81,13 @@ public sealed partial class ControlAuthority
         rootLayout.Dock = DockStyle.Fill;
         rootLayout.Location = new Point(0, 0);
         rootLayout.Name = "rootLayout";
-        rootLayout.Padding = new Padding(20);
+        rootLayout.AutoScroll = false;
+        rootLayout.Padding = new Padding(16);
         rootLayout.RowCount = 4;
-        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 44F));
-        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 38F));
-        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 210F));
+
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 42F));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 26F));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 180F));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
         rootLayout.Size = new Size(1210, 796);
         rootLayout.TabIndex = 0;
@@ -162,6 +164,10 @@ public sealed partial class ControlAuthority
         // 
         connectionCaptionLabel.Location = new Point(3, 0);
         connectionCaptionLabel.Name = "connectionCaptionLabel";
+        connectionCaptionLabel.TextAlign = ContentAlignment.MiddleLeft;
+        connectionCaptionLabel.ForeColor = Color.FromArgb(71, 85, 105);
+        connectionCaptionLabel.Font = new Font("Microsoft YaHei UI", 9F);
+        connectionCaptionLabel.Dock = DockStyle.Fill;
         connectionCaptionLabel.Size = new Size(100, 23);
         connectionCaptionLabel.TabIndex = 0;
         connectionCaptionLabel.Text = "ADS 连接";
@@ -170,6 +176,10 @@ public sealed partial class ControlAuthority
         // 
         _connectionValue.Location = new Point(113, 0);
         _connectionValue.Name = "_connectionValue";
+        _connectionValue.ForeColor = Color.FromArgb(185, 28, 28);
+        _connectionValue.TextAlign = ContentAlignment.MiddleLeft;
+        _connectionValue.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
+        _connectionValue.Dock = DockStyle.Fill;
         _connectionValue.Size = new Size(100, 23);
         _connectionValue.TabIndex = 1;
         _connectionValue.Text = "未连接";
@@ -178,6 +188,10 @@ public sealed partial class ControlAuthority
         // 
         stationCaptionLabel.Location = new Point(571, 0);
         stationCaptionLabel.Name = "stationCaptionLabel";
+        stationCaptionLabel.TextAlign = ContentAlignment.MiddleLeft;
+        stationCaptionLabel.ForeColor = Color.FromArgb(71, 85, 105);
+        stationCaptionLabel.Font = new Font("Microsoft YaHei UI", 9F);
+        stationCaptionLabel.Dock = DockStyle.Fill;
         stationCaptionLabel.Size = new Size(100, 23);
         stationCaptionLabel.TabIndex = 2;
         stationCaptionLabel.Text = "本站点";
@@ -186,6 +200,9 @@ public sealed partial class ControlAuthority
         // 
         _stationValue.Location = new Point(681, 0);
         _stationValue.Name = "_stationValue";
+        _stationValue.TextAlign = ContentAlignment.MiddleLeft;
+        _stationValue.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
+        _stationValue.Dock = DockStyle.Fill;
         _stationValue.Size = new Size(100, 23);
         _stationValue.TabIndex = 3;
         _stationValue.Text = "1";
@@ -194,6 +211,10 @@ public sealed partial class ControlAuthority
         // 
         ownerCaptionLabel.Location = new Point(3, 51);
         ownerCaptionLabel.Name = "ownerCaptionLabel";
+        ownerCaptionLabel.TextAlign = ContentAlignment.MiddleLeft;
+        ownerCaptionLabel.ForeColor = Color.FromArgb(71, 85, 105);
+        ownerCaptionLabel.Font = new Font("Microsoft YaHei UI", 9F);
+        ownerCaptionLabel.Dock = DockStyle.Fill;
         ownerCaptionLabel.Size = new Size(100, 23);
         ownerCaptionLabel.TabIndex = 4;
         ownerCaptionLabel.Text = "当前 Owner";
@@ -202,6 +223,9 @@ public sealed partial class ControlAuthority
         // 
         _ownerValue.Location = new Point(113, 51);
         _ownerValue.Name = "_ownerValue";
+        _ownerValue.TextAlign = ContentAlignment.MiddleLeft;
+        _ownerValue.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
+        _ownerValue.Dock = DockStyle.Fill;
         _ownerValue.Size = new Size(100, 23);
         _ownerValue.TabIndex = 5;
         _ownerValue.Text = "待配置";
@@ -210,6 +234,10 @@ public sealed partial class ControlAuthority
         // 
         stateCaptionLabel.Location = new Point(571, 51);
         stateCaptionLabel.Name = "stateCaptionLabel";
+        stateCaptionLabel.TextAlign = ContentAlignment.MiddleLeft;
+        stateCaptionLabel.ForeColor = Color.FromArgb(71, 85, 105);
+        stateCaptionLabel.Font = new Font("Microsoft YaHei UI", 9F);
+        stateCaptionLabel.Dock = DockStyle.Fill;
         stateCaptionLabel.Size = new Size(100, 23);
         stateCaptionLabel.TabIndex = 6;
         stateCaptionLabel.Text = "PLC 状态";
@@ -218,6 +246,9 @@ public sealed partial class ControlAuthority
         // 
         _stateValue.Location = new Point(681, 51);
         _stateValue.Name = "_stateValue";
+        _stateValue.TextAlign = ContentAlignment.MiddleLeft;
+        _stateValue.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
+        _stateValue.Dock = DockStyle.Fill;
         _stateValue.Size = new Size(100, 23);
         _stateValue.TabIndex = 7;
         _stateValue.Text = "待配置";
@@ -226,6 +257,10 @@ public sealed partial class ControlAuthority
         // 
         safetyCaptionLabel.Location = new Point(3, 102);
         safetyCaptionLabel.Name = "safetyCaptionLabel";
+        safetyCaptionLabel.TextAlign = ContentAlignment.MiddleLeft;
+        safetyCaptionLabel.ForeColor = Color.FromArgb(71, 85, 105);
+        safetyCaptionLabel.Font = new Font("Microsoft YaHei UI", 9F);
+        safetyCaptionLabel.Dock = DockStyle.Fill;
         safetyCaptionLabel.Size = new Size(100, 23);
         safetyCaptionLabel.TabIndex = 8;
         safetyCaptionLabel.Text = "安全状态";
@@ -234,6 +269,9 @@ public sealed partial class ControlAuthority
         // 
         _safetyValue.Location = new Point(113, 102);
         _safetyValue.Name = "_safetyValue";
+        _safetyValue.TextAlign = ContentAlignment.MiddleLeft;
+        _safetyValue.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
+        _safetyValue.Dock = DockStyle.Fill;
         _safetyValue.Size = new Size(100, 23);
         _safetyValue.TabIndex = 9;
         _safetyValue.Text = "待配置";
@@ -242,6 +280,10 @@ public sealed partial class ControlAuthority
         // 
         watchdogCaptionLabel.Location = new Point(571, 102);
         watchdogCaptionLabel.Name = "watchdogCaptionLabel";
+        watchdogCaptionLabel.TextAlign = ContentAlignment.MiddleLeft;
+        watchdogCaptionLabel.ForeColor = Color.FromArgb(71, 85, 105);
+        watchdogCaptionLabel.Font = new Font("Microsoft YaHei UI", 9F);
+        watchdogCaptionLabel.Dock = DockStyle.Fill;
         watchdogCaptionLabel.Size = new Size(100, 23);
         watchdogCaptionLabel.TabIndex = 10;
         watchdogCaptionLabel.Text = "看门狗";
@@ -250,6 +292,9 @@ public sealed partial class ControlAuthority
         // 
         _watchdogValue.Location = new Point(681, 102);
         _watchdogValue.Name = "_watchdogValue";
+        _watchdogValue.TextAlign = ContentAlignment.MiddleLeft;
+        _watchdogValue.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
+        _watchdogValue.Dock = DockStyle.Fill;
         _watchdogValue.Size = new Size(100, 23);
         _watchdogValue.TabIndex = 11;
         _watchdogValue.Text = "待配置";
@@ -291,6 +336,16 @@ public sealed partial class ControlAuthority
         // 
         _requestButton.Location = new Point(3, 3);
         _requestButton.Name = "_requestButton";
+        _requestButton.UseVisualStyleBackColor = false;
+        _requestButton.Font = new Font("Microsoft YaHei UI", 9F);
+        _requestButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
+        _requestButton.FlatAppearance.BorderSize = 1;
+        _requestButton.FlatStyle = FlatStyle.Flat;
+        _requestButton.ForeColor = Color.FromArgb(100, 116, 139);
+        _requestButton.BackColor = Color.FromArgb(248, 250, 252);
+        _requestButton.Enabled = false;
+        _requestButton.Dock = DockStyle.Fill;
+        _requestButton.Cursor = Cursors.Hand;
         _requestButton.Size = new Size(164, 46);
         _requestButton.TabIndex = 0;
         _requestButton.Text = "申请控制权";
@@ -299,6 +354,16 @@ public sealed partial class ControlAuthority
         // 
         _releaseButton.Location = new Point(3, 55);
         _releaseButton.Name = "_releaseButton";
+        _releaseButton.UseVisualStyleBackColor = false;
+        _releaseButton.Font = new Font("Microsoft YaHei UI", 9F);
+        _releaseButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
+        _releaseButton.FlatAppearance.BorderSize = 1;
+        _releaseButton.FlatStyle = FlatStyle.Flat;
+        _releaseButton.ForeColor = Color.FromArgb(100, 116, 139);
+        _releaseButton.BackColor = Color.FromArgb(248, 250, 252);
+        _releaseButton.Enabled = false;
+        _releaseButton.Dock = DockStyle.Fill;
+        _releaseButton.Cursor = Cursors.Hand;
         _releaseButton.Size = new Size(164, 46);
         _releaseButton.TabIndex = 1;
         _releaseButton.Text = "释放控制权";
@@ -318,13 +383,16 @@ public sealed partial class ControlAuthority
         // 
         // ControlAuthority
         // 
-        AutoScaleDimensions = new SizeF(9F, 20F);
-        AutoScaleMode = AutoScaleMode.Font;
+        Font = new Font("Microsoft YaHei UI", 9F);
+        AutoScaleDimensions = new SizeF(96F, 96F);
+        AutoScaleMode = AutoScaleMode.Dpi;
+        AutoScroll = true;
+        AutoScrollMinSize = new Size(860, 500);
         BackColor = Color.FromArgb(241, 245, 249);
         ForeColor = Color.FromArgb(15, 23, 42);
         Controls.Add(rootLayout);
         Name = "ControlAuthority";
-        Size = new Size(1210, 796);
+        Size = new Size(1104, 606);
         rootLayout.ResumeLayout(false);
         statusGroup.ResumeLayout(false);
         statusLayout.ResumeLayout(false);
@@ -333,35 +401,4 @@ public sealed partial class ControlAuthority
         ResumeLayout(false);
     }
 
-    // 设置状态区域左侧字段名称样式。
-    private static void ConfigureCaption(Label label, string text)
-    {
-        label.Dock = DockStyle.Fill;
-        label.Font = new Font("Microsoft YaHei UI", 9F);
-        label.ForeColor = Color.FromArgb(71, 85, 105);
-        label.Text = text;
-        label.TextAlign = ContentAlignment.MiddleLeft;
-    }
-
-    // 设置状态值标签的统一样式。
-    private static void ConfigureValue(Label label)
-    {
-        label.Dock = DockStyle.Fill;
-        label.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
-        label.ForeColor = Color.FromArgb(15, 23, 42);
-        label.TextAlign = ContentAlignment.MiddleLeft;
-    }
-
-    // 设置控制权操作按钮的统一样式。
-    private static void ConfigureActionButton(Button button, string text)
-    {
-        button.BackColor = Color.FromArgb(226, 232, 240);
-        button.Dock = DockStyle.Fill;
-        button.Enabled = false;
-        button.FlatAppearance.BorderSize = 0;
-        button.FlatStyle = FlatStyle.Flat;
-        button.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
-        button.ForeColor = Color.FromArgb(100, 116, 139);
-        button.Text = text;
-    }
 }

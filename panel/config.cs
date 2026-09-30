@@ -10,8 +10,6 @@ public partial class Config : UserControl
     public Config()
     {
         InitializeComponent();
-        Size = new Size(1210, 796);
-        waveGeneratorLayout.ColumnStyles[0].Width = 220F;
         LoadSettings();
         LoadDatabaseSettings();
     }

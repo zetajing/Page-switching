@@ -204,10 +204,12 @@ partial class WaveformPage
         rootLayout.Dock = DockStyle.Fill;
         rootLayout.Location = new Point(0, 0);
         rootLayout.Name = "rootLayout";
-        rootLayout.Padding = new Padding(18);
+        rootLayout.AutoScroll = false;
+        rootLayout.Padding = new Padding(16);
         rootLayout.RowCount = 3;
+
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 42F));
-        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 26F));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
         rootLayout.Size = new Size(1210, 796);
         rootLayout.TabIndex = 0;
@@ -255,6 +257,7 @@ partial class WaveformPage
         regularTab.Controls.Add(regularLayout);
         regularTab.Location = new Point(4, 29);
         regularTab.Name = "regularTab";
+        regularTab.AutoScroll = true;
         regularTab.Padding = new Padding(8);
         regularTab.Size = new Size(855, 532);
         regularTab.TabIndex = 0;
@@ -263,13 +266,15 @@ partial class WaveformPage
         // regularLayout
         // 
         regularLayout.ColumnCount = 2;
-        regularLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 405F));
+
+        regularLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 445F));
         regularLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
         regularLayout.Controls.Add(regularParameterGroup, 0, 0);
         regularLayout.Controls.Add(regularPreviewGroup, 1, 0);
         regularLayout.Dock = DockStyle.Fill;
         regularLayout.Location = new Point(8, 8);
         regularLayout.Name = "regularLayout";
+        regularLayout.MinimumSize = new Size(900, 400);
         regularLayout.RowCount = 1;
         regularLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
         regularLayout.Size = new Size(839, 516);
@@ -294,9 +299,10 @@ partial class WaveformPage
         regularParameterLayout.AutoSize = true;
         regularParameterLayout.AutoSizeMode = AutoSizeMode.GrowAndShrink;
         regularParameterLayout.ColumnCount = 4;
-        regularParameterLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 84F));
-        regularParameterLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 106F));
-        regularParameterLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 84F));
+
+        regularParameterLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 90F));
+        regularParameterLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 110F));
+        regularParameterLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 90F));
         regularParameterLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
         regularParameterLayout.Controls.Add(regularSegmentLabel, 0, 0);
         regularParameterLayout.Controls.Add(regularSegmentComboBox, 1, 0);
@@ -327,13 +333,14 @@ partial class WaveformPage
         regularParameterLayout.Location = new Point(10, 36);
         regularParameterLayout.Name = "regularParameterLayout";
         regularParameterLayout.RowCount = 7;
+
         regularParameterLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
         regularParameterLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
         regularParameterLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
         regularParameterLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
         regularParameterLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
         regularParameterLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
-        regularParameterLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
+        regularParameterLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 44F));
         regularParameterLayout.Size = new Size(379, 280);
         regularParameterLayout.TabIndex = 0;
         // 
@@ -341,6 +348,10 @@ partial class WaveformPage
         // 
         regularSegmentLabel.Location = new Point(3, 0);
         regularSegmentLabel.Name = "regularSegmentLabel";
+        regularSegmentLabel.TextAlign = ContentAlignment.MiddleLeft;
+        regularSegmentLabel.ForeColor = Color.FromArgb(71, 85, 105);
+        regularSegmentLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
+        regularSegmentLabel.Dock = DockStyle.Fill;
         regularSegmentLabel.Size = new Size(78, 23);
         regularSegmentLabel.TabIndex = 0;
         regularSegmentLabel.Text = "造波段";
@@ -351,6 +362,10 @@ partial class WaveformPage
         regularSegmentComboBox.BackColor = Color.White;
         regularSegmentComboBox.ForeColor = Color.FromArgb(15, 23, 42);
         regularSegmentComboBox.Name = "regularSegmentComboBox";
+        regularSegmentComboBox.Font = new Font("Microsoft YaHei UI", 9F);
+        regularSegmentComboBox.Margin = new Padding(3, 5, 3, 5);
+        regularSegmentComboBox.Dock = DockStyle.Fill;
+        regularSegmentComboBox.FlatStyle = FlatStyle.Flat;
         regularSegmentComboBox.Size = new Size(100, 27);
         regularSegmentComboBox.TabIndex = 1;
         // 
@@ -358,6 +373,10 @@ partial class WaveformPage
         // 
         regularTheoryLabel.Location = new Point(193, 0);
         regularTheoryLabel.Name = "regularTheoryLabel";
+        regularTheoryLabel.TextAlign = ContentAlignment.MiddleLeft;
+        regularTheoryLabel.ForeColor = Color.FromArgb(71, 85, 105);
+        regularTheoryLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
+        regularTheoryLabel.Dock = DockStyle.Fill;
         regularTheoryLabel.Size = new Size(78, 23);
         regularTheoryLabel.TabIndex = 2;
         regularTheoryLabel.Text = "造波理论";
@@ -368,6 +387,10 @@ partial class WaveformPage
         regularTheoryComboBox.BackColor = Color.White;
         regularTheoryComboBox.ForeColor = Color.FromArgb(15, 23, 42);
         regularTheoryComboBox.Name = "regularTheoryComboBox";
+        regularTheoryComboBox.Font = new Font("Microsoft YaHei UI", 9F);
+        regularTheoryComboBox.Margin = new Padding(3, 5, 3, 5);
+        regularTheoryComboBox.Dock = DockStyle.Fill;
+        regularTheoryComboBox.FlatStyle = FlatStyle.Flat;
         regularTheoryComboBox.Size = new Size(99, 27);
         regularTheoryComboBox.TabIndex = 3;
         // 
@@ -375,6 +398,10 @@ partial class WaveformPage
         // 
         regularDepthLabel.Location = new Point(3, 40);
         regularDepthLabel.Name = "regularDepthLabel";
+        regularDepthLabel.TextAlign = ContentAlignment.MiddleLeft;
+        regularDepthLabel.ForeColor = Color.FromArgb(71, 85, 105);
+        regularDepthLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
+        regularDepthLabel.Dock = DockStyle.Fill;
         regularDepthLabel.Size = new Size(78, 23);
         regularDepthLabel.TabIndex = 4;
         regularDepthLabel.Text = "水深(m)";
@@ -385,6 +412,10 @@ partial class WaveformPage
         regularDepthTextBox.BackColor = Color.White;
         regularDepthTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         regularDepthTextBox.Name = "regularDepthTextBox";
+        regularDepthTextBox.Font = new Font("Microsoft YaHei UI", 9F);
+        regularDepthTextBox.Margin = new Padding(3, 5, 3, 5);
+        regularDepthTextBox.Dock = DockStyle.Fill;
+        regularDepthTextBox.BorderStyle = BorderStyle.FixedSingle;
         regularDepthTextBox.Size = new Size(100, 27);
         regularDepthTextBox.TabIndex = 5;
         // 
@@ -392,6 +423,10 @@ partial class WaveformPage
         // 
         regularPeriodLabel.Location = new Point(193, 40);
         regularPeriodLabel.Name = "regularPeriodLabel";
+        regularPeriodLabel.TextAlign = ContentAlignment.MiddleLeft;
+        regularPeriodLabel.ForeColor = Color.FromArgb(71, 85, 105);
+        regularPeriodLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
+        regularPeriodLabel.Dock = DockStyle.Fill;
         regularPeriodLabel.Size = new Size(78, 23);
         regularPeriodLabel.TabIndex = 6;
         regularPeriodLabel.Text = "周期(s)";
@@ -402,6 +437,10 @@ partial class WaveformPage
         regularPeriodTextBox.BackColor = Color.White;
         regularPeriodTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         regularPeriodTextBox.Name = "regularPeriodTextBox";
+        regularPeriodTextBox.Font = new Font("Microsoft YaHei UI", 9F);
+        regularPeriodTextBox.Margin = new Padding(3, 5, 3, 5);
+        regularPeriodTextBox.Dock = DockStyle.Fill;
+        regularPeriodTextBox.BorderStyle = BorderStyle.FixedSingle;
         regularPeriodTextBox.Size = new Size(99, 27);
         regularPeriodTextBox.TabIndex = 7;
         // 
@@ -409,6 +448,10 @@ partial class WaveformPage
         // 
         regularHeightLabel.Location = new Point(3, 80);
         regularHeightLabel.Name = "regularHeightLabel";
+        regularHeightLabel.TextAlign = ContentAlignment.MiddleLeft;
+        regularHeightLabel.ForeColor = Color.FromArgb(71, 85, 105);
+        regularHeightLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
+        regularHeightLabel.Dock = DockStyle.Fill;
         regularHeightLabel.Size = new Size(78, 23);
         regularHeightLabel.TabIndex = 8;
         regularHeightLabel.Text = "波高(m)";
@@ -419,6 +462,10 @@ partial class WaveformPage
         regularHeightTextBox.BackColor = Color.White;
         regularHeightTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         regularHeightTextBox.Name = "regularHeightTextBox";
+        regularHeightTextBox.Font = new Font("Microsoft YaHei UI", 9F);
+        regularHeightTextBox.Margin = new Padding(3, 5, 3, 5);
+        regularHeightTextBox.Dock = DockStyle.Fill;
+        regularHeightTextBox.BorderStyle = BorderStyle.FixedSingle;
         regularHeightTextBox.Size = new Size(100, 27);
         regularHeightTextBox.TabIndex = 9;
         // 
@@ -426,6 +473,10 @@ partial class WaveformPage
         // 
         regularDirectionLabel.Location = new Point(193, 80);
         regularDirectionLabel.Name = "regularDirectionLabel";
+        regularDirectionLabel.TextAlign = ContentAlignment.MiddleLeft;
+        regularDirectionLabel.ForeColor = Color.FromArgb(71, 85, 105);
+        regularDirectionLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
+        regularDirectionLabel.Dock = DockStyle.Fill;
         regularDirectionLabel.Size = new Size(78, 23);
         regularDirectionLabel.TabIndex = 10;
         regularDirectionLabel.Text = "波向(°)";
@@ -436,6 +487,10 @@ partial class WaveformPage
         regularDirectionTextBox.BackColor = Color.White;
         regularDirectionTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         regularDirectionTextBox.Name = "regularDirectionTextBox";
+        regularDirectionTextBox.Font = new Font("Microsoft YaHei UI", 9F);
+        regularDirectionTextBox.Margin = new Padding(3, 5, 3, 5);
+        regularDirectionTextBox.Dock = DockStyle.Fill;
+        regularDirectionTextBox.BorderStyle = BorderStyle.FixedSingle;
         regularDirectionTextBox.Size = new Size(99, 27);
         regularDirectionTextBox.TabIndex = 11;
         // 
@@ -443,6 +498,10 @@ partial class WaveformPage
         // 
         regularTimeStepLabel.Location = new Point(3, 120);
         regularTimeStepLabel.Name = "regularTimeStepLabel";
+        regularTimeStepLabel.TextAlign = ContentAlignment.MiddleLeft;
+        regularTimeStepLabel.ForeColor = Color.FromArgb(71, 85, 105);
+        regularTimeStepLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
+        regularTimeStepLabel.Dock = DockStyle.Fill;
         regularTimeStepLabel.Size = new Size(78, 23);
         regularTimeStepLabel.TabIndex = 12;
         regularTimeStepLabel.Text = "步长(s)";
@@ -453,6 +512,10 @@ partial class WaveformPage
         regularTimeStepTextBox.BackColor = Color.White;
         regularTimeStepTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         regularTimeStepTextBox.Name = "regularTimeStepTextBox";
+        regularTimeStepTextBox.Font = new Font("Microsoft YaHei UI", 9F);
+        regularTimeStepTextBox.Margin = new Padding(3, 5, 3, 5);
+        regularTimeStepTextBox.Dock = DockStyle.Fill;
+        regularTimeStepTextBox.BorderStyle = BorderStyle.FixedSingle;
         regularTimeStepTextBox.Size = new Size(100, 27);
         regularTimeStepTextBox.TabIndex = 13;
         // 
@@ -460,6 +523,10 @@ partial class WaveformPage
         // 
         regularSampleCountLabel.Location = new Point(193, 120);
         regularSampleCountLabel.Name = "regularSampleCountLabel";
+        regularSampleCountLabel.TextAlign = ContentAlignment.MiddleLeft;
+        regularSampleCountLabel.ForeColor = Color.FromArgb(71, 85, 105);
+        regularSampleCountLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
+        regularSampleCountLabel.Dock = DockStyle.Fill;
         regularSampleCountLabel.Size = new Size(78, 23);
         regularSampleCountLabel.TabIndex = 14;
         regularSampleCountLabel.Text = "时序数";
@@ -470,6 +537,10 @@ partial class WaveformPage
         regularSampleCountTextBox.BackColor = Color.White;
         regularSampleCountTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         regularSampleCountTextBox.Name = "regularSampleCountTextBox";
+        regularSampleCountTextBox.Font = new Font("Microsoft YaHei UI", 9F);
+        regularSampleCountTextBox.Margin = new Padding(3, 5, 3, 5);
+        regularSampleCountTextBox.Dock = DockStyle.Fill;
+        regularSampleCountTextBox.BorderStyle = BorderStyle.FixedSingle;
         regularSampleCountTextBox.Size = new Size(99, 27);
         regularSampleCountTextBox.TabIndex = 15;
         // 
@@ -477,6 +548,10 @@ partial class WaveformPage
         // 
         regularFrequencyLabel.Location = new Point(3, 160);
         regularFrequencyLabel.Name = "regularFrequencyLabel";
+        regularFrequencyLabel.TextAlign = ContentAlignment.MiddleLeft;
+        regularFrequencyLabel.ForeColor = Color.FromArgb(71, 85, 105);
+        regularFrequencyLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
+        regularFrequencyLabel.Dock = DockStyle.Fill;
         regularFrequencyLabel.Size = new Size(78, 23);
         regularFrequencyLabel.TabIndex = 16;
         regularFrequencyLabel.Text = "特征频率";
@@ -487,6 +562,10 @@ partial class WaveformPage
         regularCharacteristicFrequencyTextBox.BackColor = Color.White;
         regularCharacteristicFrequencyTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         regularCharacteristicFrequencyTextBox.Name = "regularCharacteristicFrequencyTextBox";
+        regularCharacteristicFrequencyTextBox.Font = new Font("Microsoft YaHei UI", 9F);
+        regularCharacteristicFrequencyTextBox.Margin = new Padding(3, 5, 3, 5);
+        regularCharacteristicFrequencyTextBox.Dock = DockStyle.Fill;
+        regularCharacteristicFrequencyTextBox.BorderStyle = BorderStyle.FixedSingle;
         regularCharacteristicFrequencyTextBox.Size = new Size(100, 27);
         regularCharacteristicFrequencyTextBox.TabIndex = 17;
         // 
@@ -494,6 +573,10 @@ partial class WaveformPage
         // 
         regularCharacteristicPeriodLabel.Location = new Point(193, 160);
         regularCharacteristicPeriodLabel.Name = "regularCharacteristicPeriodLabel";
+        regularCharacteristicPeriodLabel.TextAlign = ContentAlignment.MiddleLeft;
+        regularCharacteristicPeriodLabel.ForeColor = Color.FromArgb(71, 85, 105);
+        regularCharacteristicPeriodLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
+        regularCharacteristicPeriodLabel.Dock = DockStyle.Fill;
         regularCharacteristicPeriodLabel.Size = new Size(78, 23);
         regularCharacteristicPeriodLabel.TabIndex = 18;
         regularCharacteristicPeriodLabel.Text = "特征周期";
@@ -504,6 +587,10 @@ partial class WaveformPage
         regularCharacteristicPeriodTextBox.BackColor = Color.White;
         regularCharacteristicPeriodTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         regularCharacteristicPeriodTextBox.Name = "regularCharacteristicPeriodTextBox";
+        regularCharacteristicPeriodTextBox.Font = new Font("Microsoft YaHei UI", 9F);
+        regularCharacteristicPeriodTextBox.Margin = new Padding(3, 5, 3, 5);
+        regularCharacteristicPeriodTextBox.Dock = DockStyle.Fill;
+        regularCharacteristicPeriodTextBox.BorderStyle = BorderStyle.FixedSingle;
         regularCharacteristicPeriodTextBox.Size = new Size(99, 27);
         regularCharacteristicPeriodTextBox.TabIndex = 19;
         // 
@@ -511,6 +598,10 @@ partial class WaveformPage
         // 
         regularOutputLabel.Location = new Point(3, 200);
         regularOutputLabel.Name = "regularOutputLabel";
+        regularOutputLabel.TextAlign = ContentAlignment.MiddleLeft;
+        regularOutputLabel.ForeColor = Color.FromArgb(71, 85, 105);
+        regularOutputLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
+        regularOutputLabel.Dock = DockStyle.Fill;
         regularOutputLabel.Size = new Size(78, 23);
         regularOutputLabel.TabIndex = 20;
         regularOutputLabel.Text = "保存文件";
@@ -522,17 +613,26 @@ partial class WaveformPage
         regularOutputTextBox.BackColor = Color.White;
         regularOutputTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         regularOutputTextBox.Name = "regularOutputTextBox";
+        regularOutputTextBox.Font = new Font("Microsoft YaHei UI", 9F);
+        regularOutputTextBox.Margin = new Padding(3, 5, 3, 5);
+        regularOutputTextBox.Dock = DockStyle.Fill;
+        regularOutputTextBox.BorderStyle = BorderStyle.FixedSingle;
         regularOutputTextBox.Size = new Size(100, 27);
         regularOutputTextBox.TabIndex = 21;
         // 
         // regularBrowseOutputButton
         // 
-        regularBrowseOutputButton.BackColor = Color.FromArgb(226, 232, 240);
-        regularBrowseOutputButton.FlatAppearance.BorderSize = 0;
+        regularBrowseOutputButton.BackColor = Color.FromArgb(248, 250, 252);
+        regularBrowseOutputButton.FlatAppearance.BorderSize = 1;
         regularBrowseOutputButton.FlatStyle = FlatStyle.Flat;
         regularBrowseOutputButton.ForeColor = Color.FromArgb(15, 23, 42);
         regularBrowseOutputButton.Location = new Point(277, 203);
         regularBrowseOutputButton.Name = "regularBrowseOutputButton";
+        regularBrowseOutputButton.Margin = new Padding(3, 4, 3, 4);
+        regularBrowseOutputButton.Dock = DockStyle.Fill;
+        regularBrowseOutputButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(226, 232, 240);
+        regularBrowseOutputButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
+        regularBrowseOutputButton.Cursor = Cursors.Hand;
         regularBrowseOutputButton.Size = new Size(75, 23);
         regularBrowseOutputButton.TabIndex = 22;
         regularBrowseOutputButton.Text = "浏览";
@@ -549,7 +649,12 @@ partial class WaveformPage
         regularParameterLayout.SetColumnSpan(regularGenerateButton, 2);
         regularGenerateButton.Location = new Point(3, 243);
         regularGenerateButton.Name = "regularGenerateButton";
-        regularGenerateButton.Size = new Size(75, 23);
+        regularGenerateButton.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
+        regularGenerateButton.Margin = new Padding(3, 3, 3, 3);
+        regularGenerateButton.Anchor = AnchorStyles.Left | AnchorStyles.Top;
+        regularGenerateButton.Dock = DockStyle.None;
+        regularGenerateButton.Cursor = Cursors.Hand;
+        regularGenerateButton.Size = new Size(160, 34);
         regularGenerateButton.TabIndex = 23;
         regularGenerateButton.Text = "计算并保存";
         regularGenerateButton.UseVisualStyleBackColor = false;
@@ -561,6 +666,10 @@ partial class WaveformPage
         regularStatusLabel.ForeColor = Color.FromArgb(71, 85, 105);
         regularStatusLabel.Location = new Point(193, 240);
         regularStatusLabel.Name = "regularStatusLabel";
+        regularStatusLabel.AutoEllipsis = true;
+        regularStatusLabel.TextAlign = ContentAlignment.MiddleLeft;
+        regularStatusLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
+        regularStatusLabel.Dock = DockStyle.Fill;
         regularStatusLabel.Size = new Size(100, 23);
         regularStatusLabel.TabIndex = 24;
         regularStatusLabel.Text = "请选择 CSV 保存路径";
@@ -585,7 +694,7 @@ partial class WaveformPage
         regularPreview.Dock = DockStyle.Fill;
         regularPreview.ForeColor = Color.FromArgb(29, 78, 216);
         regularPreview.Location = new Point(10, 38);
-        regularPreview.MinimumSize = new Size(360, 260);
+        regularPreview.MinimumSize = new Size(300, 180);
         regularPreview.Name = "regularPreview";
         regularPreview.Size = new Size(408, 462);
         regularPreview.TabIndex = 0;
@@ -597,6 +706,7 @@ partial class WaveformPage
         irregularTab.Controls.Add(irregularLayout);
         irregularTab.Location = new Point(4, 29);
         irregularTab.Name = "irregularTab";
+        irregularTab.AutoScroll = true;
         irregularTab.Padding = new Padding(8);
         irregularTab.Size = new Size(192, 67);
         irregularTab.TabIndex = 1;
@@ -605,13 +715,15 @@ partial class WaveformPage
         // irregularLayout
         // 
         irregularLayout.ColumnCount = 2;
-        irregularLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 450F));
+
+        irregularLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 480F));
         irregularLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
         irregularLayout.Controls.Add(irregularParameterGroup, 0, 0);
         irregularLayout.Controls.Add(irregularPreviewGroup, 1, 0);
         irregularLayout.Dock = DockStyle.Fill;
         irregularLayout.Location = new Point(8, 8);
         irregularLayout.Name = "irregularLayout";
+        irregularLayout.MinimumSize = new Size(930, 460);
         irregularLayout.RowCount = 1;
         irregularLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
         irregularLayout.Size = new Size(176, 51);
@@ -636,9 +748,10 @@ partial class WaveformPage
         irregularParameterLayout.AutoSize = true;
         irregularParameterLayout.AutoSizeMode = AutoSizeMode.GrowAndShrink;
         irregularParameterLayout.ColumnCount = 4;
-        irregularParameterLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 94F));
-        irregularParameterLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 110F));
-        irregularParameterLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 94F));
+
+        irregularParameterLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 100F));
+        irregularParameterLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 115F));
+        irregularParameterLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 100F));
         irregularParameterLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
         irregularParameterLayout.Controls.Add(irregularModeLabel, 0, 0);
         irregularParameterLayout.Controls.Add(irregularModeComboBox, 1, 0);
@@ -689,6 +802,7 @@ partial class WaveformPage
         irregularParameterLayout.Location = new Point(10, 36);
         irregularParameterLayout.Name = "irregularParameterLayout";
         irregularParameterLayout.RowCount = 12;
+
         irregularParameterLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
         irregularParameterLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
         irregularParameterLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
@@ -700,7 +814,7 @@ partial class WaveformPage
         irregularParameterLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
         irregularParameterLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
         irregularParameterLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
-        irregularParameterLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
+        irregularParameterLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 44F));
         irregularParameterLayout.Size = new Size(424, 408);
         irregularParameterLayout.TabIndex = 0;
         // 
@@ -708,6 +822,10 @@ partial class WaveformPage
         // 
         irregularModeLabel.Location = new Point(3, 0);
         irregularModeLabel.Name = "irregularModeLabel";
+        irregularModeLabel.TextAlign = ContentAlignment.MiddleLeft;
+        irregularModeLabel.ForeColor = Color.FromArgb(71, 85, 105);
+        irregularModeLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
+        irregularModeLabel.Dock = DockStyle.Fill;
         irregularModeLabel.Size = new Size(88, 23);
         irregularModeLabel.TabIndex = 0;
         irregularModeLabel.Text = "造波模式";
@@ -718,6 +836,10 @@ partial class WaveformPage
         irregularModeComboBox.BackColor = Color.White;
         irregularModeComboBox.ForeColor = Color.FromArgb(15, 23, 42);
         irregularModeComboBox.Name = "irregularModeComboBox";
+        irregularModeComboBox.Font = new Font("Microsoft YaHei UI", 9F);
+        irregularModeComboBox.Margin = new Padding(3, 5, 3, 5);
+        irregularModeComboBox.Dock = DockStyle.Fill;
+        irregularModeComboBox.FlatStyle = FlatStyle.Flat;
         irregularModeComboBox.Size = new Size(104, 27);
         irregularModeComboBox.TabIndex = 1;
         // 
@@ -725,6 +847,10 @@ partial class WaveformPage
         // 
         irregularTheoryLabel.Location = new Point(207, 0);
         irregularTheoryLabel.Name = "irregularTheoryLabel";
+        irregularTheoryLabel.TextAlign = ContentAlignment.MiddleLeft;
+        irregularTheoryLabel.ForeColor = Color.FromArgb(71, 85, 105);
+        irregularTheoryLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
+        irregularTheoryLabel.Dock = DockStyle.Fill;
         irregularTheoryLabel.Size = new Size(88, 23);
         irregularTheoryLabel.TabIndex = 2;
         irregularTheoryLabel.Text = "造波理论";
@@ -735,6 +861,10 @@ partial class WaveformPage
         irregularTheoryComboBox.BackColor = Color.White;
         irregularTheoryComboBox.ForeColor = Color.FromArgb(15, 23, 42);
         irregularTheoryComboBox.Name = "irregularTheoryComboBox";
+        irregularTheoryComboBox.Font = new Font("Microsoft YaHei UI", 9F);
+        irregularTheoryComboBox.Margin = new Padding(3, 5, 3, 5);
+        irregularTheoryComboBox.Dock = DockStyle.Fill;
+        irregularTheoryComboBox.FlatStyle = FlatStyle.Flat;
         irregularTheoryComboBox.Size = new Size(120, 27);
         irregularTheoryComboBox.TabIndex = 3;
         // 
@@ -742,6 +872,10 @@ partial class WaveformPage
         // 
         irregularSpectrumLabel.Location = new Point(3, 34);
         irregularSpectrumLabel.Name = "irregularSpectrumLabel";
+        irregularSpectrumLabel.TextAlign = ContentAlignment.MiddleLeft;
+        irregularSpectrumLabel.ForeColor = Color.FromArgb(71, 85, 105);
+        irregularSpectrumLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
+        irregularSpectrumLabel.Dock = DockStyle.Fill;
         irregularSpectrumLabel.Size = new Size(88, 23);
         irregularSpectrumLabel.TabIndex = 4;
         irregularSpectrumLabel.Text = "输入谱";
@@ -752,6 +886,10 @@ partial class WaveformPage
         irregularSpectrumComboBox.BackColor = Color.White;
         irregularSpectrumComboBox.ForeColor = Color.FromArgb(15, 23, 42);
         irregularSpectrumComboBox.Name = "irregularSpectrumComboBox";
+        irregularSpectrumComboBox.Font = new Font("Microsoft YaHei UI", 9F);
+        irregularSpectrumComboBox.Margin = new Padding(3, 5, 3, 5);
+        irregularSpectrumComboBox.Dock = DockStyle.Fill;
+        irregularSpectrumComboBox.FlatStyle = FlatStyle.Flat;
         irregularSpectrumComboBox.Size = new Size(104, 27);
         irregularSpectrumComboBox.TabIndex = 5;
         // 
@@ -759,6 +897,10 @@ partial class WaveformPage
         // 
         irregularSegmentLabel.Location = new Point(207, 34);
         irregularSegmentLabel.Name = "irregularSegmentLabel";
+        irregularSegmentLabel.TextAlign = ContentAlignment.MiddleLeft;
+        irregularSegmentLabel.ForeColor = Color.FromArgb(71, 85, 105);
+        irregularSegmentLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
+        irregularSegmentLabel.Dock = DockStyle.Fill;
         irregularSegmentLabel.Size = new Size(88, 23);
         irregularSegmentLabel.TabIndex = 6;
         irregularSegmentLabel.Text = "造波段";
@@ -769,6 +911,10 @@ partial class WaveformPage
         irregularSegmentComboBox.BackColor = Color.White;
         irregularSegmentComboBox.ForeColor = Color.FromArgb(15, 23, 42);
         irregularSegmentComboBox.Name = "irregularSegmentComboBox";
+        irregularSegmentComboBox.Font = new Font("Microsoft YaHei UI", 9F);
+        irregularSegmentComboBox.Margin = new Padding(3, 5, 3, 5);
+        irregularSegmentComboBox.Dock = DockStyle.Fill;
+        irregularSegmentComboBox.FlatStyle = FlatStyle.Flat;
         irregularSegmentComboBox.Size = new Size(120, 27);
         irregularSegmentComboBox.TabIndex = 7;
         // 
@@ -776,6 +922,10 @@ partial class WaveformPage
         // 
         irregularDirectionLabel.Location = new Point(3, 68);
         irregularDirectionLabel.Name = "irregularDirectionLabel";
+        irregularDirectionLabel.TextAlign = ContentAlignment.MiddleLeft;
+        irregularDirectionLabel.ForeColor = Color.FromArgb(71, 85, 105);
+        irregularDirectionLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
+        irregularDirectionLabel.Dock = DockStyle.Fill;
         irregularDirectionLabel.Size = new Size(88, 23);
         irregularDirectionLabel.TabIndex = 8;
         irregularDirectionLabel.Text = "主波向(°)";
@@ -786,6 +936,10 @@ partial class WaveformPage
         irregularDirectionTextBox.BackColor = Color.White;
         irregularDirectionTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         irregularDirectionTextBox.Name = "irregularDirectionTextBox";
+        irregularDirectionTextBox.Font = new Font("Microsoft YaHei UI", 9F);
+        irregularDirectionTextBox.Margin = new Padding(3, 5, 3, 5);
+        irregularDirectionTextBox.Dock = DockStyle.Fill;
+        irregularDirectionTextBox.BorderStyle = BorderStyle.FixedSingle;
         irregularDirectionTextBox.Size = new Size(100, 27);
         irregularDirectionTextBox.TabIndex = 9;
         // 
@@ -793,6 +947,10 @@ partial class WaveformPage
         // 
         irregularDepthLabel.Location = new Point(207, 68);
         irregularDepthLabel.Name = "irregularDepthLabel";
+        irregularDepthLabel.TextAlign = ContentAlignment.MiddleLeft;
+        irregularDepthLabel.ForeColor = Color.FromArgb(71, 85, 105);
+        irregularDepthLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
+        irregularDepthLabel.Dock = DockStyle.Fill;
         irregularDepthLabel.Size = new Size(88, 23);
         irregularDepthLabel.TabIndex = 10;
         irregularDepthLabel.Text = "水深(m)";
@@ -803,6 +961,10 @@ partial class WaveformPage
         irregularDepthTextBox.BackColor = Color.White;
         irregularDepthTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         irregularDepthTextBox.Name = "irregularDepthTextBox";
+        irregularDepthTextBox.Font = new Font("Microsoft YaHei UI", 9F);
+        irregularDepthTextBox.Margin = new Padding(3, 5, 3, 5);
+        irregularDepthTextBox.Dock = DockStyle.Fill;
+        irregularDepthTextBox.BorderStyle = BorderStyle.FixedSingle;
         irregularDepthTextBox.Size = new Size(100, 27);
         irregularDepthTextBox.TabIndex = 11;
         // 
@@ -810,6 +972,10 @@ partial class WaveformPage
         // 
         irregularSignificantPeriodLabel.Location = new Point(3, 102);
         irregularSignificantPeriodLabel.Name = "irregularSignificantPeriodLabel";
+        irregularSignificantPeriodLabel.TextAlign = ContentAlignment.MiddleLeft;
+        irregularSignificantPeriodLabel.ForeColor = Color.FromArgb(71, 85, 105);
+        irregularSignificantPeriodLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
+        irregularSignificantPeriodLabel.Dock = DockStyle.Fill;
         irregularSignificantPeriodLabel.Size = new Size(88, 23);
         irregularSignificantPeriodLabel.TabIndex = 12;
         irregularSignificantPeriodLabel.Text = "有效周期(s)";
@@ -820,6 +986,10 @@ partial class WaveformPage
         irregularSignificantPeriodTextBox.BackColor = Color.White;
         irregularSignificantPeriodTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         irregularSignificantPeriodTextBox.Name = "irregularSignificantPeriodTextBox";
+        irregularSignificantPeriodTextBox.Font = new Font("Microsoft YaHei UI", 9F);
+        irregularSignificantPeriodTextBox.Margin = new Padding(3, 5, 3, 5);
+        irregularSignificantPeriodTextBox.Dock = DockStyle.Fill;
+        irregularSignificantPeriodTextBox.BorderStyle = BorderStyle.FixedSingle;
         irregularSignificantPeriodTextBox.Size = new Size(100, 27);
         irregularSignificantPeriodTextBox.TabIndex = 13;
         // 
@@ -827,6 +997,10 @@ partial class WaveformPage
         // 
         irregularSignificantHeightLabel.Location = new Point(207, 102);
         irregularSignificantHeightLabel.Name = "irregularSignificantHeightLabel";
+        irregularSignificantHeightLabel.TextAlign = ContentAlignment.MiddleLeft;
+        irregularSignificantHeightLabel.ForeColor = Color.FromArgb(71, 85, 105);
+        irregularSignificantHeightLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
+        irregularSignificantHeightLabel.Dock = DockStyle.Fill;
         irregularSignificantHeightLabel.Size = new Size(88, 23);
         irregularSignificantHeightLabel.TabIndex = 14;
         irregularSignificantHeightLabel.Text = "有效波高(m)";
@@ -837,6 +1011,10 @@ partial class WaveformPage
         irregularSignificantHeightTextBox.BackColor = Color.White;
         irregularSignificantHeightTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         irregularSignificantHeightTextBox.Name = "irregularSignificantHeightTextBox";
+        irregularSignificantHeightTextBox.Font = new Font("Microsoft YaHei UI", 9F);
+        irregularSignificantHeightTextBox.Margin = new Padding(3, 5, 3, 5);
+        irregularSignificantHeightTextBox.Dock = DockStyle.Fill;
+        irregularSignificantHeightTextBox.BorderStyle = BorderStyle.FixedSingle;
         irregularSignificantHeightTextBox.Size = new Size(100, 27);
         irregularSignificantHeightTextBox.TabIndex = 15;
         // 
@@ -844,6 +1022,10 @@ partial class WaveformPage
         // 
         irregularTimeStepLabel.Location = new Point(3, 136);
         irregularTimeStepLabel.Name = "irregularTimeStepLabel";
+        irregularTimeStepLabel.TextAlign = ContentAlignment.MiddleLeft;
+        irregularTimeStepLabel.ForeColor = Color.FromArgb(71, 85, 105);
+        irregularTimeStepLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
+        irregularTimeStepLabel.Dock = DockStyle.Fill;
         irregularTimeStepLabel.Size = new Size(88, 23);
         irregularTimeStepLabel.TabIndex = 16;
         irregularTimeStepLabel.Text = "步长(s)";
@@ -854,6 +1036,10 @@ partial class WaveformPage
         irregularTimeStepTextBox.BackColor = Color.White;
         irregularTimeStepTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         irregularTimeStepTextBox.Name = "irregularTimeStepTextBox";
+        irregularTimeStepTextBox.Font = new Font("Microsoft YaHei UI", 9F);
+        irregularTimeStepTextBox.Margin = new Padding(3, 5, 3, 5);
+        irregularTimeStepTextBox.Dock = DockStyle.Fill;
+        irregularTimeStepTextBox.BorderStyle = BorderStyle.FixedSingle;
         irregularTimeStepTextBox.Size = new Size(100, 27);
         irregularTimeStepTextBox.TabIndex = 17;
         // 
@@ -861,6 +1047,10 @@ partial class WaveformPage
         // 
         irregularSampleCountLabel.Location = new Point(207, 136);
         irregularSampleCountLabel.Name = "irregularSampleCountLabel";
+        irregularSampleCountLabel.TextAlign = ContentAlignment.MiddleLeft;
+        irregularSampleCountLabel.ForeColor = Color.FromArgb(71, 85, 105);
+        irregularSampleCountLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
+        irregularSampleCountLabel.Dock = DockStyle.Fill;
         irregularSampleCountLabel.Size = new Size(88, 23);
         irregularSampleCountLabel.TabIndex = 18;
         irregularSampleCountLabel.Text = "时序数";
@@ -871,6 +1061,10 @@ partial class WaveformPage
         irregularSampleCountTextBox.BackColor = Color.White;
         irregularSampleCountTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         irregularSampleCountTextBox.Name = "irregularSampleCountTextBox";
+        irregularSampleCountTextBox.Font = new Font("Microsoft YaHei UI", 9F);
+        irregularSampleCountTextBox.Margin = new Padding(3, 5, 3, 5);
+        irregularSampleCountTextBox.Dock = DockStyle.Fill;
+        irregularSampleCountTextBox.BorderStyle = BorderStyle.FixedSingle;
         irregularSampleCountTextBox.Size = new Size(100, 27);
         irregularSampleCountTextBox.TabIndex = 19;
         // 
@@ -878,6 +1072,10 @@ partial class WaveformPage
         // 
         irregularFrequencyLabel.Location = new Point(3, 170);
         irregularFrequencyLabel.Name = "irregularFrequencyLabel";
+        irregularFrequencyLabel.TextAlign = ContentAlignment.MiddleLeft;
+        irregularFrequencyLabel.ForeColor = Color.FromArgb(71, 85, 105);
+        irregularFrequencyLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
+        irregularFrequencyLabel.Dock = DockStyle.Fill;
         irregularFrequencyLabel.Size = new Size(88, 23);
         irregularFrequencyLabel.TabIndex = 20;
         irregularFrequencyLabel.Text = "特征频率";
@@ -888,6 +1086,10 @@ partial class WaveformPage
         irregularCharacteristicFrequencyTextBox.BackColor = Color.White;
         irregularCharacteristicFrequencyTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         irregularCharacteristicFrequencyTextBox.Name = "irregularCharacteristicFrequencyTextBox";
+        irregularCharacteristicFrequencyTextBox.Font = new Font("Microsoft YaHei UI", 9F);
+        irregularCharacteristicFrequencyTextBox.Margin = new Padding(3, 5, 3, 5);
+        irregularCharacteristicFrequencyTextBox.Dock = DockStyle.Fill;
+        irregularCharacteristicFrequencyTextBox.BorderStyle = BorderStyle.FixedSingle;
         irregularCharacteristicFrequencyTextBox.Size = new Size(100, 27);
         irregularCharacteristicFrequencyTextBox.TabIndex = 21;
         // 
@@ -895,6 +1097,10 @@ partial class WaveformPage
         // 
         irregularCharacteristicPeriodLabel.Location = new Point(207, 170);
         irregularCharacteristicPeriodLabel.Name = "irregularCharacteristicPeriodLabel";
+        irregularCharacteristicPeriodLabel.TextAlign = ContentAlignment.MiddleLeft;
+        irregularCharacteristicPeriodLabel.ForeColor = Color.FromArgb(71, 85, 105);
+        irregularCharacteristicPeriodLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
+        irregularCharacteristicPeriodLabel.Dock = DockStyle.Fill;
         irregularCharacteristicPeriodLabel.Size = new Size(88, 23);
         irregularCharacteristicPeriodLabel.TabIndex = 22;
         irregularCharacteristicPeriodLabel.Text = "特征周期";
@@ -905,6 +1111,10 @@ partial class WaveformPage
         irregularCharacteristicPeriodTextBox.BackColor = Color.White;
         irregularCharacteristicPeriodTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         irregularCharacteristicPeriodTextBox.Name = "irregularCharacteristicPeriodTextBox";
+        irregularCharacteristicPeriodTextBox.Font = new Font("Microsoft YaHei UI", 9F);
+        irregularCharacteristicPeriodTextBox.Margin = new Padding(3, 5, 3, 5);
+        irregularCharacteristicPeriodTextBox.Dock = DockStyle.Fill;
+        irregularCharacteristicPeriodTextBox.BorderStyle = BorderStyle.FixedSingle;
         irregularCharacteristicPeriodTextBox.Size = new Size(100, 27);
         irregularCharacteristicPeriodTextBox.TabIndex = 23;
         // 
@@ -912,6 +1122,10 @@ partial class WaveformPage
         // 
         irregularPeakFactorLabel.Location = new Point(3, 204);
         irregularPeakFactorLabel.Name = "irregularPeakFactorLabel";
+        irregularPeakFactorLabel.TextAlign = ContentAlignment.MiddleLeft;
+        irregularPeakFactorLabel.ForeColor = Color.FromArgb(71, 85, 105);
+        irregularPeakFactorLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
+        irregularPeakFactorLabel.Dock = DockStyle.Fill;
         irregularPeakFactorLabel.Size = new Size(88, 23);
         irregularPeakFactorLabel.TabIndex = 24;
         irregularPeakFactorLabel.Text = "谱峰因子";
@@ -922,6 +1136,10 @@ partial class WaveformPage
         irregularPeakFactorTextBox.BackColor = Color.White;
         irregularPeakFactorTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         irregularPeakFactorTextBox.Name = "irregularPeakFactorTextBox";
+        irregularPeakFactorTextBox.Font = new Font("Microsoft YaHei UI", 9F);
+        irregularPeakFactorTextBox.Margin = new Padding(3, 5, 3, 5);
+        irregularPeakFactorTextBox.Dock = DockStyle.Fill;
+        irregularPeakFactorTextBox.BorderStyle = BorderStyle.FixedSingle;
         irregularPeakFactorTextBox.Size = new Size(100, 27);
         irregularPeakFactorTextBox.TabIndex = 25;
         // 
@@ -929,6 +1147,10 @@ partial class WaveformPage
         // 
         irregularRandomSeedLabel.Location = new Point(207, 204);
         irregularRandomSeedLabel.Name = "irregularRandomSeedLabel";
+        irregularRandomSeedLabel.TextAlign = ContentAlignment.MiddleLeft;
+        irregularRandomSeedLabel.ForeColor = Color.FromArgb(71, 85, 105);
+        irregularRandomSeedLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
+        irregularRandomSeedLabel.Dock = DockStyle.Fill;
         irregularRandomSeedLabel.Size = new Size(88, 23);
         irregularRandomSeedLabel.TabIndex = 26;
         irregularRandomSeedLabel.Text = "随机种子";
@@ -939,6 +1161,10 @@ partial class WaveformPage
         irregularRandomSeedTextBox.BackColor = Color.White;
         irregularRandomSeedTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         irregularRandomSeedTextBox.Name = "irregularRandomSeedTextBox";
+        irregularRandomSeedTextBox.Font = new Font("Microsoft YaHei UI", 9F);
+        irregularRandomSeedTextBox.Margin = new Padding(3, 5, 3, 5);
+        irregularRandomSeedTextBox.Dock = DockStyle.Fill;
+        irregularRandomSeedTextBox.BorderStyle = BorderStyle.FixedSingle;
         irregularRandomSeedTextBox.Size = new Size(100, 27);
         irregularRandomSeedTextBox.TabIndex = 27;
         // 
@@ -946,6 +1172,10 @@ partial class WaveformPage
         // 
         irregularMinimumPeriodLabel.Location = new Point(3, 238);
         irregularMinimumPeriodLabel.Name = "irregularMinimumPeriodLabel";
+        irregularMinimumPeriodLabel.TextAlign = ContentAlignment.MiddleLeft;
+        irregularMinimumPeriodLabel.ForeColor = Color.FromArgb(71, 85, 105);
+        irregularMinimumPeriodLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
+        irregularMinimumPeriodLabel.Dock = DockStyle.Fill;
         irregularMinimumPeriodLabel.Size = new Size(88, 23);
         irregularMinimumPeriodLabel.TabIndex = 28;
         irregularMinimumPeriodLabel.Text = "最小周期";
@@ -956,6 +1186,10 @@ partial class WaveformPage
         irregularMinimumPeriodTextBox.BackColor = Color.White;
         irregularMinimumPeriodTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         irregularMinimumPeriodTextBox.Name = "irregularMinimumPeriodTextBox";
+        irregularMinimumPeriodTextBox.Font = new Font("Microsoft YaHei UI", 9F);
+        irregularMinimumPeriodTextBox.Margin = new Padding(3, 5, 3, 5);
+        irregularMinimumPeriodTextBox.Dock = DockStyle.Fill;
+        irregularMinimumPeriodTextBox.BorderStyle = BorderStyle.FixedSingle;
         irregularMinimumPeriodTextBox.Size = new Size(100, 27);
         irregularMinimumPeriodTextBox.TabIndex = 29;
         // 
@@ -963,6 +1197,10 @@ partial class WaveformPage
         // 
         irregularMaximumPeriodLabel.Location = new Point(207, 238);
         irregularMaximumPeriodLabel.Name = "irregularMaximumPeriodLabel";
+        irregularMaximumPeriodLabel.TextAlign = ContentAlignment.MiddleLeft;
+        irregularMaximumPeriodLabel.ForeColor = Color.FromArgb(71, 85, 105);
+        irregularMaximumPeriodLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
+        irregularMaximumPeriodLabel.Dock = DockStyle.Fill;
         irregularMaximumPeriodLabel.Size = new Size(88, 23);
         irregularMaximumPeriodLabel.TabIndex = 30;
         irregularMaximumPeriodLabel.Text = "最大周期";
@@ -973,6 +1211,10 @@ partial class WaveformPage
         irregularMaximumPeriodTextBox.BackColor = Color.White;
         irregularMaximumPeriodTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         irregularMaximumPeriodTextBox.Name = "irregularMaximumPeriodTextBox";
+        irregularMaximumPeriodTextBox.Font = new Font("Microsoft YaHei UI", 9F);
+        irregularMaximumPeriodTextBox.Margin = new Padding(3, 5, 3, 5);
+        irregularMaximumPeriodTextBox.Dock = DockStyle.Fill;
+        irregularMaximumPeriodTextBox.BorderStyle = BorderStyle.FixedSingle;
         irregularMaximumPeriodTextBox.Size = new Size(100, 27);
         irregularMaximumPeriodTextBox.TabIndex = 31;
         // 
@@ -980,6 +1222,10 @@ partial class WaveformPage
         // 
         irregularMinimumDifferencePeriodLabel.Location = new Point(3, 272);
         irregularMinimumDifferencePeriodLabel.Name = "irregularMinimumDifferencePeriodLabel";
+        irregularMinimumDifferencePeriodLabel.TextAlign = ContentAlignment.MiddleLeft;
+        irregularMinimumDifferencePeriodLabel.ForeColor = Color.FromArgb(71, 85, 105);
+        irregularMinimumDifferencePeriodLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
+        irregularMinimumDifferencePeriodLabel.Dock = DockStyle.Fill;
         irregularMinimumDifferencePeriodLabel.Size = new Size(88, 23);
         irregularMinimumDifferencePeriodLabel.TabIndex = 32;
         irregularMinimumDifferencePeriodLabel.Text = "最小差频";
@@ -990,6 +1236,10 @@ partial class WaveformPage
         irregularMinimumDifferencePeriodTextBox.BackColor = Color.White;
         irregularMinimumDifferencePeriodTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         irregularMinimumDifferencePeriodTextBox.Name = "irregularMinimumDifferencePeriodTextBox";
+        irregularMinimumDifferencePeriodTextBox.Font = new Font("Microsoft YaHei UI", 9F);
+        irregularMinimumDifferencePeriodTextBox.Margin = new Padding(3, 5, 3, 5);
+        irregularMinimumDifferencePeriodTextBox.Dock = DockStyle.Fill;
+        irregularMinimumDifferencePeriodTextBox.BorderStyle = BorderStyle.FixedSingle;
         irregularMinimumDifferencePeriodTextBox.Size = new Size(100, 27);
         irregularMinimumDifferencePeriodTextBox.TabIndex = 33;
         // 
@@ -997,6 +1247,10 @@ partial class WaveformPage
         // 
         irregularMaximumDifferencePeriodLabel.Location = new Point(207, 272);
         irregularMaximumDifferencePeriodLabel.Name = "irregularMaximumDifferencePeriodLabel";
+        irregularMaximumDifferencePeriodLabel.TextAlign = ContentAlignment.MiddleLeft;
+        irregularMaximumDifferencePeriodLabel.ForeColor = Color.FromArgb(71, 85, 105);
+        irregularMaximumDifferencePeriodLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
+        irregularMaximumDifferencePeriodLabel.Dock = DockStyle.Fill;
         irregularMaximumDifferencePeriodLabel.Size = new Size(88, 23);
         irregularMaximumDifferencePeriodLabel.TabIndex = 34;
         irregularMaximumDifferencePeriodLabel.Text = "最大差频";
@@ -1007,6 +1261,10 @@ partial class WaveformPage
         irregularMaximumDifferencePeriodTextBox.BackColor = Color.White;
         irregularMaximumDifferencePeriodTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         irregularMaximumDifferencePeriodTextBox.Name = "irregularMaximumDifferencePeriodTextBox";
+        irregularMaximumDifferencePeriodTextBox.Font = new Font("Microsoft YaHei UI", 9F);
+        irregularMaximumDifferencePeriodTextBox.Margin = new Padding(3, 5, 3, 5);
+        irregularMaximumDifferencePeriodTextBox.Dock = DockStyle.Fill;
+        irregularMaximumDifferencePeriodTextBox.BorderStyle = BorderStyle.FixedSingle;
         irregularMaximumDifferencePeriodTextBox.Size = new Size(100, 27);
         irregularMaximumDifferencePeriodTextBox.TabIndex = 35;
         // 
@@ -1014,6 +1272,10 @@ partial class WaveformPage
         // 
         irregularNegativeDirectionLabel.Location = new Point(3, 306);
         irregularNegativeDirectionLabel.Name = "irregularNegativeDirectionLabel";
+        irregularNegativeDirectionLabel.TextAlign = ContentAlignment.MiddleLeft;
+        irregularNegativeDirectionLabel.ForeColor = Color.FromArgb(71, 85, 105);
+        irregularNegativeDirectionLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
+        irregularNegativeDirectionLabel.Dock = DockStyle.Fill;
         irregularNegativeDirectionLabel.Size = new Size(88, 23);
         irregularNegativeDirectionLabel.TabIndex = 36;
         irregularNegativeDirectionLabel.Text = "负向偏角";
@@ -1024,6 +1286,10 @@ partial class WaveformPage
         irregularNegativeDirectionTextBox.BackColor = Color.White;
         irregularNegativeDirectionTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         irregularNegativeDirectionTextBox.Name = "irregularNegativeDirectionTextBox";
+        irregularNegativeDirectionTextBox.Font = new Font("Microsoft YaHei UI", 9F);
+        irregularNegativeDirectionTextBox.Margin = new Padding(3, 5, 3, 5);
+        irregularNegativeDirectionTextBox.Dock = DockStyle.Fill;
+        irregularNegativeDirectionTextBox.BorderStyle = BorderStyle.FixedSingle;
         irregularNegativeDirectionTextBox.Size = new Size(100, 27);
         irregularNegativeDirectionTextBox.TabIndex = 37;
         // 
@@ -1031,6 +1297,10 @@ partial class WaveformPage
         // 
         irregularPositiveDirectionLabel.Location = new Point(207, 306);
         irregularPositiveDirectionLabel.Name = "irregularPositiveDirectionLabel";
+        irregularPositiveDirectionLabel.TextAlign = ContentAlignment.MiddleLeft;
+        irregularPositiveDirectionLabel.ForeColor = Color.FromArgb(71, 85, 105);
+        irregularPositiveDirectionLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
+        irregularPositiveDirectionLabel.Dock = DockStyle.Fill;
         irregularPositiveDirectionLabel.Size = new Size(88, 23);
         irregularPositiveDirectionLabel.TabIndex = 38;
         irregularPositiveDirectionLabel.Text = "正向偏角";
@@ -1041,6 +1311,10 @@ partial class WaveformPage
         irregularPositiveDirectionTextBox.BackColor = Color.White;
         irregularPositiveDirectionTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         irregularPositiveDirectionTextBox.Name = "irregularPositiveDirectionTextBox";
+        irregularPositiveDirectionTextBox.Font = new Font("Microsoft YaHei UI", 9F);
+        irregularPositiveDirectionTextBox.Margin = new Padding(3, 5, 3, 5);
+        irregularPositiveDirectionTextBox.Dock = DockStyle.Fill;
+        irregularPositiveDirectionTextBox.BorderStyle = BorderStyle.FixedSingle;
         irregularPositiveDirectionTextBox.Size = new Size(100, 27);
         irregularPositiveDirectionTextBox.TabIndex = 39;
         // 
@@ -1048,6 +1322,10 @@ partial class WaveformPage
         // 
         irregularOutputLabel.Location = new Point(3, 340);
         irregularOutputLabel.Name = "irregularOutputLabel";
+        irregularOutputLabel.TextAlign = ContentAlignment.MiddleLeft;
+        irregularOutputLabel.ForeColor = Color.FromArgb(71, 85, 105);
+        irregularOutputLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
+        irregularOutputLabel.Dock = DockStyle.Fill;
         irregularOutputLabel.Size = new Size(88, 23);
         irregularOutputLabel.TabIndex = 40;
         irregularOutputLabel.Text = "保存文件";
@@ -1059,17 +1337,26 @@ partial class WaveformPage
         irregularOutputTextBox.BackColor = Color.White;
         irregularOutputTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         irregularOutputTextBox.Name = "irregularOutputTextBox";
+        irregularOutputTextBox.Font = new Font("Microsoft YaHei UI", 9F);
+        irregularOutputTextBox.Margin = new Padding(3, 5, 3, 5);
+        irregularOutputTextBox.Dock = DockStyle.Fill;
+        irregularOutputTextBox.BorderStyle = BorderStyle.FixedSingle;
         irregularOutputTextBox.Size = new Size(100, 27);
         irregularOutputTextBox.TabIndex = 41;
         // 
         // irregularBrowseOutputButton
         // 
-        irregularBrowseOutputButton.BackColor = Color.FromArgb(226, 232, 240);
-        irregularBrowseOutputButton.FlatAppearance.BorderSize = 0;
+        irregularBrowseOutputButton.BackColor = Color.FromArgb(248, 250, 252);
+        irregularBrowseOutputButton.FlatAppearance.BorderSize = 1;
         irregularBrowseOutputButton.FlatStyle = FlatStyle.Flat;
         irregularBrowseOutputButton.ForeColor = Color.FromArgb(15, 23, 42);
         irregularBrowseOutputButton.Location = new Point(301, 343);
         irregularBrowseOutputButton.Name = "irregularBrowseOutputButton";
+        irregularBrowseOutputButton.Margin = new Padding(3, 4, 3, 4);
+        irregularBrowseOutputButton.Dock = DockStyle.Fill;
+        irregularBrowseOutputButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(226, 232, 240);
+        irregularBrowseOutputButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
+        irregularBrowseOutputButton.Cursor = Cursors.Hand;
         irregularBrowseOutputButton.Size = new Size(75, 23);
         irregularBrowseOutputButton.TabIndex = 42;
         irregularBrowseOutputButton.Text = "浏览";
@@ -1086,7 +1373,12 @@ partial class WaveformPage
         irregularParameterLayout.SetColumnSpan(irregularGenerateButton, 2);
         irregularGenerateButton.Location = new Point(3, 377);
         irregularGenerateButton.Name = "irregularGenerateButton";
-        irregularGenerateButton.Size = new Size(75, 23);
+        irregularGenerateButton.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
+        irregularGenerateButton.Margin = new Padding(3, 3, 3, 3);
+        irregularGenerateButton.Anchor = AnchorStyles.Left | AnchorStyles.Top;
+        irregularGenerateButton.Dock = DockStyle.None;
+        irregularGenerateButton.Cursor = Cursors.Hand;
+        irregularGenerateButton.Size = new Size(160, 34);
         irregularGenerateButton.TabIndex = 43;
         irregularGenerateButton.Text = "计算并保存";
         irregularGenerateButton.UseVisualStyleBackColor = false;
@@ -1098,6 +1390,10 @@ partial class WaveformPage
         irregularStatusLabel.ForeColor = Color.FromArgb(71, 85, 105);
         irregularStatusLabel.Location = new Point(207, 374);
         irregularStatusLabel.Name = "irregularStatusLabel";
+        irregularStatusLabel.AutoEllipsis = true;
+        irregularStatusLabel.TextAlign = ContentAlignment.MiddleLeft;
+        irregularStatusLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
+        irregularStatusLabel.Dock = DockStyle.Fill;
         irregularStatusLabel.Size = new Size(100, 23);
         irregularStatusLabel.TabIndex = 44;
         irregularStatusLabel.Text = "请选择 CSV 保存路径";
@@ -1122,7 +1418,7 @@ partial class WaveformPage
         irregularPreview.Dock = DockStyle.Fill;
         irregularPreview.ForeColor = Color.FromArgb(29, 78, 216);
         irregularPreview.Location = new Point(10, 38);
-        irregularPreview.MinimumSize = new Size(360, 260);
+        irregularPreview.MinimumSize = new Size(300, 180);
         irregularPreview.Name = "irregularPreview";
         irregularPreview.Size = new Size(360, 260);
         irregularPreview.TabIndex = 0;
@@ -1130,13 +1426,16 @@ partial class WaveformPage
         // 
         // WaveformPage
         // 
-        AutoScaleDimensions = new SizeF(9F, 20F);
-        AutoScaleMode = AutoScaleMode.Font;
+        Font = new Font("Microsoft YaHei UI", 9F);
+        AutoScaleDimensions = new SizeF(96F, 96F);
+        AutoScaleMode = AutoScaleMode.Dpi;
+        AutoScroll = true;
+        AutoScrollMinSize = new Size(1000, 600);
         BackColor = Color.FromArgb(241, 245, 249);
         ForeColor = Color.FromArgb(15, 23, 42);
         Controls.Add(rootLayout);
         Name = "WaveformPage";
-        Size = new Size(1210, 796);
+        Size = new Size(1104, 606);
         rootLayout.ResumeLayout(false);
         waveformTabs.ResumeLayout(false);
         regularTab.ResumeLayout(false);
