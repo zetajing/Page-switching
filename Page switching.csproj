@@ -28,6 +28,17 @@
     <EmbeddedResource Update="panel\*.resx">
       <DependentUpon>%(Filename).cs</DependentUpon>
     </EmbeddedResource>
+    <!-- 波浪分析页明确声明设计器类型及文件关联。 -->
+    <Compile Update="panel\WaveAnalysisPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="panel\WaveAnalysisPage.Designer.cs">
+      <SubType>Code</SubType>
+      <DependentUpon>WaveAnalysisPage.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Update="panel\WaveAnalysisPage.resx">
+      <DependentUpon>WaveAnalysisPage.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>

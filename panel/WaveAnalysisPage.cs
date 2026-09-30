@@ -12,6 +12,7 @@ namespace Page_switching.panel
         public WaveAnalysisPage()
         {
             InitializeComponent();
+            // 设计器只创建控件，文件读取和分析事件留给运行时。
             if (System.ComponentModel.LicenseManager.UsageMode == System.ComponentModel.LicenseUsageMode.Designtime) return;
             browseButton.Click += (_, _) => Browse();
             analyzeButton.Click += async (_, _) => await AnalyzeAsync();
