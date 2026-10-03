@@ -7,6 +7,8 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
+    <!-- 内部库统一从本项目的 lib 目录读取，不再依赖 Total 工程的位置。 -->
+    <InduLinkLibraryDirectory Condition="'$(InduLinkLibraryDirectory)' == ''">$(MSBuildProjectDirectory)\lib</InduLinkLibraryDirectory>
   </PropertyGroup>
 
   <ItemGroup>
@@ -44,26 +46,34 @@
   <ItemGroup>
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
+    <!-- DLL 引用不会传递原工程的 NuGet 依赖，显式保留对应版本供运行时使用。 -->
+    <PackageReference Include="Beckhoff.TwinCAT.Ads" Version="7.0.317" />
+    <PackageReference Include="Beckhoff.TwinCAT.Ads.TcpRouter" Version="7.0.317" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
-    <ProjectReference Include="..\..\Total\InduLink.Protocols.Ads\InduLink.Protocols.Ads.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="InduLink.Storage">
-      <HintPath>..\..\Total\InduLink.Storage\bin\Release\net8.0\InduLink.Storage.dll</HintPath>
+    <InduLinkLibrary Include="InduLink.Abstractions;InduLink.Runtime;InduLink.Protocols.Ads;InduLink.Protocols.Ads.Router;InduLink.Storage" />
+    <Reference Include="@(InduLinkLibrary)">
+      <HintPath>$(InduLinkLibraryDirectory)\%(Identity).dll</HintPath>
       <Private>true</Private>
-    </Reference>
-    <Reference Include="InduLink.Abstractions">
-      <HintPath>..\..\Total\InduLink.Storage\bin\Release\net8.0\InduLink.Abstractions.dll</HintPath>
-      <Private>true</Private>
-    </Reference>
-    <Reference Include="InduLink.Protocols.Ads.Router">
-      <HintPath>..\..\Total\InduLink.Protocols.Ads.Router\bin\Debug\net8.0\InduLink.Protocols.Ads.Router.dll</HintPath>
     </Reference>
   </ItemGroup>
+
+  <!-- 在构建和设计时的引用解析前检查 DLL；缺文件不阻断 NuGet 还原。 -->
+  <Target Name="ValidateInduLinkLibraries" BeforeTargets="ResolveAssemblyReferences">
+    <ItemGroup>
+      <_MissingInduLinkLibrary Include="@(InduLinkLibrary)" Condition="!Exists('$(InduLinkLibraryDirectory)\%(Identity).dll')" />
+    </ItemGroup>
+    <Error Condition="'@(_MissingInduLinkLibrary)' != ''"
+           Code="INDULINK001" File="$(MSBuildProjectFullPath)"
+           Text="缺少所需 DLL：@(_MissingInduLinkLibrary -> '%(Identity).dll', '、')。请放入 $(InduLinkLibraryDirectory)。文件清单及来源见 lib\README.md。" />
+  </Target>
 
   <ItemGroup>
     <None Update="App.config">
