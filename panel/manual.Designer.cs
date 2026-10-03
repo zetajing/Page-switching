@@ -162,6 +162,16 @@ namespace Page_switching
             controlLayout.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)jogSpeedInput).BeginInit();
             SuspendLayout();
+            //
+            // pagePanel
+            // 将手动内容挂入页面容器，使未连接 ADS 时也能正常显示和随页面填充。
+            //
+            pagePanel.Controls.Add(rootLayout);
+            pagePanel.Dock = DockStyle.Fill;
+            pagePanel.Location = new Point(0, 0);
+            pagePanel.Name = "pagePanel";
+            pagePanel.Size = new Size(1104, 606);
+            pagePanel.TabIndex = 0;
             // 
             // axis1FeedbackLayout
             // 
