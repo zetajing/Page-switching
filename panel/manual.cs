@@ -14,10 +14,12 @@ namespace Page_switching
         private IReadOnlyList<AxisSnapshot> _lastSnapshots = Array.Empty<AxisSnapshot>();
         private bool _refreshInProgress;
         private bool _commandInProgress;
-        private Button? _activeCommandButton;
+        private int _stopRequestsInProgress;
+        private long _stopRequestVersion;
         private bool _jogActive;
         private bool _jogPositive;
         private int _jogAxisNumber;
+        private long _jogRequestVersion;
 
         // 供设计器使用；自行创建并管理轴服务。
         public Manual()
@@ -100,12 +102,14 @@ namespace Page_switching
         // 从轴服务读取最新状态并更新手动页面。
         private async Task RefreshValuesAsync()
         {
-            if (_refreshInProgress || IsDisposed || _lifetimeCancellation.IsCancellationRequested)
+            // 停止请求等待 ADS 时不再追加刷新，保留服务现有的串行读写顺序。
+            if (_refreshInProgress || _stopRequestsInProgress > 0 || IsDisposed || _lifetimeCancellation.IsCancellationRequested)
             {
                 return;
             }
 
             _refreshInProgress = true;
+            var stopRequestVersion = _stopRequestVersion;
             try
             {
                 var snapshots = await _axisService.ReadSnapshotAsync(_lifetimeCancellation.Token);
@@ -125,7 +129,8 @@ namespace Page_switching
             catch (Exception ex)
             {
                 if (IsDisposed) return;
-                helperLabel.Text = "刷新失败：" + ex.Message;
+                if (CanUpdateCommandStatus(stopRequestVersion))
+                    helperLabel.Text = "刷新失败：" + ex.Message;
                 UpdateAxisOverview(Array.Empty<AxisSnapshot>());
                 UpdateConnectionState();
             }
@@ -213,10 +218,11 @@ namespace Page_switching
             UpdateSelectedAxisDetails();
         }
 
-        // 根据连接状态和当前执行命令设置按钮是否可用。
+        // 普通命令执行中禁用普通按钮；停止按钮始终可受理新的停止请求。
         private void SetCommandButtonEnabled(Button button, bool canControl)
         {
-            var enabled = canControl && !ReferenceEquals(button, _activeCommandButton);
+            var isStopButton = ReferenceEquals(button, stopAllButton) || ReferenceEquals(button, stopSelectedButton);
+            var enabled = canControl && (isStopButton || (!_commandInProgress && _stopRequestsInProgress == 0));
             if (button.Enabled != enabled)
             {
                 button.Enabled = enabled;
@@ -232,36 +238,36 @@ namespace Page_switching
         // 点击后将四根轴的使能变量全部写为 true。
         private async void EnableAllButton_Click(object? sender, EventArgs e)
         {
-            await RunCommandAsync(sender as Button,
+            await RunCommandAsync(
                 token => _axisService.EnableAllAsync(token), "全部轴已使能");
         }
 
         // 点击后将四根轴的使能变量全部写为 false。
         private async void DisableAllButton_Click(object? sender, EventArgs e)
         {
-            await RunCommandAsync(sender as Button,
+            await RunCommandAsync(
                 token => _axisService.DisableAllAsync(token), "全部轴已取消使能");
         }
 
         // 点击后触发四根轴的报警复位变量。
         private async void ResetAlarmButton_Click(object? sender, EventArgs e)
         {
-            await RunCommandAsync(sender as Button,
+            await RunCommandAsync(
                 token => _axisService.ResetAlarmsAsync(token), "报警复位命令已执行");
         }
 
         // 点击后触发四根轴的回零变量。
         private async void HomeAllButton_Click(object? sender, EventArgs e)
         {
-            await RunCommandAsync(sender as Button,
+            await RunCommandAsync(
                 token => _axisService.HomeAllAsync(token), "全部轴开始回零");
         }
 
         // 点击后触发四根轴的停止变量。
         private async void StopAllButton_Click(object? sender, EventArgs e)
         {
-            await RunCommandAsync(sender as Button,
-                token => _axisService.StopAllAsync(token), "全部轴已停止");
+            await RunStopCommandAsync(
+                token => _axisService.StopAllAsync(token), "已请求全部轴停止，正在发送命令……", "全部轴停止命令已发送");
         }
 
         // 点击后触发当前所选轴的回零变量。
@@ -269,7 +275,6 @@ namespace Page_switching
         {
             var axisNumber = SelectedAxisNumber;
             await RunCommandAsync(
-                sender as Button,
                 token => _axisService.HomeAxisAsync(axisNumber, token),
                 $"轴 {axisNumber} 开始回零");
         }
@@ -278,10 +283,9 @@ namespace Page_switching
         private async void StopSelectedButton_Click(object? sender, EventArgs e)
         {
             var axisNumber = SelectedAxisNumber;
-            await RunCommandAsync(
-                sender as Button,
+            await RunStopCommandAsync(
                 token => _axisService.StopAxisAsync(axisNumber, token),
-                $"轴 {axisNumber} 已停止");
+                $"已请求轴 {axisNumber} 停止，正在发送命令……", $"轴 {axisNumber} 停止命令已发送");
         }
 
         // 按下负向点动按钮时启动负向点动。
@@ -305,7 +309,7 @@ namespace Page_switching
         // 写入点动速度和方向启动信号。
         private async Task StartJogAsync(bool positive)
         {
-            if (_jogActive || _commandInProgress)
+            if (_jogActive || _commandInProgress || _stopRequestsInProgress > 0 || IsDisposed)
             {
                 return;
             }
@@ -313,6 +317,7 @@ namespace Page_switching
             _jogAxisNumber = SelectedAxisNumber;
             _jogPositive = positive;
             _jogActive = true;
+            var stopRequestVersion = _jogRequestVersion = _stopRequestVersion;
             OperationJournal.Record("手动控制",
                 $"请求轴 {_jogAxisNumber} {(positive ? "正向" : "负向")}点动，速度 {jogSpeedInput.Value:0.0}");
             try
@@ -323,7 +328,7 @@ namespace Page_switching
                     true,
                     decimal.ToDouble(jogSpeedInput.Value),
                     _lifetimeCancellation.Token);
-                if (!IsDisposed)
+                if (CanUpdateCommandStatus(stopRequestVersion))
                     helperLabel.Text = $"轴 {_jogAxisNumber} 正在{(positive ? "正向" : "负向")}点动";
             }
             catch (OperationCanceledException)
@@ -334,7 +339,7 @@ namespace Page_switching
             catch (Exception ex)
             {
                 _jogActive = false;
-                if (!IsDisposed) helperLabel.Text = "点动失败：" + ex.Message;
+                if (CanUpdateCommandStatus(stopRequestVersion)) helperLabel.Text = "点动失败：" + ex.Message;
             }
         }
 
@@ -349,6 +354,8 @@ namespace Page_switching
             var axisNumber = _jogAxisNumber;
             var positive = _jogPositive;
             _jogActive = false;
+            // 松开或隐藏页面后的清零仍属于原点动，不能覆盖之后接受的停止请求。
+            var stopRequestVersion = _jogRequestVersion;
             try
             {
                 await _axisService.JogAsync(
@@ -357,7 +364,7 @@ namespace Page_switching
                     false,
                     decimal.ToDouble(jogSpeedInput.Value),
                     _lifetimeCancellation.Token);
-                if (!IsDisposed)
+                if (CanUpdateCommandStatus(stopRequestVersion))
                 {
                     helperLabel.Text = $"轴 {axisNumber} 点动已停止";
                 }
@@ -368,7 +375,7 @@ namespace Page_switching
             }
             catch (Exception ex)
             {
-                if (!IsDisposed)
+                if (CanUpdateCommandStatus(stopRequestVersion))
                 {
                     helperLabel.Text = "停止点动失败：" + ex.Message;
                 }
@@ -377,24 +384,26 @@ namespace Page_switching
 
         // 统一执行按钮命令、显示结果并在成功后刷新轴状态。
         private async Task RunCommandAsync(
-            Button? sourceButton,
             Func<CancellationToken, Task> action,
             string successMessage)
         {
-            if (_commandInProgress)
+            if (_commandInProgress || _stopRequestsInProgress > 0 || IsDisposed)
             {
                 return;
             }
 
             _commandInProgress = true;
-            _activeCommandButton = sourceButton;
+            var stopRequestVersion = _stopRequestVersion;
             UpdateConnectionState();
             try
             {
                 await action(_lifetimeCancellation.Token);
                 if (IsDisposed) return;
-                helperLabel.Text = successMessage;
-                await RefreshValuesAsync();
+                if (CanUpdateCommandStatus(stopRequestVersion))
+                {
+                    helperLabel.Text = successMessage;
+                    await RefreshValuesAsync();
+                }
             }
             catch (OperationCanceledException)
             {
@@ -402,18 +411,61 @@ namespace Page_switching
             }
             catch (Exception ex)
             {
-                if (!IsDisposed) helperLabel.Text = "操作失败：" + ex.Message;
+                if (CanUpdateCommandStatus(stopRequestVersion)) helperLabel.Text = "操作失败：" + ex.Message;
             }
             finally
             {
                 _commandInProgress = false;
-                _activeCommandButton = null;
                 if (!IsDisposed)
                 {
                     UpdateConnectionState();
                 }
             }
         }
+
+        // 停止不受普通命令忙状态拦截；每次请求均交给轴服务排队，允许选轴停止后追加全停。
+        private async Task RunStopCommandAsync(
+            Func<CancellationToken, Task> action,
+            string requestMessage,
+            string successMessage)
+        {
+            if (IsDisposed) return;
+
+            _stopRequestsInProgress++;
+            var stopRequestVersion = ++_stopRequestVersion;
+            UpdateConnectionState();
+            helperLabel.Text = requestMessage;
+            var commandSent = false;
+            try
+            {
+                await action(_lifetimeCancellation.Token);
+                commandSent = true;
+                if (CanUpdateCommandStatus(stopRequestVersion)) helperLabel.Text = successMessage;
+                else OperationJournal.Record("手动控制", successMessage);
+            }
+            catch (OperationCanceledException)
+            {
+                if (CanUpdateCommandStatus(stopRequestVersion)) helperLabel.Text = "停止命令已取消";
+                else OperationJournal.Record("手动控制", "停止命令已取消：" + requestMessage);
+            }
+            catch (Exception ex)
+            {
+                var message = "停止命令发送失败：" + ex.Message + "；" + requestMessage;
+                if (CanUpdateCommandStatus(stopRequestVersion)) helperLabel.Text = message;
+                else OperationJournal.Record("手动控制", message);
+            }
+            finally
+            {
+                _stopRequestsInProgress--;
+                if (!IsDisposed) UpdateConnectionState();
+            }
+
+            if (commandSent && CanUpdateCommandStatus(stopRequestVersion)) await RefreshValuesAsync();
+        }
+
+        // 停止请求之后完成的旧命令、点动或刷新，不能覆盖最新停止提示。
+        private bool CanUpdateCommandStatus(long stopRequestVersion) =>
+            !IsDisposed && stopRequestVersion == _stopRequestVersion;
 
         private int SelectedAxisNumber => Math.Max(0, axisSelector.SelectedIndex) + 1;
 
