@@ -17,6 +17,14 @@ namespace Page_switching.panel
             Disposed += (_, _) => { _lifetime.Cancel(); _lifetime.Dispose(); };
         }
 
+        protected override void OnLayout(LayoutEventArgs e)
+        {
+            // 最小画布会随 DPI 缩放，同步滚动范围，保证小窗口仍能访问全部输入和按钮。
+            if (pagePanel != null && AutoScrollMinSize != pagePanel.MinimumSize)
+                AutoScrollMinSize = pagePanel.MinimumSize;
+            base.OnLayout(e);
+        }
+
         private void Select(TextBox target, bool save)
         {
             using FileDialog dialog = save
