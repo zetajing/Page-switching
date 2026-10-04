@@ -13,6 +13,7 @@ namespace Page_switching
         private readonly Config _config;
         private readonly WaveformPage _waveformPage;
         private readonly AxisService _axisService;
+        private readonly MachineMonitorService _monitorService;
         private readonly Wave_Height_Meter _wave_Height_Meter;
         private readonly Data _data;
         private readonly Calibration _calibration;
@@ -21,7 +22,13 @@ namespace Page_switching
         private readonly SignalCorrectionPage _correction;
         private readonly System.Windows.Forms.Timer _headerStatusTimer = new() { Interval = 500 };
         private readonly CancellationTokenSource _lifetimeCancellation = new();
-        private bool _closing;
+        private volatile bool _closing;
+        private volatile bool _monitorReady;
+        private bool _closeAfterCleanup;
+        private Task _startupTask = Task.CompletedTask;
+        private Task _monitorRefreshTask = Task.CompletedTask;
+        private Task? _shutdownTask;
+        private string? _lastMonitorError;
         private readonly bool _recordOperations = LicenseManager.UsageMode != LicenseUsageMode.Designtime;
         private AdsTcpRouterHost? _adsTcpRouter;
         private UserControl? _currentPage;
@@ -44,7 +51,9 @@ namespace Page_switching
                 OperationJournal.Record("系统", "程序启动");
             }
 
-            _axisService = new AxisService(AxisServiceOptions.FromConfiguration());
+            var axisOptions = AxisServiceOptions.FromConfiguration();
+            _axisService = new AxisService(axisOptions);
+            _monitorService = new MachineMonitorService(MachineMonitorOptions.FromConfiguration(axisOptions));
             _autoPage = new Auto();
             _manualPage = new Manual(_axisService);
             _config = new Config();
@@ -72,12 +81,11 @@ namespace Page_switching
                     _analysis, _correction
                 })
                     TrackActions(page, page);
-            _headerStatusTimer.Tick += (_, _) => UpdateHeaderStatus();
+            _headerStatusTimer.Tick += HeaderStatusTimer_Tick;
             Disposed += (_, _) =>
             {
                 // 直接释放窗体时也取消后台启动，不能只依赖关闭事件。
-                _closing = true;
-                _lifetimeCancellation.Cancel();
+                _ = BeginShutdown();
                 OperationJournal.EntryAdded -= AddOperationEntry;
                 _headerStatusTimer.Stop();
                 _headerStatusTimer.Dispose();
@@ -92,30 +100,42 @@ namespace Page_switching
                 _data.Dispose();
                 _calibration.Dispose();
                 _batchCalibrationPage.Dispose();
-                _lifetimeCancellation.Dispose();
             };
 
             // 启动时先显示默认页面，避免主区域空白。
             NavigateTo(_autoPage, Bu_auto);
-            _headerStatusTimer.Start();
-
-            // 窗体先显示，再异步建立 ADS 连接。
-            Shown += Mainpage_Shown;
+            if (_recordOperations)
+            {
+                _headerStatusTimer.Start();
+                // Designer 只创建控件；实际窗口显示后才启动 Router 和两个独立 ADS 客户端。
+                Shown += Mainpage_Shown;
+            }
         }
 
         // 主窗体显示后启动可选 Router，并连接真实 ADS PLC。
         private async void Mainpage_Shown(object? sender, EventArgs e)
         {
             var cancellationToken = _lifetimeCancellation.Token;
+            // 启动任务不依赖 UI 消息循环，直接 Dispose 时也能等待清理完成。
+            _startupTask = Task.Run(() => StartServicesAsync(cancellationToken), cancellationToken);
+            try { await _startupTask; }
+            catch (OperationCanceledException) when (_closing) { }
+            if (!_closing && !IsDisposed) UpdateHeaderStatus();
+        }
+
+        private async Task StartServicesAsync(CancellationToken cancellationToken)
+        {
             try
             {
                 var router = await StartRouterInBackgroundAsync(cancellationToken);
                 // 窗口关闭后返回的 Router 不能再交给已经释放的窗体。
                 if (_closing) { router?.Dispose(); return; }
                 _adsTcpRouter = router;
-                // 部分 ADS 客户端连接方法会在返回 Task 前同步等待；放到后台避免卡住界面绘制。
-                await Task.Run(() => _axisService.ConnectAsync(cancellationToken), cancellationToken);
-                if (!_closing) _autoPage.AddLog("ADS 连接成功");
+                // Router 就绪即允许监控连接，不等待手动客户端连接成功。
+                _monitorReady = true;
+                PostToUi(() => { _ = RefreshMonitorAsync(); });
+                await _axisService.ConnectAsync(cancellationToken).ConfigureAwait(false);
+                if (!_closing) _autoPage.AddLog("手动 ADS 连接成功");
             }
             catch (OperationCanceledException) when (_closing)
             {
@@ -123,11 +143,67 @@ namespace Page_switching
             }
             catch (Exception ex)
             {
-                Debug.WriteLine("ADS 连接失败：" + ex);
-                if (!_closing) _autoPage.AddLog("ADS 连接失败：" + ex.Message);
+                Debug.WriteLine("手动 ADS 连接失败：" + ex);
+                if (!_closing) _autoPage.AddLog("手动 ADS 连接失败：" + ex.Message);
             }
+        }
 
-            if (!_closing) UpdateHeaderStatus();
+        private void HeaderStatusTimer_Tick(object? sender, EventArgs e)
+        {
+            if (_closing || IsDisposed) return;
+            // 即使读取仍在执行，也按当前时间将历史反馈降为过期。
+            _autoPage.ApplyMonitorSnapshot(_monitorService.LatestSnapshot);
+            UpdateHeaderStatus();
+            _ = RefreshMonitorAsync();
+        }
+
+        private Task RefreshMonitorAsync()
+        {
+            if (!_monitorReady || _closing || IsDisposed) return Task.CompletedTask;
+            if (!_monitorRefreshTask.IsCompleted) return _monitorRefreshTask;
+            var includeAxes = ReferenceEquals(_currentPage, _autoPage);
+            var cancellationToken = _lifetimeCancellation.Token;
+            _monitorRefreshTask = ReadMonitorAsync(includeAxes, cancellationToken);
+            return _monitorRefreshTask;
+        }
+
+        private async Task ReadMonitorAsync(bool includeAxes, CancellationToken cancellationToken)
+        {
+            try
+            {
+                await Task.Run(
+                    () => _monitorService.RefreshAsync(includeAxes, cancellationToken), cancellationToken)
+                    .ConfigureAwait(false);
+                _lastMonitorError = null;
+                PostToUi(() =>
+                {
+                    // 回调排队期间数据可能已过期，发布时重新取得当前有效性。
+                    _autoPage.ApplyMonitorSnapshot(_monitorService.LatestSnapshot);
+                    UpdateHeaderStatus();
+                });
+            }
+            catch (OperationCanceledException) when (_closing || cancellationToken.IsCancellationRequested) { }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("监控刷新失败：" + ex);
+                if (_lastMonitorError == ex.Message) return;
+                _lastMonitorError = ex.Message;
+                PostToUi(() => _autoPage.AddLog("监控刷新失败：" + ex.Message));
+            }
+        }
+
+        // 后台任务不等待 UI 回调，避免关闭消息循环时清理任务无法退出。
+        private void PostToUi(Action action)
+        {
+            if (_closing || IsDisposed || Disposing || !IsHandleCreated) return;
+            try
+            {
+                BeginInvoke((Action)(() =>
+                {
+                    if (!_closing && !IsDisposed && !Disposing) action();
+                }));
+            }
+            catch (InvalidOperationException) { }
         }
 
         // 在后台启动可选的 ADS TCP Router，避免启动阶段阻塞主界面。
@@ -167,21 +243,65 @@ namespace Page_switching
             }
         }
 
-        // 主窗体关闭时释放 ADS 连接和 Router。
-        protected override void OnFormClosed(FormClosedEventArgs e)
+        // 先异步退出监控与启动任务，再允许关闭，Router 始终最后释放。
+        protected override async void OnFormClosing(FormClosingEventArgs e)
         {
+            base.OnFormClosing(e);
+            if (e.Cancel || _closeAfterCleanup || !_recordOperations) return;
+            e.Cancel = true;
+            if (_shutdownTask is not null) return;
+            await BeginShutdown();
+            _closeAfterCleanup = true;
+            if (!IsDisposed) Close();
+        }
+
+        private Task BeginShutdown()
+        {
+            if (_shutdownTask is not null) return _shutdownTask;
             _closing = true;
+            _monitorReady = false;
             _lifetimeCancellation.Cancel();
             _headerStatusTimer.Stop();
+            // 等待后台任务期间先停止手动页刷新和按钮请求，轴客户端仍留到最后释放。
+            if (!IsDisposed && !Disposing) Enabled = false;
+            _manualPage?.Dispose();
+            _shutdownTask = CleanupServicesAsync();
+            return _shutdownTask;
+        }
+
+        private async Task CleanupServicesAsync()
+        {
+            async Task DisposeMonitorAsync()
+            {
+                if (_monitorService is not null) await _monitorService.DisposeAsync().ConfigureAwait(false);
+            }
+            try
+            {
+                // WhenAll 等待所有任务退出；某个任务取消也不能提前释放 Router。
+                await Task.WhenAll(DisposeMonitorAsync(), _monitorRefreshTask, _startupTask).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) { }
+            catch (Exception ex) { Debug.WriteLine("监控退出失败：" + ex); }
+            finally
+            {
+                try { _axisService?.Dispose(); }
+                catch (Exception ex) { Debug.WriteLine("手动 ADS 退出失败：" + ex); }
+                try { _adsTcpRouter?.Dispose(); }
+                catch (Exception ex) { Debug.WriteLine("Router 退出失败：" + ex); }
+                _lifetimeCancellation.Dispose();
+            }
+        }
+
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            _ = BeginShutdown();
             if (_recordOperations) OperationJournal.Record("系统", "程序退出");
             try
             {
-                _axisService.Dispose();
-                _adsTcpRouter?.Dispose();
+                base.OnFormClosed(e);
             }
             finally
             {
-                base.OnFormClosed(e);
                 LogDisplayHelper.Shutdown();
             }
         }
@@ -225,14 +345,15 @@ namespace Page_switching
             if (_recordOperations) OperationJournal.Record("页面切换", "打开" + GetPageName(page));
             ShowPage(page);
             SetActiveNavigation(button);
+            if (ReferenceEquals(page, _autoPage)) _ = RefreshMonitorAsync();
         }
 
         private void AddOperationEntry(string entry)
         {
-            if (IsDisposed) return;
+            if (_closing || IsDisposed || Disposing) return;
             if (InvokeRequired)
             {
-                BeginInvoke(() => AddOperationEntry(entry));
+                PostToUi(() => AddOperationEntry(entry));
                 return;
             }
 
@@ -364,10 +485,10 @@ namespace Page_switching
             UpdateHeaderStatus();
         }
 
-        // 更新顶部状态栏，显示手动控制的 ADS 连接和当前页面。
+        // 页面名称和设备反馈分开显示，切页不改变实际控制端或运行模式。
         private void UpdateHeaderStatus()
         {
-            if (IsDisposed)
+            if (_closing || IsDisposed || Disposing)
             {
                 return;
             }
@@ -375,13 +496,18 @@ namespace Page_switching
             var connected = _axisService.IsConnected;
             if (_recordOperations && _lastAdsConnected != connected)
             {
-                OperationJournal.Record("系统", connected ? "ADS 已连接" : "ADS 未连接");
+                OperationJournal.Record("系统", connected ? "手动 ADS 已连接" : "手动 ADS 未连接");
                 _lastAdsConnected = connected;
             }
-            adsStatusLabel.Text = connected ? "●  ADS 已连接" : "●  ADS 未连接";
-            adsStatusLabel.ForeColor = connected ? UiPalette.Success : UiPalette.Warning;
-
-            controlStatusLabel.Text = $"当前：{GetCurrentPageName()}    PLC：仅手动控制";
+            var snapshot = _monitorService.LatestSnapshot;
+            adsStatusLabel.Text = $"● ADS：手动{(connected ? "已连接" : "未连接")} / 监控{(snapshot.IsConnected ? "已连接" : "未连接")}";
+            adsStatusLabel.ForeColor = connected && snapshot.IsLive ? UiPalette.Success : UiPalette.Warning;
+            var owner = Auto.FormatMonitorField(snapshot.ControlOwner, Auto.FormatControlOwner);
+            var mode = Auto.FormatMonitorField(snapshot.ControlMode, Auto.FormatControlMode);
+            controlStatusLabel.Text = $"页面：{GetCurrentPageName()}    控制端：{owner}    模式：{mode}";
+            controlStatusLabel.ForeColor = snapshot.ControlOwner.IsAvailable && snapshot.ControlOwner.Value is ushort ownerCode && ownerCode <= 3 &&
+                snapshot.ControlMode.IsAvailable && snapshot.ControlMode.Value is ushort modeCode && modeCode <= 2
+                ? UiPalette.Muted : UiPalette.Warning;
         }
 
         // 根据当前缓存页面返回顶部状态栏要显示的页面名称。

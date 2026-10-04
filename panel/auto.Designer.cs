@@ -2,270 +2,499 @@ namespace Page_switching
 {
     partial class Auto
     {
-        private Panel pagePanel;
-
-        /// <summary> 
-        /// 必需的设计器变量。
-        /// </summary>
         private System.ComponentModel.IContainer components = null;
+        private Panel pagePanel;
         private TableLayoutPanel rootLayout;
         private Panel headerPanel;
         private Label titleLabel;
         private Label subtitleLabel;
-        private GroupBox statusGroup;
-        private TableLayoutPanel statusLayout;
-        private Label taskCaptionLabel;
+        private TableLayoutPanel cardsLayout;
+        private Panel controlCard;
+        private TableLayoutPanel controlCardLayout;
+        private Label controlCaptionLabel;
+        private Label controlValueLabel;
+        private Label controlDetailLabel;
+        private Panel modeCard;
+        private TableLayoutPanel modeCardLayout;
+        private Label modeCaptionLabel;
+        private Label modeValueLabel;
+        private Label modeDetailLabel;
+        private Panel waveCard;
+        private TableLayoutPanel waveCardLayout;
+        private Label waveCaptionLabel;
         private Label _runStateLabel;
+        private Label faultCodeLabel;
+        private TableLayoutPanel monitorInfoLayout;
+        private Label connectionLabel;
+        private Label feedbackLabel;
+        private Label heartbeatLabel;
+        private GroupBox axisGroup;
+        private DataGridView axisGrid;
+        private DataGridViewTextBoxColumn axisNumberColumn;
+        private DataGridViewTextBoxColumn positionColumn;
+        private DataGridViewTextBoxColumn speedColumn;
+        private DataGridViewTextBoxColumn homedColumn;
+        private DataGridViewTextBoxColumn alarmColumn;
+        private DataGridViewTextBoxColumn negativeLimitColumn;
+        private DataGridViewTextBoxColumn positiveLimitColumn;
+        private DataGridViewTextBoxColumn originColumn;
         private GroupBox logGroup;
         private TableLayoutPanel logLayout;
         private ListBox _logList;
         private Button clearLogButton;
 
-        /// <summary> 
-        /// 清理所有正在使用的资源。
-        /// </summary>
-        /// <param name="disposing">如果应释放托管资源，为 true；否则为 false。</param>
-        // 释放设计器创建的自动页面组件。
         protected override void Dispose(bool disposing)
         {
-            if (disposing && (components != null))
-            {
-                components.Dispose();
-            }
+            if (disposing) components?.Dispose();
             base.Dispose(disposing);
         }
 
-        #region 组件设计器生成的代码
-
-        /// <summary> 
-        /// 设计器支持所需的方法 - 不要修改
-        /// 使用代码编辑器修改此方法的内容。
-        /// </summary>
-        // 创建设计器中的自动页面控件并设置布局。
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
             pagePanel = new Panel();
             rootLayout = new TableLayoutPanel();
             headerPanel = new Panel();
-            subtitleLabel = new Label();
             titleLabel = new Label();
-            statusGroup = new GroupBox();
-            statusLayout = new TableLayoutPanel();
-            taskCaptionLabel = new Label();
+            subtitleLabel = new Label();
+            cardsLayout = new TableLayoutPanel();
+            controlCard = new Panel();
+            controlCardLayout = new TableLayoutPanel();
+            controlCaptionLabel = new Label();
+            controlValueLabel = new Label();
+            controlDetailLabel = new Label();
+            modeCard = new Panel();
+            modeCardLayout = new TableLayoutPanel();
+            modeCaptionLabel = new Label();
+            modeValueLabel = new Label();
+            modeDetailLabel = new Label();
+            waveCard = new Panel();
+            waveCardLayout = new TableLayoutPanel();
+            waveCaptionLabel = new Label();
             _runStateLabel = new Label();
+            faultCodeLabel = new Label();
+            monitorInfoLayout = new TableLayoutPanel();
+            connectionLabel = new Label();
+            feedbackLabel = new Label();
+            heartbeatLabel = new Label();
+            axisGroup = new GroupBox();
+            axisGrid = new DataGridView();
+            axisNumberColumn = new DataGridViewTextBoxColumn();
+            positionColumn = new DataGridViewTextBoxColumn();
+            speedColumn = new DataGridViewTextBoxColumn();
+            homedColumn = new DataGridViewTextBoxColumn();
+            alarmColumn = new DataGridViewTextBoxColumn();
+            negativeLimitColumn = new DataGridViewTextBoxColumn();
+            positiveLimitColumn = new DataGridViewTextBoxColumn();
+            originColumn = new DataGridViewTextBoxColumn();
             logGroup = new GroupBox();
             logLayout = new TableLayoutPanel();
             _logList = new ListBox();
             clearLogButton = new Button();
+            ((System.ComponentModel.ISupportInitialize)axisGrid).BeginInit();
+            pagePanel.SuspendLayout();
             rootLayout.SuspendLayout();
             headerPanel.SuspendLayout();
-            statusGroup.SuspendLayout();
-            statusLayout.SuspendLayout();
+            cardsLayout.SuspendLayout();
+            controlCard.SuspendLayout();
+            controlCardLayout.SuspendLayout();
+            modeCard.SuspendLayout();
+            modeCardLayout.SuspendLayout();
+            waveCard.SuspendLayout();
+            waveCardLayout.SuspendLayout();
+            monitorInfoLayout.SuspendLayout();
+            axisGroup.SuspendLayout();
             logGroup.SuspendLayout();
             logLayout.SuspendLayout();
             SuspendLayout();
-            // 
-            // rootLayout
-            // 
+            pagePanel.Name = "pagePanel";
+            rootLayout.Name = "rootLayout";
+            headerPanel.Name = "headerPanel";
+            titleLabel.Name = "titleLabel";
+            subtitleLabel.Name = "subtitleLabel";
+            cardsLayout.Name = "cardsLayout";
+            controlCard.Name = "controlCard";
+            controlCardLayout.Name = "controlCardLayout";
+            controlCaptionLabel.Name = "controlCaptionLabel";
+            controlValueLabel.Name = "controlValueLabel";
+            controlDetailLabel.Name = "controlDetailLabel";
+            modeCard.Name = "modeCard";
+            modeCardLayout.Name = "modeCardLayout";
+            modeCaptionLabel.Name = "modeCaptionLabel";
+            modeValueLabel.Name = "modeValueLabel";
+            modeDetailLabel.Name = "modeDetailLabel";
+            waveCard.Name = "waveCard";
+            waveCardLayout.Name = "waveCardLayout";
+            waveCaptionLabel.Name = "waveCaptionLabel";
+            _runStateLabel.Name = "_runStateLabel";
+            faultCodeLabel.Name = "faultCodeLabel";
+            monitorInfoLayout.Name = "monitorInfoLayout";
+            connectionLabel.Name = "connectionLabel";
+            feedbackLabel.Name = "feedbackLabel";
+            heartbeatLabel.Name = "heartbeatLabel";
+            axisGroup.Name = "axisGroup";
+            axisGrid.Name = "axisGrid";
+            axisNumberColumn.Name = "axisNumberColumn";
+            positionColumn.Name = "positionColumn";
+            speedColumn.Name = "speedColumn";
+            homedColumn.Name = "homedColumn";
+            alarmColumn.Name = "alarmColumn";
+            negativeLimitColumn.Name = "negativeLimitColumn";
+            positiveLimitColumn.Name = "positiveLimitColumn";
+            originColumn.Name = "originColumn";
+            logGroup.Name = "logGroup";
+            logLayout.Name = "logLayout";
+            _logList.Name = "_logList";
+            clearLogButton.Name = "clearLogButton";
+
+            // 固定监控区域，日志占用剩余高度；所有静态控件保留在 Designer 中。
             rootLayout.BackColor = Color.FromArgb(241, 245, 249);
+            rootLayout.Dock = DockStyle.Fill;
+            rootLayout.Margin = new Padding(0);
+            rootLayout.Padding = new Padding(16);
             rootLayout.ColumnCount = 1;
             rootLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            rootLayout.Controls.Add(headerPanel, 0, 0);
-            rootLayout.Controls.Add(statusGroup, 0, 1);
-            rootLayout.Controls.Add(logGroup, 0, 2);
-            rootLayout.Dock = DockStyle.Fill;
-            rootLayout.Location = new Point(0, 0);
-            rootLayout.Margin = new Padding(0);
-            rootLayout.Name = "rootLayout";
-            rootLayout.AutoScroll = false;
-            rootLayout.Padding = new Padding(16);
-            rootLayout.RowCount = 3;
+            rootLayout.RowCount = 5;
             rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 56F));
-            rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 78F));
+            rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 88F));
+            rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
+            rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 190F));
             rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            rootLayout.Size = new Size(1210, 796);
-            rootLayout.TabIndex = 0;
-            // 
-            // headerPanel
-            // 
-            headerPanel.BackColor = Color.FromArgb(241, 245, 249);
+            rootLayout.Controls.Add(headerPanel, 0, 0);
+            rootLayout.Controls.Add(cardsLayout, 0, 1);
+            rootLayout.Controls.Add(monitorInfoLayout, 0, 2);
+            rootLayout.Controls.Add(axisGroup, 0, 3);
+            rootLayout.Controls.Add(logGroup, 0, 4);
+            headerPanel.Dock = DockStyle.Fill;
+            headerPanel.Margin = new Padding(0);
             headerPanel.Controls.Add(subtitleLabel);
             headerPanel.Controls.Add(titleLabel);
-            headerPanel.Dock = DockStyle.Fill;
-            headerPanel.Location = new Point(20, 20);
-            headerPanel.Margin = new Padding(0);
-            headerPanel.Name = "headerPanel";
-            headerPanel.Size = new Size(1170, 56);
-            headerPanel.TabIndex = 0;
-            // 
-            // subtitleLabel
-            // 
-            subtitleLabel.Dock = DockStyle.Fill;
-            subtitleLabel.Font = new Font("Microsoft YaHei UI", 9F);
-            subtitleLabel.ForeColor = Color.FromArgb(71, 85, 105);
-            subtitleLabel.Location = new Point(0, 34);
-            subtitleLabel.Name = "subtitleLabel";
-            subtitleLabel.Size = new Size(1170, 22);
-            subtitleLabel.TabIndex = 1;
-            subtitleLabel.Text = "自动任务状态与本页消息";
-            subtitleLabel.TextAlign = ContentAlignment.MiddleLeft;
-            // 
-            // titleLabel
-            // 
             titleLabel.Dock = DockStyle.Top;
+            titleLabel.Height = 34;
             titleLabel.Font = new Font("Microsoft YaHei UI", 16F, FontStyle.Bold);
             titleLabel.ForeColor = Color.FromArgb(15, 23, 42);
-            titleLabel.Location = new Point(0, 0);
-            titleLabel.Name = "titleLabel";
-            titleLabel.Size = new Size(1170, 34);
-            titleLabel.TabIndex = 0;
             titleLabel.Text = "自动运行";
             titleLabel.TextAlign = ContentAlignment.MiddleLeft;
-            // 
-            // statusGroup
-            // 
-            statusGroup.BackColor = Color.White;
-            statusGroup.Controls.Add(statusLayout);
-            statusGroup.Dock = DockStyle.Fill;
-            statusGroup.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
-            statusGroup.ForeColor = Color.FromArgb(15, 23, 42);
-            statusGroup.Location = new Point(20, 80);
-            statusGroup.Margin = new Padding(0, 4, 0, 4);
-            statusGroup.Name = "statusGroup";
-            statusGroup.Padding = new Padding(14, 18, 14, 8);
-            statusGroup.Size = new Size(1170, 70);
-            statusGroup.TabIndex = 1;
-            statusGroup.TabStop = false;
-            statusGroup.Text = "运行状态";
-            // 
-            // statusLayout
-            // 
-            statusLayout.ColumnCount = 2;
-            statusLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120F));
-            statusLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            statusLayout.Controls.Add(taskCaptionLabel, 0, 0);
-            statusLayout.Controls.Add(_runStateLabel, 1, 0);
-            statusLayout.Dock = DockStyle.Fill;
-            statusLayout.Location = new Point(14, 38);
-            statusLayout.Name = "statusLayout";
-            statusLayout.RowCount = 1;
-            statusLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-            statusLayout.Size = new Size(1142, 24);
-            statusLayout.TabIndex = 0;
-            // 
-            // taskCaptionLabel
-            // 
-            taskCaptionLabel.Dock = DockStyle.Fill;
-            taskCaptionLabel.Font = new Font("Microsoft YaHei UI", 9F);
-            taskCaptionLabel.ForeColor = Color.FromArgb(71, 85, 105);
-            taskCaptionLabel.Location = new Point(3, 0);
-            taskCaptionLabel.Name = "taskCaptionLabel";
-            taskCaptionLabel.Size = new Size(114, 24);
-            taskCaptionLabel.TabIndex = 0;
-            taskCaptionLabel.Text = "自动任务";
-            taskCaptionLabel.TextAlign = ContentAlignment.MiddleLeft;
-            // 
-            // _runStateLabel
-            // 
+            subtitleLabel.Dock = DockStyle.Fill;
+            subtitleLabel.ForeColor = Color.FromArgb(71, 85, 105);
+            subtitleLabel.Text = "控制端、运行模式与造波反馈 · 只读监控";
+            subtitleLabel.TextAlign = ContentAlignment.MiddleLeft;
+            cardsLayout.Dock = DockStyle.Fill;
+            cardsLayout.Margin = new Padding(0);
+            cardsLayout.ColumnCount = 3;
+            cardsLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33333F));
+            cardsLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33333F));
+            cardsLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33334F));
+            cardsLayout.RowCount = 1;
+            cardsLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            cardsLayout.Controls.Add(controlCard, 0, 0);
+            cardsLayout.Controls.Add(modeCard, 1, 0);
+            cardsLayout.Controls.Add(waveCard, 2, 0);
+            controlCard.Dock = DockStyle.Fill;
+            controlCard.BackColor = Color.White;
+            controlCard.BorderStyle = BorderStyle.FixedSingle;
+            controlCard.Margin = new Padding(4, 0, 4, 8);
+            controlCard.Padding = new Padding(12, 5, 12, 5);
+            controlCard.Controls.Add(controlCardLayout);
+            controlCardLayout.Dock = DockStyle.Fill;
+            controlCardLayout.Margin = new Padding(0);
+            controlCardLayout.ColumnCount = 1;
+            controlCardLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            controlCardLayout.RowCount = 3;
+            controlCardLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            controlCardLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 28F));
+            controlCardLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            controlCardLayout.Controls.Add(controlCaptionLabel, 0, 0);
+            controlCardLayout.Controls.Add(controlValueLabel, 0, 1);
+            controlCardLayout.Controls.Add(controlDetailLabel, 0, 2);
+            controlCaptionLabel.Dock = DockStyle.Fill;
+            controlCaptionLabel.Margin = new Padding(0);
+            controlCaptionLabel.AutoEllipsis = true;
+            controlCaptionLabel.TextAlign = ContentAlignment.MiddleLeft;
+            controlCaptionLabel.Font = new Font("Microsoft YaHei UI", 9F);
+            controlCaptionLabel.ForeColor = Color.FromArgb(71, 85, 105);
+            controlCaptionLabel.Text = "当前控制端";
+            controlValueLabel.Dock = DockStyle.Fill;
+            controlValueLabel.Margin = new Padding(0);
+            controlValueLabel.AutoEllipsis = true;
+            controlValueLabel.TextAlign = ContentAlignment.MiddleLeft;
+            controlValueLabel.Font = new Font("Microsoft YaHei UI", 14F, FontStyle.Bold);
+            controlValueLabel.ForeColor = Color.FromArgb(100, 116, 139);
+            controlValueLabel.Text = "等待反馈";
+            controlDetailLabel.Dock = DockStyle.Fill;
+            controlDetailLabel.Margin = new Padding(0);
+            controlDetailLabel.AutoEllipsis = true;
+            controlDetailLabel.TextAlign = ContentAlignment.MiddleLeft;
+            controlDetailLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
+            controlDetailLabel.ForeColor = Color.FromArgb(100, 116, 139);
+            controlDetailLabel.Text = "等待有效反馈";
+            modeCard.Dock = DockStyle.Fill;
+            modeCard.BackColor = Color.White;
+            modeCard.BorderStyle = BorderStyle.FixedSingle;
+            modeCard.Margin = new Padding(4, 0, 4, 8);
+            modeCard.Padding = new Padding(12, 5, 12, 5);
+            modeCard.Controls.Add(modeCardLayout);
+            modeCardLayout.Dock = DockStyle.Fill;
+            modeCardLayout.Margin = new Padding(0);
+            modeCardLayout.ColumnCount = 1;
+            modeCardLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            modeCardLayout.RowCount = 3;
+            modeCardLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            modeCardLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 28F));
+            modeCardLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            modeCardLayout.Controls.Add(modeCaptionLabel, 0, 0);
+            modeCardLayout.Controls.Add(modeValueLabel, 0, 1);
+            modeCardLayout.Controls.Add(modeDetailLabel, 0, 2);
+            modeCaptionLabel.Dock = DockStyle.Fill;
+            modeCaptionLabel.Margin = new Padding(0);
+            modeCaptionLabel.AutoEllipsis = true;
+            modeCaptionLabel.TextAlign = ContentAlignment.MiddleLeft;
+            modeCaptionLabel.Font = new Font("Microsoft YaHei UI", 9F);
+            modeCaptionLabel.ForeColor = Color.FromArgb(71, 85, 105);
+            modeCaptionLabel.Text = "运行模式";
+            modeValueLabel.Dock = DockStyle.Fill;
+            modeValueLabel.Margin = new Padding(0);
+            modeValueLabel.AutoEllipsis = true;
+            modeValueLabel.TextAlign = ContentAlignment.MiddleLeft;
+            modeValueLabel.Font = new Font("Microsoft YaHei UI", 14F, FontStyle.Bold);
+            modeValueLabel.ForeColor = Color.FromArgb(100, 116, 139);
+            modeValueLabel.Text = "等待反馈";
+            modeDetailLabel.Dock = DockStyle.Fill;
+            modeDetailLabel.Margin = new Padding(0);
+            modeDetailLabel.AutoEllipsis = true;
+            modeDetailLabel.TextAlign = ContentAlignment.MiddleLeft;
+            modeDetailLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
+            modeDetailLabel.ForeColor = Color.FromArgb(100, 116, 139);
+            modeDetailLabel.Text = "等待有效反馈";
+            waveCard.Dock = DockStyle.Fill;
+            waveCard.BackColor = Color.White;
+            waveCard.BorderStyle = BorderStyle.FixedSingle;
+            waveCard.Margin = new Padding(4, 0, 4, 8);
+            waveCard.Padding = new Padding(12, 5, 12, 5);
+            waveCard.Controls.Add(waveCardLayout);
+            waveCardLayout.Dock = DockStyle.Fill;
+            waveCardLayout.Margin = new Padding(0);
+            waveCardLayout.ColumnCount = 1;
+            waveCardLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            waveCardLayout.RowCount = 3;
+            waveCardLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            waveCardLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 28F));
+            waveCardLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            waveCardLayout.Controls.Add(waveCaptionLabel, 0, 0);
+            waveCardLayout.Controls.Add(_runStateLabel, 0, 1);
+            waveCardLayout.Controls.Add(faultCodeLabel, 0, 2);
+            waveCaptionLabel.Dock = DockStyle.Fill;
+            waveCaptionLabel.Margin = new Padding(0);
+            waveCaptionLabel.AutoEllipsis = true;
+            waveCaptionLabel.TextAlign = ContentAlignment.MiddleLeft;
+            waveCaptionLabel.Font = new Font("Microsoft YaHei UI", 9F);
+            waveCaptionLabel.ForeColor = Color.FromArgb(71, 85, 105);
+            waveCaptionLabel.Text = "造波状态";
             _runStateLabel.Dock = DockStyle.Fill;
-            _runStateLabel.Font = new Font("Microsoft YaHei UI", 11F, FontStyle.Bold);
-            _runStateLabel.ForeColor = Color.FromArgb(4, 120, 87);
-            _runStateLabel.Location = new Point(123, 0);
-            _runStateLabel.Name = "_runStateLabel";
-            _runStateLabel.Size = new Size(1016, 24);
-            _runStateLabel.TabIndex = 1;
-            _runStateLabel.Text = "待机";
+            _runStateLabel.Margin = new Padding(0);
+            _runStateLabel.AutoEllipsis = true;
             _runStateLabel.TextAlign = ContentAlignment.MiddleLeft;
-            // 
-            // logGroup
-            // 
-            logGroup.BackColor = Color.White;
-            logGroup.Controls.Add(logLayout);
+            _runStateLabel.Font = new Font("Microsoft YaHei UI", 14F, FontStyle.Bold);
+            _runStateLabel.ForeColor = Color.FromArgb(100, 116, 139);
+            _runStateLabel.Text = "等待反馈";
+            faultCodeLabel.Dock = DockStyle.Fill;
+            faultCodeLabel.Margin = new Padding(0);
+            faultCodeLabel.AutoEllipsis = true;
+            faultCodeLabel.TextAlign = ContentAlignment.MiddleLeft;
+            faultCodeLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
+            faultCodeLabel.ForeColor = Color.FromArgb(100, 116, 139);
+            faultCodeLabel.Text = "故障码：--";
+
+            monitorInfoLayout.Dock = DockStyle.Fill;
+            monitorInfoLayout.Margin = new Padding(0);
+            monitorInfoLayout.ColumnCount = 3;
+            monitorInfoLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 36F));
+            monitorInfoLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 35F));
+            monitorInfoLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 29F));
+            monitorInfoLayout.RowCount = 1;
+            monitorInfoLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            monitorInfoLayout.Controls.Add(connectionLabel, 0, 0);
+            monitorInfoLayout.Controls.Add(feedbackLabel, 1, 0);
+            monitorInfoLayout.Controls.Add(heartbeatLabel, 2, 0);
+            connectionLabel.Dock = DockStyle.Fill;
+            connectionLabel.Margin = new Padding(0);
+            connectionLabel.AutoEllipsis = true;
+            connectionLabel.TextAlign = ContentAlignment.MiddleLeft;
+            connectionLabel.ForeColor = Color.FromArgb(154, 52, 18);
+            connectionLabel.Text = "● ADS 未连接";
+            feedbackLabel.Dock = DockStyle.Fill;
+            feedbackLabel.Margin = new Padding(0);
+            feedbackLabel.AutoEllipsis = true;
+            feedbackLabel.TextAlign = ContentAlignment.MiddleLeft;
+            feedbackLabel.ForeColor = Color.FromArgb(100, 116, 139);
+            feedbackLabel.Text = "反馈时间：--";
+            heartbeatLabel.Dock = DockStyle.Fill;
+            heartbeatLabel.Margin = new Padding(0);
+            heartbeatLabel.AutoEllipsis = true;
+            heartbeatLabel.TextAlign = ContentAlignment.MiddleLeft;
+            heartbeatLabel.ForeColor = Color.FromArgb(100, 116, 139);
+            heartbeatLabel.Text = "心跳：--";
+
+            // 四条固定反馈行；数值列伸缩，其余列固定宽度，不提供任何轴控制命令。
+            axisGroup.Dock = DockStyle.Fill;
+            axisGroup.Margin = new Padding(0);
+            axisGroup.Padding = new Padding(14, 18, 14, 12);
+            axisGroup.BackColor = Color.White;
+            axisGroup.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
+            axisGroup.ForeColor = Color.FromArgb(15, 23, 42);
+            axisGroup.Text = "四轴反馈";
+            axisGroup.Controls.Add(axisGrid);
+            axisGrid.Dock = DockStyle.Fill;
+            axisGrid.AllowUserToAddRows = false;
+            axisGrid.AllowUserToDeleteRows = false;
+            axisGrid.AllowUserToResizeRows = false;
+            axisGrid.AllowUserToResizeColumns = false;
+            axisGrid.ReadOnly = true;
+            axisGrid.RowHeadersVisible = false;
+            axisGrid.MultiSelect = false;
+            axisGrid.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            axisGrid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            axisGrid.BackgroundColor = Color.White;
+            axisGrid.BorderStyle = BorderStyle.None;
+            axisGrid.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
+            axisGrid.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
+            axisGrid.ColumnHeadersHeight = 28;
+            axisGrid.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+            axisGrid.EnableHeadersVisualStyles = false;
+            axisGrid.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(248, 250, 252);
+            axisGrid.ColumnHeadersDefaultCellStyle.ForeColor = Color.FromArgb(71, 85, 105);
+            axisGrid.ColumnHeadersDefaultCellStyle.SelectionBackColor = Color.FromArgb(248, 250, 252);
+            axisGrid.ColumnHeadersDefaultCellStyle.SelectionForeColor = Color.FromArgb(71, 85, 105);
+            axisGrid.ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.False;
+            axisGrid.DefaultCellStyle.SelectionBackColor = Color.FromArgb(219, 234, 254);
+            axisGrid.DefaultCellStyle.SelectionForeColor = Color.FromArgb(15, 23, 42);
+            axisGrid.DefaultCellStyle.Padding = new Padding(4, 0, 4, 0);
+            axisGrid.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            axisGrid.Font = new Font("Microsoft YaHei UI", 9F);
+            axisGrid.ForeColor = Color.FromArgb(15, 23, 42);
+            axisGrid.GridColor = Color.FromArgb(226, 232, 240);
+            axisGrid.RowTemplate.Height = 28;
+            axisGrid.ScrollBars = ScrollBars.None;
+            axisGrid.TabStop = false;
+            axisGrid.Columns.AddRange(axisNumberColumn, positionColumn, speedColumn, homedColumn, alarmColumn, negativeLimitColumn, positiveLimitColumn, originColumn);
+            axisNumberColumn.HeaderText = "轴";
+            axisNumberColumn.ReadOnly = true;
+            axisNumberColumn.SortMode = DataGridViewColumnSortMode.NotSortable;
+            axisNumberColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+            axisNumberColumn.MinimumWidth = 48;
+            axisNumberColumn.Width = 48;
+            positionColumn.HeaderText = "位置反馈";
+            positionColumn.ReadOnly = true;
+            positionColumn.SortMode = DataGridViewColumnSortMode.NotSortable;
+            positionColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            positionColumn.MinimumWidth = 120;
+            positionColumn.FillWeight = 100F;
+            positionColumn.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            speedColumn.HeaderText = "速度反馈";
+            speedColumn.ReadOnly = true;
+            speedColumn.SortMode = DataGridViewColumnSortMode.NotSortable;
+            speedColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            speedColumn.MinimumWidth = 120;
+            speedColumn.FillWeight = 100F;
+            speedColumn.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            homedColumn.HeaderText = "回零";
+            homedColumn.ReadOnly = true;
+            homedColumn.SortMode = DataGridViewColumnSortMode.NotSortable;
+            homedColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+            homedColumn.MinimumWidth = 64;
+            homedColumn.Width = 64;
+            alarmColumn.HeaderText = "报警";
+            alarmColumn.ReadOnly = true;
+            alarmColumn.SortMode = DataGridViewColumnSortMode.NotSortable;
+            alarmColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+            alarmColumn.MinimumWidth = 64;
+            alarmColumn.Width = 64;
+            negativeLimitColumn.HeaderText = "负限位";
+            negativeLimitColumn.ReadOnly = true;
+            negativeLimitColumn.SortMode = DataGridViewColumnSortMode.NotSortable;
+            negativeLimitColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+            negativeLimitColumn.MinimumWidth = 74;
+            negativeLimitColumn.Width = 74;
+            positiveLimitColumn.HeaderText = "正限位";
+            positiveLimitColumn.ReadOnly = true;
+            positiveLimitColumn.SortMode = DataGridViewColumnSortMode.NotSortable;
+            positiveLimitColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+            positiveLimitColumn.MinimumWidth = 74;
+            positiveLimitColumn.Width = 74;
+            originColumn.HeaderText = "原点";
+            originColumn.ReadOnly = true;
+            originColumn.SortMode = DataGridViewColumnSortMode.NotSortable;
+            originColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+            originColumn.MinimumWidth = 64;
+            originColumn.Width = 64;
+
             logGroup.Dock = DockStyle.Fill;
+            logGroup.Margin = new Padding(0, 4, 0, 0);
+            logGroup.Padding = new Padding(14, 18, 14, 12);
+            logGroup.BackColor = Color.White;
             logGroup.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
             logGroup.ForeColor = Color.FromArgb(15, 23, 42);
-            logGroup.Location = new Point(20, 158);
-            logGroup.Margin = new Padding(0, 4, 0, 4);
-            logGroup.Name = "logGroup";
-            logGroup.Padding = new Padding(14, 18, 14, 12);
-            logGroup.Size = new Size(1170, 614);
-            logGroup.TabIndex = 2;
-            logGroup.TabStop = false;
-            logGroup.Text = "自动运行消息";
-            // 
-            // logLayout
-            // 
+            logGroup.Text = "运行消息";
+            logGroup.Controls.Add(logLayout);
+            logLayout.Dock = DockStyle.Fill;
+            logLayout.Margin = new Padding(0);
             logLayout.ColumnCount = 1;
             logLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            logLayout.Controls.Add(_logList, 0, 0);
-            logLayout.Controls.Add(clearLogButton, 0, 1);
-            logLayout.Dock = DockStyle.Fill;
-            logLayout.Location = new Point(14, 38);
-            logLayout.Name = "logLayout";
             logLayout.RowCount = 2;
             logLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             logLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 38F));
-            logLayout.Size = new Size(1142, 564);
-            logLayout.TabIndex = 0;
-            // 
-            // _logList
-            // 
+            logLayout.Controls.Add(_logList, 0, 0);
+            logLayout.Controls.Add(clearLogButton, 0, 1);
+            _logList.Dock = DockStyle.Fill;
             _logList.BackColor = Color.White;
             _logList.BorderStyle = BorderStyle.None;
-            _logList.Dock = DockStyle.Fill;
             _logList.Font = new Font("Microsoft YaHei UI", 9F);
             _logList.IntegralHeight = false;
             _logList.ItemHeight = 18;
-            _logList.Location = new Point(3, 3);
-            _logList.Name = "_logList";
-            _logList.Size = new Size(1136, 520);
-            _logList.TabIndex = 0;
-            // 
-            // clearLogButton
-            // 
             clearLogButton.Anchor = AnchorStyles.Left;
             clearLogButton.AutoSize = true;
-            clearLogButton.BackColor = Color.FromArgb(248, 250, 252);
-            clearLogButton.FlatAppearance.BorderSize = 1;
-            clearLogButton.FlatStyle = FlatStyle.Flat;
-            clearLogButton.ForeColor = Color.FromArgb(15, 23, 42);
-            clearLogButton.Location = new Point(3, 530);
-            clearLogButton.Name = "clearLogButton";
             clearLogButton.MinimumSize = new Size(114, 32);
-            clearLogButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(226, 232, 240);
+            clearLogButton.BackColor = Color.FromArgb(248, 250, 252);
+            clearLogButton.FlatStyle = FlatStyle.Flat;
             clearLogButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
+            clearLogButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(226, 232, 240);
+            clearLogButton.ForeColor = Color.FromArgb(15, 23, 42);
+            clearLogButton.Font = new Font("Microsoft YaHei UI", 9F);
             clearLogButton.Cursor = Cursors.Hand;
-            clearLogButton.Size = new Size(79, 29);
-            clearLogButton.TabIndex = 1;
             clearLogButton.Text = "清空本页消息";
             clearLogButton.UseVisualStyleBackColor = false;
             clearLogButton.Click += ClearLogButton_Click;
-            // 
-            // Auto
-            // 
+            // 最小画布跟随 DPI 缩放，滚动范围由页面 OnLayout 同步。
+            pagePanel.Dock = DockStyle.Fill;
+            pagePanel.MinimumSize = new Size(900, 606);
+            pagePanel.Controls.Add(rootLayout);
             Font = new Font("Microsoft YaHei UI", 9F);
             AutoScaleDimensions = new SizeF(96F, 96F);
             AutoScaleMode = AutoScaleMode.Dpi;
             AutoScroll = true;
-            AutoScrollMinSize = new Size(860, 460);
+            AutoScrollMinSize = new Size(900, 606);
             BackColor = Color.FromArgb(241, 245, 249);
             ForeColor = Color.FromArgb(15, 23, 42);
-            pagePanel.Name = "pagePanel";
-            pagePanel.Dock = DockStyle.Fill;
-            pagePanel.Controls.Add(rootLayout);
             Name = "Auto";
-            Controls.Add(pagePanel);
             Size = new Size(1104, 606);
-            rootLayout.ResumeLayout(false);
-            headerPanel.ResumeLayout(false);
-            statusGroup.ResumeLayout(false);
-            statusLayout.ResumeLayout(false);
-            logGroup.ResumeLayout(false);
+            Controls.Add(pagePanel);
+            ((System.ComponentModel.ISupportInitialize)axisGrid).EndInit();
             logLayout.ResumeLayout(false);
             logLayout.PerformLayout();
+            logGroup.ResumeLayout(false);
+            axisGroup.ResumeLayout(false);
+            monitorInfoLayout.ResumeLayout(false);
+            waveCardLayout.ResumeLayout(false);
+            waveCard.ResumeLayout(false);
+            modeCardLayout.ResumeLayout(false);
+            modeCard.ResumeLayout(false);
+            controlCardLayout.ResumeLayout(false);
+            controlCard.ResumeLayout(false);
+            cardsLayout.ResumeLayout(false);
+            headerPanel.ResumeLayout(false);
+            rootLayout.ResumeLayout(false);
+            pagePanel.ResumeLayout(false);
             ResumeLayout(false);
         }
-
-        #endregion
     }
 }

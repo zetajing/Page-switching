@@ -16,6 +16,8 @@
         {
             if (disposing)
             {
+                // 直接 Dispose 也先取消监控，后台清理完成后才释放 Router。
+                _ = BeginShutdown();
                 _autoPage?.Dispose();
                 _manualPage?.Dispose();
                 components?.Dispose();
@@ -112,7 +114,7 @@
             controlStatusLabel.AutoEllipsis = true;
             controlStatusLabel.Size = new Size(367, 25);
             controlStatusLabel.TabIndex = 1;
-            controlStatusLabel.Text = "当前：自动运行    PLC：仅手动控制";
+            controlStatusLabel.Text = "页面：自动运行    控制端：等待反馈    模式：等待反馈";
             controlStatusLabel.TextAlign = ContentAlignment.MiddleRight;
             // 
             // adsStatusLabel
@@ -124,7 +126,7 @@
             adsStatusLabel.Name = "adsStatusLabel";
             adsStatusLabel.Size = new Size(367, 25);
             adsStatusLabel.TabIndex = 0;
-            adsStatusLabel.Text = "●  ADS 未连接";
+            adsStatusLabel.Text = "● ADS：手动未连接 / 监控未连接";
             adsStatusLabel.TextAlign = ContentAlignment.MiddleRight;
             // 
             // appSubtitleLabel
