@@ -488,7 +488,7 @@ namespace Page_switching
         {
             _refreshTimer.Stop();
             _refreshTimer.Dispose();
-            _lifetimeCancellation.Cancel();
+             _lifetimeCancellation.Cancel();
             _lifetimeCancellation.Dispose();
             if (_ownsAxisService)
             {
