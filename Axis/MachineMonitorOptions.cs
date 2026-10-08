@@ -7,7 +7,9 @@ public sealed class MachineMonitorOptions
     public string AmsNetId { get; init; } = string.Empty;
     public int AdsPort { get; init; } = 851;
     public int ConnectTimeoutMilliseconds { get; init; } = 10000;
+    // 单次 ADS 请求与整轮读取分开计时，四轴监控共有 33 个变量。
     public int OperationTimeoutMilliseconds { get; init; } = 1000;
+    public int RefreshTimeoutMilliseconds { get; init; } = 3000;
     public int StaleAfterMilliseconds { get; init; } = 3000;
     public int ReconnectIntervalMilliseconds { get; init; } = 3000;
     public string ControlOwnerSymbol { get; init; } = "GVL_HMI.nControlOwner";
@@ -22,11 +24,14 @@ public sealed class MachineMonitorOptions
     {
         ArgumentNullException.ThrowIfNull(axisOptions);
         settings ??= AdsConnectionSettings.GetSettings();
+        var refreshTimeout = int.TryParse(settings["AdsMonitorRefreshTimeoutMs"], out var milliseconds) && milliseconds > 0
+            ? milliseconds : 3000;
         return new MachineMonitorOptions
         {
             AmsNetId = axisOptions.AmsNetId,
             AdsPort = axisOptions.AdsPort,
             ConnectTimeoutMilliseconds = axisOptions.ConnectTimeoutMilliseconds,
+            RefreshTimeoutMilliseconds = refreshTimeout,
             AxisSymbols = Array.AsReadOnly(axisOptions.AxisSymbols.ToArray()),
             ControlOwnerSymbol = settings["AdsMonitorControlOwner"] ?? "GVL_HMI.nControlOwner",
             ControlModeSymbol = settings["AdsMonitorControlMode"] ?? "GVL_HMI.nControlMode",

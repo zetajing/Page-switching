@@ -26,7 +26,7 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
         ArgumentNullException.ThrowIfNull(options);
         if (options.AxisSymbols.Count != 4) throw new ArgumentException("监控需要四轴反馈映射。", nameof(options));
         if (options.ConnectTimeoutMilliseconds <= 0 || options.OperationTimeoutMilliseconds <= 0 ||
-            options.StaleAfterMilliseconds <= 0 || options.ReconnectIntervalMilliseconds <= 0)
+            options.RefreshTimeoutMilliseconds <= 0 || options.StaleAfterMilliseconds <= 0 || options.ReconnectIntervalMilliseconds <= 0)
             throw new ArgumentException("监控超时必须大于零。", nameof(options));
         _options = options;
     }
@@ -66,6 +66,8 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
         }
 
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(_lifetime.Token, cancellationToken);
+        var startedAt = Environment.TickCount64;
+        var timeoutMilliseconds = _options.ConnectTimeoutMilliseconds;
         _readOperation = "连接";
         try
         {
@@ -94,14 +96,16 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
             timeout.Token.ThrowIfCancellationRequested();
 
             _client.Timeout = _options.OperationTimeoutMilliseconds;
-            timeout.CancelAfter(_options.OperationTimeoutMilliseconds);
+            // 获取句柄、读取、释放逐项执行；不能让 33 个变量共用一次请求的 1 秒预算。
+            timeoutMilliseconds = _options.RefreshTimeoutMilliseconds;
+            timeout.CancelAfter(timeoutMilliseconds);
             var errors = new List<string>();
             var snapshot = await ReadSnapshotAsync(includeAxes, errors, timeout.Token).ConfigureAwait(false);
             timeout.Token.ThrowIfCancellationRequested();
             SaveFrame(snapshot);
             // 所有字段均因通信失败而无效时才重连；符号或类型错误不靠重连解决。
             if (snapshot.OverallQuality == MachineMonitorQuality.Unavailable && errors.Any(error => !IsContractError(error)))
-                RecordCommunicationFailure(snapshot.ErrorMessage ?? "监控读取失败");
+                RecordCommunicationFailure(snapshot.ErrorMessage ?? "监控读取失败", startedAt);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested || _lifetime.IsCancellationRequested)
         {
@@ -109,11 +113,11 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
         }
         catch (OperationCanceledException)
         {
-            RecordCommunicationFailure($"监控超时：{_readOperation}");
+            RecordCommunicationFailure($"监控超时（上限 {timeoutMilliseconds} ms）：{_readOperation}", startedAt);
         }
         catch (Exception ex)
         {
-            RecordCommunicationFailure(AdsDiagnostics.DescribeException(ex));
+            RecordCommunicationFailure(AdsDiagnostics.DescribeException(ex), startedAt);
         }
         finally
         {
@@ -243,7 +247,7 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
         }
     }
 
-    private void RecordCommunicationFailure(string message)
+    private void RecordCommunicationFailure(string message, long startedAt)
     {
         lock (_stateSync)
         {
@@ -251,6 +255,8 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
             _failureSinceTick ??= Environment.TickCount64;
             _snapshot = _snapshot.WithoutAvailability(MachineMonitorQuality.Unavailable, message);
         }
+        // 保留实际错误和变量步骤，偶发故障也能从主窗体操作记录中定位。
+        OperationJournal.Record("ADS 诊断", $"监控读取失败：{message}；当前步骤={_readOperation}；本轮耗时={Environment.TickCount64 - startedAt} ms");
     }
 
     private static bool IsContractError(string message) =>
