@@ -9,6 +9,8 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
     private readonly SemaphoreSlim _refreshGate = new(1, 1);
     private readonly CancellationTokenSource _lifetime = new();
     private readonly object _stateSync = new();
+    // 句柄只属于当前客户端；刷新与清理都受 _refreshGate 保护，不并发访问。
+    private readonly Dictionary<string, uint> _handles = new(StringComparer.Ordinal);
     private AdsClient? _client;
     private MachineMonitorSnapshot _snapshot = new();
     private long? _lastSuccessTick;
@@ -71,12 +73,16 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
         _readOperation = "连接";
         try
         {
+            bool closeClient;
             lock (_stateSync)
             {
                 if (_failureSinceTick.HasValue && !HasElapsed(_failureSinceTick.Value, _options.ReconnectIntervalMilliseconds))
                     return LatestSnapshot;
-                if (_failureSinceTick.HasValue || _client is not null && !_client.IsConnected)
-                    CloseClient();
+                closeClient = _failureSinceTick.HasValue || _client is not null && !_client.IsConnected;
+            }
+            if (closeClient) await CloseClientAsync().ConfigureAwait(false);
+            lock (_stateSync)
+            {
                 _client ??= new AdsClient { Timeout = _options.ConnectTimeoutMilliseconds };
             }
             timeout.CancelAfter(_options.ConnectTimeoutMilliseconds);
@@ -96,7 +102,7 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
             timeout.Token.ThrowIfCancellationRequested();
 
             _client.Timeout = _options.OperationTimeoutMilliseconds;
-            // 获取句柄、读取、释放逐项执行；不能让 33 个变量共用一次请求的 1 秒预算。
+            // 逐项读取复用句柄；单次请求超时与整轮读取超时仍分开计算。
             timeoutMilliseconds = _options.RefreshTimeoutMilliseconds;
             timeout.CancelAfter(timeoutMilliseconds);
             var errors = new List<string>();
@@ -183,27 +189,39 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
         var error = "未配置符号";
         if (!string.IsNullOrWhiteSpace(symbol))
         {
+            symbol = symbol.Trim();
             try
             {
-                // 先按名称获取句柄，再按明确类型读取，兼容当前 PLC 与 ADS SDK。
-                _readOperation = $"获取句柄 {symbol}";
-                var handle = await _client!.CreateVariableHandleAsync(symbol.Trim(), token).ConfigureAwait(false);
-                if (!handle.Succeeded) error = $"ADS error {handle.ErrorCode} (0x{(int)handle.ErrorCode:X8})";
+                // 首次使用才获取句柄，后续刷新只发送读取请求。
+                if (!_handles.TryGetValue(symbol, out var handle))
+                {
+                    _readOperation = $"获取句柄 {symbol}";
+                    var created = await _client!.CreateVariableHandleAsync(symbol, token).ConfigureAwait(false);
+                    if (!created.Succeeded)
+                    {
+                        error = $"ADS error {created.ErrorCode} (0x{(int)created.ErrorCode:X8})";
+                        errors.Add($"{symbol}：{error}");
+                        return FeedbackField<T>.Unavailable(error);
+                    }
+                    _handles.Add(symbol, handle = created.Handle);
+                }
+                _readOperation = $"读取变量 {symbol}";
+                var result = await _client!.ReadAnyAsync<T>(handle, token).ConfigureAwait(false);
+                if (result.Succeeded)
+                {
+                    if (result.Value is not double number || double.IsFinite(number))
+                        return new FeedbackField<T>(result.Value, true);
+                    error = "反馈数值无效";
+                }
                 else
                 {
-                    try
+                    error = $"ADS error {result.ErrorCode} (0x{(int)result.ErrorCode:X8})";
+                    // PLC 下载或在线修改可能使句柄失效；当前字段报错，下轮重新获取。
+                    if (IsInvalidHandle(result.ErrorCode))
                     {
-                        _readOperation = $"读取变量 {symbol}";
-                        var result = await _client.ReadAnyAsync<T>(handle.Handle, token).ConfigureAwait(false);
-                        if (!result.Succeeded) error = $"ADS error {result.ErrorCode} (0x{(int)result.ErrorCode:X8})";
-                        else if (result.Value is double number && !double.IsFinite(number)) error = "反馈数值无效";
-                        else return new FeedbackField<T>(result.Value, true);
-                    }
-                    finally
-                    {
-                        // 每次读取后释放句柄；取消读取时也不能遗漏 PLC 句柄。
-                        if (!token.IsCancellationRequested) _readOperation = $"释放句柄 {symbol}";
-                        await _client.DeleteVariableHandleAsync(handle.Handle, CancellationToken.None).ConfigureAwait(false);
+                        _handles.Remove(symbol);
+                        _readOperation = $"释放失效句柄 {symbol}";
+                        await _client.DeleteVariableHandleAsync(handle, token).ConfigureAwait(false);
                     }
                 }
             }
@@ -269,15 +287,46 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
     private static bool HasElapsed(long timestamp, int milliseconds) =>
         Environment.TickCount64 - timestamp >= milliseconds;
 
-    private void CloseClient()
+    private static bool IsInvalidHandle(AdsErrorCode code) =>
+        code is AdsErrorCode.DeviceSymbolVersionInvalid or AdsErrorCode.DeviceSymbolNotFound;
+
+    private async Task CloseClientAsync()
     {
-        // 调用方持有状态锁，读取结束后才会关闭客户端。
-        _client?.Dispose();
-        _client = null;
-        _lastHeartbeat = null;
-        _lastHeartbeatTick = null;
-        _heartbeatConfirmed = false;
-        _snapshot = _snapshot with { HeartbeatLastChangedAt = null };
+        AdsClient? client;
+        lock (_stateSync)
+        {
+            client = _client;
+            _client = null;
+            _lastHeartbeat = null;
+            _lastHeartbeatTick = null;
+            _heartbeatConfirmed = false;
+            _snapshot = _snapshot with { HeartbeatLastChangedAt = null };
+        }
+        try
+        {
+            if (client?.IsConnected == true)
+            {
+                // 重连或退出时集中释放；整批清理最多等待一次请求超时，断网时不逐项等 33 秒。
+                using var cleanup = new CancellationTokenSource(_options.OperationTimeoutMilliseconds);
+                foreach (var handle in _handles.Values)
+                {
+                    var result = await client.DeleteVariableHandleAsync(handle, cleanup.Token).ConfigureAwait(false);
+                    cleanup.Token.ThrowIfCancellationRequested();
+                    if (!result.Succeeded && !IsInvalidHandle(result.ErrorCode))
+                        throw new InvalidOperationException("释放监控句柄失败：" + result.ErrorCode);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            OperationJournal.Record("ADS 诊断", "清理监控句柄：" + AdsDiagnostics.DescribeException(ex));
+        }
+        finally
+        {
+            // 句柄不能跨客户端复用，清理失败时也必须丢弃本地缓存。
+            _handles.Clear();
+            client?.Dispose();
+        }
     }
 
     // 同步 Dispose 不阻塞界面，异步关闭等待同一个清理任务完成。
@@ -302,7 +351,7 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
         await _refreshGate.WaitAsync().ConfigureAwait(false);
         try
         {
-            lock (_stateSync) CloseClient();
+            await CloseClientAsync().ConfigureAwait(false);
         }
         catch (Exception ex) { System.Diagnostics.Debug.WriteLine("监控连接清理失败：" + ex); }
         finally
