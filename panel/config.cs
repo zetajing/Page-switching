@@ -288,7 +288,7 @@ public partial class Config : UserControl
         try
         {
             ValidateInputs();
-            SaveSettings(
+            AdsConnectionSettings.Save(
                 ("AdsTcpRouterEnabled", routerEnabledCheckBox.Checked.ToString().ToLowerInvariant()),
                 ("AdsTcpRouterName", routerNameTextBox.Text.Trim()),
                 ("AdsTcpRouterLocalNetId", localNetIdTextBox.Text.Trim()),
@@ -301,12 +301,15 @@ public partial class Config : UserControl
                 ("AdsAmsNetId", remoteNetIdTextBox.Text.Trim()));
 
             saveResultLabel.ForeColor = UiPalette.Success;
-            saveResultLabel.Text = "保存成功；手动控制的Router和ADS配置重启后生效。";
+            saveResultLabel.Text = "保存成功；ADS连接设置已保留，重启后生效。";
+            OperationJournal.Record("系统配置",
+                $"ADS连接配置已保存：独立Router={routerEnabledCheckBox.Checked}，PLC IP={remoteAddressTextBox.Text.Trim()}，目标AMS Net ID={remoteNetIdTextBox.Text.Trim()}；重启后生效。");
         }
         catch (Exception ex)
         {
             saveResultLabel.ForeColor = UiPalette.Danger;
             saveResultLabel.Text = "保存失败：" + ex.Message;
+            OperationJournal.Record("系统配置", "ADS连接配置保存失败：" + ex.Message);
         }
     }
 
@@ -356,9 +359,9 @@ public partial class Config : UserControl
         }
     }
 
-    // 读取指定 App.config 配置项，缺失时使用默认值。
+    // ADS 连接参数优先读取用户保存值，其余配置沿用 App.config。
     private static string Read(string key, string fallback = "") =>
-        ConfigurationManager.AppSettings[key]?.Trim() is { Length: > 0 } value ? value : fallback;
+        AdsConnectionSettings.Read(key)?.Trim() is { Length: > 0 } value ? value : fallback;
 
     // 读取布尔配置项，格式无效时使用默认值。
     private static bool ReadBool(string key, bool fallback) =>

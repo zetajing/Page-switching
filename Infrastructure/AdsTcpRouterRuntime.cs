@@ -1,4 +1,3 @@
-using System.Configuration;
 using InduLink.Protocols.Ads.Router;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -10,7 +9,7 @@ internal static class AdsTcpRouterRuntime
     public static bool IsEnabled =>
         bool.TryParse(Read("AdsTcpRouterEnabled"), out var enabled) && enabled;
 
-    // 从 App.config 读取 Router 参数并创建 ADS TCP Router。
+    // 使用用户保存的 Router 参数，未保存的参数沿用 App.config。
     public static AdsTcpRouterHost Create()
     {
         var values = new Dictionary<string, string?>
@@ -35,5 +34,5 @@ internal static class AdsTcpRouterRuntime
 
     // 读取指定 Router 配置项并去除首尾空格。
     private static string Read(string key) =>
-        System.Configuration.ConfigurationManager.AppSettings[key]?.Trim() ?? string.Empty;
+        AdsConnectionSettings.Read(key)?.Trim() ?? string.Empty;
 }

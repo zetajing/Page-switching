@@ -216,8 +216,12 @@ namespace Page_switching
         {
             var configurationFile = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None).FilePath;
             // 记录本次进程实际读取的文件和目标，便于区分保存的设置与重启后的设置。
-            var settings = ConfigurationManager.AppSettings;
+            var settings = AdsConnectionSettings.GetSettings();
             _autoPage.AddLog("ADS 配置文件：" + configurationFile);
+            if (File.Exists(AdsConnectionSettings.FilePath))
+                _autoPage.AddLog("ADS 用户配置：" + AdsConnectionSettings.FilePath);
+            if (AdsConnectionSettings.LoadError is { } loadError)
+                _autoPage.AddLog("ADS 用户配置读取失败，采用程序默认配置：" + loadError);
             _autoPage.AddLog($"ADS 连接目标：AMS Net ID={settings["AdsAmsNetId"]}，ADS 端口={settings["AdsPort"]}，连接超时={settings["AdsConnectTimeoutMs"]} ms");
             if (!AdsTcpRouterRuntime.IsEnabled)
             {
