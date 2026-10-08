@@ -26,6 +26,7 @@ namespace Page_switching
         private volatile bool _monitorReady;
         private bool _closeAfterCleanup;
         private Task _startupTask = Task.CompletedTask;
+        private Task _adsTcpRouterLifetimeTask = Task.CompletedTask;
         private Task _monitorRefreshTask = Task.CompletedTask;
         private Task? _shutdownTask;
         private string? _lastMonitorError;
@@ -211,34 +212,69 @@ namespace Page_switching
         {
             if (!AdsTcpRouterRuntime.IsEnabled)
             {
-                _autoPage.AddLog("使用系统 TwinCAT Router");
+                var configurationFile = AppDomain.CurrentDomain.SetupInformation.ConfigurationFile;
+                Debug.WriteLine($"独立 ADS TCP Router 未启用。配置文件：{configurationFile}");
+                _autoPage.AddLog($"独立 ADS TCP Router 未启用，使用系统 TwinCAT Router。配置文件：{configurationFile}");
                 return null;
             }
 
+            Debug.WriteLine("ADS TCP Router 配置文件：" + AppDomain.CurrentDomain.SetupInformation.ConfigurationFile);
+            AdsTcpRouterHost? host = null;
+            Task? routerTask = null;
             try
             {
-                var router = await Task.Run(async () =>
+                var routerHost = AdsTcpRouterRuntime.Create();
+                host = routerHost;
+                routerHost.StatusChanged += (_, _) =>
                 {
-                    var host = AdsTcpRouterRuntime.Create();
-                    try
+                    var status = routerHost.Status;
+                    Debug.WriteLine("ADS TCP Router 状态：" + status);
+                    PostToUi(() => _autoPage.AddLog("ADS TCP Router 状态：" + status));
+                };
+
+                // StartAsync 返回 Router 的整个运行期任务；单独保存它并等待 IsRunning，不能等待它结束才继续启动 ADS 客户端。
+                routerTask = routerHost.StartAsync(cancellationToken);
+                _adsTcpRouterLifetimeTask = routerTask;
+                _ = routerTask.ContinueWith(
+                    task =>
                     {
-                        await host.StartAsync(cancellationToken).ConfigureAwait(false);
-                        return host;
-                    }
-                    catch
+                        var error = task.Exception?.GetBaseException();
+                        if (error is null) return;
+                        Debug.WriteLine("ADS TCP Router 运行异常：" + error);
+                        PostToUi(() => _autoPage.AddLog("ADS TCP Router 运行异常：" + error.Message));
+                    },
+                    CancellationToken.None,
+                    TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously,
+                    TaskScheduler.Default);
+
+                while (!routerHost.IsRunning)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    if (routerTask.IsCompleted)
                     {
-                        // 启动失败时释放尚未交给主窗体的 Router。
-                        host.Dispose();
-                        throw;
+                        await routerTask.ConfigureAwait(false);
+                        throw new InvalidOperationException("Router 在进入运行状态前已停止。");
                     }
-                }, cancellationToken);
+
+                    await Task.Delay(50, cancellationToken).ConfigureAwait(false);
+                }
+
+                Debug.WriteLine($"ADS TCP Router 已运行：IsRunning={routerHost.IsRunning}, Status={routerHost.Status}");
                 if (!_closing) _autoPage.AddLog("独立 ADS TCP Router 已启动");
-                return router;
+                return host;
             }
             catch (Exception ex)
             {
                 Debug.WriteLine("ADS TCP Router 启动失败：" + ex);
-                if (!_closing) _autoPage.AddLog("ADS TCP Router 启动失败：" + ex.Message);
+                var rootException = ex.GetBaseException();
+                if (!_closing) _autoPage.AddLog($"ADS TCP Router 启动失败（{rootException.GetType().Name}）：{rootException.Message}");
+                if (routerTask is not null)
+                {
+                    try { await routerTask.ConfigureAwait(false); }
+                    catch (OperationCanceledException) { }
+                    catch (Exception routerException) { Debug.WriteLine("ADS TCP Router 退出：" + routerException); }
+                }
+                host?.Dispose();
                 return null;
             }
         }
@@ -282,6 +318,9 @@ namespace Page_switching
             }
             catch (OperationCanceledException) { }
             catch (Exception ex) { Debug.WriteLine("监控退出失败：" + ex); }
+            try { await _adsTcpRouterLifetimeTask.ConfigureAwait(false); }
+            catch (OperationCanceledException) { }
+            catch (Exception ex) { Debug.WriteLine("Router 运行任务退出失败：" + ex); }
             finally
             {
                 try { _axisService?.Dispose(); }
