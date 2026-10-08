@@ -107,13 +107,11 @@ public partial class Config : UserControl
 
             _databaseStateLabel.ForeColor = UiPalette.Success;
             _databaseStateLabel.Text = "数据库配置保存成功；采集任务索引可在数据管理页同步。";
-            saveResultLabel.ForeColor = UiPalette.Success;
-            saveResultLabel.Text = "数据库配置保存成功。";
+            ShowSaveResult("数据库配置保存成功。", UiPalette.Success);
         }
         catch (Exception ex)
         {
-            saveResultLabel.ForeColor = UiPalette.Danger;
-            saveResultLabel.Text = "数据库配置保存失败：" + ex.Message;
+            ShowSaveResult("数据库配置保存失败：" + ex.Message, UiPalette.Danger);
         }
     }
 
@@ -155,13 +153,11 @@ public partial class Config : UserControl
         {
             ValidateWaveProgramDirectory();
             SaveSettings(("WaveProgramDirectory", waveProgramDirectoryTextBox.Text.Trim()));
-            saveResultLabel.ForeColor = UiPalette.Success;
-            saveResultLabel.Text = "波形程序目录已保存，供波形生成、分析和修正使用。";
+            ShowSaveResult("波形程序目录已保存，供波形生成、分析和修正使用。", UiPalette.Success);
         }
         catch (Exception ex)
         {
-            saveResultLabel.ForeColor = UiPalette.Danger;
-            saveResultLabel.Text = "波形程序目录保存失败：" + ex.Message;
+            ShowSaveResult("波形程序目录保存失败：" + ex.Message, UiPalette.Danger);
         }
     }
 
@@ -189,8 +185,7 @@ public partial class Config : UserControl
             {
                 SaveSettings(("WaveGeneratorMode", nameof(WaveformGeneratorMode.LegacyExe)),
                     ("WaveProgramDirectory", waveProgramDirectoryTextBox.Text.Trim()));
-                saveResultLabel.Text = "已启用旧WP-5-6.exe，输出旧格式造波板位移。";
-                saveResultLabel.ForeColor = UiPalette.Success;
+                ShowSaveResult("已启用旧WP-5-6.exe，输出旧格式造波板位移。", UiPalette.Success);
                 UpdateWaveGeneratorState();
                 return;
             }
@@ -215,13 +210,11 @@ public partial class Config : UserControl
                 ? "已启用 WaveMaker 内置算法，不需要 WFast.exe"
                 : "已保存 WFast.exe 路径，波形页面可以直接生成";
             waveGeneratorStateLabel.ForeColor = UiPalette.Success;
-            saveResultLabel.ForeColor = UiPalette.Success;
-            saveResultLabel.Text = useWaveMaker ? "WaveMaker 内置方案保存成功。" : "WFast.exe 方案保存成功。";
+            ShowSaveResult(useWaveMaker ? "WaveMaker 内置方案保存成功。" : "WFast.exe 方案保存成功。", UiPalette.Success);
         }
         catch (Exception ex)
         {
-            saveResultLabel.ForeColor = UiPalette.Danger;
-            saveResultLabel.Text = "波形程序设置保存失败：" + ex.Message;
+            ShowSaveResult("波形程序设置保存失败：" + ex.Message, UiPalette.Danger);
         }
     }
 
@@ -300,17 +293,21 @@ public partial class Config : UserControl
                 ("AdsTcpRouterRemoteNetId", remoteNetIdTextBox.Text.Trim()),
                 ("AdsAmsNetId", remoteNetIdTextBox.Text.Trim()));
 
-            saveResultLabel.ForeColor = UiPalette.Success;
-            saveResultLabel.Text = "保存成功；ADS连接设置已保留，重启后生效。";
-            OperationJournal.Record("系统配置",
+            ShowSaveResult("保存成功；ADS连接设置已保留，重启后生效。", UiPalette.Success,
                 $"ADS连接配置已保存：独立Router={routerEnabledCheckBox.Checked}，PLC IP={remoteAddressTextBox.Text.Trim()}，目标AMS Net ID={remoteNetIdTextBox.Text.Trim()}；重启后生效。");
         }
         catch (Exception ex)
         {
-            saveResultLabel.ForeColor = UiPalette.Danger;
-            saveResultLabel.Text = "保存失败：" + ex.Message;
-            OperationJournal.Record("系统配置", "ADS连接配置保存失败：" + ex.Message);
+            ShowSaveResult("保存失败：" + ex.Message, UiPalette.Danger, "ADS连接配置保存失败：" + ex.Message);
         }
+    }
+
+    // 显示与记录共用一个入口，重复保存同样的结果也能留下明确记录。
+    private void ShowSaveResult(string message, Color color, string? logMessage = null)
+    {
+        saveResultLabel.ForeColor = color;
+        saveResultLabel.Text = message;
+        OperationJournal.Record("系统配置", logMessage ?? message);
     }
 
     // 检查 Router 名称、Net ID、地址和端口是否合法。

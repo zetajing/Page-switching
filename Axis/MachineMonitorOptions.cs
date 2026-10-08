@@ -1,4 +1,4 @@
-using System.Configuration;
+using System.Collections.Specialized;
 
 namespace Page_switching;
 
@@ -18,10 +18,10 @@ public sealed class MachineMonitorOptions
     public IReadOnlyList<AxisSymbolMap> AxisSymbols { get; init; } = Array.Empty<AxisSymbolMap>();
 
     // 只复用连接目标和既有轴反馈地址；监控超时独立于手动客户端。
-    public static MachineMonitorOptions FromConfiguration(AxisServiceOptions axisOptions)
+    public static MachineMonitorOptions FromConfiguration(AxisServiceOptions axisOptions, NameValueCollection? settings = null)
     {
         ArgumentNullException.ThrowIfNull(axisOptions);
-        var settings = ConfigurationManager.AppSettings;
+        settings ??= AdsConnectionSettings.GetSettings();
         return new MachineMonitorOptions
         {
             AmsNetId = axisOptions.AmsNetId,

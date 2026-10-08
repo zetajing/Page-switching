@@ -1,9 +1,7 @@
 using System.ComponentModel;
-using System.Configuration;
 using System.Diagnostics;
 using InduLink.Storage;
 using Page_switching.panel;
-using InduLink.Protocols.Ads.Router;
 
 namespace Page_switching
 {
@@ -21,23 +19,23 @@ namespace Page_switching
         private readonly WaveBatchCalibrationPage _batchCalibrationPage;
         private readonly WaveAnalysisPage _analysis;
         private readonly SignalCorrectionPage _correction;
+        private readonly UserControl[] _pages;
+        private readonly AdsTcpRouterRuntime _router;
         private readonly System.Windows.Forms.Timer _headerStatusTimer = new() { Interval = 500 };
         private readonly CancellationTokenSource _lifetimeCancellation = new();
         private volatile bool _closing;
         private volatile bool _monitorReady;
         private bool _closeAfterCleanup;
         private Task _startupTask = Task.CompletedTask;
-        private Task _adsTcpRouterLifetimeTask = Task.CompletedTask;
         private Task _monitorRefreshTask = Task.CompletedTask;
         private Task? _shutdownTask;
         private string? _lastMonitorError;
         private readonly bool _recordOperations = LicenseManager.UsageMode != LicenseUsageMode.Designtime;
-        private AdsTcpRouterHost? _adsTcpRouter;
         private UserControl? _currentPage;
         private bool? _lastAdsConnected;
         private static readonly HashSet<string> ResultLabels =
         [
-            "helperLabel", "saveResultLabel", "regularStatusLabel", "irregularStatusLabel",
+            "regularStatusLabel", "irregularStatusLabel",
             "result", "status", "_hintLabel", "_connectionStatusLabel"
         ];
 
@@ -53,10 +51,16 @@ namespace Page_switching
                 OperationJournal.Record("系统", "程序启动");
             }
 
-            var axisOptions = AxisServiceOptions.FromConfiguration();
+            // 本次启动只读取一次 ADS 配置；保存的新参数在下次启动才应用。
+            var settings = AdsConnectionSettings.GetSettings();
+            var axisOptions = AxisServiceOptions.FromConfiguration(settings);
             _axisService = new AxisService(axisOptions);
-            _monitorService = new MachineMonitorService(MachineMonitorOptions.FromConfiguration(axisOptions));
+            _monitorService = new MachineMonitorService(MachineMonitorOptions.FromConfiguration(axisOptions, settings));
             _autoPage = new Auto();
+            _router = new AdsTcpRouterRuntime(settings, message =>
+            {
+                if (!_closing) _autoPage.AddLog(message);
+            });
             _manualPage = new Manual(_axisService);
             _config = new Config();
             _waveformPage = new WaveformPage();
@@ -66,6 +70,9 @@ namespace Page_switching
             _batchCalibrationPage = new WaveBatchCalibrationPage();
             _analysis = new WaveAnalysisPage();
             _correction = new SignalCorrectionPage();
+            // 页面集合统一用于日志注册和退出释放，不再维护两份清单。
+            _pages = [_autoPage, _manualPage, _config, _waveformPage, _wave_Height_Meter,
+                _data, _calibration, _batchCalibrationPage, _analysis, _correction];
             // 批量标定由主窗体管理，使用同一个 panelswitch 显示和返回。
             _calibration.BatchCalibrationRequested += (_, _) => NavigateTo(_batchCalibrationPage, Bu_Calibration);
             _batchCalibrationPage.BackRequested += (_, _) => NavigateTo(_calibration, Bu_Calibration);
@@ -76,12 +83,7 @@ namespace Page_switching
                 NavigateTo(_analysis, analysisButton);
             };
             if (_recordOperations)
-                foreach (var page in new UserControl[]
-                {
-                    _autoPage, _manualPage, _config,
-                    _waveformPage, _wave_Height_Meter, _data, _calibration, _batchCalibrationPage,
-                    _analysis, _correction
-                })
+                foreach (var page in _pages)
                     TrackActions(page, page);
             _headerStatusTimer.Tick += HeaderStatusTimer_Tick;
             Disposed += Mainpage_Disposed;
@@ -105,11 +107,7 @@ namespace Page_switching
             _headerStatusTimer.Stop();
             _headerStatusTimer.Dispose();
             // 当前页面可能已由窗体释放，隐藏页面才需要在这里补充释放。
-            foreach (var page in new UserControl[]
-            {
-                _autoPage, _manualPage, _config, _waveformPage, _wave_Height_Meter,
-                _analysis, _correction, _data, _calibration, _batchCalibrationPage
-            })
+            foreach (var page in _pages)
                 if (!page.IsDisposed) page.Dispose();
         }
 
@@ -126,15 +124,15 @@ namespace Page_switching
 
         private async Task StartServicesAsync(CancellationToken cancellationToken)
         {
+            var stage = "ADS Router 启动";
             try
             {
-                var router = await StartRouterInBackgroundAsync(cancellationToken);
-                // 窗口关闭后返回的 Router 不能再交给已经释放的窗体。
-                if (_closing) { router?.Dispose(); return; }
-                _adsTcpRouter = router;
+                await _router.StartAsync(cancellationToken).ConfigureAwait(false);
+                cancellationToken.ThrowIfCancellationRequested();
                 // Router 就绪即允许监控连接，不等待手动客户端连接成功。
                 _monitorReady = true;
                 PostToUi(() => { _ = RefreshMonitorAsync(); });
+                stage = "手动 ADS 连接";
                 await _axisService.ConnectAsync(cancellationToken).ConfigureAwait(false);
                 if (!_closing) _autoPage.AddLog("手动 ADS 连接成功");
             }
@@ -146,8 +144,8 @@ namespace Page_switching
             {
                 if (!_closing)
                 {
-                    _autoPage.AddLog("手动 ADS 连接失败：" + AdsDiagnostics.DescribeException(ex));
-                    AdsDiagnostics.RecordException("手动 ADS 连接失败", ex);
+                    _autoPage.AddLog(stage + "失败：" + AdsDiagnostics.DescribeException(ex));
+                    AdsDiagnostics.RecordException(stage + "失败", ex);
                 }
             }
         }
@@ -201,93 +199,6 @@ namespace Page_switching
             catch (InvalidOperationException) { }
         }
 
-        // 在后台启动可选的 ADS TCP Router，避免启动阶段阻塞主界面。
-        private async Task<AdsTcpRouterHost?> StartRouterInBackgroundAsync(CancellationToken cancellationToken)
-        {
-            var configurationFile = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None).FilePath;
-            // 记录本次进程实际读取的文件和目标，便于区分保存的设置与重启后的设置。
-            var settings = AdsConnectionSettings.GetSettings();
-            _autoPage.AddLog("ADS 配置文件：" + configurationFile);
-            // 记录实际加载的 DLL 版本，便于核对另一台电脑是否已完整更新程序。
-            var adsVersion = FileVersionInfo.GetVersionInfo(typeof(TwinCAT.Ads.AdsClient).Assembly.Location).FileVersion;
-            var routerVersion = FileVersionInfo.GetVersionInfo(typeof(TwinCAT.Ads.TcpRouter.AmsTcpIpRouter).Assembly.Location).FileVersion;
-            _autoPage.AddLog($"ADS SDK={adsVersion}，Router SDK={routerVersion}");
-            if (File.Exists(AdsConnectionSettings.FilePath))
-                _autoPage.AddLog("ADS 用户配置：" + AdsConnectionSettings.FilePath);
-            if (AdsConnectionSettings.LoadError is { } loadError)
-                _autoPage.AddLog("ADS 用户配置读取失败，采用程序默认配置：" + loadError);
-            _autoPage.AddLog($"ADS 连接目标：AMS Net ID={settings["AdsAmsNetId"]}，ADS 端口={settings["AdsPort"]}，连接超时={settings["AdsConnectTimeoutMs"]} ms");
-            if (!AdsTcpRouterRuntime.IsEnabled)
-            {
-                Debug.WriteLine($"独立 ADS TCP Router 未启用。配置文件：{configurationFile}");
-                _autoPage.AddLog($"独立 ADS TCP Router 未启用，使用系统 TwinCAT Router。配置文件：{configurationFile}");
-                return null;
-            }
-
-            Debug.WriteLine("ADS TCP Router 配置文件：" + configurationFile);
-            _autoPage.AddLog($"ADS Router 本机：AMS Net ID={settings["AdsTcpRouterLocalNetId"]}，TCP 端口={settings["AdsTcpRouterTcpPort"]}，回环={settings["AdsTcpRouterLoopbackIp"]}:{settings["AdsTcpRouterLoopbackPort"]}");
-            _autoPage.AddLog($"ADS Router PLC 路由：IP={settings["AdsTcpRouterRemoteAddress"]}，AMS Net ID={settings["AdsTcpRouterRemoteNetId"]}");
-            AdsTcpRouterHost? host = null;
-            Task? routerTask = null;
-            try
-            {
-                var routerHost = AdsTcpRouterRuntime.Create();
-                host = routerHost;
-                routerHost.StatusChanged += (_, _) =>
-                {
-                    var status = routerHost.Status;
-                    Debug.WriteLine("ADS TCP Router 状态：" + status);
-                    PostToUi(() => _autoPage.AddLog("ADS TCP Router 状态：" + status));
-                };
-
-                // StartAsync 返回 Router 的整个运行期任务；单独保存它并等待 IsRunning，不能等待它结束才继续启动 ADS 客户端。
-                routerTask = routerHost.StartAsync(cancellationToken);
-                _adsTcpRouterLifetimeTask = routerTask;
-                _ = routerTask.ContinueWith(
-                    task =>
-                    {
-                        var error = task.Exception?.GetBaseException();
-                        if (error is null) return;
-                        Debug.WriteLine("ADS TCP Router 运行异常：" + error);
-                        PostToUi(() => _autoPage.AddLog("ADS TCP Router 运行异常：" + error.Message));
-                    },
-                    CancellationToken.None,
-                    TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously,
-                    TaskScheduler.Default);
-
-                while (!routerHost.IsRunning)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    if (routerTask.IsCompleted)
-                    {
-                        await routerTask.ConfigureAwait(false);
-                        throw new InvalidOperationException("Router 在进入运行状态前已停止。");
-                    }
-
-                    await Task.Delay(50, cancellationToken).ConfigureAwait(false);
-                }
-
-                Debug.WriteLine($"ADS TCP Router 已运行：IsRunning={routerHost.IsRunning}, Status={routerHost.Status}");
-                if (!_closing) _autoPage.AddLog("独立 ADS TCP Router 已启动");
-                return host;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine("ADS TCP Router 启动失败：" + ex);
-                var rootException = ex.GetBaseException();
-                if (!_closing) _autoPage.AddLog($"ADS TCP Router 启动失败（{rootException.GetType().Name}）：{rootException.Message}");
-                if (routerTask is not null)
-                {
-                    try { await routerTask.ConfigureAwait(false); }
-                    catch (OperationCanceledException) { }
-                    catch (Exception routerException) { Debug.WriteLine("ADS TCP Router 退出：" + routerException); }
-                }
-                host?.Dispose();
-                // 启用的 Router 启动失败时停止连接，避免客户端误连到其他本机 Router。
-                throw;
-            }
-        }
-
         // 先异步退出监控与启动任务，再允许关闭，Router 始终最后释放。
         protected override async void OnFormClosing(FormClosingEventArgs e)
         {
@@ -327,17 +238,11 @@ namespace Page_switching
             }
             catch (OperationCanceledException) { }
             catch (Exception ex) { Debug.WriteLine("监控退出失败：" + ex); }
-            try { await _adsTcpRouterLifetimeTask.ConfigureAwait(false); }
-            catch (OperationCanceledException) { }
-            catch (Exception ex) { Debug.WriteLine("Router 运行任务退出失败：" + ex); }
-            finally
-            {
-                try { _axisService?.Dispose(); }
-                catch (Exception ex) { Debug.WriteLine("手动 ADS 退出失败：" + ex); }
-                try { _adsTcpRouter?.Dispose(); }
-                catch (Exception ex) { Debug.WriteLine("Router 退出失败：" + ex); }
-                _lifetimeCancellation.Dispose();
-            }
+            try { _axisService?.Dispose(); }
+            catch (Exception ex) { Debug.WriteLine("手动 ADS 退出失败：" + ex); }
+            try { await _router.DisposeAsync().ConfigureAwait(false); }
+            catch (Exception ex) { Debug.WriteLine("Router 退出失败：" + ex); }
+            _lifetimeCancellation.Dispose();
         }
 
         protected override void OnFormClosed(FormClosedEventArgs e)
@@ -505,7 +410,11 @@ namespace Page_switching
                 else if (control is TabControl tabs)
                     tabs.SelectedIndexChanged += (_, _) => OperationJournal.Record(GetPageName(page),
                         "切换到" + tabs.SelectedTab?.Text);
-                else if (control is Label label && ResultLabels.Contains(label.Name))
+                // 已主动记录结果的页面不再从标签变化重复推断结果。
+                // 旧页面仍保留原来的标签日志，逐步迁移时不会丢失操作结果。
+                else if (control is Label label && ResultLabels.Contains(label.Name) &&
+                    page is not (WaveAnalysisPage or SignalCorrectionPage or WaveBatchCalibrationPage) &&
+                    !(page is WaveformPage && label.Name == "status"))
                     label.TextChanged += (_, _) => OperationJournal.Record(GetPageName(page), label.Text);
 
                 TrackActions(page, control);

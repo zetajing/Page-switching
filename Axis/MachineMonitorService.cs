@@ -122,39 +122,50 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
         return LatestSnapshot;
     }
 
-    // 在每一行即可看到 PLC 地址与读取类型：故障码为 UINT，心跳为 UDINT。
+    // 先逐项读取到局部变量，再组成快照；断点可直接查看每个变量的值和错误。
     private async Task<MachineMonitorSnapshot> ReadSnapshotAsync(bool includeAxes, List<string> errors, CancellationToken token)
     {
-        var snapshot = new MachineMonitorSnapshot
-        {
-            IsConnected = true,
-            ControlOwner = await ReadPlcAsync<ushort>(_options.ControlOwnerSymbol, errors, token).ConfigureAwait(false),
-            ControlMode = await ReadPlcAsync<ushort>(_options.ControlModeSymbol, errors, token).ConfigureAwait(false),
-            WaveState = await ReadPlcAsync<ushort>(_options.WaveStateSymbol, errors, token).ConfigureAwait(false),
-            WaveFaultCode = await ReadPlcAsync<ushort>(_options.WaveFaultCodeSymbol, errors, token).ConfigureAwait(false),
-            Heartbeat = await ReadPlcAsync<uint>(_options.HeartbeatSymbol, errors, token).ConfigureAwait(false)
-        };
+        // PLC 状态和故障码为 UINT（ushort），心跳为 UDINT（uint）。
+        var controlOwner = await ReadPlcAsync<ushort>(_options.ControlOwnerSymbol, errors, token).ConfigureAwait(false);
+        var controlMode = await ReadPlcAsync<ushort>(_options.ControlModeSymbol, errors, token).ConfigureAwait(false);
+        var waveState = await ReadPlcAsync<ushort>(_options.WaveStateSymbol, errors, token).ConfigureAwait(false);
+        var waveFaultCode = await ReadPlcAsync<ushort>(_options.WaveFaultCodeSymbol, errors, token).ConfigureAwait(false);
+        var heartbeat = await ReadPlcAsync<uint>(_options.HeartbeatSymbol, errors, token).ConfigureAwait(false);
         var axes = new List<MachineAxisSnapshot>();
         if (includeAxes)
         {
             for (var index = 0; index < 4; index++)
             {
                 var axis = _options.AxisSymbols[index];
+                // 位置和速度为 LREAL（double），状态信号为 BOOL（bool）。
+                var position = await ReadPlcAsync<double>(axis.ActualPosition, errors, token).ConfigureAwait(false);
+                var speed = await ReadPlcAsync<double>(axis.Speed, errors, token).ConfigureAwait(false);
+                var homed = await ReadPlcAsync<bool>(axis.Homed, errors, token).ConfigureAwait(false);
+                var alarm = await ReadPlcAsync<bool>(axis.Alarm, errors, token).ConfigureAwait(false);
+                var positiveLimit = await ReadPlcAsync<bool>(axis.PositiveLimit, errors, token).ConfigureAwait(false);
+                var negativeLimit = await ReadPlcAsync<bool>(axis.NegativeLimit, errors, token).ConfigureAwait(false);
+                var origin = await ReadPlcAsync<bool>(axis.OriginSignal, errors, token).ConfigureAwait(false);
                 axes.Add(new MachineAxisSnapshot
                 {
                     AxisNumber = index + 1,
-                    ActualPosition = await ReadPlcAsync<double>(axis.ActualPosition, errors, token).ConfigureAwait(false),
-                    Speed = await ReadPlcAsync<double>(axis.Speed, errors, token).ConfigureAwait(false),
-                    IsHomed = await ReadPlcAsync<bool>(axis.Homed, errors, token).ConfigureAwait(false),
-                    HasAlarm = await ReadPlcAsync<bool>(axis.Alarm, errors, token).ConfigureAwait(false),
-                    PositiveLimit = await ReadPlcAsync<bool>(axis.PositiveLimit, errors, token).ConfigureAwait(false),
-                    NegativeLimit = await ReadPlcAsync<bool>(axis.NegativeLimit, errors, token).ConfigureAwait(false),
-                    OriginSignal = await ReadPlcAsync<bool>(axis.OriginSignal, errors, token).ConfigureAwait(false)
+                    ActualPosition = position,
+                    Speed = speed,
+                    IsHomed = homed,
+                    HasAlarm = alarm,
+                    PositiveLimit = positiveLimit,
+                    NegativeLimit = negativeLimit,
+                    OriginSignal = origin
                 });
             }
         }
-        return snapshot with
+        return new MachineMonitorSnapshot
         {
+            IsConnected = true,
+            ControlOwner = controlOwner,
+            ControlMode = controlMode,
+            WaveState = waveState,
+            WaveFaultCode = waveFaultCode,
+            Heartbeat = heartbeat,
             Axes = axes.AsReadOnly(),
             OverallQuality = errors.Count == 0 ? MachineMonitorQuality.Good
                 : errors.Count == (includeAxes ? 33 : 5) ? MachineMonitorQuality.Unavailable : MachineMonitorQuality.Partial,

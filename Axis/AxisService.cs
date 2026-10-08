@@ -1,5 +1,6 @@
 using InduLink.Abstractions;
 using InduLink.Protocols.Ads;
+using System.Collections.Specialized;
 
 namespace Page_switching;
 
@@ -60,9 +61,9 @@ public sealed class AxisServiceOptions
     public IReadOnlyList<AxisSymbolMap> AxisSymbols { get; init; } = Array.Empty<AxisSymbolMap>();
 
     // 合并用户保存的 ADS 连接参数；四根轴的变量地址仍来自 App.config。
-    public static AxisServiceOptions FromConfiguration()
+    public static AxisServiceOptions FromConfiguration(NameValueCollection? settings = null)
     {
-        var settings = AdsConnectionSettings.GetSettings();
+        settings ??= AdsConnectionSettings.GetSettings();
         var symbols = new AxisSymbolMap[4];
         for (var axisNumber = 1; axisNumber <= 4; axisNumber++)
         {

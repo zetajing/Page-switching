@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using System.Globalization;
-using InduLink.Storage;
 
 namespace Page_switching
 {
@@ -19,13 +18,8 @@ namespace Page_switching
                 .Select(column => (column, column.Width, column.MinimumWidth)).ToArray();
             _axisHeaderHeight = axisGrid.ColumnHeadersHeight;
             _axisRowHeight = axisGrid.RowTemplate.Height;
-            // 表格行只是显示数据，列和全部页面控件均由 Designer 声明。
-            axisGrid.Rows.Add(4);
-            for (var index = 0; index < 4; index++)
-            {
-                axisGrid.Rows[index].SetValues(index + 1, "--", "--", "--", "--", "--", "--", "--");
-                axisGrid.Rows[index].DefaultCellStyle.ForeColor = UiPalette.Muted;
-            }
+            // 表格初始化时已创建四条占位行，运行时只更新反馈值。
+            axisGrid.InitializeRows();
             axisGrid.ClearSelection();
             UpdateAxisGridDpi();
             if (LicenseManager.UsageMode != LicenseUsageMode.Designtime)
@@ -74,12 +68,8 @@ namespace Page_switching
             }
 
             _logList.Items.Add($"{DateTime.Now:HH:mm:ss}  {message}");
+            // 同一条结果只写入统一操作日志，主窗体订阅后同步显示。
             OperationJournal.Record("自动运行", message);
-            try { LogDisplayHelper.ShowMsg($"[自动运行] {message}"); }
-            catch
-            {
-                // 本地日志组件异常时不影响监控页面显示。
-            }
             if (_logList.Items.Count > 500) _logList.Items.RemoveAt(0);
             _logList.TopIndex = Math.Max(0, _logList.Items.Count - 1);
         }
@@ -96,6 +86,15 @@ namespace Page_switching
                 return;
             }
 
+            UpdateStatusCards(snapshot);
+            UpdateConnectionFeedback(snapshot);
+            UpdateAxisRows(snapshot);
+            LogMonitorStateChange(snapshot);
+        }
+
+        // 三个状态卡片及故障码只使用当前快照，读取失败时保留明确的无效状态。
+        private void UpdateStatusCards(MachineMonitorSnapshot snapshot)
+        {
             ApplyEnumField(snapshot.ControlOwner, controlValueLabel, controlDetailLabel,
                 FormatControlOwner, value => value <= 3, value => value == 0 ? UiPalette.Warning : UiPalette.Primary);
             ApplyEnumField(snapshot.ControlMode, modeValueLabel, modeDetailLabel,
@@ -110,7 +109,11 @@ namespace Page_switching
             // 故障码独立于运行枚举：保留 PLC 状态文字，同时突出当前故障。
             if (hasCurrentFault) _runStateLabel.ForeColor = UiPalette.Danger;
             faultCodeLabel.AccessibleDescription = snapshot.WaveFaultCode.ErrorMessage;
+        }
 
+        // ADS 已连接与 PLC 反馈有效分别显示，心跳停滞不能显示为正常。
+        private void UpdateConnectionFeedback(MachineMonitorSnapshot snapshot)
+        {
             connectionLabel.Text = snapshot.IsConnected
                 ? "● ADS 已连接 · " + snapshot.QualityText
                 : "● ADS 未连接";
@@ -136,7 +139,11 @@ namespace Page_switching
                 ? UiPalette.Warning : snapshot.OverallQuality == MachineMonitorQuality.WaitingHeartbeat ? UiPalette.Muted
                 : HasValue(snapshot.Heartbeat) ? UiPalette.SecondaryText : UnavailableColor(heartbeatText);
             heartbeatLabel.AccessibleDescription = snapshot.Heartbeat.ErrorMessage;
+        }
 
+        // 固定四行只更新单元格；列、布局和样式继续由 Designer 编辑。
+        private void UpdateAxisRows(MachineMonitorSnapshot snapshot)
+        {
             for (var index = 0; index < 4; index++)
             {
                 var axis = snapshot.Axes.FirstOrDefault(value => value.AxisNumber == index + 1)
@@ -150,7 +157,10 @@ namespace Page_switching
                 ApplyBoolCell(row.Cells[6], axis.PositiveLimit, "触发", "未触发", UiPalette.Warning, UiPalette.Text);
                 ApplyBoolCell(row.Cells[7], axis.OriginSignal, "触发", "未触发", UiPalette.Primary, UiPalette.Text);
             }
+        }
 
+        private void LogMonitorStateChange(MachineMonitorSnapshot snapshot)
+        {
             // 首次快照作为基线；时间、心跳计数、位置和速度变化不产生周期性日志。
             var stateKey = string.Join("|", snapshot.IsConnected, snapshot.OverallQuality,
                 snapshot.ControlOwner.ToDisplayText(), snapshot.ControlMode.ToDisplayText(),
@@ -160,7 +170,7 @@ namespace Page_switching
                     $"控制端：{FormatMonitorField(snapshot.ControlOwner, FormatControlOwner)}；" +
                     $"模式：{FormatMonitorField(snapshot.ControlMode, FormatControlMode)}；" +
                     $"造波：{FormatMonitorField(snapshot.WaveState, FormatWaveState)}；" +
-                    $"故障码：{faultText}；{snapshot.QualityText}");
+                    $"故障码：{FormatMonitorField(snapshot.WaveFaultCode)}；{snapshot.QualityText}");
             _lastMonitorStateKey = stateKey;
         }
 

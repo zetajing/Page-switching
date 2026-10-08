@@ -129,8 +129,9 @@ namespace Page_switching
             catch (Exception ex)
             {
                 if (IsDisposed) return;
-                if (CanUpdateCommandStatus(stopRequestVersion))
-                    helperLabel.Text = "刷新失败：" + ex.Message;
+                var message = "刷新失败：" + ex.Message;
+                if (CanUpdateCommandStatus(stopRequestVersion) && helperLabel.Text != message)
+                    ShowCommandResult(message);
                 UpdateAxisOverview(Array.Empty<AxisSnapshot>());
                 UpdateConnectionState();
             }
@@ -329,7 +330,7 @@ namespace Page_switching
                     decimal.ToDouble(jogSpeedInput.Value),
                     _lifetimeCancellation.Token);
                 if (CanUpdateCommandStatus(stopRequestVersion))
-                    helperLabel.Text = $"轴 {_jogAxisNumber} 正在{(positive ? "正向" : "负向")}点动";
+                    ShowCommandResult($"轴 {_jogAxisNumber} 正在{(positive ? "正向" : "负向")}点动");
             }
             catch (OperationCanceledException)
             {
@@ -339,7 +340,7 @@ namespace Page_switching
             catch (Exception ex)
             {
                 _jogActive = false;
-                if (CanUpdateCommandStatus(stopRequestVersion)) helperLabel.Text = "点动失败：" + ex.Message;
+                if (CanUpdateCommandStatus(stopRequestVersion)) ShowCommandResult("点动失败：" + ex.Message);
             }
         }
 
@@ -366,7 +367,7 @@ namespace Page_switching
                     _lifetimeCancellation.Token);
                 if (CanUpdateCommandStatus(stopRequestVersion))
                 {
-                    helperLabel.Text = $"轴 {axisNumber} 点动已停止";
+                    ShowCommandResult($"轴 {axisNumber} 点动已停止");
                 }
             }
             catch (OperationCanceledException)
@@ -377,7 +378,7 @@ namespace Page_switching
             {
                 if (CanUpdateCommandStatus(stopRequestVersion))
                 {
-                    helperLabel.Text = "停止点动失败：" + ex.Message;
+                    ShowCommandResult("停止点动失败：" + ex.Message);
                 }
             }
         }
@@ -401,7 +402,7 @@ namespace Page_switching
                 if (IsDisposed) return;
                 if (CanUpdateCommandStatus(stopRequestVersion))
                 {
-                    helperLabel.Text = successMessage;
+                    ShowCommandResult(successMessage);
                     await RefreshValuesAsync();
                 }
             }
@@ -411,7 +412,7 @@ namespace Page_switching
             }
             catch (Exception ex)
             {
-                if (CanUpdateCommandStatus(stopRequestVersion)) helperLabel.Text = "操作失败：" + ex.Message;
+                if (CanUpdateCommandStatus(stopRequestVersion)) ShowCommandResult("操作失败：" + ex.Message);
             }
             finally
             {
@@ -434,24 +435,24 @@ namespace Page_switching
             _stopRequestsInProgress++;
             var stopRequestVersion = ++_stopRequestVersion;
             UpdateConnectionState();
-            helperLabel.Text = requestMessage;
+            ShowCommandResult(requestMessage);
             var commandSent = false;
             try
             {
                 await action(_lifetimeCancellation.Token);
                 commandSent = true;
-                if (CanUpdateCommandStatus(stopRequestVersion)) helperLabel.Text = successMessage;
+                if (CanUpdateCommandStatus(stopRequestVersion)) ShowCommandResult(successMessage);
                 else OperationJournal.Record("手动控制", successMessage);
             }
             catch (OperationCanceledException)
             {
-                if (CanUpdateCommandStatus(stopRequestVersion)) helperLabel.Text = "停止命令已取消";
+                if (CanUpdateCommandStatus(stopRequestVersion)) ShowCommandResult("停止命令已取消");
                 else OperationJournal.Record("手动控制", "停止命令已取消：" + requestMessage);
             }
             catch (Exception ex)
             {
                 var message = "停止命令发送失败：" + ex.Message + "；" + requestMessage;
-                if (CanUpdateCommandStatus(stopRequestVersion)) helperLabel.Text = message;
+                if (CanUpdateCommandStatus(stopRequestVersion)) ShowCommandResult(message);
                 else OperationJournal.Record("手动控制", message);
             }
             finally
@@ -461,6 +462,13 @@ namespace Page_switching
             }
 
             if (commandSent && CanUpdateCommandStatus(stopRequestVersion)) await RefreshValuesAsync();
+        }
+
+        // 结果明确记录一次，不再由主窗体监听标签文字变化来推断。
+        private void ShowCommandResult(string message)
+        {
+            helperLabel.Text = message;
+            OperationJournal.Record("手动控制", message);
         }
 
         // 停止请求之后完成的旧命令、点动或刷新，不能覆盖最新停止提示。

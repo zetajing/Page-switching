@@ -29,7 +29,7 @@ namespace Page_switching
         private Label feedbackLabel;
         private Label heartbeatLabel;
         private GroupBox axisGroup;
-        private DataGridView axisGrid;
+        private AxisFeedbackGrid axisGrid;
         private DataGridViewTextBoxColumn axisNumberColumn;
         private DataGridViewTextBoxColumn positionColumn;
         private DataGridViewTextBoxColumn speedColumn;
@@ -78,7 +78,7 @@ namespace Page_switching
             feedbackLabel = new Label();
             heartbeatLabel = new Label();
             axisGroup = new GroupBox();
-            axisGrid = new DataGridView();
+            axisGrid = new AxisFeedbackGrid();
             axisNumberColumn = new DataGridViewTextBoxColumn();
             positionColumn = new DataGridViewTextBoxColumn();
             speedColumn = new DataGridViewTextBoxColumn();
@@ -366,6 +366,7 @@ namespace Page_switching
             axisGrid.ColumnHeadersDefaultCellStyle.SelectionBackColor = Color.FromArgb(248, 250, 252);
             axisGrid.ColumnHeadersDefaultCellStyle.SelectionForeColor = Color.FromArgb(71, 85, 105);
             axisGrid.ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.False;
+            axisGrid.DefaultCellStyle.ForeColor = Color.FromArgb(100, 116, 139);
             axisGrid.DefaultCellStyle.SelectionBackColor = Color.FromArgb(219, 234, 254);
             axisGrid.DefaultCellStyle.SelectionForeColor = Color.FromArgb(15, 23, 42);
             axisGrid.DefaultCellStyle.Padding = new Padding(4, 0, 4, 0);
