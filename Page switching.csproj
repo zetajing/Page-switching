@@ -46,8 +46,9 @@
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
     <!-- DLL 引用不会传递原工程的 NuGet 依赖，显式保留对应版本供运行时使用。 -->
-    <PackageReference Include="Beckhoff.TwinCAT.Ads" Version="7.0.317" />
-    <PackageReference Include="Beckhoff.TwinCAT.Ads.TcpRouter" Version="7.0.317" />
+    <!-- 同步更新 ADS 与 Router，包含并发连接及 Router 重启后的连接恢复修复。 -->
+    <PackageReference Include="Beckhoff.TwinCAT.Ads" Version="7.0.389" />
+    <PackageReference Include="Beckhoff.TwinCAT.Ads.TcpRouter" Version="7.0.389" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
   </ItemGroup>

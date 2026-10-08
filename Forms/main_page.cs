@@ -208,6 +208,10 @@ namespace Page_switching
             // 记录本次进程实际读取的文件和目标，便于区分保存的设置与重启后的设置。
             var settings = AdsConnectionSettings.GetSettings();
             _autoPage.AddLog("ADS 配置文件：" + configurationFile);
+            // 记录实际加载的 DLL 版本，便于核对另一台电脑是否已完整更新程序。
+            var adsVersion = FileVersionInfo.GetVersionInfo(typeof(TwinCAT.Ads.AdsClient).Assembly.Location).FileVersion;
+            var routerVersion = FileVersionInfo.GetVersionInfo(typeof(TwinCAT.Ads.TcpRouter.AmsTcpIpRouter).Assembly.Location).FileVersion;
+            _autoPage.AddLog($"ADS SDK={adsVersion}，Router SDK={routerVersion}");
             if (File.Exists(AdsConnectionSettings.FilePath))
                 _autoPage.AddLog("ADS 用户配置：" + AdsConnectionSettings.FilePath);
             if (AdsConnectionSettings.LoadError is { } loadError)
@@ -279,7 +283,8 @@ namespace Page_switching
                     catch (Exception routerException) { Debug.WriteLine("ADS TCP Router 退出：" + routerException); }
                 }
                 host?.Dispose();
-                return null;
+                // 启用的 Router 启动失败时停止连接，避免客户端误连到其他本机 Router。
+                throw;
             }
         }
 

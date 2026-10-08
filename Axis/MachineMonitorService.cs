@@ -18,6 +18,8 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
     private bool _heartbeatConfirmed;
     private bool _disposed;
     private Task? _disposeTask;
+    // RefreshAsync 不重入，保留当前读取步骤，超时时能直接定位变量。
+    private string _readOperation = "连接";
 
     public MachineMonitorService(MachineMonitorOptions options)
     {
@@ -64,7 +66,7 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
         }
 
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(_lifetime.Token, cancellationToken);
-        var operation = "连接";
+        _readOperation = "连接";
         try
         {
             lock (_stateSync)
@@ -83,12 +85,14 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
                     await _client.ConnectAsync(_options.AdsPort, timeout.Token).ConfigureAwait(false);
                 else
                     await _client.ConnectAsync(new AmsNetId(_options.AmsNetId), _options.AdsPort, timeout.Token).ConfigureAwait(false);
+                // 本机地址来自实际 Router；两个客户端的 ADS 端口由 Router 分配。
+                OperationJournal.Record("ADS 诊断", $"监控 ADS 地址：本机={_client.SourceAddress}，目标={_client.Address}");
+                _readOperation = "读取 PLC 状态";
                 var state = await _client.ReadStateAsync(timeout.Token).ConfigureAwait(false);
                 if (!state.Succeeded) throw new InvalidOperationException("PLC 状态读取失败：" + state.ErrorCode);
             }
             timeout.Token.ThrowIfCancellationRequested();
 
-            operation = "读取";
             _client.Timeout = _options.OperationTimeoutMilliseconds;
             timeout.CancelAfter(_options.OperationTimeoutMilliseconds);
             var errors = new List<string>();
@@ -105,7 +109,7 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
         }
         catch (OperationCanceledException)
         {
-            RecordCommunicationFailure($"监控{operation}超时");
+            RecordCommunicationFailure($"监控超时：{_readOperation}");
         }
         catch (Exception ex)
         {
@@ -167,12 +171,14 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
             try
             {
                 // 先按名称获取句柄，再按明确类型读取，兼容当前 PLC 与 ADS SDK。
+                _readOperation = $"获取句柄 {symbol}";
                 var handle = await _client!.CreateVariableHandleAsync(symbol.Trim(), token).ConfigureAwait(false);
                 if (!handle.Succeeded) error = $"ADS error {handle.ErrorCode} (0x{(int)handle.ErrorCode:X8})";
                 else
                 {
                     try
                     {
+                        _readOperation = $"读取变量 {symbol}";
                         var result = await _client.ReadAnyAsync<T>(handle.Handle, token).ConfigureAwait(false);
                         if (!result.Succeeded) error = $"ADS error {result.ErrorCode} (0x{(int)result.ErrorCode:X8})";
                         else if (result.Value is double number && !double.IsFinite(number)) error = "反馈数值无效";
@@ -181,6 +187,7 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
                     finally
                     {
                         // 每次读取后释放句柄；取消读取时也不能遗漏 PLC 句柄。
+                        if (!token.IsCancellationRequested) _readOperation = $"释放句柄 {symbol}";
                         await _client.DeleteVariableHandleAsync(handle.Handle, CancellationToken.None).ConfigureAwait(false);
                     }
                 }

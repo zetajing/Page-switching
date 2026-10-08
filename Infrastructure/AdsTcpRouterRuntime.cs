@@ -1,6 +1,9 @@
 using InduLink.Protocols.Ads.Router;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
+using System.Net;
+using TwinCAT.Ads;
+using TwinCAT.Ams;
 
 namespace Page_switching;
 
@@ -29,6 +32,10 @@ internal static class AdsTcpRouterRuntime
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(values)
             .Build();
+        // 必须在两个 ADS 客户端创建前指定回环地址，确保它们使用本程序的 Router。
+        AmsConfiguration.RouterLoopbackEndPoint = new IPEndPoint(
+            IPAddress.Parse(Read("AdsTcpRouterLoopbackIp")), int.Parse(Read("AdsTcpRouterLoopbackPort")));
+        AmsConfiguration.ChannelPortType = ChannelPortType.Loopback;
         return new AdsTcpRouterHost(configuration, NullLoggerFactory.Instance);
     }
 
