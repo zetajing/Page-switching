@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Configuration;
 using System.Diagnostics;
 using InduLink.Storage;
 using Page_switching.panel;
@@ -210,15 +211,15 @@ namespace Page_switching
         // 在后台启动可选的 ADS TCP Router，避免启动阶段阻塞主界面。
         private async Task<AdsTcpRouterHost?> StartRouterInBackgroundAsync(CancellationToken cancellationToken)
         {
+            var configurationFile = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None).FilePath;
             if (!AdsTcpRouterRuntime.IsEnabled)
             {
-                var configurationFile = AppDomain.CurrentDomain.SetupInformation.ConfigurationFile;
                 Debug.WriteLine($"独立 ADS TCP Router 未启用。配置文件：{configurationFile}");
                 _autoPage.AddLog($"独立 ADS TCP Router 未启用，使用系统 TwinCAT Router。配置文件：{configurationFile}");
                 return null;
             }
 
-            Debug.WriteLine("ADS TCP Router 配置文件：" + AppDomain.CurrentDomain.SetupInformation.ConfigurationFile);
+            Debug.WriteLine("ADS TCP Router 配置文件：" + configurationFile);
             AdsTcpRouterHost? host = null;
             Task? routerTask = null;
             try
