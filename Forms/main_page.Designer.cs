@@ -18,8 +18,6 @@
             {
                 // 直接 Dispose 也先取消监控，后台清理完成后才释放 Router。
                 _ = BeginShutdown();
-                _autoPage?.Dispose();
-                _manualPage?.Dispose();
                 components?.Dispose();
             }
 

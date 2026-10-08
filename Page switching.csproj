@@ -15,8 +15,6 @@
   <ItemGroup>
     <Compile Update="Forms\main_page.cs">
       <SubType>Form</SubType>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <TargetPath>main_page.cs</TargetPath>
     </Compile>
   </ItemGroup>
 

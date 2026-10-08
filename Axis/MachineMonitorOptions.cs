@@ -4,7 +4,6 @@ namespace Page_switching;
 
 public sealed class MachineMonitorOptions
 {
-    public string DeviceId { get; init; } = "plc-monitor";
     public string AmsNetId { get; init; } = string.Empty;
     public int AdsPort { get; init; } = 851;
     public int ConnectTimeoutMilliseconds { get; init; } = 10000;

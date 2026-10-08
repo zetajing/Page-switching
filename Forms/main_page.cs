@@ -84,25 +84,7 @@ namespace Page_switching
                 })
                     TrackActions(page, page);
             _headerStatusTimer.Tick += HeaderStatusTimer_Tick;
-            Disposed += (_, _) =>
-            {
-                // 直接释放窗体时也取消后台启动，不能只依赖关闭事件。
-                _ = BeginShutdown();
-                OperationJournal.EntryAdded -= AddOperationEntry;
-                _headerStatusTimer.Stop();
-                _headerStatusTimer.Dispose();
-                // 隐藏页面已移出容器，需要和当前页面一起释放。
-                _autoPage.Dispose();
-                _manualPage.Dispose();
-                _config.Dispose();
-                _waveformPage.Dispose();
-                _wave_Height_Meter.Dispose();
-                _analysis.Dispose();
-                _correction.Dispose();
-                _data.Dispose();
-                _calibration.Dispose();
-                _batchCalibrationPage.Dispose();
-            };
+            Disposed += Mainpage_Disposed;
 
             // 启动时先显示默认页面，避免主区域空白。
             NavigateTo(_autoPage, Bu_auto);
@@ -112,6 +94,23 @@ namespace Page_switching
                 // Designer 只创建控件；实际窗口显示后才启动 Router 和两个独立 ADS 客户端。
                 Shown += Mainpage_Shown;
             }
+        }
+
+        // 页面统一释放一次；手动页已在 BeginShutdown 中先停止刷新。
+        private void Mainpage_Disposed(object? sender, EventArgs e)
+        {
+            Disposed -= Mainpage_Disposed;
+            _ = BeginShutdown();
+            OperationJournal.EntryAdded -= AddOperationEntry;
+            _headerStatusTimer.Stop();
+            _headerStatusTimer.Dispose();
+            // 当前页面可能已由窗体释放，隐藏页面才需要在这里补充释放。
+            foreach (var page in new UserControl[]
+            {
+                _autoPage, _manualPage, _config, _waveformPage, _wave_Height_Meter,
+                _analysis, _correction, _data, _calibration, _batchCalibrationPage
+            })
+                if (!page.IsDisposed) page.Dispose();
         }
 
         // 主窗体显示后启动可选 Router，并连接真实 ADS PLC。
@@ -153,39 +152,30 @@ namespace Page_switching
             }
         }
 
-        private void HeaderStatusTimer_Tick(object? sender, EventArgs e)
+        private async void HeaderStatusTimer_Tick(object? sender, EventArgs e)
         {
             if (_closing || IsDisposed) return;
             // 即使读取仍在执行，也按当前时间将历史反馈降为过期。
             _autoPage.ApplyMonitorSnapshot(_monitorService.LatestSnapshot);
             UpdateHeaderStatus();
-            _ = RefreshMonitorAsync();
+            await RefreshMonitorAsync();
         }
 
-        private Task RefreshMonitorAsync()
+        // 定时器直接等待 ADS 读取，再在当前 UI 线程更新页面，便于逐行调试。
+        private async Task RefreshMonitorAsync()
         {
-            if (!_monitorReady || _closing || IsDisposed) return Task.CompletedTask;
-            if (!_monitorRefreshTask.IsCompleted) return _monitorRefreshTask;
-            var includeAxes = ReferenceEquals(_currentPage, _autoPage);
+            if (!_monitorReady || _closing || IsDisposed || !_monitorRefreshTask.IsCompleted) return;
             var cancellationToken = _lifetimeCancellation.Token;
-            _monitorRefreshTask = ReadMonitorAsync(includeAxes, cancellationToken);
-            return _monitorRefreshTask;
-        }
-
-        private async Task ReadMonitorAsync(bool includeAxes, CancellationToken cancellationToken)
-        {
             try
             {
-                await Task.Run(
-                    () => _monitorService.RefreshAsync(includeAxes, cancellationToken), cancellationToken)
-                    .ConfigureAwait(false);
+                var includeAxes = ReferenceEquals(_currentPage, _autoPage);
+                // 保存实际读取任务；关闭窗体时只等待它，不依赖 UI 回调继续运行。
+                _monitorRefreshTask = _monitorService.RefreshAsync(includeAxes, cancellationToken);
+                await _monitorRefreshTask;
+                if (_closing || IsDisposed) return;
                 _lastMonitorError = null;
-                PostToUi(() =>
-                {
-                    // 回调排队期间数据可能已过期，发布时重新取得当前有效性。
-                    _autoPage.ApplyMonitorSnapshot(_monitorService.LatestSnapshot);
-                    UpdateHeaderStatus();
-                });
+                _autoPage.ApplyMonitorSnapshot(_monitorService.LatestSnapshot);
+                UpdateHeaderStatus();
             }
             catch (OperationCanceledException) when (_closing || cancellationToken.IsCancellationRequested) { }
             catch (Exception ex)
@@ -193,7 +183,7 @@ namespace Page_switching
                 Debug.WriteLine("监控刷新失败：" + ex);
                 if (_lastMonitorError == ex.Message) return;
                 _lastMonitorError = ex.Message;
-                PostToUi(() => _autoPage.AddLog("监控刷新失败：" + ex.Message));
+                _autoPage.AddLog("监控刷新失败：" + ex.Message);
             }
         }
 
