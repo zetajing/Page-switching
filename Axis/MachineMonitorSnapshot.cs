@@ -67,7 +67,8 @@ public sealed record MachineMonitorSnapshot
     public FeedbackField<ushort> ControlOwner { get; init; } = FeedbackField<ushort>.Unavailable("未读取");
     public FeedbackField<ushort> ControlMode { get; init; } = FeedbackField<ushort>.Unavailable("未读取");
     public FeedbackField<ushort> WaveState { get; init; } = FeedbackField<ushort>.Unavailable("未读取");
-    public FeedbackField<uint> WaveFaultCode { get; init; } = FeedbackField<uint>.Unavailable("未读取");
+    // 与现场类型一致：故障码为 UINT，心跳为 UDINT。
+    public FeedbackField<ushort> WaveFaultCode { get; init; } = FeedbackField<ushort>.Unavailable("未读取");
     public FeedbackField<uint> Heartbeat { get; init; } = FeedbackField<uint>.Unavailable("未读取");
     public IReadOnlyList<MachineAxisSnapshot> Axes { get; init; } = Array.Empty<MachineAxisSnapshot>();
 

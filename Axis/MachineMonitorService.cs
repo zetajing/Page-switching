@@ -172,7 +172,8 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
         Add(_options.ControlOwnerSymbol, DataType.UInt16);
         Add(_options.ControlModeSymbol, DataType.UInt16);
         Add(_options.WaveStateSymbol, DataType.UInt16);
-        Add(_options.WaveFaultCodeSymbol, DataType.UInt32);
+        // 现场故障码为 UINT（2 字节）；udi 前缀不能作为 PLC 类型依据。
+        Add(_options.WaveFaultCodeSymbol, DataType.UInt16);
         Add(_options.HeartbeatSymbol, DataType.UInt32);
         if (includeAxes)
         {
@@ -228,7 +229,7 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
             ControlOwner = Read<ushort>(_options.ControlOwnerSymbol, DataType.UInt16),
             ControlMode = Read<ushort>(_options.ControlModeSymbol, DataType.UInt16),
             WaveState = Read<ushort>(_options.WaveStateSymbol, DataType.UInt16),
-            WaveFaultCode = Read<uint>(_options.WaveFaultCodeSymbol, DataType.UInt32),
+            WaveFaultCode = Read<ushort>(_options.WaveFaultCodeSymbol, DataType.UInt16),
             Heartbeat = Read<uint>(_options.HeartbeatSymbol, DataType.UInt32)
         };
         var axes = new List<MachineAxisSnapshot>(4);
@@ -315,7 +316,8 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
     private static bool IsContractError(string? message) => message is not null &&
         (message.Contains("DeviceSymbolNotFound", StringComparison.OrdinalIgnoreCase) ||
          message.Contains("DeviceInvalidSize", StringComparison.OrdinalIgnoreCase) ||
-         message.Contains("DeviceInvalidData", StringComparison.OrdinalIgnoreCase));
+         message.Contains("DeviceInvalidData", StringComparison.OrdinalIgnoreCase) ||
+         message.Contains("Marshalling", StringComparison.OrdinalIgnoreCase));
 
     private bool HasElapsed(long timestamp, int milliseconds) =>
         _time.GetElapsedTime(timestamp) >= TimeSpan.FromMilliseconds(milliseconds);
@@ -409,7 +411,8 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
                 Port = options.AdsPort,
                 ConnectTimeoutMilliseconds = options.ConnectTimeoutMilliseconds,
                 OperationTimeoutMilliseconds = options.OperationTimeoutMilliseconds,
-                EnableSumCommands = true,
+                // 逐项读取，单个符号类型不匹配时仍保留其他状态和心跳反馈。
+                EnableSumCommands = false,
                 ValidateTargetStateOnConnect = true
             });
         }
