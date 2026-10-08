@@ -475,9 +475,8 @@ namespace Page_switching
         {
             try
             {
-                if (File.Exists(OperationJournal.FilePath))
-                    foreach (var entry in File.ReadLines(OperationJournal.FilePath).TakeLast(500))
-                        AppendOperationRow(entry);
+                foreach (var entry in OperationJournal.ReadRecentEntries())
+                    AppendOperationRow(entry);
             }
             catch (Exception ex)
             {

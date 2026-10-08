@@ -10,6 +10,30 @@ internal static class OperationJournal
 
     internal static string FilePath => GetFilePath(DateTime.Now);
 
+    internal static IReadOnlyList<string> ReadRecentEntries(int maximumEntries = 500)
+    {
+        var now = DateTime.Now;
+        var directory = Path.GetDirectoryName(GetFilePath(now))!;
+        var entries = new List<string>();
+        if (maximumEntries <= 0 || !Directory.Exists(directory))
+            return entries;
+
+        // 按小时保存后，仍合并当天历史记录，并兼容原来的按天日志。
+        lock (FileLock)
+        {
+            var paths = Directory.EnumerateFiles(directory, $"{now:yyyy-MM-dd}*.log")
+                .OrderByDescending(path => Path.GetFileName(path), StringComparer.Ordinal);
+            foreach (var path in paths)
+            {
+                entries.InsertRange(0, File.ReadLines(path).TakeLast(maximumEntries - entries.Count));
+                if (entries.Count >= maximumEntries)
+                    break;
+            }
+        }
+
+        return entries;
+    }
+
     internal static void Record(string page, string message)
     {
         var now = DateTime.Now;
@@ -34,5 +58,5 @@ internal static class OperationJournal
 
     private static string GetFilePath(DateTime date) => Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "PageSwitching", "Operations", $"{date:yyyy-MM-dd}.log");
+        "PageSwitching", "Operations", $"{date:yyyy-MM-dd_HH}.log");
 }
