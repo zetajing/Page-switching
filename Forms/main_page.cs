@@ -145,8 +145,11 @@ namespace Page_switching
             }
             catch (Exception ex)
             {
-                Debug.WriteLine("手动 ADS 连接失败：" + ex);
-                if (!_closing) _autoPage.AddLog("手动 ADS 连接失败：" + ex.Message);
+                if (!_closing)
+                {
+                    _autoPage.AddLog("手动 ADS 连接失败：" + AdsDiagnostics.DescribeException(ex));
+                    AdsDiagnostics.RecordException("手动 ADS 连接失败", ex);
+                }
             }
         }
 
@@ -212,6 +215,10 @@ namespace Page_switching
         private async Task<AdsTcpRouterHost?> StartRouterInBackgroundAsync(CancellationToken cancellationToken)
         {
             var configurationFile = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None).FilePath;
+            // 记录本次进程实际读取的文件和目标，便于区分保存的设置与重启后的设置。
+            var settings = ConfigurationManager.AppSettings;
+            _autoPage.AddLog("ADS 配置文件：" + configurationFile);
+            _autoPage.AddLog($"ADS 连接目标：AMS Net ID={settings["AdsAmsNetId"]}，ADS 端口={settings["AdsPort"]}，连接超时={settings["AdsConnectTimeoutMs"]} ms");
             if (!AdsTcpRouterRuntime.IsEnabled)
             {
                 Debug.WriteLine($"独立 ADS TCP Router 未启用。配置文件：{configurationFile}");
@@ -220,6 +227,8 @@ namespace Page_switching
             }
 
             Debug.WriteLine("ADS TCP Router 配置文件：" + configurationFile);
+            _autoPage.AddLog($"ADS Router 本机：AMS Net ID={settings["AdsTcpRouterLocalNetId"]}，TCP 端口={settings["AdsTcpRouterTcpPort"]}，回环={settings["AdsTcpRouterLoopbackIp"]}:{settings["AdsTcpRouterLoopbackPort"]}");
+            _autoPage.AddLog($"ADS Router PLC 路由：IP={settings["AdsTcpRouterRemoteAddress"]}，AMS Net ID={settings["AdsTcpRouterRemoteNetId"]}");
             AdsTcpRouterHost? host = null;
             Task? routerTask = null;
             try

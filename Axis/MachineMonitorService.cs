@@ -152,7 +152,8 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
         }
         catch (Exception ex)
         {
-            RecordCommunicationFailure(ex.Message);
+            // 监控卡片也显示底层 ADS 原因；重连时不反复追加完整调用栈。
+            RecordCommunicationFailure(AdsDiagnostics.DescribeException(ex));
             return LatestSnapshot;
         }
         finally
