@@ -45,9 +45,8 @@ namespace Page_switching
             InitializeComponent();
             if (_recordOperations)
             {
-                operationPathLabel.Text = "日志保存位置：" + OperationJournal.FilePath;
+                operationPathLabel.Text = "日志保存位置：" + OperationJournal.DirectoryPath;
                 OperationJournal.EntryAdded += AddOperationEntry;
-                LoadOperationHistory();
                 OperationJournal.Record("系统", "程序启动");
             }
 
@@ -301,6 +300,7 @@ namespace Page_switching
             if (ReferenceEquals(page, _autoPage)) _ = RefreshMonitorAsync();
         }
 
+        // 日志内容只写入文件；新记录通知仅用于同步配置后的保存目录。
         private void AddOperationEntry(string entry)
         {
             if (_closing || IsDisposed || Disposing) return;
@@ -310,61 +310,14 @@ namespace Page_switching
                 return;
             }
 
-            AppendOperationRow(entry);
-            if (operationList.Rows.Count > 500)
-                operationList.Rows.RemoveAt(0);
-            ScrollOperationsToLatest();
-            operationPathLabel.Text = "日志保存位置：" + OperationJournal.FilePath;
-        }
-
-        private void AppendOperationRow(string entry)
-        {
-            var pageStart = entry.IndexOf("  [", StringComparison.Ordinal);
-            var pageEnd = pageStart >= 0 ? entry.IndexOf(']', pageStart + 3) : -1;
-            var index = pageEnd >= 0
-                ? operationList.Rows.Add(entry[..pageStart], entry[(pageStart + 3)..pageEnd], entry[(pageEnd + 1)..].TrimStart())
-                : operationList.Rows.Add("", "系统", entry);
-            var row = operationList.Rows[index];
-            row.Tag = entry;
-            if (entry.Contains("失败", StringComparison.Ordinal) || entry.Contains("中断", StringComparison.Ordinal))
-                row.Cells[2].Style.ForeColor = UiPalette.Danger;
-        }
-
-        private void ScrollOperationsToLatest()
-        {
-            if (operationAutoScroll.Checked && operationList.IsHandleCreated && operationList.Rows.Count > 0)
-                operationList.FirstDisplayedScrollingRowIndex = operationList.Rows.Count - 1;
-        }
-
-        private void OperationAutoScroll_CheckedChanged(object? sender, EventArgs e)
-        {
-            ScrollOperationsToLatest();
-            if (_recordOperations)
-                OperationJournal.Record("操作记录", operationAutoScroll.Checked ? "开启自动滚动" : "暂停自动滚动");
-        }
-
-        private void CopyOperationButton_Click(object? sender, EventArgs e)
-        {
-            try
-            {
-                var entries = operationList.SelectedRows.Cast<DataGridViewRow>()
-                    .OrderBy(row => row.Index).Select(row => Convert.ToString(row.Tag));
-                var text = string.Join(Environment.NewLine, entries);
-                if (text.Length == 0) return;
-                Clipboard.SetText(text);
-                OperationJournal.Record("操作记录", "已复制选中的记录");
-            }
-            catch (Exception ex)
-            {
-                OperationJournal.Record("操作记录", "复制失败：" + ex.Message);
-            }
+            operationPathLabel.Text = "日志保存位置：" + OperationJournal.DirectoryPath;
         }
 
         private void OpenOperationFolderButton_Click(object? sender, EventArgs e)
         {
             try
             {
-                var directory = Path.GetDirectoryName(OperationJournal.FilePath)!;
+                var directory = OperationJournal.DirectoryPath;
                 Directory.CreateDirectory(directory);
                 Process.Start(new ProcessStartInfo(directory) { UseShellExecute = true });
                 OperationJournal.Record("操作记录", "已打开日志目录");
@@ -372,19 +325,6 @@ namespace Page_switching
             catch (Exception ex)
             {
                 OperationJournal.Record("操作记录", "打开目录失败：" + ex.Message);
-            }
-        }
-
-        private void LoadOperationHistory()
-        {
-            try
-            {
-                foreach (var entry in OperationJournal.ReadRecentEntries())
-                    AppendOperationRow(entry);
-            }
-            catch (Exception ex)
-            {
-                AppendOperationRow("读取历史操作记录失败：" + ex.Message);
             }
         }
 

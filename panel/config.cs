@@ -24,6 +24,7 @@ public partial class Config : UserControl
         };
         waveGeneratorPathTextBox.Text = Read("WaveGeneratorPath");
         waveProgramDirectoryTextBox.Text = WaveProgramSettings.ProgramDirectory;
+        operationLogDirectoryTextBox.Text = OperationJournal.DirectoryPath;
         routerEnabledCheckBox.Checked = ReadBool("AdsTcpRouterEnabled", false);
         routerNameTextBox.Text = Read("AdsTcpRouterName", "PageSwitchingRouter");
         localNetIdTextBox.Text = Read("AdsTcpRouterLocalNetId");
@@ -158,6 +159,44 @@ public partial class Config : UserControl
         catch (Exception ex)
         {
             ShowSaveResult("波形程序目录保存失败：" + ex.Message, UiPalette.Danger);
+        }
+    }
+
+    // 日志目录与界面中显示的位置共用同一套配置。
+    private void BrowseOperationLogDirectoryButton_Click(object? sender, EventArgs e)
+    {
+        using var dialog = new FolderBrowserDialog
+        {
+            Description = "选择操作日志保存目录",
+            SelectedPath = OperationJournal.DirectoryPath,
+            UseDescriptionForTitle = true
+        };
+        if (dialog.ShowDialog(this) == DialogResult.OK)
+            operationLogDirectoryTextBox.Text = dialog.SelectedPath;
+    }
+
+    // 先确认目录可写，再保存；后续记录立即写入新目录，已有日志留在原处。
+    private void SaveOperationLogDirectoryButton_Click(object? sender, EventArgs e)
+    {
+        try
+        {
+            var configured = operationLogDirectoryTextBox.Text.Trim();
+            var directory = OperationJournal.ResolveDirectory(configured);
+            Directory.CreateDirectory(directory);
+            var probePath = Path.Combine(directory, ".write-test-" + Guid.NewGuid().ToString("N"));
+            using (new FileStream(probePath, FileMode.CreateNew, FileAccess.Write, FileShare.None,
+                1, FileOptions.DeleteOnClose)) { }
+            SaveSettings(("OperationLogDirectory", configured));
+            operationLogDirectoryTextBox.Text = OperationJournal.DirectoryPath;
+            operationLogStateLabel.ForeColor = UiPalette.Success;
+            operationLogStateLabel.Text = "已保存，新日志立即写入此目录。";
+            OperationJournal.Record("系统配置", "日志保存位置已更新：" + OperationJournal.DirectoryPath);
+        }
+        catch (Exception ex)
+        {
+            operationLogStateLabel.ForeColor = UiPalette.Danger;
+            operationLogStateLabel.Text = "保存失败：" + ex.Message;
+            OperationJournal.Record("系统配置", "日志目录保存失败：" + ex.Message);
         }
     }
 

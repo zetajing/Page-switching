@@ -8,6 +8,13 @@ partial class Config
     private TableLayoutPanel rootLayout;
     private Label titleLabel;
     private Label subtitleLabel;
+    private GroupBox operationLogGroup;
+    private TableLayoutPanel operationLogLayout;
+    private Label operationLogDirectoryLabel;
+    private TextBox operationLogDirectoryTextBox;
+    private Button browseOperationLogDirectoryButton;
+    private Button saveOperationLogDirectoryButton;
+    private Label operationLogStateLabel;
     private GroupBox routerGroup;
     private TableLayoutPanel routerLayout;
     private CheckBox routerEnabledCheckBox;
@@ -69,6 +76,13 @@ partial class Config
         rootLayout = new TableLayoutPanel();
         titleLabel = new Label();
         subtitleLabel = new Label();
+        operationLogGroup = new GroupBox();
+        operationLogLayout = new TableLayoutPanel();
+        operationLogDirectoryLabel = new Label();
+        operationLogDirectoryTextBox = new TextBox();
+        browseOperationLogDirectoryButton = new Button();
+        saveOperationLogDirectoryButton = new Button();
+        operationLogStateLabel = new Label();
         routerGroup = new GroupBox();
         routerLayout = new TableLayoutPanel();
         routerEnabledCheckBox = new CheckBox();
@@ -111,6 +125,8 @@ partial class Config
         _databasePasswordTextBox = new TextBox();
         _saveDatabaseButton = new Button();
         _databaseStateLabel = new Label();
+        operationLogGroup.SuspendLayout();
+        operationLogLayout.SuspendLayout();
         pagePanel.SuspendLayout();
         rootLayout.SuspendLayout();
         routerGroup.SuspendLayout();
@@ -124,6 +140,7 @@ partial class Config
         // 
         // pagePanel
         // 
+        pagePanel.AutoScroll = true;
         pagePanel.Controls.Add(rootLayout);
         pagePanel.Dock = DockStyle.Fill;
         pagePanel.Location = new Point(0, 0);
@@ -139,17 +156,22 @@ partial class Config
         rootLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
         rootLayout.Controls.Add(titleLabel, 0, 0);
         rootLayout.Controls.Add(subtitleLabel, 0, 1);
-        rootLayout.Controls.Add(routerGroup, 0, 2);
-        rootLayout.Controls.Add(waveGeneratorGroup, 0, 3);
-        rootLayout.Controls.Add(_databaseGroup, 0, 4);
-        rootLayout.Dock = DockStyle.Fill;
+        rootLayout.Controls.Add(operationLogGroup, 0, 2);
+        rootLayout.Controls.Add(routerGroup, 0, 3);
+        rootLayout.Controls.Add(waveGeneratorGroup, 0, 4);
+        rootLayout.Controls.Add(_databaseGroup, 0, 5);
+        // 内容按分组高度展开，由外层滚动面板确保所有配置入口可达。
+        rootLayout.AutoSize = true;
+        rootLayout.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+        rootLayout.Dock = DockStyle.Top;
         rootLayout.Location = new Point(0, 0);
         rootLayout.Margin = new Padding(2, 4, 2, 4);
         rootLayout.Name = "rootLayout";
         rootLayout.Padding = new Padding(20, 20, 20, 20);
-        rootLayout.RowCount = 5;
+        rootLayout.RowCount = 6;
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 52F));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 145F));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 365F));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 215F));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 195F));
@@ -179,9 +201,103 @@ partial class Config
         subtitleLabel.Name = "subtitleLabel";
         subtitleLabel.Size = new Size(1187, 32);
         subtitleLabel.TabIndex = 1;
-        subtitleLabel.Text = "手动控制 ADS 路由、波形程序和数据库连接";
+        subtitleLabel.Text = "日志保存位置、手动控制 ADS 路由、波形程序和数据库连接";
         subtitleLabel.TextAlign = ContentAlignment.MiddleLeft;
         // 
+        // operationLogGroup
+        //
+        operationLogGroup.BackColor = Color.White;
+        operationLogGroup.Controls.Add(operationLogLayout);
+        operationLogGroup.Dock = DockStyle.Fill;
+        operationLogGroup.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
+        operationLogGroup.ForeColor = Color.FromArgb(15, 23, 42);
+        operationLogGroup.Margin = new Padding(2, 4, 2, 4);
+        operationLogGroup.Name = "operationLogGroup";
+        operationLogGroup.Padding = new Padding(14, 10, 14, 10);
+        operationLogGroup.Size = new Size(1187, 137);
+        operationLogGroup.TabIndex = 2;
+        operationLogGroup.TabStop = false;
+        operationLogGroup.Text = "操作日志";
+        //
+        // operationLogLayout
+        //
+        operationLogLayout.ColumnCount = 4;
+        operationLogLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 175F));
+        operationLogLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+        operationLogLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 112F));
+        operationLogLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 140F));
+        operationLogLayout.Controls.Add(operationLogDirectoryLabel, 0, 0);
+        operationLogLayout.Controls.Add(operationLogDirectoryTextBox, 1, 0);
+        operationLogLayout.Controls.Add(browseOperationLogDirectoryButton, 2, 0);
+        operationLogLayout.Controls.Add(saveOperationLogDirectoryButton, 3, 0);
+        operationLogLayout.Controls.Add(operationLogStateLabel, 0, 1);
+        operationLogLayout.SetColumnSpan(operationLogStateLabel, 4);
+        operationLogLayout.Dock = DockStyle.Fill;
+        operationLogLayout.Name = "operationLogLayout";
+        operationLogLayout.RowCount = 2;
+        operationLogLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 45F));
+        operationLogLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+        operationLogLayout.Size = new Size(1159, 86);
+        //
+        // operationLogDirectoryLabel
+        //
+        operationLogDirectoryLabel.Dock = DockStyle.Fill;
+        operationLogDirectoryLabel.Font = new Font("Microsoft YaHei UI", 9F);
+        operationLogDirectoryLabel.Margin = new Padding(2, 0, 2, 0);
+        operationLogDirectoryLabel.Name = "operationLogDirectoryLabel";
+        operationLogDirectoryLabel.Text = "日志保存位置";
+        operationLogDirectoryLabel.TextAlign = ContentAlignment.MiddleLeft;
+        //
+        // operationLogDirectoryTextBox
+        //
+        operationLogDirectoryTextBox.BorderStyle = BorderStyle.FixedSingle;
+        operationLogDirectoryTextBox.Dock = DockStyle.Fill;
+        operationLogDirectoryTextBox.Font = new Font("Microsoft YaHei UI", 9F);
+        operationLogDirectoryTextBox.Margin = new Padding(2, 4, 2, 4);
+        operationLogDirectoryTextBox.Name = "operationLogDirectoryTextBox";
+        operationLogDirectoryTextBox.PlaceholderText = "留空使用默认日志目录";
+        operationLogDirectoryTextBox.TabIndex = 0;
+        //
+        // browseOperationLogDirectoryButton
+        //
+        browseOperationLogDirectoryButton.BackColor = Color.White;
+        browseOperationLogDirectoryButton.Cursor = Cursors.Hand;
+        browseOperationLogDirectoryButton.Dock = DockStyle.Fill;
+        browseOperationLogDirectoryButton.FlatStyle = FlatStyle.Flat;
+        browseOperationLogDirectoryButton.Font = new Font("Microsoft YaHei UI", 9F);
+        browseOperationLogDirectoryButton.Margin = new Padding(2, 4, 2, 4);
+        browseOperationLogDirectoryButton.Name = "browseOperationLogDirectoryButton";
+        browseOperationLogDirectoryButton.TabIndex = 1;
+        browseOperationLogDirectoryButton.Text = "选择目录";
+        browseOperationLogDirectoryButton.UseVisualStyleBackColor = false;
+        browseOperationLogDirectoryButton.Click += BrowseOperationLogDirectoryButton_Click;
+        //
+        // saveOperationLogDirectoryButton
+        //
+        saveOperationLogDirectoryButton.BackColor = Color.FromArgb(29, 78, 216);
+        saveOperationLogDirectoryButton.Cursor = Cursors.Hand;
+        saveOperationLogDirectoryButton.Dock = DockStyle.Fill;
+        saveOperationLogDirectoryButton.FlatAppearance.BorderSize = 0;
+        saveOperationLogDirectoryButton.FlatStyle = FlatStyle.Flat;
+        saveOperationLogDirectoryButton.Font = new Font("Microsoft YaHei UI", 9F);
+        saveOperationLogDirectoryButton.ForeColor = Color.White;
+        saveOperationLogDirectoryButton.Margin = new Padding(2, 4, 2, 4);
+        saveOperationLogDirectoryButton.Name = "saveOperationLogDirectoryButton";
+        saveOperationLogDirectoryButton.TabIndex = 2;
+        saveOperationLogDirectoryButton.Text = "保存日志目录";
+        saveOperationLogDirectoryButton.UseVisualStyleBackColor = false;
+        saveOperationLogDirectoryButton.Click += SaveOperationLogDirectoryButton_Click;
+        //
+        // operationLogStateLabel
+        //
+        operationLogStateLabel.Dock = DockStyle.Fill;
+        operationLogStateLabel.Font = new Font("Microsoft YaHei UI", 8F);
+        operationLogStateLabel.ForeColor = Color.FromArgb(100, 116, 139);
+        operationLogStateLabel.Margin = new Padding(2, 0, 2, 0);
+        operationLogStateLabel.Name = "operationLogStateLabel";
+        operationLogStateLabel.Text = "日志按小时保存。保存目录立即生效，已有日志保留在原目录；留空恢复默认位置。";
+        operationLogStateLabel.TextAlign = ContentAlignment.MiddleLeft;
+        //
         // routerGroup
         // 
         routerGroup.BackColor = Color.White;
@@ -850,7 +966,11 @@ partial class Config
         Margin = new Padding(2, 4, 2, 4);
         Name = "Config";
         Size = new Size(1231, 758);
+        operationLogGroup.ResumeLayout(false);
+        operationLogLayout.ResumeLayout(false);
+        operationLogLayout.PerformLayout();
         pagePanel.ResumeLayout(false);
+        pagePanel.PerformLayout();
         rootLayout.ResumeLayout(false);
         routerGroup.ResumeLayout(false);
         routerLayout.ResumeLayout(false);
