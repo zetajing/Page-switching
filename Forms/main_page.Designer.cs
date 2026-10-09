@@ -50,13 +50,30 @@
             Bu_Calibration = new Button();
             Bu_manual = new Button();
             Bu_auto = new Button();
+            contentPanel = new Panel();
+            operationGroup = new Panel();
+            operationFolderButton = new Button();
+            operationPathLabel = new Label();
+            operationPageColumn = new DataGridViewTextBoxColumn();
+            operationMessageColumn = new DataGridViewTextBoxColumn();
+            operationHeader = new Panel();
+            contentPanel.SuspendLayout();
+            operationMessageColumn = new DataGridViewTextBoxColumn();
+            operationHeader = new Panel();
+            operationTitle = new Label();
+            operationCopyButton = new Button();
+            operationFolderButton = new Button();
+            operationAutoScroll = new CheckBox();
+            operationPathLabel = new Label();
             navigationMarker = new Panel();
             contentPanel = new Panel();
             panelswitch = new Panel();
-            operationGroup = new Panel();
-            operationPathLabel = new Label();
-            operationFolderButton = new Button();
-            adsStatusLabel = new Label();
+            ((System.ComponentModel.ISupportInitialize)contentSplit).BeginInit();
+            contentSplit.Panel1.SuspendLayout();
+            contentSplit.Panel2.SuspendLayout();
+            contentSplit.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)operationList).BeginInit();
+            operationHeader.SuspendLayout();
             panel1.SuspendLayout();
             headerStatusPanel.SuspendLayout();
             panel2.SuspendLayout();
@@ -375,97 +392,137 @@
             // contentPanel
             // 
             contentPanel.BackColor = Color.FromArgb(241, 245, 249);
+            panelswitch.Size = new Size(1104, 726);
+            contentPanel.Controls.Add(operationGroup);
+            //
+            // contentPanel：主页面占满剩余空间，底部仅保留日志位置栏。
+            //
+            contentPanel.BackColor = Color.FromArgb(241, 245, 249);
             contentPanel.Controls.Add(panelswitch);
             contentPanel.Controls.Add(operationGroup);
             contentPanel.Dock = DockStyle.Fill;
-            contentPanel.Location = new Point(220, 75);
-            contentPanel.Margin = new Padding(4, 4, 4, 4);
+            contentPanel.Location = new Point(176, 60);
             contentPanel.Name = "contentPanel";
-            contentPanel.Size = new Size(1380, 950);
+            contentPanel.Size = new Size(1104, 760);
             contentPanel.TabIndex = 2;
-            // 
-            // panelswitch
-            // 
-            panelswitch.BackColor = Color.FromArgb(241, 245, 249);
-            panelswitch.Dock = DockStyle.Fill;
-            panelswitch.Location = new Point(0, 0);
-            panelswitch.Margin = new Padding(4, 4, 4, 4);
-            panelswitch.Name = "panelswitch";
-            panelswitch.Size = new Size(1380, 908);
-            panelswitch.TabIndex = 2;
-            // 
-            // operationGroup
-            // 
-            operationGroup.BackColor = Color.White;
-            operationGroup.Controls.Add(operationPathLabel);
-            operationGroup.Controls.Add(operationFolderButton);
-            operationGroup.Dock = DockStyle.Bottom;
-            operationGroup.ForeColor = Color.FromArgb(15, 23, 42);
-            operationGroup.Location = new Point(0, 908);
-            operationGroup.Margin = new Padding(4, 4, 4, 4);
-            operationGroup.Name = "operationGroup";
-            operationGroup.Padding = new Padding(15, 0, 15, 0);
-            operationGroup.Size = new Size(1380, 42);
-            operationGroup.TabIndex = 3;
-            // 
+            //
+            // navigationMarker
+            //
+            navigationMarker.BackColor = Color.FromArgb(29, 78, 216);
+            navigationMarker.Location = new Point(0, 44);
+            navigationMarker.Name = "navigationMarker";
+            navigationMarker.Size = new Size(3, 44);
+            navigationMarker.TabIndex = 11;
+            //
+            contentSplit.Panel2.Controls.Add(operationGroup);
+            contentSplit.Size = new Size(1104, 760);
+            contentSplit.Panel1MinSize = 380;
+            contentSplit.Panel2MinSize = 120;
+            contentSplit.SplitterDistance = 608;
+            contentSplit.SplitterWidth = 6;
+            contentSplit.TabIndex = 2;
+            operationGroup.Location = new Point(0, 726);
+            // navigationMarker
+            operationGroup.Padding = new Padding(12, 0, 12, 0);
+            operationGroup.Size = new Size(1104, 34);
+            navigationMarker.Location = new Point(0, 44);
+            //
+            //
+            // operationCopyButton
+            //
+            operationCopyButton.BackColor = Color.White;
+            operationCopyButton.Dock = DockStyle.Right;
+            operationCopyButton.FlatAppearance.BorderSize = 0;
+            operationCopyButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(241, 245, 249);
+            operationCopyButton.FlatStyle = FlatStyle.Flat;
+            operationCopyButton.ForeColor = Color.FromArgb(71, 85, 105);
+            operationCopyButton.Name = "operationCopyButton";
+            operationCopyButton.Cursor = Cursors.Hand;
+            operationCopyButton.Size = new Size(92, 34);
+            operationCopyButton.Text = "复制选中";
+            operationCopyButton.UseVisualStyleBackColor = false;
+            operationCopyButton.Click += CopyOperationButton_Click;
+            //
+            // operationFolderButton
+            //
             // operationPathLabel
-            // 
-            operationPathLabel.AutoEllipsis = true;
+            //
             operationPathLabel.Dock = DockStyle.Fill;
+            operationPathLabel.AutoEllipsis = true;
             operationPathLabel.Font = new Font("Microsoft YaHei UI", 8F);
             operationPathLabel.ForeColor = Color.FromArgb(71, 85, 105);
-            operationPathLabel.Location = new Point(15, 0);
-            operationPathLabel.Margin = new Padding(4, 0, 4, 0);
+            operationPathLabel.Location = new Point(12, 0);
             operationPathLabel.Name = "operationPathLabel";
-            operationPathLabel.Size = new Size(1220, 42);
+            operationPathLabel.Size = new Size(976, 34);
             operationPathLabel.TabIndex = 1;
             operationPathLabel.Text = "日志保存位置：";
             operationPathLabel.TextAlign = ContentAlignment.MiddleLeft;
-            // 
-            // operationFolderButton
-            // 
-            operationFolderButton.BackColor = Color.White;
-            operationFolderButton.Cursor = Cursors.Hand;
-            operationFolderButton.Dock = DockStyle.Right;
-            operationFolderButton.FlatAppearance.BorderSize = 0;
-            operationFolderButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(241, 245, 249);
-            operationFolderButton.FlatStyle = FlatStyle.Flat;
-            operationFolderButton.ForeColor = Color.FromArgb(71, 85, 105);
-            operationFolderButton.Location = new Point(1235, 0);
-            operationFolderButton.Margin = new Padding(4, 4, 4, 4);
-            operationFolderButton.Name = "operationFolderButton";
-            operationFolderButton.Size = new Size(130, 42);
-            operationFolderButton.TabIndex = 2;
-            operationFolderButton.Text = "打开日志目录";
-            operationFolderButton.UseVisualStyleBackColor = false;
-            operationFolderButton.Click += OpenOperationFolderButton_Click;
-            // 
-            // adsStatusLabel
-            // 
-            adsStatusLabel.Dock = DockStyle.Top;
-            adsStatusLabel.Font = new Font("Microsoft YaHei UI", 10.8F, FontStyle.Bold, GraphicsUnit.Point, 134);
-            adsStatusLabel.ForeColor = Color.FromArgb(154, 52, 18);
-            adsStatusLabel.Location = new Point(15, 8);
-            adsStatusLabel.Margin = new Padding(4, 0, 4, 0);
-            adsStatusLabel.Name = "adsStatusLabel";
-            adsStatusLabel.Size = new Size(387, 31);
-            adsStatusLabel.TabIndex = 0;
-            adsStatusLabel.Text = "● ADS：手动未连接 / 监控未连接";
-            adsStatusLabel.TextAlign = ContentAlignment.MiddleRight;
-            // 
-            // Mainpage
-            // 
-            AutoScaleDimensions = new SizeF(120F, 120F);
-            AutoScaleMode = AutoScaleMode.Dpi;
-            BackColor = Color.FromArgb(241, 245, 249);
-            ClientSize = new Size(1600, 1025);
-            Controls.Add(contentPanel);
-            Controls.Add(panel2);
-            Controls.Add(panel1);
-            Font = new Font("Microsoft YaHei UI", 9F);
+            //
+            operationMessageColumn.Name = "operationMessageColumn";
+            operationMessageColumn.SortMode = DataGridViewColumnSortMode.NotSortable;
+            //
+            // operationPathLabel
+            //
             ForeColor = Color.FromArgb(15, 23, 42);
-            Margin = new Padding(4, 4, 4, 4);
-            MinimumSize = new Size(1346, 888);
+            Font = new Font("Microsoft YaHei UI", 9F);
+            AutoScaleDimensions = new SizeF(96F, 96F);
+            AutoScaleMode = AutoScaleMode.Dpi;
+            ClientSize = new Size(1280, 820);
+            MinimumSize = new Size(1080, 720);
+            panel2.AutoScroll = true;
+            panel2.AutoScrollMinSize = new Size(0, 580);
+            analysisButton.Name = "analysisButton";
+            analysisButton.Text = "波浪分析";
+            analysisButton.Location = new Point(12, 386);
+            analysisButton.Size = new Size(145, 44);
+            analysisButton.Padding = new Padding(12, 0, 0, 0);
+            analysisButton.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
+            analysisButton.Cursor = Cursors.Hand;
+            analysisButton.FlatStyle = FlatStyle.Flat;
+            analysisButton.FlatAppearance.BorderSize = 1;
+            analysisButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
+            analysisButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(219, 234, 254);
+            analysisButton.FlatAppearance.MouseDownBackColor = Color.FromArgb(226, 232, 240);
+            analysisButton.TextAlign = ContentAlignment.MiddleLeft;
+            analysisButton.UseVisualStyleBackColor = false;
+            analysisButton.BackColor = Color.White;
+            analysisButton.ForeColor = Color.FromArgb(15, 23, 42);
+            analysisButton.Click += AnalysisButton_Click;
+            correctionButton.Name = "correctionButton";
+            correctionButton.Text = "信号修正";
+            correctionButton.Location = new Point(12, 436);
+            correctionButton.Size = new Size(145, 44);
+            correctionButton.Padding = new Padding(12, 0, 0, 0);
+            correctionButton.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
+            correctionButton.Cursor = Cursors.Hand;
+            correctionButton.FlatStyle = FlatStyle.Flat;
+            correctionButton.FlatAppearance.BorderSize = 1;
+            correctionButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
+            correctionButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(219, 234, 254);
+            correctionButton.FlatAppearance.MouseDownBackColor = Color.FromArgb(226, 232, 240);
+            correctionButton.TextAlign = ContentAlignment.MiddleLeft;
+            correctionButton.UseVisualStyleBackColor = false;
+            correctionButton.BackColor = Color.White;
+            correctionButton.ForeColor = Color.FromArgb(15, 23, 42);
+            correctionButton.Click += CorrectionButton_Click;
+            Controls.Add(contentPanel);
+            correctionButton.Location = new Point(12, 436);
+            correctionButton.Size = new Size(145, 44);
+            correctionButton.Padding = new Padding(12, 0, 0, 0);
+            correctionButton.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
+            correctionButton.Cursor = Cursors.Hand;
+            correctionButton.FlatStyle = FlatStyle.Flat;
+            correctionButton.FlatAppearance.BorderSize = 1;
+            correctionButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
+            correctionButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(219, 234, 254);
+            correctionButton.FlatAppearance.MouseDownBackColor = Color.FromArgb(226, 232, 240);
+            correctionButton.TextAlign = ContentAlignment.MiddleLeft;
+            correctionButton.UseVisualStyleBackColor = false;
+            correctionButton.BackColor = Color.White;
+            correctionButton.ForeColor = Color.FromArgb(15, 23, 42);
+            correctionButton.Click += CorrectionButton_Click;
+            Controls.Add(contentSplit);
+            contentPanel.ResumeLayout(false);
             Name = "Mainpage";
             ShowIcon = false;
             StartPosition = FormStartPosition.CenterScreen;
@@ -476,6 +533,12 @@
             panel2.ResumeLayout(false);
             contentPanel.ResumeLayout(false);
             operationGroup.ResumeLayout(false);
+            operationHeader.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)operationList).EndInit();
+            contentSplit.Panel1.ResumeLayout(false);
+            contentSplit.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)contentSplit).EndInit();
+            contentSplit.ResumeLayout(false);
             ResumeLayout(false);
         }
 
