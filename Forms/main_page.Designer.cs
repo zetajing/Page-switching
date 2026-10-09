@@ -52,26 +52,13 @@
             Bu_Calibration = new Button();
             Bu_manual = new Button();
             Bu_auto = new Button();
-            contentSplit = new SplitContainer();
+            contentPanel = new Panel();
             operationGroup = new Panel();
-            operationList = new DataGridView();
-            operationTimeColumn = new DataGridViewTextBoxColumn();
-            operationPageColumn = new DataGridViewTextBoxColumn();
-            operationMessageColumn = new DataGridViewTextBoxColumn();
-            operationHeader = new Panel();
-            operationTitle = new Label();
-            operationCopyButton = new Button();
             operationFolderButton = new Button();
-            operationAutoScroll = new CheckBox();
             operationPathLabel = new Label();
             navigationMarker = new Panel();
             panelswitch = new Panel();
-            ((System.ComponentModel.ISupportInitialize)contentSplit).BeginInit();
-            contentSplit.Panel1.SuspendLayout();
-            contentSplit.Panel2.SuspendLayout();
-            contentSplit.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)operationList).BeginInit();
-            operationHeader.SuspendLayout();
+            contentPanel.SuspendLayout();
             panel1.SuspendLayout();
             headerStatusPanel.SuspendLayout();
             panel2.SuspendLayout();
@@ -355,25 +342,19 @@
             panelswitch.Dock = DockStyle.Fill;
             panelswitch.Location = new Point(0, 0);
             panelswitch.Name = "panelswitch";
-            panelswitch.Size = new Size(1104, 608);
+            panelswitch.Size = new Size(1104, 726);
             panelswitch.TabIndex = 2;
             //
-            // contentSplit
+            // contentPanel：主页面占满剩余空间，底部仅保留日志位置栏。
             //
-            contentSplit.BackColor = Color.FromArgb(241, 245, 249);
-            contentSplit.Dock = DockStyle.Fill;
-            contentSplit.FixedPanel = FixedPanel.Panel2;
-            contentSplit.Location = new Point(176, 60);
-            contentSplit.Name = "contentSplit";
-            contentSplit.Orientation = Orientation.Horizontal;
-            contentSplit.Panel1.Controls.Add(panelswitch);
-            contentSplit.Panel2.Controls.Add(operationGroup);
-            contentSplit.Size = new Size(1104, 760);
-            contentSplit.Panel1MinSize = 380;
-            contentSplit.Panel2MinSize = 120;
-            contentSplit.SplitterDistance = 608;
-            contentSplit.SplitterWidth = 6;
-            contentSplit.TabIndex = 2;
+            contentPanel.BackColor = Color.FromArgb(241, 245, 249);
+            contentPanel.Controls.Add(panelswitch);
+            contentPanel.Controls.Add(operationGroup);
+            contentPanel.Dock = DockStyle.Fill;
+            contentPanel.Location = new Point(176, 60);
+            contentPanel.Name = "contentPanel";
+            contentPanel.Size = new Size(1104, 760);
+            contentPanel.TabIndex = 2;
             //
             // navigationMarker
             //
@@ -386,59 +367,15 @@
             // operationGroup
             //
             operationGroup.BackColor = Color.White;
-            operationGroup.Controls.Add(operationList);
             operationGroup.Controls.Add(operationPathLabel);
-            operationGroup.Controls.Add(operationHeader);
-            operationGroup.Dock = DockStyle.Fill;
+            operationGroup.Controls.Add(operationFolderButton);
+            operationGroup.Dock = DockStyle.Bottom;
             operationGroup.ForeColor = Color.FromArgb(15, 23, 42);
-            operationGroup.Location = new Point(0, 0);
+            operationGroup.Location = new Point(0, 726);
             operationGroup.Name = "operationGroup";
-            operationGroup.Padding = new Padding(12, 0, 12, 4);
-            operationGroup.Size = new Size(1104, 146);
+            operationGroup.Padding = new Padding(12, 0, 12, 0);
+            operationGroup.Size = new Size(1104, 34);
             operationGroup.TabIndex = 3;
-            //
-            // operationHeader
-            //
-            operationHeader.Controls.Add(operationTitle);
-            operationHeader.Controls.Add(operationAutoScroll);
-            operationHeader.Controls.Add(operationCopyButton);
-            operationHeader.Controls.Add(operationFolderButton);
-            operationHeader.Dock = DockStyle.Top;
-            operationHeader.Name = "operationHeader";
-            operationHeader.Size = new Size(1080, 34);
-            //
-            // operationTitle
-            //
-            operationTitle.Dock = DockStyle.Fill;
-            operationTitle.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
-            operationTitle.Name = "operationTitle";
-            operationTitle.Text = "操作记录（拖动上沿调整高度）";
-            operationTitle.TextAlign = ContentAlignment.MiddleLeft;
-            //
-            // operationAutoScroll
-            //
-            operationAutoScroll.Checked = true;
-            operationAutoScroll.CheckState = CheckState.Checked;
-            operationAutoScroll.Dock = DockStyle.Right;
-            operationAutoScroll.Name = "operationAutoScroll";
-            operationAutoScroll.Size = new Size(92, 34);
-            operationAutoScroll.Text = "自动滚动";
-            operationAutoScroll.CheckedChanged += OperationAutoScroll_CheckedChanged;
-            //
-            // operationCopyButton
-            //
-            operationCopyButton.BackColor = Color.White;
-            operationCopyButton.Dock = DockStyle.Right;
-            operationCopyButton.FlatAppearance.BorderSize = 0;
-            operationCopyButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(241, 245, 249);
-            operationCopyButton.FlatStyle = FlatStyle.Flat;
-            operationCopyButton.ForeColor = Color.FromArgb(71, 85, 105);
-            operationCopyButton.Name = "operationCopyButton";
-            operationCopyButton.Cursor = Cursors.Hand;
-            operationCopyButton.Size = new Size(92, 34);
-            operationCopyButton.Text = "复制选中";
-            operationCopyButton.UseVisualStyleBackColor = false;
-            operationCopyButton.Click += CopyOperationButton_Click;
             //
             // operationFolderButton
             //
@@ -455,64 +392,19 @@
             operationFolderButton.UseVisualStyleBackColor = false;
             operationFolderButton.Click += OpenOperationFolderButton_Click;
             //
-            // operationList
-            //
-            operationList.AllowUserToAddRows = false;
-            operationList.AllowUserToDeleteRows = false;
-            operationList.AllowUserToResizeRows = false;
-            operationList.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-            operationList.BackgroundColor = Color.White;
-            operationList.BorderStyle = BorderStyle.None;
-            operationList.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
-            operationList.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
-            operationList.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(248, 250, 252);
-            operationList.ColumnHeadersDefaultCellStyle.ForeColor = Color.FromArgb(71, 85, 105);
-            operationList.ColumnHeadersHeight = 28;
-            operationList.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            operationList.Columns.AddRange(operationTimeColumn, operationPageColumn, operationMessageColumn);
-            operationList.DefaultCellStyle.SelectionBackColor = Color.FromArgb(219, 234, 254);
-            operationList.DefaultCellStyle.SelectionForeColor = Color.FromArgb(15, 23, 42);
-            operationList.Dock = DockStyle.Fill;
-            operationList.EnableHeadersVisualStyles = false;
-            operationList.Font = new Font("Microsoft YaHei UI", 8.5F);
-            operationList.ForeColor = Color.FromArgb(15, 23, 42);
-            operationList.GridColor = Color.FromArgb(226, 232, 240);
-            operationList.Name = "operationList";
-            operationList.ColumnHeadersDefaultCellStyle.SelectionForeColor = Color.FromArgb(71, 85, 105);
-            operationList.ColumnHeadersDefaultCellStyle.SelectionBackColor = Color.FromArgb(248, 250, 252);
-            operationList.ReadOnly = true;
-            operationList.RowHeadersVisible = false;
-            operationList.RowTemplate.Height = 26;
-            operationList.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            operationList.Size = new Size(1080, 85);
-            operationList.TabIndex = 0;
-            operationTimeColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
-            operationTimeColumn.HeaderText = "时间";
-            operationTimeColumn.Name = "operationTimeColumn";
-            operationTimeColumn.SortMode = DataGridViewColumnSortMode.NotSortable;
-            operationTimeColumn.Width = 185;
-            operationPageColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
-            operationPageColumn.HeaderText = "页面";
-            operationPageColumn.Name = "operationPageColumn";
-            operationPageColumn.SortMode = DataGridViewColumnSortMode.NotSortable;
-            operationPageColumn.Width = 105;
-            operationMessageColumn.HeaderText = "操作与结果";
-            operationMessageColumn.Name = "operationMessageColumn";
-            operationMessageColumn.SortMode = DataGridViewColumnSortMode.NotSortable;
-            //
             // operationPathLabel
             //
-            operationPathLabel.Dock = DockStyle.Bottom;
+            operationPathLabel.Dock = DockStyle.Fill;
             operationPathLabel.AutoEllipsis = true;
             operationPathLabel.Font = new Font("Microsoft YaHei UI", 8F);
             operationPathLabel.ForeColor = Color.FromArgb(71, 85, 105);
-            operationPathLabel.Location = new Point(10, 122);
+            operationPathLabel.Location = new Point(12, 0);
             operationPathLabel.Name = "operationPathLabel";
-            operationPathLabel.Size = new Size(1080, 23);
+            operationPathLabel.Size = new Size(976, 34);
             operationPathLabel.TabIndex = 1;
             operationPathLabel.Text = "日志保存位置：";
             operationPathLabel.TextAlign = ContentAlignment.MiddleLeft;
-            // 
+            //
             // Mainpage
             // 
             BackColor = Color.FromArgb(241, 245, 249);
@@ -558,7 +450,7 @@
             correctionButton.BackColor = Color.White;
             correctionButton.ForeColor = Color.FromArgb(15, 23, 42);
             correctionButton.Click += CorrectionButton_Click;
-            Controls.Add(contentSplit);
+            Controls.Add(contentPanel);
             Controls.Add(panel2);
             Controls.Add(panel1);
             FormBorderStyle = FormBorderStyle.Sizable;
@@ -573,12 +465,7 @@
             headerStatusPanel.ResumeLayout(false);
             panel2.ResumeLayout(false);
             operationGroup.ResumeLayout(false);
-            operationHeader.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)operationList).EndInit();
-            contentSplit.Panel1.ResumeLayout(false);
-            contentSplit.Panel2.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)contentSplit).EndInit();
-            contentSplit.ResumeLayout(false);
+            contentPanel.ResumeLayout(false);
             ResumeLayout(false);
         }
 
@@ -590,17 +477,9 @@
         private Panel headerStatusPanel;
         private Panel panel2;
         private Panel panelswitch;
-        private SplitContainer contentSplit;
+        private Panel contentPanel;
         private Panel operationGroup;
-        private DataGridView operationList;
-        private DataGridViewTextBoxColumn operationTimeColumn;
-        private DataGridViewTextBoxColumn operationPageColumn;
-        private DataGridViewTextBoxColumn operationMessageColumn;
-        private Panel operationHeader;
-        private Label operationTitle;
-        private Button operationCopyButton;
         private Button operationFolderButton;
-        private CheckBox operationAutoScroll;
         private Panel navigationMarker;
         private Label operationPathLabel;
         private Button Bu_Calibration;
