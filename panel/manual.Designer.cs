@@ -186,8 +186,8 @@ namespace Page_switching
             rootLayout.ColumnCount = 1;
             rootLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
             rootLayout.Controls.Add(headerPanel, 0, 0);
-            rootLayout.Controls.Add(globalActionsPanel, 0, 2);
-            rootLayout.Controls.Add(contentLayout, 0, 1);
+            rootLayout.Controls.Add(globalActionsPanel, 0, 1);
+            rootLayout.Controls.Add(contentLayout, 0, 2);
             rootLayout.Dock = DockStyle.Fill;
             rootLayout.Location = new Point(0, 0);
             rootLayout.Margin = new Padding(2);
@@ -195,8 +195,8 @@ namespace Page_switching
             rootLayout.Padding = new Padding(20);
             rootLayout.RowCount = 3;
             rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 60F));
-            rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 88F));
+            rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             rootLayout.Size = new Size(1380, 780);
             rootLayout.TabIndex = 0;
             // 
@@ -246,11 +246,11 @@ namespace Page_switching
             globalActionsPanel.Controls.Add(resetAlarmButton);
             globalActionsPanel.Controls.Add(homeAllButton);
             globalActionsPanel.Controls.Add(stopAllButton);
-            // 全轴按钮行整体贴右下角，按钮本身保持固定尺寸，不随边缘拉伸。
-            globalActionsPanel.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            // 全轴按钮行置于页面顶部，按钮本身保持固定尺寸，不随窗口拉伸。
+            globalActionsPanel.Anchor = AnchorStyles.Top | AnchorStyles.Left;
             globalActionsPanel.AutoSize = true;
             globalActionsPanel.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            globalActionsPanel.Location = new Point(362, 696);
+            globalActionsPanel.Location = new Point(20, 92);
             globalActionsPanel.Margin = new Padding(0, 12, 0, 0);
             globalActionsPanel.Name = "globalActionsPanel";
             globalActionsPanel.Padding = new Padding(0);
@@ -352,7 +352,7 @@ namespace Page_switching
             contentLayout.Controls.Add(overviewGroup, 0, 0);
             contentLayout.Controls.Add(controlGroup, 1, 0);
             contentLayout.Dock = DockStyle.Fill;
-            contentLayout.Location = new Point(22, 82);
+            contentLayout.Location = new Point(22, 170);
             contentLayout.Margin = new Padding(2);
             contentLayout.MinimumSize = new Size(1025, 525);
             contentLayout.Name = "contentLayout";

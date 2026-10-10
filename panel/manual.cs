@@ -81,7 +81,7 @@ namespace Page_switching
 
         protected override void OnLayout(LayoutEventArgs e)
         {
-            // 最小画布已随 Designer 的 DPI 缩放，缩小窗口后可滚动到右下角停止按钮。
+            // 最小画布已随 Designer 的 DPI 缩放，缩小窗口后可滚动到全部停止按钮。
             if (pagePanel != null && AutoScrollMinSize != pagePanel.MinimumSize)
                 AutoScrollMinSize = pagePanel.MinimumSize;
             base.OnLayout(e);
