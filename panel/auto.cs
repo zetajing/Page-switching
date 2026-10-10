@@ -57,7 +57,7 @@ namespace Page_switching
             {
                 var minimum = (int)Math.Round(metric.MinimumWidth * scale);
                 if (metric.Column.MinimumWidth != minimum) metric.Column.MinimumWidth = minimum;
-                if (metric.Column.AutoSizeMode != DataGridViewAutoSizeColumnMode.Fill)
+                if (metric.Column != positionColumn && metric.Column != speedColumn)
                 {
                     var width = (int)Math.Round(metric.Width * scale);
                     if (metric.Column.Width != width) metric.Column.Width = width;
@@ -69,6 +69,23 @@ namespace Page_switching
             axisGrid.RowTemplate.Height = rowHeight;
             foreach (DataGridViewRow row in axisGrid.Rows)
                 if (row.Height != rowHeight) row.Height = rowHeight;
+            FitAxisGridColumns();
+        }
+
+        private void AxisGrid_SizeChanged(object? sender, EventArgs e) => FitAxisGridColumns();
+
+        private void FitAxisGridColumns()
+        {
+            if (IsDesignSurface || _axisColumnMetrics is null) return;
+            // 数值列按实际空间均分，避免缩放后自动 Fill 沿用旧宽度而挤出右侧信号列。
+            var available = Math.Max(0, axisGrid.ClientSize.Width
+                - axisGrid.Columns.Cast<DataGridViewColumn>()
+                    .Where(column => column != positionColumn && column != speedColumn)
+                    .Sum(column => column.Width));
+            var positionWidth = Math.Max(positionColumn.MinimumWidth, (available + 1) / 2);
+            var speedWidth = Math.Max(speedColumn.MinimumWidth, available / 2);
+            if (positionColumn.Width != positionWidth) positionColumn.Width = positionWidth;
+            if (speedColumn.Width != speedWidth) speedColumn.Width = speedWidth;
         }
 
         public void AddLog(string message)
@@ -322,12 +339,14 @@ namespace Page_switching
         private void UpdateScrollCanvas()
         {
             if (IsDesignSurface || _minimumPageHeight <= 0 || logGroup is null) return;
-            // 右下角位置由 Designer 的 Bottom/Right 锚定负责，运行时只扩展最小画布。
+            // 左侧进度区域与右侧反馈/消息由 Designer 分栏，最小画布保证缩小时可滚动。
             var scale = DeviceDpi / 96F;
             var contentHeight = rootLayout.Padding.Vertical + pagePanel.Padding.Vertical
                 + rootLayout.RowStyles.Cast<RowStyle>().Where(row => row.SizeType == SizeType.Absolute)
                     .Sum(row => row.Height)
-                + logGroup.Height + rootLayout.Padding.Bottom + (float)Math.Round(12 * scale);
+                + rightLayout.RowStyles.Cast<RowStyle>().Where(row => row.SizeType == SizeType.Absolute)
+                    .Sum(row => row.Height)
+                + (float)Math.Round(12 * scale);
             var minimumSize = new Size(pagePanel.MinimumSize.Width,
                 (int)Math.Ceiling(Math.Max(_minimumPageHeight * scale, contentHeight)));
             if (pagePanel.MinimumSize != minimumSize) pagePanel.MinimumSize = minimumSize;

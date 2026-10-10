@@ -28,6 +28,10 @@ namespace Page_switching
         private Label connectionLabel;
         private Label feedbackLabel;
         private Label heartbeatLabel;
+        private TableLayoutPanel bodyLayout;
+        private GroupBox progressGroup;
+        private Label progressPlaceholderLabel;
+        private TableLayoutPanel rightLayout;
         private GroupBox axisGroup;
         private AxisFeedbackGrid axisGrid;
         private DataGridViewTextBoxColumn axisNumberColumn;
@@ -85,6 +89,10 @@ namespace Page_switching
             connectionLabel = new Label();
             feedbackLabel = new Label();
             heartbeatLabel = new Label();
+            bodyLayout = new TableLayoutPanel();
+            progressGroup = new GroupBox();
+            progressPlaceholderLabel = new Label();
+            rightLayout = new TableLayoutPanel();
             axisGroup = new GroupBox();
             axisGrid = new AxisFeedbackGrid();
             axisNumberColumn = new DataGridViewTextBoxColumn();
@@ -114,6 +122,9 @@ namespace Page_switching
             waveCard.SuspendLayout();
             waveCardLayout.SuspendLayout();
             monitorInfoLayout.SuspendLayout();
+            bodyLayout.SuspendLayout();
+            progressGroup.SuspendLayout();
+            rightLayout.SuspendLayout();
             axisGroup.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)axisGrid).BeginInit();
             logGroup.SuspendLayout();
@@ -123,11 +134,10 @@ namespace Page_switching
             //
             // pagePanel
             //
-            pagePanel.Controls.Add(logGroup);
             pagePanel.Controls.Add(rootLayout);
             pagePanel.Dock = DockStyle.Fill;
             pagePanel.Location = new Point(0, 0);
-            pagePanel.MinimumSize = new Size(900, 724);
+            pagePanel.MinimumSize = new Size(1004, 724);
             pagePanel.Name = "pagePanel";
             pagePanel.Size = new Size(1104, 740);
             pagePanel.TabIndex = 0;
@@ -140,19 +150,18 @@ namespace Page_switching
             rootLayout.Controls.Add(headerPanel, 0, 0);
             rootLayout.Controls.Add(cardsLayout, 0, 1);
             rootLayout.Controls.Add(monitorInfoLayout, 0, 2);
-            rootLayout.Controls.Add(axisGroup, 0, 3);
-            rootLayout.Dock = DockStyle.Top;
+            rootLayout.Controls.Add(bodyLayout, 0, 3);
+            rootLayout.Dock = DockStyle.Fill;
             rootLayout.Location = new Point(0, 0);
             rootLayout.Margin = new Padding(0);
             rootLayout.Name = "rootLayout";
             rootLayout.Padding = new Padding(16);
-            rootLayout.RowCount = 5;
+            rootLayout.RowCount = 4;
             rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 56F));
             rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 88F));
             rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
-            rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 190F));
             rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            rootLayout.Size = new Size(1104, 398);
+            rootLayout.Size = new Size(1104, 740);
             rootLayout.TabIndex = 0;
             //
             // headerPanel
@@ -483,6 +492,64 @@ namespace Page_switching
             heartbeatLabel.Text = "心跳：--";
             heartbeatLabel.TextAlign = ContentAlignment.MiddleLeft;
             //
+            // bodyLayout
+            //
+            bodyLayout.ColumnCount = 2;
+            bodyLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            bodyLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 680F));
+            bodyLayout.Controls.Add(progressGroup, 0, 0);
+            bodyLayout.Controls.Add(rightLayout, 1, 0);
+            bodyLayout.Dock = DockStyle.Fill;
+            bodyLayout.Location = new Point(16, 192);
+            bodyLayout.Margin = new Padding(0);
+            bodyLayout.Name = "bodyLayout";
+            bodyLayout.RowCount = 1;
+            bodyLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            bodyLayout.Size = new Size(1072, 532);
+            bodyLayout.TabIndex = 3;
+            //
+            // progressGroup
+            //
+            progressGroup.BackColor = Color.White;
+            progressGroup.Controls.Add(progressPlaceholderLabel);
+            progressGroup.Dock = DockStyle.Fill;
+            progressGroup.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
+            progressGroup.ForeColor = Color.FromArgb(15, 23, 42);
+            progressGroup.Margin = new Padding(0, 0, 12, 0);
+            progressGroup.Name = "progressGroup";
+            progressGroup.Padding = new Padding(14, 18, 14, 12);
+            progressGroup.Size = new Size(380, 532);
+            progressGroup.TabIndex = 0;
+            progressGroup.TabStop = false;
+            progressGroup.Text = "造波进度";
+            //
+            // progressPlaceholderLabel
+            //
+            progressPlaceholderLabel.Dock = DockStyle.Fill;
+            progressPlaceholderLabel.Font = new Font("Microsoft YaHei UI", 9F);
+            progressPlaceholderLabel.ForeColor = Color.FromArgb(100, 116, 139);
+            progressPlaceholderLabel.Name = "progressPlaceholderLabel";
+            progressPlaceholderLabel.Text = "造波进度显示区域";
+            progressPlaceholderLabel.TextAlign = ContentAlignment.MiddleCenter;
+            progressPlaceholderLabel.TabIndex = 0;
+            //
+            // rightLayout
+            //
+            rightLayout.ColumnCount = 1;
+            rightLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            rightLayout.Controls.Add(axisGroup, 0, 0);
+            rightLayout.Controls.Add(logGroup, 0, 2);
+            rightLayout.Dock = DockStyle.Fill;
+            rightLayout.Location = new Point(392, 0);
+            rightLayout.Margin = new Padding(0);
+            rightLayout.Name = "rightLayout";
+            rightLayout.RowCount = 3;
+            rightLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 190F));
+            rightLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            rightLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 296F));
+            rightLayout.Size = new Size(680, 532);
+            rightLayout.TabIndex = 1;
+            //
             // axisGroup
             //
             axisGroup.BackColor = Color.White;
@@ -490,11 +557,11 @@ namespace Page_switching
             axisGroup.Dock = DockStyle.Fill;
             axisGroup.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
             axisGroup.ForeColor = Color.FromArgb(15, 23, 42);
-            axisGroup.Location = new Point(16, 192);
+            axisGroup.Location = new Point(0, 0);
             axisGroup.Margin = new Padding(0);
             axisGroup.Name = "axisGroup";
             axisGroup.Padding = new Padding(14, 18, 14, 12);
-            axisGroup.Size = new Size(1072, 190);
+            axisGroup.Size = new Size(680, 190);
             axisGroup.TabIndex = 3;
             axisGroup.TabStop = false;
             axisGroup.Text = "四轴反馈";
@@ -505,7 +572,7 @@ namespace Page_switching
             axisGrid.AllowUserToDeleteRows = false;
             axisGrid.AllowUserToResizeColumns = false;
             axisGrid.AllowUserToResizeRows = false;
-            axisGrid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            axisGrid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None;
             axisGrid.BackgroundColor = Color.White;
             axisGrid.BorderStyle = BorderStyle.None;
             axisGrid.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
@@ -542,9 +609,10 @@ namespace Page_switching
             axisGrid.RowTemplate.Height = 28;
             axisGrid.ScrollBars = ScrollBars.None;
             axisGrid.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            axisGrid.Size = new Size(1044, 144);
+            axisGrid.Size = new Size(652, 144);
             axisGrid.TabIndex = 0;
             axisGrid.TabStop = false;
+            axisGrid.SizeChanged += AxisGrid_SizeChanged;
             //
             // axisNumberColumn
             //
@@ -558,7 +626,7 @@ namespace Page_switching
             //
             // positionColumn
             //
-            positionColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            positionColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
             dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleRight;
             positionColumn.DefaultCellStyle = dataGridViewCellStyle2;
             positionColumn.HeaderText = "位置反馈";
@@ -569,7 +637,7 @@ namespace Page_switching
             //
             // speedColumn
             //
-            speedColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            speedColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
             dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleRight;
             speedColumn.DefaultCellStyle = dataGridViewCellStyle3;
             speedColumn.HeaderText = "速度反馈";
@@ -632,14 +700,14 @@ namespace Page_switching
             //
             logGroup.BackColor = Color.White;
             logGroup.Controls.Add(logLayout);
-            logGroup.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            logGroup.Dock = DockStyle.Fill;
             logGroup.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
             logGroup.ForeColor = Color.FromArgb(15, 23, 42);
-            logGroup.Location = new Point(488, 428);
-            logGroup.Margin = new Padding(0, 4, 0, 0);
+            logGroup.Location = new Point(0, 236);
+            logGroup.Margin = new Padding(0);
             logGroup.Name = "logGroup";
             logGroup.Padding = new Padding(14, 18, 14, 12);
-            logGroup.Size = new Size(600, 296);
+            logGroup.Size = new Size(680, 296);
             logGroup.TabIndex = 4;
             logGroup.TabStop = false;
             logGroup.Text = "运行消息";
@@ -659,7 +727,7 @@ namespace Page_switching
             logLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
             logLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             logLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 38F));
-            logLayout.Size = new Size(572, 250);
+            logLayout.Size = new Size(652, 250);
             logLayout.TabIndex = 0;
             //
             // messageHeader
@@ -674,7 +742,7 @@ namespace Page_switching
             messageHeader.Name = "messageHeader";
             messageHeader.RowCount = 1;
             messageHeader.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            messageHeader.Size = new Size(572, 32);
+            messageHeader.Size = new Size(652, 32);
             messageHeader.TabIndex = 0;
             //
             // messageCountLabel
@@ -711,7 +779,7 @@ namespace Page_switching
             _logList.ItemHeight = 17;
             _logList.Location = new Point(3, 3);
             _logList.Name = "_logList";
-            _logList.Size = new Size(566, 174);
+            _logList.Size = new Size(646, 174);
             _logList.TabIndex = 1;
             //
             // clearLogButton
@@ -739,7 +807,7 @@ namespace Page_switching
             AutoScaleDimensions = new SizeF(96F, 96F);
             AutoScaleMode = AutoScaleMode.Dpi;
             AutoScroll = true;
-            AutoScrollMinSize = new Size(900, 724);
+            AutoScrollMinSize = new Size(1004, 724);
             BackColor = Color.FromArgb(241, 245, 249);
             Controls.Add(pagePanel);
             Font = new Font("Microsoft YaHei UI", 9F);
@@ -757,6 +825,9 @@ namespace Page_switching
             waveCard.ResumeLayout(false);
             waveCardLayout.ResumeLayout(false);
             monitorInfoLayout.ResumeLayout(false);
+            bodyLayout.ResumeLayout(false);
+            progressGroup.ResumeLayout(false);
+            rightLayout.ResumeLayout(false);
             axisGroup.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)axisGrid).EndInit();
             logGroup.ResumeLayout(false);
