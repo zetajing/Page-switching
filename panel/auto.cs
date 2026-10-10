@@ -9,11 +9,9 @@ namespace Page_switching
         private (DataGridViewColumn Column, int Width, int MinimumWidth)[]? _axisColumnMetrics;
         private int _axisHeaderHeight;
         private int _axisRowHeight;
-        private bool _messagesExpanded;
-        private float _collapsedMessagePanelHeight;
-        private float _collapsedPageHeight;
+        private float _minimumPageHeight;
 
-        // 设计器也会触发布局事件；编辑位置和行高时不执行运行时折叠逻辑。
+        // 设计器也会触发布局事件；编辑位置和行高时不执行运行时滚动逻辑。
         private bool IsDesignSurface => LicenseManager.UsageMode == LicenseUsageMode.Designtime
             || DesignMode || Site?.DesignMode == true;
 
@@ -22,8 +20,7 @@ namespace Page_switching
             InitializeComponent();
             // InitializeComponent 已应用当前 DPI，先还原为逻辑基线，避免再次放大。
             var scale = DeviceDpi / 96F;
-            _collapsedMessagePanelHeight = logGroup.Height / scale;
-            _collapsedPageHeight = pagePanel.MinimumSize.Height / scale;
+            _minimumPageHeight = pagePanel.MinimumSize.Height / scale;
             // 保存 Designer 的逻辑尺寸，每次 DPI 改变都从基线计算，避免重复放大。
             _axisColumnMetrics = axisGrid.Columns.Cast<DataGridViewColumn>()
                 .Select(column => (column, column.Width, column.MinimumWidth)).ToArray();
@@ -44,7 +41,7 @@ namespace Page_switching
                 base.OnLayout(e);
                 return;
             }
-            UpdateMessageLayout();
+            UpdateScrollCanvas();
             // Dock.Fill 子项不会自动扩展滚动范围，使用已随 DPI 缩放的最小画布。
             if (pagePanel != null && AutoScrollMinSize != pagePanel.MinimumSize)
                 AutoScrollMinSize = pagePanel.MinimumSize;
@@ -322,39 +319,17 @@ namespace Page_switching
             messageToolTip.SetToolTip(messageSummaryLabel, latest);
         }
 
-        private void MessageToggleButton_Click(object? sender, EventArgs e)
+        private void UpdateScrollCanvas()
         {
-            _messagesExpanded = !_messagesExpanded;
-            SuspendLayout();
-            logLayout.SuspendLayout();
-            _logList.Visible = _messagesExpanded;
-            clearLogButton.Visible = _messagesExpanded;
-            messageToggleButton.Text = _messagesExpanded ? "收起 ▲" : "展开 ▼";
-            UpdateMessageLayout();
-            logLayout.ResumeLayout(true);
-            ResumeLayout(true);
-            // 隐藏的列表首次显示会重建滚动位置，展开后重新定位到最新记录。
-            if (_messagesExpanded) _logList.TopIndex = Math.Max(0, _logList.Items.Count - 1);
-        }
-
-        private void UpdateMessageLayout()
-        {
-            if (IsDesignSurface || _collapsedMessagePanelHeight <= 0 || logLayout is null) return;
-            // 消息区域直接放在 pagePanel；位置和横向锚定完全由 Designer 保存。
+            if (IsDesignSurface || _minimumPageHeight <= 0 || logGroup is null) return;
+            // 右下角位置由 Designer 的 Bottom/Right 锚定负责，运行时只扩展最小画布。
             var scale = DeviceDpi / 96F;
-            var extraHeight = _messagesExpanded ? 180 + 38 : 0;
-            // 只向下展开，不重新设置 Top/Location，也不依赖表格的行高。
-            var height = (int)Math.Round((_collapsedMessagePanelHeight + extraHeight) * scale);
-            if (logGroup.Height != height) logGroup.Height = height;
-            logLayout.RowStyles[1].Height = _messagesExpanded ? (float)Math.Round(180 * scale) : 0;
-            logLayout.RowStyles[2].Height = _messagesExpanded ? (float)Math.Round(38 * scale) : 0;
-            // 将固定位置和展开后的底边计入滚动画布，按钮始终可以滚动到。
             var contentHeight = rootLayout.Padding.Vertical + pagePanel.Padding.Vertical
                 + rootLayout.RowStyles.Cast<RowStyle>().Where(row => row.SizeType == SizeType.Absolute)
-                    .Sum(row => row.Height);
-            contentHeight = Math.Max(contentHeight, logGroup.Bottom + rootLayout.Padding.Bottom);
+                    .Sum(row => row.Height)
+                + logGroup.Height + rootLayout.Padding.Bottom + (float)Math.Round(12 * scale);
             var minimumSize = new Size(pagePanel.MinimumSize.Width,
-                (int)Math.Ceiling(Math.Max(_collapsedPageHeight * scale, contentHeight)));
+                (int)Math.Ceiling(Math.Max(_minimumPageHeight * scale, contentHeight)));
             if (pagePanel.MinimumSize != minimumSize) pagePanel.MinimumSize = minimumSize;
         }
 

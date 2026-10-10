@@ -43,7 +43,6 @@ namespace Page_switching
         private TableLayoutPanel messageHeader;
         private Label messageCountLabel;
         private Label messageSummaryLabel;
-        private Button messageToggleButton;
         private ToolTip messageToolTip;
         private ListBox _logList;
         private Button clearLogButton;
@@ -101,7 +100,6 @@ namespace Page_switching
             messageHeader = new TableLayoutPanel();
             messageCountLabel = new Label();
             messageSummaryLabel = new Label();
-            messageToggleButton = new Button();
             messageToolTip = new ToolTip(components);
             _logList = new ListBox();
             clearLogButton = new Button();
@@ -129,9 +127,9 @@ namespace Page_switching
             pagePanel.Controls.Add(rootLayout);
             pagePanel.Dock = DockStyle.Fill;
             pagePanel.Location = new Point(0, 0);
-            pagePanel.MinimumSize = new Size(900, 480);
+            pagePanel.MinimumSize = new Size(900, 724);
             pagePanel.Name = "pagePanel";
-            pagePanel.Size = new Size(1104, 606);
+            pagePanel.Size = new Size(1104, 740);
             pagePanel.TabIndex = 0;
             //
             // rootLayout
@@ -143,19 +141,18 @@ namespace Page_switching
             rootLayout.Controls.Add(cardsLayout, 0, 1);
             rootLayout.Controls.Add(monitorInfoLayout, 0, 2);
             rootLayout.Controls.Add(axisGroup, 0, 3);
-            rootLayout.Dock = DockStyle.Fill;
+            rootLayout.Dock = DockStyle.Top;
             rootLayout.Location = new Point(0, 0);
             rootLayout.Margin = new Padding(0);
             rootLayout.Name = "rootLayout";
             rootLayout.Padding = new Padding(16);
-            rootLayout.RowCount = 6;
+            rootLayout.RowCount = 5;
             rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 56F));
             rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 88F));
             rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
             rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 190F));
-            rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 82F));
             rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            rootLayout.Size = new Size(1104, 606);
+            rootLayout.Size = new Size(1104, 398);
             rootLayout.TabIndex = 0;
             //
             // headerPanel
@@ -635,14 +632,14 @@ namespace Page_switching
             //
             logGroup.BackColor = Color.White;
             logGroup.Controls.Add(logLayout);
-            logGroup.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            logGroup.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             logGroup.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
             logGroup.ForeColor = Color.FromArgb(15, 23, 42);
-            logGroup.Location = new Point(16, 386);
+            logGroup.Location = new Point(488, 428);
             logGroup.Margin = new Padding(0, 4, 0, 0);
             logGroup.Name = "logGroup";
             logGroup.Padding = new Padding(14, 18, 14, 12);
-            logGroup.Size = new Size(1072, 78);
+            logGroup.Size = new Size(600, 296);
             logGroup.TabIndex = 4;
             logGroup.TabStop = false;
             logGroup.Text = "运行消息";
@@ -660,26 +657,24 @@ namespace Page_switching
             logLayout.Name = "logLayout";
             logLayout.RowCount = 3;
             logLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
-            logLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 0F));
-            logLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 0F));
-            logLayout.Size = new Size(1044, 32);
+            logLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            logLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 38F));
+            logLayout.Size = new Size(572, 250);
             logLayout.TabIndex = 0;
             //
             // messageHeader
             //
-            messageHeader.ColumnCount = 3;
+            messageHeader.ColumnCount = 2;
             messageHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120F));
             messageHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            messageHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 88F));
             messageHeader.Controls.Add(messageCountLabel, 0, 0);
             messageHeader.Controls.Add(messageSummaryLabel, 1, 0);
-            messageHeader.Controls.Add(messageToggleButton, 2, 0);
             messageHeader.Dock = DockStyle.Fill;
             messageHeader.Margin = new Padding(0);
             messageHeader.Name = "messageHeader";
             messageHeader.RowCount = 1;
             messageHeader.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            messageHeader.Size = new Size(1044, 32);
+            messageHeader.Size = new Size(572, 32);
             messageHeader.TabIndex = 0;
             //
             // messageCountLabel
@@ -705,23 +700,6 @@ namespace Page_switching
             messageSummaryLabel.TextAlign = ContentAlignment.MiddleLeft;
             messageSummaryLabel.TabIndex = 1;
             //
-            // messageToggleButton
-            //
-            messageToggleButton.BackColor = Color.FromArgb(248, 250, 252);
-            messageToggleButton.Cursor = Cursors.Hand;
-            messageToggleButton.Dock = DockStyle.Fill;
-            messageToggleButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
-            messageToggleButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(226, 232, 240);
-            messageToggleButton.FlatStyle = FlatStyle.Flat;
-            messageToggleButton.Font = new Font("Microsoft YaHei UI", 9F);
-            messageToggleButton.ForeColor = Color.FromArgb(15, 23, 42);
-            messageToggleButton.Margin = new Padding(0);
-            messageToggleButton.Name = "messageToggleButton";
-            messageToggleButton.Text = "展开 ▼";
-            messageToggleButton.TabIndex = 2;
-            messageToggleButton.UseVisualStyleBackColor = false;
-            messageToggleButton.Click += MessageToggleButton_Click;
-            //
             // _logList
             //
             _logList.BackColor = Color.White;
@@ -729,12 +707,12 @@ namespace Page_switching
             _logList.Dock = DockStyle.Fill;
             _logList.Font = new Font("Microsoft YaHei UI", 9F);
             _logList.IntegralHeight = false;
+            _logList.HorizontalScrollbar = true;
             _logList.ItemHeight = 17;
             _logList.Location = new Point(3, 3);
             _logList.Name = "_logList";
-            _logList.Size = new Size(1038, 114);
+            _logList.Size = new Size(566, 174);
             _logList.TabIndex = 1;
-            _logList.Visible = false;
             //
             // clearLogButton
             //
@@ -752,7 +730,6 @@ namespace Page_switching
             clearLogButton.Name = "clearLogButton";
             clearLogButton.Size = new Size(114, 32);
             clearLogButton.TabIndex = 2;
-            clearLogButton.Visible = false;
             clearLogButton.Text = "清空本页消息";
             clearLogButton.UseVisualStyleBackColor = false;
             clearLogButton.Click += ClearLogButton_Click;
@@ -762,13 +739,13 @@ namespace Page_switching
             AutoScaleDimensions = new SizeF(96F, 96F);
             AutoScaleMode = AutoScaleMode.Dpi;
             AutoScroll = true;
-            AutoScrollMinSize = new Size(900, 480);
+            AutoScrollMinSize = new Size(900, 724);
             BackColor = Color.FromArgb(241, 245, 249);
             Controls.Add(pagePanel);
             Font = new Font("Microsoft YaHei UI", 9F);
             ForeColor = Color.FromArgb(15, 23, 42);
             Name = "Auto";
-            Size = new Size(1104, 606);
+            Size = new Size(1104, 740);
             pagePanel.ResumeLayout(false);
             rootLayout.ResumeLayout(false);
             headerPanel.ResumeLayout(false);
