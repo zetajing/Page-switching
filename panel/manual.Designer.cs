@@ -62,6 +62,8 @@ namespace Page_switching
         private Label jogSpeedCaptionLabel;
         private NumericUpDown jogSpeedInput;
         private Label jogSectionLabel;
+        private FlowLayoutPanel jogButtonsPanel;
+        private FlowLayoutPanel singleAxisButtonsPanel;
         private Button jogNegativeButton;
         private Button jogPositiveButton;
         private Label singleAxisSectionLabel;
@@ -141,6 +143,8 @@ namespace Page_switching
             jogSpeedCaptionLabel = new Label();
             jogSpeedInput = new NumericUpDown();
             jogSectionLabel = new Label();
+            jogButtonsPanel = new FlowLayoutPanel();
+            singleAxisButtonsPanel = new FlowLayoutPanel();
             jogNegativeButton = new Button();
             jogPositiveButton = new Button();
             singleAxisSectionLabel = new Label();
@@ -160,6 +164,8 @@ namespace Page_switching
             axis4FeedbackLayout.SuspendLayout();
             controlGroup.SuspendLayout();
             controlLayout.SuspendLayout();
+            jogButtonsPanel.SuspendLayout();
+            singleAxisButtonsPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)jogSpeedInput).BeginInit();
             SuspendLayout();
             // 
@@ -913,11 +919,9 @@ namespace Page_switching
             controlLayout.Controls.Add(jogSpeedCaptionLabel, 0, 4);
             controlLayout.Controls.Add(jogSpeedInput, 1, 4);
             controlLayout.Controls.Add(jogSectionLabel, 0, 5);
-            controlLayout.Controls.Add(jogNegativeButton, 0, 6);
-            controlLayout.Controls.Add(jogPositiveButton, 1, 6);
+            controlLayout.Controls.Add(jogButtonsPanel, 0, 6);
             controlLayout.Controls.Add(singleAxisSectionLabel, 0, 7);
-            controlLayout.Controls.Add(homeSelectedButton, 0, 8);
-            controlLayout.Controls.Add(stopSelectedButton, 1, 8);
+            controlLayout.Controls.Add(singleAxisButtonsPanel, 0, 8);
             controlLayout.Controls.Add(helperLabel, 0, 9);
             controlLayout.Dock = DockStyle.Fill;
             controlLayout.Location = new Point(12, 40);
@@ -930,9 +934,9 @@ namespace Page_switching
             controlLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
             controlLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 45F));
             controlLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
-            controlLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 58F));
+            controlLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
             controlLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
-            controlLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 68F));
+            controlLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
             controlLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             controlLayout.Size = new Size(534, 538);
             controlLayout.TabIndex = 0;
@@ -1087,21 +1091,50 @@ namespace Page_switching
             jogSectionLabel.TabIndex = 10;
             jogSectionLabel.Text = "点动控制";
             jogSectionLabel.TextAlign = ContentAlignment.MiddleLeft;
+            // 操作按钮使用独立流式行和固定尺寸，不随参数区的列宽或窗体边缘拉伸。
+            // jogButtonsPanel
+            //
+            controlLayout.SetColumnSpan(jogButtonsPanel, 2);
+            jogButtonsPanel.AutoSize = true;
+            jogButtonsPanel.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            jogButtonsPanel.Controls.Add(jogNegativeButton);
+            jogButtonsPanel.Controls.Add(jogPositiveButton);
+            jogButtonsPanel.Dock = DockStyle.Top;
+            jogButtonsPanel.Margin = new Padding(0);
+            jogButtonsPanel.Name = "jogButtonsPanel";
+            jogButtonsPanel.Size = new Size(534, 58);
+            jogButtonsPanel.TabIndex = 11;
+            jogButtonsPanel.WrapContents = true;
+            //
+            // singleAxisButtonsPanel
+            //
+            controlLayout.SetColumnSpan(singleAxisButtonsPanel, 2);
+            singleAxisButtonsPanel.AutoSize = true;
+            singleAxisButtonsPanel.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            singleAxisButtonsPanel.Controls.Add(homeSelectedButton);
+            singleAxisButtonsPanel.Controls.Add(stopSelectedButton);
+            singleAxisButtonsPanel.Dock = DockStyle.Top;
+            singleAxisButtonsPanel.Margin = new Padding(0);
+            singleAxisButtonsPanel.Name = "singleAxisButtonsPanel";
+            singleAxisButtonsPanel.Size = new Size(534, 58);
+            singleAxisButtonsPanel.TabIndex = 14;
+            singleAxisButtonsPanel.WrapContents = true;
+            //
             // 
             // jogNegativeButton
             // 
             jogNegativeButton.BackColor = Color.FromArgb(248, 250, 252);
             jogNegativeButton.Cursor = Cursors.Hand;
-            jogNegativeButton.Dock = DockStyle.Fill;
+            jogNegativeButton.Anchor = AnchorStyles.Top | AnchorStyles.Left;
             jogNegativeButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
             jogNegativeButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(226, 232, 240);
             jogNegativeButton.FlatStyle = FlatStyle.Flat;
             jogNegativeButton.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
             jogNegativeButton.ForeColor = Color.FromArgb(15, 23, 42);
-            jogNegativeButton.Location = new Point(2, 215);
+            jogNegativeButton.Location = new Point(2, 2);
             jogNegativeButton.Margin = new Padding(2);
             jogNegativeButton.Name = "jogNegativeButton";
-            jogNegativeButton.Size = new Size(220, 54);
+            jogNegativeButton.Size = new Size(160, 54);
             jogNegativeButton.TabIndex = 11;
             jogNegativeButton.Text = "◀ 负向点动";
             jogNegativeButton.UseVisualStyleBackColor = false;
@@ -1113,16 +1146,16 @@ namespace Page_switching
             // 
             jogPositiveButton.BackColor = Color.FromArgb(248, 250, 252);
             jogPositiveButton.Cursor = Cursors.Hand;
-            jogPositiveButton.Dock = DockStyle.Fill;
+            jogPositiveButton.Anchor = AnchorStyles.Top | AnchorStyles.Left;
             jogPositiveButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
             jogPositiveButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(226, 232, 240);
             jogPositiveButton.FlatStyle = FlatStyle.Flat;
             jogPositiveButton.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
             jogPositiveButton.ForeColor = Color.FromArgb(15, 23, 42);
-            jogPositiveButton.Location = new Point(226, 215);
+            jogPositiveButton.Location = new Point(166, 2);
             jogPositiveButton.Margin = new Padding(2);
             jogPositiveButton.Name = "jogPositiveButton";
-            jogPositiveButton.Size = new Size(306, 54);
+            jogPositiveButton.Size = new Size(160, 54);
             jogPositiveButton.TabIndex = 12;
             jogPositiveButton.Text = "正向点动 ▶";
             jogPositiveButton.UseVisualStyleBackColor = false;
@@ -1149,16 +1182,16 @@ namespace Page_switching
             // 
             homeSelectedButton.BackColor = Color.FromArgb(248, 250, 252);
             homeSelectedButton.Cursor = Cursors.Hand;
-            homeSelectedButton.Dock = DockStyle.Fill;
+            homeSelectedButton.Anchor = AnchorStyles.Top | AnchorStyles.Left;
             homeSelectedButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
             homeSelectedButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(226, 232, 240);
             homeSelectedButton.FlatStyle = FlatStyle.Flat;
             homeSelectedButton.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
             homeSelectedButton.ForeColor = Color.FromArgb(15, 23, 42);
-            homeSelectedButton.Location = new Point(2, 305);
+            homeSelectedButton.Location = new Point(2, 2);
             homeSelectedButton.Margin = new Padding(2);
             homeSelectedButton.Name = "homeSelectedButton";
-            homeSelectedButton.Size = new Size(220, 64);
+            homeSelectedButton.Size = new Size(160, 54);
             homeSelectedButton.TabIndex = 14;
             homeSelectedButton.Text = "选定轴回零";
             homeSelectedButton.UseVisualStyleBackColor = false;
@@ -1168,15 +1201,15 @@ namespace Page_switching
             // 
             stopSelectedButton.BackColor = Color.FromArgb(185, 28, 28);
             stopSelectedButton.Cursor = Cursors.Hand;
-            stopSelectedButton.Dock = DockStyle.Fill;
+            stopSelectedButton.Anchor = AnchorStyles.Top | AnchorStyles.Left;
             stopSelectedButton.FlatAppearance.BorderSize = 0;
             stopSelectedButton.FlatStyle = FlatStyle.Flat;
             stopSelectedButton.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
             stopSelectedButton.ForeColor = Color.White;
-            stopSelectedButton.Location = new Point(226, 305);
+            stopSelectedButton.Location = new Point(166, 2);
             stopSelectedButton.Margin = new Padding(2);
             stopSelectedButton.Name = "stopSelectedButton";
-            stopSelectedButton.Size = new Size(306, 64);
+            stopSelectedButton.Size = new Size(160, 54);
             stopSelectedButton.TabIndex = 15;
             stopSelectedButton.Text = "选定轴停止";
             stopSelectedButton.UseVisualStyleBackColor = false;
@@ -1222,6 +1255,11 @@ namespace Page_switching
             axis4FeedbackLayout.ResumeLayout(false);
             controlGroup.ResumeLayout(false);
             controlLayout.ResumeLayout(false);
+            controlLayout.PerformLayout();
+            jogButtonsPanel.ResumeLayout(false);
+            jogButtonsPanel.PerformLayout();
+            singleAxisButtonsPanel.ResumeLayout(false);
+            singleAxisButtonsPanel.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)jogSpeedInput).EndInit();
             ResumeLayout(false);
         }
