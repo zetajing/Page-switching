@@ -10,10 +10,8 @@ namespace Page_switching
         private int _axisHeaderHeight;
         private int _axisRowHeight;
         private bool _messagesExpanded;
-        private float _collapsedMessageHeight;
         private float _collapsedMessagePanelHeight;
         private float _collapsedPageHeight;
-        private RowStyle? _messageRowStyle;
 
         // 设计器也会触发布局事件；编辑位置和行高时不执行运行时折叠逻辑。
         private bool IsDesignSurface => LicenseManager.UsageMode == LicenseUsageMode.Designtime
@@ -24,10 +22,6 @@ namespace Page_switching
             InitializeComponent();
             // InitializeComponent 已应用当前 DPI，先还原为逻辑基线，避免再次放大。
             var scale = DeviceDpi / 96F;
-            var messageRow = rootLayout.GetRow(logGroup);
-            if (messageRow >= 0 && messageRow < rootLayout.RowStyles.Count)
-                _messageRowStyle = rootLayout.RowStyles[messageRow];
-            _collapsedMessageHeight = (_messageRowStyle?.Height ?? 0) / scale;
             _collapsedMessagePanelHeight = logGroup.Height / scale;
             _collapsedPageHeight = pagePanel.MinimumSize.Height / scale;
             // 保存 Designer 的逻辑尺寸，每次 DPI 改变都从基线计算，避免重复放大。
@@ -346,26 +340,21 @@ namespace Page_switching
         private void UpdateMessageLayout()
         {
             if (IsDesignSurface || _collapsedMessagePanelHeight <= 0 || logLayout is null) return;
-            // 沿用 Designer 所在行和尺寸，不设置 Location、Dock 或间距。
+            // 消息区域直接放在 pagePanel；位置和横向锚定完全由 Designer 保存。
             var scale = DeviceDpi / 96F;
             var extraHeight = _messagesExpanded ? 180 + 38 : 0;
-            var rowHeight = (float)Math.Round((_collapsedMessageHeight + extraHeight) * scale);
-            if (_messageRowStyle?.SizeType == SizeType.Absolute && _messageRowStyle.Height != rowHeight)
-                _messageRowStyle.Height = rowHeight;
-            // Bottom/Top 停靠不会随表格行增高而拉伸，必须同步区域高度以容纳展开的列表。
-            if (logGroup.Dock != DockStyle.Fill)
-            {
-                var height = (int)Math.Round((_collapsedMessagePanelHeight + extraHeight) * scale);
-                if (logGroup.Height != height) logGroup.Height = height;
-            }
+            // 只向下展开，不重新设置 Top/Location，也不依赖表格的行高。
+            var height = (int)Math.Round((_collapsedMessagePanelHeight + extraHeight) * scale);
+            if (logGroup.Height != height) logGroup.Height = height;
             logLayout.RowStyles[1].Height = _messagesExpanded ? (float)Math.Round(180 * scale) : 0;
             logLayout.RowStyles[2].Height = _messagesExpanded ? (float)Math.Round(38 * scale) : 0;
-            // 设计器增加的空白间距也计入滚动画布，避免缩小窗口后内容被裁切。
+            // 将固定位置和展开后的底边计入滚动画布，按钮始终可以滚动到。
             var contentHeight = rootLayout.Padding.Vertical + pagePanel.Padding.Vertical
                 + rootLayout.RowStyles.Cast<RowStyle>().Where(row => row.SizeType == SizeType.Absolute)
                     .Sum(row => row.Height);
+            contentHeight = Math.Max(contentHeight, logGroup.Bottom + rootLayout.Padding.Bottom);
             var minimumSize = new Size(pagePanel.MinimumSize.Width,
-                (int)Math.Ceiling(Math.Max((_collapsedPageHeight + extraHeight) * scale, contentHeight)));
+                (int)Math.Ceiling(Math.Max(_collapsedPageHeight * scale, contentHeight)));
             if (pagePanel.MinimumSize != minimumSize) pagePanel.MinimumSize = minimumSize;
         }
 

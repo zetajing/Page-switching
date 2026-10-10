@@ -125,6 +125,7 @@ namespace Page_switching
             //
             // pagePanel
             //
+            pagePanel.Controls.Add(logGroup);
             pagePanel.Controls.Add(rootLayout);
             pagePanel.Dock = DockStyle.Fill;
             pagePanel.Location = new Point(0, 0);
@@ -142,7 +143,6 @@ namespace Page_switching
             rootLayout.Controls.Add(cardsLayout, 0, 1);
             rootLayout.Controls.Add(monitorInfoLayout, 0, 2);
             rootLayout.Controls.Add(axisGroup, 0, 3);
-            rootLayout.Controls.Add(logGroup, 0, 4);
             rootLayout.Dock = DockStyle.Fill;
             rootLayout.Location = new Point(0, 0);
             rootLayout.Margin = new Padding(0);
@@ -635,7 +635,7 @@ namespace Page_switching
             //
             logGroup.BackColor = Color.White;
             logGroup.Controls.Add(logLayout);
-            logGroup.Dock = DockStyle.Fill;
+            logGroup.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             logGroup.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
             logGroup.ForeColor = Color.FromArgb(15, 23, 42);
             logGroup.Location = new Point(16, 386);
