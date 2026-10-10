@@ -9,10 +9,17 @@ namespace Page_switching
         private (DataGridViewColumn Column, int Width, int MinimumWidth)[]? _axisColumnMetrics;
         private int _axisHeaderHeight;
         private int _axisRowHeight;
+        private bool _messagesExpanded;
+        private float _collapsedMessageHeight;
+        private int _collapsedPageHeight;
 
         public Auto()
         {
             InitializeComponent();
+            // InitializeComponent 已应用当前 DPI，先还原为逻辑基线，避免再次放大。
+            var scale = DeviceDpi / 96F;
+            _collapsedMessageHeight = rootLayout.RowStyles[4].Height / scale;
+            _collapsedPageHeight = (int)Math.Round(pagePanel.MinimumSize.Height / scale);
             // 保存 Designer 的逻辑尺寸，每次 DPI 改变都从基线计算，避免重复放大。
             _axisColumnMetrics = axisGrid.Columns.Cast<DataGridViewColumn>()
                 .Select(column => (column, column.Width, column.MinimumWidth)).ToArray();
@@ -28,6 +35,7 @@ namespace Page_switching
 
         protected override void OnLayout(LayoutEventArgs e)
         {
+            UpdateMessageLayout();
             // Dock.Fill 子项不会自动扩展滚动范围，使用已随 DPI 缩放的最小画布。
             if (pagePanel != null && AutoScrollMinSize != pagePanel.MinimumSize)
                 AutoScrollMinSize = pagePanel.MinimumSize;
@@ -72,6 +80,7 @@ namespace Page_switching
             OperationJournal.Record("自动运行", message);
             if (_logList.Items.Count > 500) _logList.Items.RemoveAt(0);
             _logList.TopIndex = Math.Max(0, _logList.Items.Count - 1);
+            UpdateMessageSummary();
         }
 
         // 只显示快照，不申请控制权、不切换模式，也不下发造波或轴命令。
@@ -294,9 +303,51 @@ namespace Page_switching
             cell.ToolTipText = field.ErrorMessage ?? "";
         }
 
+        private void UpdateMessageSummary()
+        {
+            messageCountLabel.Text = $"消息：{_logList.Items.Count} 条";
+            var latest = _logList.Items.Count == 0 ? null : _logList.Items[^1]?.ToString();
+            // 摘要只占一行，完整消息仍保留在列表和文件日志中。
+            messageSummaryLabel.Text = latest is null ? "暂无运行消息"
+                : "最新：" + latest.Replace("\r", " ").Replace("\n", " ").Replace("\t", " ");
+            messageToolTip.SetToolTip(messageSummaryLabel, latest);
+        }
+
+        private void MessageToggleButton_Click(object? sender, EventArgs e)
+        {
+            _messagesExpanded = !_messagesExpanded;
+            SuspendLayout();
+            logLayout.SuspendLayout();
+            _logList.Visible = _messagesExpanded;
+            clearLogButton.Visible = _messagesExpanded;
+            messageToggleButton.Text = _messagesExpanded ? "收起 ▲" : "展开 ▼";
+            UpdateMessageLayout();
+            logLayout.ResumeLayout(true);
+            ResumeLayout(true);
+            // 隐藏的列表首次显示会重建滚动位置，展开后重新定位到最新记录。
+            if (_messagesExpanded) _logList.TopIndex = Math.Max(0, _logList.Items.Count - 1);
+        }
+
+        private void UpdateMessageLayout()
+        {
+            if (_collapsedMessageHeight <= 0 || logLayout is null) return;
+            // 只改变展示高度；折叠期间消息记录、500 条上限和文件日志继续执行。
+            var scale = DeviceDpi / 96F;
+            var extraHeight = _messagesExpanded ? 180 + 38 : 0;
+            var groupHeight = (float)Math.Round((_collapsedMessageHeight + extraHeight) * scale);
+            if (rootLayout.RowStyles[4].Height != groupHeight)
+                rootLayout.RowStyles[4].Height = groupHeight;
+            logLayout.RowStyles[1].Height = _messagesExpanded ? (float)Math.Round(180 * scale) : 0;
+            logLayout.RowStyles[2].Height = _messagesExpanded ? (float)Math.Round(38 * scale) : 0;
+            var minimumSize = new Size(pagePanel.MinimumSize.Width,
+                (int)Math.Round((_collapsedPageHeight + extraHeight) * scale));
+            if (pagePanel.MinimumSize != minimumSize) pagePanel.MinimumSize = minimumSize;
+        }
+
         private void ClearLogButton_Click(object? sender, EventArgs e)
         {
             _logList.Items.Clear();
+            UpdateMessageSummary();
         }
     }
 }
