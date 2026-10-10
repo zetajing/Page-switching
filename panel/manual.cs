@@ -20,54 +20,6 @@ namespace Page_switching
         private bool _jogPositive;
         private int _jogAxisNumber;
         private long _jogRequestVersion;
-        private bool _updatingLayout;
-        private bool? _stackedLayout;
-        private int _layoutDpi;
-
-        // 仅调整两个展示区的位置；从逻辑尺寸计算，切换宽度和 DPI 不重复缩放。
-        protected override void OnLayout(LayoutEventArgs e)
-        {
-            base.OnLayout(e);
-            if (_updatingLayout || contentLayout is null || pagePanel is null) return;
-            var scale = DeviceDpi / 96d;
-            var stacked = (ClientSize.Width - 48 * scale) / scale < 900;
-            if (_stackedLayout != stacked || _layoutDpi != DeviceDpi)
-            {
-                _updatingLayout = true;
-                contentLayout.SuspendLayout();
-                try
-                {
-                    contentLayout.ColumnStyles.Clear();
-                    contentLayout.RowStyles.Clear();
-                    contentLayout.ColumnCount = stacked ? 1 : 2;
-                    contentLayout.RowCount = stacked ? 2 : 1;
-                    contentLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-                    if (stacked)
-                    {
-                        contentLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, (int)Math.Round(520 * scale)));
-                        contentLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-                        contentLayout.SetCellPosition(controlGroup, new TableLayoutPanelCellPosition(0, 0));
-                        contentLayout.SetCellPosition(overviewGroup, new TableLayoutPanelCellPosition(0, 1));
-                    }
-                    else
-                    {
-                        contentLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, (int)Math.Round(360 * scale)));
-                        contentLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-                        contentLayout.SetCellPosition(overviewGroup, new TableLayoutPanelCellPosition(0, 0));
-                        contentLayout.SetCellPosition(controlGroup, new TableLayoutPanelCellPosition(1, 0));
-                    }
-                    pagePanel.MinimumSize = new Size((int)Math.Round(720 * scale), (int)Math.Round((stacked ? 1200 : 680) * scale));
-                    AutoScrollMinSize = pagePanel.MinimumSize;
-                    _stackedLayout = stacked;
-                    _layoutDpi = DeviceDpi;
-                }
-                finally
-                {
-                    contentLayout.ResumeLayout(true);
-                    _updatingLayout = false;
-                }
-            }
-        }
 
         // 供设计器使用；自行创建并管理轴服务。
         public Manual()
@@ -88,13 +40,6 @@ namespace Page_switching
             _ownsAxisService = ownsAxisService;
 
             InitializeComponent();
-
-            foreach (var button in new[] { enableAllButton, disableAllButton, resetAlarmButton, homeAllButton,
-                         stopAllButton, jogNegativeButton, jogPositiveButton, homeSelectedButton, stopSelectedButton })
-            {
-                button.EnabledChanged += (_, _) => StyleCommandButton(button);
-                StyleCommandButton(button);
-            }
 
             _positionIndicators =
             [
@@ -132,19 +77,6 @@ namespace Page_switching
             ParentChanged += Manual_VisibilityChanged;
             Disposed += Manual_Disposed;
             UpdateConnectionState();
-        }
-
-        // 禁用状态采用浅色背景，保留停止按钮的红色识别，确保原生灰色文字可读。
-        private void StyleCommandButton(Button button)
-        {
-            var isStop = ReferenceEquals(button, stopAllButton) || ReferenceEquals(button, stopSelectedButton);
-            var isJog = ReferenceEquals(button, jogNegativeButton) || ReferenceEquals(button, jogPositiveButton);
-            button.BackColor = !button.Enabled ? isStop ? UiPalette.WorkDangerSoft : UiPalette.WorkBorder
-                : isStop ? UiPalette.Danger : isJog ? UiPalette.WorkPrimary : Color.White;
-            button.ForeColor = button.Enabled && (isStop || isJog) ? Color.White : UiPalette.WorkText;
-            button.FlatAppearance.BorderColor = isStop ? UiPalette.WorkDangerBorder : UiPalette.WorkBorder;
-            button.FlatAppearance.MouseOverBackColor = isStop ? UiPalette.WorkDangerHover
-                : isJog ? UiPalette.PrimaryHover : UiPalette.WorkSelection;
         }
 
         // 页面显示时开始刷新，隐藏时停止刷新和正在进行的点动。

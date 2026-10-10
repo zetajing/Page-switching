@@ -1,28 +1,25 @@
-﻿namespace Page_switching
+namespace Page_switching
 {
     partial class Auto
     {
         private System.ComponentModel.IContainer components = null;
         private Panel pagePanel;
-        private TableLayoutPanel messageHeader;
-        private Button messageToggleButton;
-        private Label messageSummaryLabel;
         private TableLayoutPanel rootLayout;
         private Panel headerPanel;
         private Label titleLabel;
         private Label subtitleLabel;
         private TableLayoutPanel cardsLayout;
-        private UiSurfacePanel controlCard;
+        private Panel controlCard;
         private TableLayoutPanel controlCardLayout;
         private Label controlCaptionLabel;
         private Label controlValueLabel;
         private Label controlDetailLabel;
-        private UiSurfacePanel modeCard;
+        private Panel modeCard;
         private TableLayoutPanel modeCardLayout;
         private Label modeCaptionLabel;
         private Label modeValueLabel;
         private Label modeDetailLabel;
-        private UiSurfacePanel waveCard;
+        private Panel waveCard;
         private TableLayoutPanel waveCardLayout;
         private Label waveCaptionLabel;
         private Label _runStateLabel;
@@ -31,7 +28,7 @@
         private Label connectionLabel;
         private Label feedbackLabel;
         private Label heartbeatLabel;
-        private UiSurfacePanel axisGroup;
+        private GroupBox axisGroup;
         private AxisFeedbackGrid axisGrid;
         private DataGridViewTextBoxColumn axisNumberColumn;
         private DataGridViewTextBoxColumn positionColumn;
@@ -41,7 +38,7 @@
         private DataGridViewTextBoxColumn negativeLimitColumn;
         private DataGridViewTextBoxColumn positiveLimitColumn;
         private DataGridViewTextBoxColumn originColumn;
-        private UiSurfacePanel logGroup;
+        private GroupBox logGroup;
         private TableLayoutPanel logLayout;
         private ListBox _logList;
         private Button clearLogButton;
@@ -59,25 +56,22 @@
             DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
             DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
             pagePanel = new Panel();
-            messageHeader = new TableLayoutPanel();
-            messageToggleButton = new Button();
-            messageSummaryLabel = new UiSingleLineLabel();
             rootLayout = new TableLayoutPanel();
             headerPanel = new Panel();
             subtitleLabel = new Label();
             titleLabel = new Label();
             cardsLayout = new TableLayoutPanel();
-            controlCard = new UiSurfacePanel();
+            controlCard = new Panel();
             controlCardLayout = new TableLayoutPanel();
             controlCaptionLabel = new Label();
             controlValueLabel = new Label();
             controlDetailLabel = new Label();
-            modeCard = new UiSurfacePanel();
+            modeCard = new Panel();
             modeCardLayout = new TableLayoutPanel();
             modeCaptionLabel = new Label();
             modeValueLabel = new Label();
             modeDetailLabel = new Label();
-            waveCard = new UiSurfacePanel();
+            waveCard = new Panel();
             waveCardLayout = new TableLayoutPanel();
             waveCaptionLabel = new Label();
             _runStateLabel = new Label();
@@ -86,7 +80,7 @@
             connectionLabel = new Label();
             feedbackLabel = new Label();
             heartbeatLabel = new Label();
-            axisGroup = new UiSurfacePanel();
+            axisGroup = new GroupBox();
             axisGrid = new AxisFeedbackGrid();
             axisNumberColumn = new DataGridViewTextBoxColumn();
             positionColumn = new DataGridViewTextBoxColumn();
@@ -96,7 +90,7 @@
             negativeLimitColumn = new DataGridViewTextBoxColumn();
             positiveLimitColumn = new DataGridViewTextBoxColumn();
             originColumn = new DataGridViewTextBoxColumn();
-            logGroup = new UiSurfacePanel();
+            logGroup = new GroupBox();
             logLayout = new TableLayoutPanel();
             _logList = new ListBox();
             clearLogButton = new Button();
@@ -116,66 +110,38 @@
             logGroup.SuspendLayout();
             logLayout.SuspendLayout();
             SuspendLayout();
-            messageHeader.ColumnCount = 2;
-            messageHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 190F));
-            messageHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            messageHeader.RowCount = 1;
-            messageHeader.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            messageHeader.Controls.Add(messageToggleButton, 0, 0);
-            messageHeader.Controls.Add(messageSummaryLabel, 1, 0);
-            messageHeader.Dock = DockStyle.Fill;
-            messageHeader.Margin = new Padding(0, 8, 0, 0);
-            messageHeader.Name = "messageHeader";
-            messageToggleButton.Dock = DockStyle.Fill;
-            messageToggleButton.Name = "messageToggleButton";
-            messageToggleButton.Text = "展开运行消息 (0)";
-            messageToggleButton.FlatStyle = FlatStyle.Flat;
-            messageToggleButton.FlatAppearance.BorderSize = 0;
-            messageToggleButton.BackColor = UiPalette.WorkSelection;
-            messageToggleButton.ForeColor = UiPalette.WorkPrimary;
-            messageToggleButton.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
-            messageToggleButton.Click += MessageToggleButton_Click;
-            messageSummaryLabel.Dock = DockStyle.Fill;
-            messageSummaryLabel.Name = "messageSummaryLabel";
-            messageSummaryLabel.Text = "暂无运行消息";
-            messageSummaryLabel.TextAlign = ContentAlignment.MiddleLeft;
-            messageSummaryLabel.AutoEllipsis = true;
-            messageSummaryLabel.Padding = new Padding(16, 0, 0, 0);
-            messageSummaryLabel.ForeColor = UiPalette.WorkMuted;
             //
             // pagePanel
             //
             pagePanel.Controls.Add(rootLayout);
             pagePanel.Dock = DockStyle.Fill;
             pagePanel.Location = new Point(0, 0);
-            pagePanel.MinimumSize = new Size(760, 590);
+            pagePanel.MinimumSize = new Size(900, 606);
             pagePanel.Name = "pagePanel";
             pagePanel.Size = new Size(1104, 606);
             pagePanel.TabIndex = 0;
             //
             // rootLayout
             //
-            rootLayout.BackColor = UiPalette.WorkCanvas;
+            rootLayout.BackColor = Color.FromArgb(241, 245, 249);
             rootLayout.ColumnCount = 1;
             rootLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
             rootLayout.Controls.Add(headerPanel, 0, 0);
             rootLayout.Controls.Add(cardsLayout, 0, 1);
             rootLayout.Controls.Add(monitorInfoLayout, 0, 2);
             rootLayout.Controls.Add(axisGroup, 0, 3);
-            rootLayout.Controls.Add(messageHeader, 0, 4);
-            rootLayout.Controls.Add(logGroup, 0, 5);
+            rootLayout.Controls.Add(logGroup, 0, 4);
             rootLayout.Dock = DockStyle.Fill;
             rootLayout.Location = new Point(0, 0);
             rootLayout.Margin = new Padding(0);
             rootLayout.Name = "rootLayout";
-            rootLayout.Padding = new Padding(24);
-            rootLayout.RowCount = 6;
-            rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 64F));
-            rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 128F));
-            rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
-            rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 276F));
-            rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 48F));
-            rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 0F));
+            rootLayout.Padding = new Padding(16);
+            rootLayout.RowCount = 5;
+            rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 56F));
+            rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 88F));
+            rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
+            rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 190F));
+            rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             rootLayout.Size = new Size(1104, 606);
             rootLayout.TabIndex = 0;
             //
@@ -193,24 +159,24 @@
             // subtitleLabel
             //
             subtitleLabel.Dock = DockStyle.Fill;
-            subtitleLabel.ForeColor = UiPalette.WorkMuted;
+            subtitleLabel.ForeColor = Color.FromArgb(71, 85, 105);
             subtitleLabel.Location = new Point(0, 34);
             subtitleLabel.Name = "subtitleLabel";
             subtitleLabel.Size = new Size(1072, 22);
             subtitleLabel.TabIndex = 0;
-            subtitleLabel.Text = "设备状态与四轴反馈 · 实时只读监控";
+            subtitleLabel.Text = "控制端、运行模式与造波反馈 · 只读监控";
             subtitleLabel.TextAlign = ContentAlignment.MiddleLeft;
             //
             // titleLabel
             //
             titleLabel.Dock = DockStyle.Top;
-            titleLabel.Font = new Font("Microsoft YaHei UI", 18F, FontStyle.Bold);
-            titleLabel.ForeColor = UiPalette.WorkText;
+            titleLabel.Font = new Font("Microsoft YaHei UI", 16F, FontStyle.Bold);
+            titleLabel.ForeColor = Color.FromArgb(15, 23, 42);
             titleLabel.Location = new Point(0, 0);
             titleLabel.Name = "titleLabel";
             titleLabel.Size = new Size(1072, 34);
             titleLabel.TabIndex = 1;
-            titleLabel.Text = "运行总览";
+            titleLabel.Text = "自动运行";
             titleLabel.TextAlign = ContentAlignment.MiddleLeft;
             //
             // cardsLayout
@@ -234,14 +200,13 @@
             // controlCard
             //
             controlCard.BackColor = Color.White;
-            controlCard.BorderStyle = BorderStyle.None;
+            controlCard.BorderStyle = BorderStyle.FixedSingle;
             controlCard.Controls.Add(controlCardLayout);
             controlCard.Dock = DockStyle.Fill;
             controlCard.Location = new Point(4, 0);
-            controlCard.Margin = new Padding(0, 4, 12, 12);
+            controlCard.Margin = new Padding(4, 0, 4, 8);
             controlCard.Name = "controlCard";
-            controlCard.AccentColor = UiPalette.WorkPrimary;
-            controlCard.Padding = new Padding(18, 14, 18, 12);
+            controlCard.Padding = new Padding(12, 5, 12, 5);
             controlCard.Size = new Size(349, 80);
             controlCard.TabIndex = 0;
             //
@@ -257,8 +222,8 @@
             controlCardLayout.Margin = new Padding(0);
             controlCardLayout.Name = "controlCardLayout";
             controlCardLayout.RowCount = 3;
-            controlCardLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 26F));
-            controlCardLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 38F));
+            controlCardLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            controlCardLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 28F));
             controlCardLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             controlCardLayout.Size = new Size(323, 68);
             controlCardLayout.TabIndex = 0;
@@ -267,8 +232,8 @@
             //
             controlCaptionLabel.AutoEllipsis = true;
             controlCaptionLabel.Dock = DockStyle.Fill;
-            controlCaptionLabel.Font = new Font("Microsoft YaHei UI", 10F);
-            controlCaptionLabel.ForeColor = UiPalette.WorkMuted;
+            controlCaptionLabel.Font = new Font("Microsoft YaHei UI", 9F);
+            controlCaptionLabel.ForeColor = Color.FromArgb(71, 85, 105);
             controlCaptionLabel.Location = new Point(0, 0);
             controlCaptionLabel.Margin = new Padding(0);
             controlCaptionLabel.Name = "controlCaptionLabel";
@@ -281,8 +246,8 @@
             //
             controlValueLabel.AutoEllipsis = true;
             controlValueLabel.Dock = DockStyle.Fill;
-            controlValueLabel.Font = new Font("Microsoft YaHei UI", 20F, FontStyle.Bold);
-            controlValueLabel.ForeColor = UiPalette.WorkMuted;
+            controlValueLabel.Font = new Font("Microsoft YaHei UI", 14F, FontStyle.Bold);
+            controlValueLabel.ForeColor = Color.FromArgb(100, 116, 139);
             controlValueLabel.Location = new Point(0, 20);
             controlValueLabel.Margin = new Padding(0);
             controlValueLabel.Name = "controlValueLabel";
@@ -295,8 +260,8 @@
             //
             controlDetailLabel.AutoEllipsis = true;
             controlDetailLabel.Dock = DockStyle.Fill;
-            controlDetailLabel.Font = new Font("Microsoft YaHei UI", 10F);
-            controlDetailLabel.ForeColor = UiPalette.WorkMuted;
+            controlDetailLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
+            controlDetailLabel.ForeColor = Color.FromArgb(100, 116, 139);
             controlDetailLabel.Location = new Point(0, 48);
             controlDetailLabel.Margin = new Padding(0);
             controlDetailLabel.Name = "controlDetailLabel";
@@ -308,14 +273,13 @@
             // modeCard
             //
             modeCard.BackColor = Color.White;
-            modeCard.BorderStyle = BorderStyle.None;
+            modeCard.BorderStyle = BorderStyle.FixedSingle;
             modeCard.Controls.Add(modeCardLayout);
             modeCard.Dock = DockStyle.Fill;
             modeCard.Location = new Point(361, 0);
-            modeCard.Margin = new Padding(0, 4, 12, 12);
+            modeCard.Margin = new Padding(4, 0, 4, 8);
             modeCard.Name = "modeCard";
-            modeCard.AccentColor = UiPalette.Success;
-            modeCard.Padding = new Padding(18, 14, 18, 12);
+            modeCard.Padding = new Padding(12, 5, 12, 5);
             modeCard.Size = new Size(349, 80);
             modeCard.TabIndex = 1;
             //
@@ -331,8 +295,8 @@
             modeCardLayout.Margin = new Padding(0);
             modeCardLayout.Name = "modeCardLayout";
             modeCardLayout.RowCount = 3;
-            modeCardLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 26F));
-            modeCardLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 38F));
+            modeCardLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            modeCardLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 28F));
             modeCardLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             modeCardLayout.Size = new Size(323, 68);
             modeCardLayout.TabIndex = 0;
@@ -341,8 +305,8 @@
             //
             modeCaptionLabel.AutoEllipsis = true;
             modeCaptionLabel.Dock = DockStyle.Fill;
-            modeCaptionLabel.Font = new Font("Microsoft YaHei UI", 10F);
-            modeCaptionLabel.ForeColor = UiPalette.WorkMuted;
+            modeCaptionLabel.Font = new Font("Microsoft YaHei UI", 9F);
+            modeCaptionLabel.ForeColor = Color.FromArgb(71, 85, 105);
             modeCaptionLabel.Location = new Point(0, 0);
             modeCaptionLabel.Margin = new Padding(0);
             modeCaptionLabel.Name = "modeCaptionLabel";
@@ -355,8 +319,8 @@
             //
             modeValueLabel.AutoEllipsis = true;
             modeValueLabel.Dock = DockStyle.Fill;
-            modeValueLabel.Font = new Font("Microsoft YaHei UI", 20F, FontStyle.Bold);
-            modeValueLabel.ForeColor = UiPalette.WorkMuted;
+            modeValueLabel.Font = new Font("Microsoft YaHei UI", 14F, FontStyle.Bold);
+            modeValueLabel.ForeColor = Color.FromArgb(100, 116, 139);
             modeValueLabel.Location = new Point(0, 20);
             modeValueLabel.Margin = new Padding(0);
             modeValueLabel.Name = "modeValueLabel";
@@ -369,8 +333,8 @@
             //
             modeDetailLabel.AutoEllipsis = true;
             modeDetailLabel.Dock = DockStyle.Fill;
-            modeDetailLabel.Font = new Font("Microsoft YaHei UI", 10F);
-            modeDetailLabel.ForeColor = UiPalette.WorkMuted;
+            modeDetailLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
+            modeDetailLabel.ForeColor = Color.FromArgb(100, 116, 139);
             modeDetailLabel.Location = new Point(0, 48);
             modeDetailLabel.Margin = new Padding(0);
             modeDetailLabel.Name = "modeDetailLabel";
@@ -382,14 +346,13 @@
             // waveCard
             //
             waveCard.BackColor = Color.White;
-            waveCard.BorderStyle = BorderStyle.None;
+            waveCard.BorderStyle = BorderStyle.FixedSingle;
             waveCard.Controls.Add(waveCardLayout);
             waveCard.Dock = DockStyle.Fill;
             waveCard.Location = new Point(718, 0);
-            waveCard.Margin = new Padding(0, 4, 12, 12);
+            waveCard.Margin = new Padding(4, 0, 4, 8);
             waveCard.Name = "waveCard";
-            waveCard.AccentColor = UiPalette.Warning;
-            waveCard.Padding = new Padding(18, 14, 18, 12);
+            waveCard.Padding = new Padding(12, 5, 12, 5);
             waveCard.Size = new Size(350, 80);
             waveCard.TabIndex = 2;
             //
@@ -405,8 +368,8 @@
             waveCardLayout.Margin = new Padding(0);
             waveCardLayout.Name = "waveCardLayout";
             waveCardLayout.RowCount = 3;
-            waveCardLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 26F));
-            waveCardLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 38F));
+            waveCardLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            waveCardLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 28F));
             waveCardLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             waveCardLayout.Size = new Size(324, 68);
             waveCardLayout.TabIndex = 0;
@@ -415,8 +378,8 @@
             //
             waveCaptionLabel.AutoEllipsis = true;
             waveCaptionLabel.Dock = DockStyle.Fill;
-            waveCaptionLabel.Font = new Font("Microsoft YaHei UI", 10F);
-            waveCaptionLabel.ForeColor = UiPalette.WorkMuted;
+            waveCaptionLabel.Font = new Font("Microsoft YaHei UI", 9F);
+            waveCaptionLabel.ForeColor = Color.FromArgb(71, 85, 105);
             waveCaptionLabel.Location = new Point(0, 0);
             waveCaptionLabel.Margin = new Padding(0);
             waveCaptionLabel.Name = "waveCaptionLabel";
@@ -429,8 +392,8 @@
             //
             _runStateLabel.AutoEllipsis = true;
             _runStateLabel.Dock = DockStyle.Fill;
-            _runStateLabel.Font = new Font("Microsoft YaHei UI", 20F, FontStyle.Bold);
-            _runStateLabel.ForeColor = UiPalette.WorkMuted;
+            _runStateLabel.Font = new Font("Microsoft YaHei UI", 14F, FontStyle.Bold);
+            _runStateLabel.ForeColor = Color.FromArgb(100, 116, 139);
             _runStateLabel.Location = new Point(0, 20);
             _runStateLabel.Margin = new Padding(0);
             _runStateLabel.Name = "_runStateLabel";
@@ -443,8 +406,8 @@
             //
             faultCodeLabel.AutoEllipsis = true;
             faultCodeLabel.Dock = DockStyle.Fill;
-            faultCodeLabel.Font = new Font("Microsoft YaHei UI", 10F);
-            faultCodeLabel.ForeColor = UiPalette.WorkMuted;
+            faultCodeLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
+            faultCodeLabel.ForeColor = Color.FromArgb(100, 116, 139);
             faultCodeLabel.Location = new Point(0, 48);
             faultCodeLabel.Margin = new Padding(0);
             faultCodeLabel.Name = "faultCodeLabel";
@@ -488,7 +451,7 @@
             //
             feedbackLabel.AutoEllipsis = true;
             feedbackLabel.Dock = DockStyle.Fill;
-            feedbackLabel.ForeColor = UiPalette.WorkMuted;
+            feedbackLabel.ForeColor = Color.FromArgb(100, 116, 139);
             feedbackLabel.Location = new Point(385, 0);
             feedbackLabel.Margin = new Padding(0);
             feedbackLabel.Name = "feedbackLabel";
@@ -501,7 +464,7 @@
             //
             heartbeatLabel.AutoEllipsis = true;
             heartbeatLabel.Dock = DockStyle.Fill;
-            heartbeatLabel.ForeColor = UiPalette.WorkMuted;
+            heartbeatLabel.ForeColor = Color.FromArgb(100, 116, 139);
             heartbeatLabel.Location = new Point(760, 0);
             heartbeatLabel.Margin = new Padding(0);
             heartbeatLabel.Name = "heartbeatLabel";
@@ -515,12 +478,12 @@
             axisGroup.BackColor = Color.White;
             axisGroup.Controls.Add(axisGrid);
             axisGroup.Dock = DockStyle.Fill;
-            axisGroup.Font = new Font("Microsoft YaHei UI", 10F);
-            axisGroup.ForeColor = UiPalette.WorkText;
+            axisGroup.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
+            axisGroup.ForeColor = Color.FromArgb(15, 23, 42);
             axisGroup.Location = new Point(16, 192);
             axisGroup.Margin = new Padding(0);
             axisGroup.Name = "axisGroup";
-            axisGroup.Padding = new Padding(16, 44, 16, 12);
+            axisGroup.Padding = new Padding(14, 18, 14, 12);
             axisGroup.Size = new Size(1072, 190);
             axisGroup.TabIndex = 3;
             axisGroup.TabStop = false;
@@ -538,36 +501,35 @@
             axisGrid.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
             axisGrid.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
             dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle1.BackColor = UiPalette.WorkCanvas;
-            dataGridViewCellStyle1.Font = new Font("Microsoft YaHei UI", 10F);
-            dataGridViewCellStyle1.ForeColor = UiPalette.WorkMuted;
-            dataGridViewCellStyle1.SelectionBackColor = UiPalette.WorkCanvas;
-            dataGridViewCellStyle1.SelectionForeColor = UiPalette.WorkMuted;
+            dataGridViewCellStyle1.BackColor = Color.FromArgb(248, 250, 252);
+            dataGridViewCellStyle1.Font = new Font("Microsoft YaHei UI", 9F);
+            dataGridViewCellStyle1.ForeColor = Color.FromArgb(71, 85, 105);
+            dataGridViewCellStyle1.SelectionBackColor = Color.FromArgb(248, 250, 252);
+            dataGridViewCellStyle1.SelectionForeColor = Color.FromArgb(71, 85, 105);
             dataGridViewCellStyle1.WrapMode = DataGridViewTriState.False;
             axisGrid.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
-            axisGrid.ColumnHeadersHeight = 36;
+            axisGrid.ColumnHeadersHeight = 28;
             axisGrid.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             axisGrid.Columns.AddRange(new DataGridViewColumn[] { axisNumberColumn, positionColumn, speedColumn, homedColumn, alarmColumn, negativeLimitColumn, positiveLimitColumn, originColumn });
             dataGridViewCellStyle4.Alignment = DataGridViewContentAlignment.MiddleCenter;
             dataGridViewCellStyle4.BackColor = SystemColors.Window;
-            dataGridViewCellStyle4.Font = new Font("Microsoft YaHei UI", 10F);
-            dataGridViewCellStyle4.ForeColor = UiPalette.WorkMuted;
+            dataGridViewCellStyle4.Font = new Font("Microsoft YaHei UI", 9F);
+            dataGridViewCellStyle4.ForeColor = Color.FromArgb(100, 116, 139);
             dataGridViewCellStyle4.Padding = new Padding(4, 0, 4, 0);
-            dataGridViewCellStyle4.SelectionBackColor = UiPalette.WorkSelection;
-            dataGridViewCellStyle4.SelectionForeColor = UiPalette.WorkText;
+            dataGridViewCellStyle4.SelectionBackColor = Color.FromArgb(219, 234, 254);
+            dataGridViewCellStyle4.SelectionForeColor = Color.FromArgb(15, 23, 42);
             dataGridViewCellStyle4.WrapMode = DataGridViewTriState.False;
             axisGrid.DefaultCellStyle = dataGridViewCellStyle4;
             axisGrid.Dock = DockStyle.Fill;
             axisGrid.EnableHeadersVisualStyles = false;
-            axisGrid.Font = new Font("Microsoft YaHei UI", 10F);
-            axisGrid.GridColor = UiPalette.WorkBorder;
+            axisGrid.Font = new Font("Microsoft YaHei UI", 9F);
+            axisGrid.GridColor = Color.FromArgb(226, 232, 240);
             axisGrid.Location = new Point(14, 34);
             axisGrid.MultiSelect = false;
             axisGrid.Name = "axisGrid";
-            axisGrid.AlternatingRowsDefaultCellStyle = new DataGridViewCellStyle { BackColor = UiPalette.WorkAlternate };
             axisGrid.ReadOnly = true;
             axisGrid.RowHeadersVisible = false;
-            axisGrid.RowTemplate.Height = 44;
+            axisGrid.RowTemplate.Height = 28;
             axisGrid.ScrollBars = ScrollBars.None;
             axisGrid.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             axisGrid.Size = new Size(1044, 144);
@@ -588,12 +550,9 @@
             //
             positionColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleRight;
-            positionColumn.DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleRight, Padding = new Padding(4, 0, 16, 0), Font = new Font("Microsoft YaHei UI", 12F, FontStyle.Bold) };
-            positionColumn.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleRight;
-            positionColumn.HeaderCell.Style.Padding = new Padding(0, 0, 16, 0);
+            positionColumn.DefaultCellStyle = dataGridViewCellStyle2;
             positionColumn.HeaderText = "位置反馈";
             positionColumn.MinimumWidth = 120;
-            positionColumn.FillWeight = 100F;
             positionColumn.Name = "positionColumn";
             positionColumn.ReadOnly = true;
             positionColumn.SortMode = DataGridViewColumnSortMode.NotSortable;
@@ -602,12 +561,9 @@
             //
             speedColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleRight;
-            speedColumn.DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleRight, Padding = new Padding(4, 0, 16, 0), Font = new Font("Microsoft YaHei UI", 12F, FontStyle.Bold) };
-            speedColumn.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleRight;
-            speedColumn.HeaderCell.Style.Padding = new Padding(0, 0, 16, 0);
+            speedColumn.DefaultCellStyle = dataGridViewCellStyle3;
             speedColumn.HeaderText = "速度反馈";
             speedColumn.MinimumWidth = 120;
-            speedColumn.FillWeight = 100F;
             speedColumn.Name = "speedColumn";
             speedColumn.ReadOnly = true;
             speedColumn.SortMode = DataGridViewColumnSortMode.NotSortable;
@@ -667,17 +623,16 @@
             logGroup.BackColor = Color.White;
             logGroup.Controls.Add(logLayout);
             logGroup.Dock = DockStyle.Fill;
-            logGroup.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
-            logGroup.ForeColor = UiPalette.WorkText;
+            logGroup.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
+            logGroup.ForeColor = Color.FromArgb(15, 23, 42);
             logGroup.Location = new Point(16, 386);
             logGroup.Margin = new Padding(0, 4, 0, 0);
             logGroup.Name = "logGroup";
-            logGroup.Visible = false;
-            logGroup.Padding = new Padding(12);
+            logGroup.Padding = new Padding(14, 18, 14, 12);
             logGroup.Size = new Size(1072, 204);
             logGroup.TabIndex = 4;
             logGroup.TabStop = false;
-            logGroup.Text = "";
+            logGroup.Text = "运行消息";
             //
             // logLayout
             //
@@ -700,7 +655,7 @@
             _logList.BackColor = Color.White;
             _logList.BorderStyle = BorderStyle.None;
             _logList.Dock = DockStyle.Fill;
-            _logList.Font = new Font("Microsoft YaHei UI", 10F);
+            _logList.Font = new Font("Microsoft YaHei UI", 9F);
             _logList.IntegralHeight = false;
             _logList.ItemHeight = 17;
             _logList.Location = new Point(3, 3);
@@ -712,13 +667,13 @@
             //
             clearLogButton.Anchor = AnchorStyles.Left;
             clearLogButton.AutoSize = true;
-            clearLogButton.BackColor = UiPalette.WorkCanvas;
+            clearLogButton.BackColor = Color.FromArgb(248, 250, 252);
             clearLogButton.Cursor = Cursors.Hand;
-            clearLogButton.FlatAppearance.BorderColor = UiPalette.WorkBorder;
-            clearLogButton.FlatAppearance.MouseOverBackColor = UiPalette.WorkBorder;
+            clearLogButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
+            clearLogButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(226, 232, 240);
             clearLogButton.FlatStyle = FlatStyle.Flat;
-            clearLogButton.Font = new Font("Microsoft YaHei UI", 10F);
-            clearLogButton.ForeColor = UiPalette.WorkText;
+            clearLogButton.Font = new Font("Microsoft YaHei UI", 9F);
+            clearLogButton.ForeColor = Color.FromArgb(15, 23, 42);
             clearLogButton.Location = new Point(3, 123);
             clearLogButton.MinimumSize = new Size(114, 32);
             clearLogButton.Name = "clearLogButton";
@@ -733,11 +688,11 @@
             AutoScaleDimensions = new SizeF(96F, 96F);
             AutoScaleMode = AutoScaleMode.Dpi;
             AutoScroll = true;
-            AutoScrollMinSize = new Size(760, 590);
-            BackColor = UiPalette.WorkCanvas;
+            AutoScrollMinSize = new Size(900, 606);
+            BackColor = Color.FromArgb(241, 245, 249);
             Controls.Add(pagePanel);
-            Font = new Font("Microsoft YaHei UI", 10F);
-            ForeColor = UiPalette.WorkText;
+            Font = new Font("Microsoft YaHei UI", 9F);
+            ForeColor = Color.FromArgb(15, 23, 42);
             Name = "Auto";
             Size = new Size(1104, 606);
             pagePanel.ResumeLayout(false);

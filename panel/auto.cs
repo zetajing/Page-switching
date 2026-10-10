@@ -6,24 +6,16 @@ namespace Page_switching
     public partial class Auto : UserControl
     {
         private string? _lastMonitorStateKey;
-        private (DataGridViewColumn Column, int Width, int MinimumWidth, float FillWeight)[]? _axisColumnMetrics;
+        private (DataGridViewColumn Column, int Width, int MinimumWidth)[]? _axisColumnMetrics;
         private int _axisHeaderHeight;
         private int _axisRowHeight;
-        private bool _messagesExpanded;
-        private readonly ToolTip _feedbackTips;
-        private readonly List<Image> _cardImages = new();
-        private int _iconDpi;
 
         public Auto()
         {
             InitializeComponent();
-            components ??= new Container();
-            _feedbackTips = new ToolTip(components) { AutoPopDelay = 30000, InitialDelay = 400, ReshowDelay = 100 };
-            axisGrid.CellPainting += AxisGrid_CellPainting;
-            Disposed += (_, _) => { foreach (var image in _cardImages) image.Dispose(); };
             // 保存 Designer 的逻辑尺寸，每次 DPI 改变都从基线计算，避免重复放大。
             _axisColumnMetrics = axisGrid.Columns.Cast<DataGridViewColumn>()
-                .Select(column => (column, column.Width, column.MinimumWidth, column.FillWeight)).ToArray();
+                .Select(column => (column, column.Width, column.MinimumWidth)).ToArray();
             _axisHeaderHeight = axisGrid.ColumnHeadersHeight;
             _axisRowHeight = axisGrid.RowTemplate.Height;
             // 表格初始化时已创建四条占位行，运行时只更新反馈值。
@@ -36,85 +28,11 @@ namespace Page_switching
 
         protected override void OnLayout(LayoutEventArgs e)
         {
-            if (pagePanel is not null)
-            {
-                var scale = DeviceDpi / 96d;
-                var minimum = new Size((int)Math.Round(760 * scale),
-                    (int)Math.Round((_messagesExpanded ? 800 : 620) * scale));
-                if (pagePanel.MinimumSize != minimum) pagePanel.MinimumSize = minimum;
-                var messageHeight = _messagesExpanded ? (int)Math.Round(180 * scale) : 0;
-                if (rootLayout.RowStyles.Count == 6 && rootLayout.RowStyles[5].Height != messageHeight)
-                    rootLayout.RowStyles[5].Height = messageHeight;
-                UpdateCardIcons();
-            }
             // Dock.Fill 子项不会自动扩展滚动范围，使用已随 DPI 缩放的最小画布。
             if (pagePanel != null && AutoScrollMinSize != pagePanel.MinimumSize)
                 AutoScrollMinSize = pagePanel.MinimumSize;
             UpdateAxisGridDpi();
             base.OnLayout(e);
-        }
-
-        // 图标从 DPI 基准重建，标题和详情仍是 Designer 中可编辑的 Label。
-        private void UpdateCardIcons()
-        {
-            if (_cardImages is null || _iconDpi == DeviceDpi || controlCaptionLabel is null) return;
-            foreach (var image in _cardImages) image.Dispose();
-            _cardImages.Clear();
-            foreach (var (label, icon, color) in new[]
-            {
-                (controlCaptionLabel, UiIcon.Owner, UiPalette.WorkPrimary),
-                (modeCaptionLabel, UiIcon.Mode, UiPalette.Success),
-                (waveCaptionLabel, UiIcon.State, UiPalette.Warning)
-            })
-            {
-                var image = UiIcons.Create(icon, color, (int)Math.Round(20 * DeviceDpi / 96d));
-                label.Image = image;
-                label.ImageAlign = ContentAlignment.MiddleRight;
-                label.Padding = Padding.Empty;
-                _cardImages.Add(image);
-            }
-            _iconDpi = DeviceDpi;
-        }
-
-        private void MessageToggleButton_Click(object? sender, EventArgs e)
-        {
-            _messagesExpanded = !_messagesExpanded;
-            logGroup.Visible = _messagesExpanded;
-            UpdateMessageSummary();
-            PerformLayout();
-            if (_messagesExpanded && _logList.Items.Count > 0)
-                _logList.TopIndex = _logList.Items.Count - 1;
-        }
-
-        private void UpdateMessageSummary()
-        {
-            messageToggleButton.Text = $"{(_messagesExpanded ? "收起" : "展开")}运行消息 ({_logList.Items.Count})";
-            var latest = _logList.Items.Count == 0 ? "暂无运行消息" : _logList.Items[^1]?.ToString() ?? "";
-            messageSummaryLabel.Text = latest.Length > 120 ? latest[..120] + "…" : latest;
-            _feedbackTips.SetToolTip(messageSummaryLabel, latest);
-            clearLogButton.Enabled = _logList.Items.Count > 0;
-        }
-
-        // 状态标签只负责绘制；原始单元格文本、选择和错误提示继续使用现有数据。
-        private void AxisGrid_CellPainting(object? sender, DataGridViewCellPaintingEventArgs e)
-        {
-            if (e.RowIndex < 0 || e.ColumnIndex < 3 || e.CellStyle is null) return;
-            e.Paint(e.ClipBounds, DataGridViewPaintParts.Background | DataGridViewPaintParts.Border | DataGridViewPaintParts.SelectionBackground);
-            var scale = DeviceDpi / 96f;
-            var text = e.FormattedValue?.ToString() ?? "--";
-            var color = e.CellStyle.ForeColor;
-            if (color == UiPalette.Text) color = UiPalette.WorkMuted;
-            var font = e.CellStyle.Font ?? axisGrid.Font;
-            var width = Math.Min(e.CellBounds.Width - (int)(12 * scale), TextRenderer.MeasureText(text, font).Width + (int)(16 * scale));
-            var height = (int)(26 * scale);
-            var bounds = new Rectangle(e.CellBounds.X + (e.CellBounds.Width - width) / 2,
-                e.CellBounds.Y + (e.CellBounds.Height - height) / 2, Math.Max(1, width), height);
-            using var shape = UiIcons.RoundedRectangle(bounds, 5 * scale);
-            using var brush = new SolidBrush(Color.FromArgb(18, color));
-            e.Graphics!.FillPath(brush, shape);
-            TextRenderer.DrawText(e.Graphics, text, font, bounds, color,
-                TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
-            e.Handled = true;
         }
 
         private void UpdateAxisGridDpi()
@@ -131,10 +49,6 @@ namespace Page_switching
                     if (metric.Column.Width != width) metric.Column.Width = width;
                 }
             }
-            // 原生表格在设置最小列宽时会调整填充权重；恢复 Designer 基准保证两列比例稳定。
-            foreach (var metric in _axisColumnMetrics)
-                if (metric.Column.AutoSizeMode == DataGridViewAutoSizeColumnMode.Fill && metric.Column.FillWeight != metric.FillWeight)
-                    metric.Column.FillWeight = metric.FillWeight;
             var headerHeight = (int)Math.Round(_axisHeaderHeight * scale);
             if (axisGrid.ColumnHeadersHeight != headerHeight) axisGrid.ColumnHeadersHeight = headerHeight;
             var rowHeight = (int)Math.Round(_axisRowHeight * scale);
@@ -158,7 +72,6 @@ namespace Page_switching
             OperationJournal.Record("自动运行", message);
             if (_logList.Items.Count > 500) _logList.Items.RemoveAt(0);
             _logList.TopIndex = Math.Max(0, _logList.Items.Count - 1);
-            UpdateMessageSummary();
         }
 
         // 只显示快照，不申请控制权、不切换模式，也不下发造波或轴命令。
@@ -177,14 +90,6 @@ namespace Page_switching
             UpdateConnectionFeedback(snapshot);
             UpdateAxisRows(snapshot);
             LogMonitorStateChange(snapshot);
-            _feedbackTips.SetToolTip(controlValueLabel, snapshot.ControlOwner.ErrorMessage ?? "PLC 控制端反馈");
-            _feedbackTips.SetToolTip(controlDetailLabel, snapshot.ControlOwner.ErrorMessage ?? "PLC 控制端反馈");
-            _feedbackTips.SetToolTip(modeValueLabel, snapshot.ControlMode.ErrorMessage ?? "PLC 运行模式反馈");
-            _feedbackTips.SetToolTip(modeDetailLabel, snapshot.ControlMode.ErrorMessage ?? "PLC 运行模式反馈");
-            _feedbackTips.SetToolTip(_runStateLabel, snapshot.WaveState.ErrorMessage ?? "PLC 造波状态反馈");
-            _feedbackTips.SetToolTip(faultCodeLabel, snapshot.WaveFaultCode.ErrorMessage ?? "PLC 故障码反馈");
-            _feedbackTips.SetToolTip(connectionLabel, snapshot.ErrorMessage ?? snapshot.QualityText);
-            _feedbackTips.SetToolTip(heartbeatLabel, snapshot.Heartbeat.ErrorMessage ?? "PLC 心跳反馈");
         }
 
         // 三个状态卡片及故障码只使用当前快照，读取失败时保留明确的无效状态。
@@ -343,7 +248,7 @@ namespace Page_switching
             if (!HasValue(field))
             {
                 valueLabel.ForeColor = UnavailableColor(valueLabel.Text);
-                detailLabel.Text = FormatUnavailableFeedback(field.ErrorMessage) + " · 悬停查看详情";
+                detailLabel.Text = field.ErrorMessage ?? "等待有效反馈";
                 detailLabel.ForeColor = valueLabel.ForeColor;
                 return;
             }
@@ -392,7 +297,6 @@ namespace Page_switching
         private void ClearLogButton_Click(object? sender, EventArgs e)
         {
             _logList.Items.Clear();
-            UpdateMessageSummary();
         }
     }
 }
