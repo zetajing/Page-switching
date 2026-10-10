@@ -79,6 +79,14 @@ namespace Page_switching
             UpdateConnectionState();
         }
 
+        protected override void OnLayout(LayoutEventArgs e)
+        {
+            // 最小画布已随 Designer 的 DPI 缩放，缩小窗口后可滚动到右下角停止按钮。
+            if (pagePanel != null && AutoScrollMinSize != pagePanel.MinimumSize)
+                AutoScrollMinSize = pagePanel.MinimumSize;
+            base.OnLayout(e);
+        }
+
         // 页面显示时开始刷新，隐藏时停止刷新和正在进行的点动。
         private void Manual_VisibilityChanged(object? sender, EventArgs e)
         {

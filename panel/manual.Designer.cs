@@ -175,8 +175,9 @@ namespace Page_switching
             pagePanel.Dock = DockStyle.Fill;
             pagePanel.Location = new Point(0, 0);
             pagePanel.Margin = new Padding(2);
+            pagePanel.MinimumSize = new Size(1080, 780);
             pagePanel.Name = "pagePanel";
-            pagePanel.Size = new Size(1380, 758);
+            pagePanel.Size = new Size(1380, 780);
             pagePanel.TabIndex = 0;
             // 
             // rootLayout
@@ -185,8 +186,8 @@ namespace Page_switching
             rootLayout.ColumnCount = 1;
             rootLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
             rootLayout.Controls.Add(headerPanel, 0, 0);
-            rootLayout.Controls.Add(globalActionsPanel, 0, 1);
-            rootLayout.Controls.Add(contentLayout, 0, 2);
+            rootLayout.Controls.Add(globalActionsPanel, 0, 2);
+            rootLayout.Controls.Add(contentLayout, 0, 1);
             rootLayout.Dock = DockStyle.Fill;
             rootLayout.Location = new Point(0, 0);
             rootLayout.Margin = new Padding(2);
@@ -194,9 +195,9 @@ namespace Page_switching
             rootLayout.Padding = new Padding(20);
             rootLayout.RowCount = 3;
             rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 60F));
-            rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 60F));
             rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            rootLayout.Size = new Size(1380, 758);
+            rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 88F));
+            rootLayout.Size = new Size(1380, 780);
             rootLayout.TabIndex = 0;
             // 
             // headerPanel
@@ -245,12 +246,15 @@ namespace Page_switching
             globalActionsPanel.Controls.Add(resetAlarmButton);
             globalActionsPanel.Controls.Add(homeAllButton);
             globalActionsPanel.Controls.Add(stopAllButton);
-            globalActionsPanel.Dock = DockStyle.Fill;
-            globalActionsPanel.Location = new Point(22, 82);
-            globalActionsPanel.Margin = new Padding(2);
+            // 全轴按钮行整体贴右下角，按钮本身保持固定尺寸，不随边缘拉伸。
+            globalActionsPanel.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            globalActionsPanel.AutoSize = true;
+            globalActionsPanel.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            globalActionsPanel.Location = new Point(362, 696);
+            globalActionsPanel.Margin = new Padding(0, 12, 0, 0);
             globalActionsPanel.Name = "globalActionsPanel";
-            globalActionsPanel.Padding = new Padding(0, 8, 0, 0);
-            globalActionsPanel.Size = new Size(1336, 56);
+            globalActionsPanel.Padding = new Padding(0);
+            globalActionsPanel.Size = new Size(998, 64);
             globalActionsPanel.TabIndex = 1;
             globalActionsPanel.WrapContents = false;
             // 
@@ -260,12 +264,12 @@ namespace Page_switching
             enableAllButton.Cursor = Cursors.Hand;
             enableAllButton.FlatAppearance.BorderSize = 0;
             enableAllButton.FlatStyle = FlatStyle.Flat;
-            enableAllButton.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
+            enableAllButton.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
             enableAllButton.ForeColor = Color.White;
-            enableAllButton.Location = new Point(0, 8);
-            enableAllButton.Margin = new Padding(0, 0, 10, 0);
+            enableAllButton.Location = new Point(0, 0);
+            enableAllButton.Margin = new Padding(0, 0, 12, 0);
             enableAllButton.Name = "enableAllButton";
-            enableAllButton.Size = new Size(130, 42);
+            enableAllButton.Size = new Size(190, 64);
             enableAllButton.TabIndex = 0;
             enableAllButton.Text = "全部使能";
             enableAllButton.UseVisualStyleBackColor = false;
@@ -277,12 +281,12 @@ namespace Page_switching
             disableAllButton.Cursor = Cursors.Hand;
             disableAllButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
             disableAllButton.FlatStyle = FlatStyle.Flat;
-            disableAllButton.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
+            disableAllButton.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
             disableAllButton.ForeColor = Color.FromArgb(71, 85, 105);
-            disableAllButton.Location = new Point(140, 8);
-            disableAllButton.Margin = new Padding(0, 0, 10, 0);
+            disableAllButton.Location = new Point(202, 0);
+            disableAllButton.Margin = new Padding(0, 0, 12, 0);
             disableAllButton.Name = "disableAllButton";
-            disableAllButton.Size = new Size(130, 42);
+            disableAllButton.Size = new Size(190, 64);
             disableAllButton.TabIndex = 1;
             disableAllButton.Text = "取消使能";
             disableAllButton.UseVisualStyleBackColor = false;
@@ -294,12 +298,12 @@ namespace Page_switching
             resetAlarmButton.Cursor = Cursors.Hand;
             resetAlarmButton.FlatAppearance.BorderColor = Color.FromArgb(254, 215, 170);
             resetAlarmButton.FlatStyle = FlatStyle.Flat;
-            resetAlarmButton.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
+            resetAlarmButton.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
             resetAlarmButton.ForeColor = Color.FromArgb(154, 52, 18);
-            resetAlarmButton.Location = new Point(280, 8);
-            resetAlarmButton.Margin = new Padding(0, 0, 10, 0);
+            resetAlarmButton.Location = new Point(404, 0);
+            resetAlarmButton.Margin = new Padding(0, 0, 12, 0);
             resetAlarmButton.Name = "resetAlarmButton";
-            resetAlarmButton.Size = new Size(150, 42);
+            resetAlarmButton.Size = new Size(190, 64);
             resetAlarmButton.TabIndex = 2;
             resetAlarmButton.Text = "全部复位报警";
             resetAlarmButton.UseVisualStyleBackColor = false;
@@ -312,12 +316,12 @@ namespace Page_switching
             homeAllButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
             homeAllButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(226, 232, 240);
             homeAllButton.FlatStyle = FlatStyle.Flat;
-            homeAllButton.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
+            homeAllButton.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
             homeAllButton.ForeColor = Color.FromArgb(15, 23, 42);
-            homeAllButton.Location = new Point(440, 8);
-            homeAllButton.Margin = new Padding(0, 0, 10, 0);
+            homeAllButton.Location = new Point(606, 0);
+            homeAllButton.Margin = new Padding(0, 0, 12, 0);
             homeAllButton.Name = "homeAllButton";
-            homeAllButton.Size = new Size(130, 42);
+            homeAllButton.Size = new Size(190, 64);
             homeAllButton.TabIndex = 3;
             homeAllButton.Text = "全部回零";
             homeAllButton.UseVisualStyleBackColor = false;
@@ -329,12 +333,12 @@ namespace Page_switching
             stopAllButton.Cursor = Cursors.Hand;
             stopAllButton.FlatAppearance.BorderSize = 0;
             stopAllButton.FlatStyle = FlatStyle.Flat;
-            stopAllButton.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
+            stopAllButton.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
             stopAllButton.ForeColor = Color.White;
-            stopAllButton.Location = new Point(580, 8);
-            stopAllButton.Margin = new Padding(0, 0, 10, 0);
+            stopAllButton.Location = new Point(808, 0);
+            stopAllButton.Margin = new Padding(0);
             stopAllButton.Name = "stopAllButton";
-            stopAllButton.Size = new Size(130, 42);
+            stopAllButton.Size = new Size(190, 64);
             stopAllButton.TabIndex = 4;
             stopAllButton.Text = "全部停止";
             stopAllButton.UseVisualStyleBackColor = false;
@@ -348,13 +352,13 @@ namespace Page_switching
             contentLayout.Controls.Add(overviewGroup, 0, 0);
             contentLayout.Controls.Add(controlGroup, 1, 0);
             contentLayout.Dock = DockStyle.Fill;
-            contentLayout.Location = new Point(22, 142);
+            contentLayout.Location = new Point(22, 82);
             contentLayout.Margin = new Padding(2);
             contentLayout.MinimumSize = new Size(1025, 525);
             contentLayout.Name = "contentLayout";
             contentLayout.RowCount = 1;
             contentLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            contentLayout.Size = new Size(1336, 594);
+            contentLayout.Size = new Size(1336, 588);
             contentLayout.TabIndex = 2;
             // 
             // overviewGroup
@@ -1234,18 +1238,19 @@ namespace Page_switching
             AutoScaleDimensions = new SizeF(120F, 120F);
             AutoScaleMode = AutoScaleMode.Dpi;
             AutoScroll = true;
-            AutoScrollMinSize = new Size(860, 600);
+            AutoScrollMinSize = new Size(1080, 780);
             BackColor = Color.FromArgb(241, 245, 249);
             Controls.Add(pagePanel);
             Font = new Font("Microsoft YaHei UI", 9F);
             ForeColor = Color.FromArgb(15, 23, 42);
             Margin = new Padding(2);
             Name = "Manual";
-            Size = new Size(1380, 758);
+            Size = new Size(1380, 780);
             pagePanel.ResumeLayout(false);
             rootLayout.ResumeLayout(false);
             headerPanel.ResumeLayout(false);
             globalActionsPanel.ResumeLayout(false);
+            globalActionsPanel.PerformLayout();
             contentLayout.ResumeLayout(false);
             overviewGroup.ResumeLayout(false);
             axisOverviewLayout.ResumeLayout(false);
