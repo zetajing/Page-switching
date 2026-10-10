@@ -143,8 +143,8 @@ public sealed class ServoPositionIndicator : Control
         graphics.SmoothingMode = SmoothingMode.AntiAlias;
         graphics.Clear(BackColor);
 
-        using var borderPen = new Pen(UiPalette.Border);
-        using var trackPen = new Pen(UiPalette.Border, 8)
+        var scale = DeviceDpi / 96f;
+        using var trackPen = new Pen(UiPalette.WorkBorder, 6 * scale)
         {
             StartCap = LineCap.Round,
             EndCap = LineCap.Round
@@ -153,12 +153,10 @@ public sealed class ServoPositionIndicator : Control
         using var actualTextBrush = new SolidBrush(GetActualColor());
         using var mutedBrush = new SolidBrush(UiPalette.Muted);
 
-        var border = new Rectangle(0, 0, Math.Max(0, Width - 1), Math.Max(0, Height - 1));
-        graphics.DrawRectangle(borderPen, border);
-
-        var left = 26f;
-        var right = Math.Max(left + 20, Width - 26f);
-        var trackY = Math.Min(Height - 23f, 45f);
+        // 像素尺寸以 96 DPI 为基准；数值、轨道与范围分行，不把未知位置画成零。
+        var left = 24f * scale;
+        var right = Math.Max(left + 20 * scale, Width - 24f * scale);
+        var trackY = Math.Max(32 * scale, Height * .56f);
         graphics.DrawLine(trackPen, left, trackY, right, trackY);
 
         var zeroX = MapPosition(0, left, right);
@@ -166,27 +164,28 @@ public sealed class ServoPositionIndicator : Control
         {
             DashStyle = DashStyle.Dash
         };
-        graphics.DrawLine(zeroPen, zeroX, trackY - 13, zeroX, trackY + 13);
+        graphics.DrawLine(zeroPen, zeroX, trackY - 8 * scale, zeroX, trackY + 8 * scale);
 
         if (_actualPosition.HasValue && _isConnected)
         {
             var actualX = MapPosition(_actualPosition.Value, left, right);
-            graphics.FillEllipse(actualBrush, actualX - 7, trackY - 7, 14, 14);
+            graphics.FillEllipse(actualBrush, actualX - 6 * scale, trackY - 6 * scale, 12 * scale, 12 * scale);
+            using var valueFont = new Font("Microsoft YaHei UI", 14, FontStyle.Bold);
             DrawCenteredString(
                 graphics,
                 $"{_actualPosition.Value:0.##}{_unitText}",
-                Font,
+                valueFont,
                 actualTextBrush,
-                actualX,
-                Height - 20);
+                (left + right) / 2,
+                2 * scale);
         }
         else
         {
-            DrawCenteredString(graphics, "暂无位置数据", Font, mutedBrush, (left + right) / 2, 6);
+            DrawCenteredString(graphics, "暂无位置数据", Font, mutedBrush, (left + right) / 2, 6 * scale);
         }
 
-        DrawAlignedString(graphics, $"{_minimumPosition:0.##}{_unitText}", Font, mutedBrush, left, Height - 20);
-        DrawAlignedString(graphics, $"{_maximumPosition:0.##}{_unitText}", Font, mutedBrush, right, Height - 20, rightAligned: true);
+        DrawAlignedString(graphics, $"{_minimumPosition:0.##}{_unitText}", Font, mutedBrush, left, Height - 20 * scale);
+        DrawAlignedString(graphics, $"{_maximumPosition:0.##}{_unitText}", Font, mutedBrush, right, Height - 20 * scale, rightAligned: true);
     }
 
     // 将实际轴位置换算为控件中的横坐标。

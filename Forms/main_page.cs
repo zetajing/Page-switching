@@ -33,6 +33,9 @@ namespace Page_switching
         private readonly bool _recordOperations = LicenseManager.UsageMode != LicenseUsageMode.Designtime;
         private UserControl? _currentPage;
         private bool? _lastAdsConnected;
+        private Button? _activeNavigationButton;
+        private readonly Dictionary<Button, Image> _navigationImages = new();
+        private readonly ToolTip _logPathTip;
         private static readonly HashSet<string> ResultLabels =
         [
             "regularStatusLabel", "irregularStatusLabel",
@@ -43,6 +46,10 @@ namespace Page_switching
         public Mainpage()
         {
             InitializeComponent();
+            components ??= new Container();
+            _logPathTip = new ToolTip(components) { AutoPopDelay = 30000 };
+            // 路径缩略显示时仍能悬停查看完整目录；保存配置后的 TextChanged 同步提示。
+            operationPathLabel.TextChanged += (_, _) => _logPathTip.SetToolTip(operationPathLabel, operationPathLabel.Text);
             if (_recordOperations)
             {
                 operationPathLabel.Text = "日志保存位置：" + OperationJournal.DirectoryPath;
@@ -105,6 +112,8 @@ namespace Page_switching
             OperationJournal.EntryAdded -= AddOperationEntry;
             _headerStatusTimer.Stop();
             _headerStatusTimer.Dispose();
+            foreach (var image in _navigationImages.Values) image.Dispose();
+            _navigationImages.Clear();
             // 当前页面可能已由窗体释放，隐藏页面才需要在这里补充释放。
             foreach (var page in _pages)
                 if (!page.IsDisposed) page.Dispose();
@@ -361,24 +370,57 @@ namespace Page_switching
             }
         }
 
-        // 普通按钮保留白底边框；当前页面使用蓝底白字，并区分悬停和按下状态。
+        // 图标与文字使用同一选中颜色；替换图标时释放旧位图，避免切页积累 GDI 资源。
         private void SetActiveNavigation(Button activeButton)
         {
+            _activeNavigationButton = activeButton;
             foreach (var button in new[] { Bu_auto, Bu_manual, Bu_Calibration, Bu_data, button2, button5,
                          analysisButton, correctionButton, bu_Configuration })
             {
                 var isActive = ReferenceEquals(button, activeButton);
-                button.BackColor = isActive ? UiPalette.Primary : UiPalette.Surface;
-                button.ForeColor = isActive ? Color.White : UiPalette.Text;
-                button.FlatAppearance.BorderColor = isActive ? UiPalette.Primary : UiPalette.Border;
-                button.FlatAppearance.MouseOverBackColor = isActive ? UiPalette.PrimaryHover : UiPalette.Selection;
-                button.FlatAppearance.MouseDownBackColor = isActive ? UiPalette.PrimaryHover : UiPalette.SecondaryButton;
+                button.BackColor = isActive ? UiPalette.WorkSelection : UiPalette.WorkCanvas;
+                button.ForeColor = isActive ? UiPalette.WorkPrimary : UiPalette.WorkText;
+                button.FlatAppearance.BorderSize = 0;
+                button.FlatAppearance.MouseOverBackColor = UiPalette.WorkSelection;
+                button.FlatAppearance.MouseDownBackColor = UiPalette.WorkPressed;
+                var icon = button.Name switch
+                {
+                    "Bu_auto" => UiIcon.Overview, "Bu_manual" => UiIcon.Manual,
+                    "Bu_Calibration" => UiIcon.Calibration, "Bu_data" => UiIcon.Data,
+                    "button2" => UiIcon.Wave, "button5" => UiIcon.Monitor,
+                    "analysisButton" => UiIcon.Analysis, "correctionButton" => UiIcon.Correction,
+                    _ => UiIcon.Settings
+                };
+                var image = UiIcons.Create(icon, button.ForeColor, (int)Math.Round(20 * DeviceDpi / 96d));
+                button.Image = image;
+                if (_navigationImages.Remove(button, out var oldImage)) oldImage.Dispose();
+                _navigationImages.Add(button, image);
             }
 
             navigationMarker.Top = activeButton.Top;
             navigationMarker.Height = activeButton.Height;
 
             UpdateHeaderStatus();
+        }
+
+        protected override void OnDpiChanged(DpiChangedEventArgs e)
+        {
+            base.OnDpiChanged(e);
+            if (_activeNavigationButton is not null) SetActiveNavigation(_activeNavigationButton);
+        }
+
+        protected override void OnLayout(LayoutEventArgs e)
+        {
+            base.OnLayout(e);
+            if (panel2 is null) return;
+            // 为出现的原生纵向滚动条留出空间，侧栏自身不产生横向滚动。
+            var scale = DeviceDpi / 96d;
+            var width = Math.Max((int)(110 * scale), panel2.ClientSize.Width - panel2.Padding.Horizontal);
+            foreach (var button in panel2.Controls.OfType<Button>())
+                if (button.Width != width) button.Width = width;
+            foreach (var label in panel2.Controls.OfType<Label>())
+                if (label.Width != panel2.ClientSize.Width - (int)(40 * scale))
+                    label.Width = Math.Max(1, panel2.ClientSize.Width - (int)(40 * scale));
         }
 
         // 页面名称和设备反馈分开显示，切页不改变实际控制端或运行模式。
@@ -407,7 +449,8 @@ namespace Page_switching
         }
 
         // 根据当前缓存页面返回顶部状态栏要显示的页面名称。
-        private string GetCurrentPageName() => _currentPage is null ? "系统" : GetPageName(_currentPage);
+        private string GetCurrentPageName() => _currentPage is Auto ? "运行总览"
+            : _currentPage is null ? "系统" : GetPageName(_currentPage);
 
         private static string GetPageName(UserControl page) => page switch
         {
