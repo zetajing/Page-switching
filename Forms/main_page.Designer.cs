@@ -38,7 +38,7 @@
             panel1 = new Panel();
             headerStatusPanel = new Panel();
             controlStatusLabel = new Label();
-            appTitleLabel = new Label();
+            adsStatusLabel = new Label();
             panel2 = new Panel();
             systemSectionLabel = new Label();
             toolsSectionLabel = new Label();
@@ -56,7 +56,7 @@
             operationGroup = new Panel();
             operationPathLabel = new Label();
             operationFolderButton = new Button();
-            adsStatusLabel = new Label();
+            appTitleLabel = new Label();
             panel1.SuspendLayout();
             headerStatusPanel.SuspendLayout();
             panel2.SuspendLayout();
@@ -75,7 +75,7 @@
             analysisButton.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
             analysisButton.ForeColor = Color.FromArgb(15, 23, 42);
             analysisButton.Location = new Point(15, 482);
-            analysisButton.Margin = new Padding(4, 4, 4, 4);
+            analysisButton.Margin = new Padding(4);
             analysisButton.Name = "analysisButton";
             analysisButton.Padding = new Padding(15, 0, 0, 0);
             analysisButton.Size = new Size(181, 55);
@@ -96,7 +96,7 @@
             correctionButton.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
             correctionButton.ForeColor = Color.FromArgb(15, 23, 42);
             correctionButton.Location = new Point(15, 545);
-            correctionButton.Margin = new Padding(4, 4, 4, 4);
+            correctionButton.Margin = new Padding(4);
             correctionButton.Name = "correctionButton";
             correctionButton.Padding = new Padding(15, 0, 0, 0);
             correctionButton.Size = new Size(181, 55);
@@ -113,7 +113,7 @@
             panel1.Controls.Add(appTitleLabel);
             panel1.Dock = DockStyle.Top;
             panel1.Location = new Point(0, 0);
-            panel1.Margin = new Padding(4, 4, 4, 4);
+            panel1.Margin = new Padding(4);
             panel1.Name = "panel1";
             panel1.Size = new Size(1600, 75);
             panel1.TabIndex = 0;
@@ -125,7 +125,7 @@
             headerStatusPanel.Controls.Add(adsStatusLabel);
             headerStatusPanel.Dock = DockStyle.Right;
             headerStatusPanel.Location = new Point(1173, 0);
-            headerStatusPanel.Margin = new Padding(4, 4, 4, 4);
+            headerStatusPanel.Margin = new Padding(4);
             headerStatusPanel.Name = "headerStatusPanel";
             headerStatusPanel.Padding = new Padding(15, 8, 25, 8);
             headerStatusPanel.Size = new Size(427, 75);
@@ -145,17 +145,18 @@
             controlStatusLabel.Text = "页面：自动运行    控制端：等待反馈    模式：等待反馈";
             controlStatusLabel.TextAlign = ContentAlignment.MiddleRight;
             // 
-            // appTitleLabel
+            // adsStatusLabel
             // 
-            appTitleLabel.AutoSize = true;
-            appTitleLabel.Font = new Font("Microsoft YaHei UI", 14F, FontStyle.Bold);
-            appTitleLabel.ForeColor = Color.FromArgb(15, 23, 42);
-            appTitleLabel.Location = new Point(25, 19);
-            appTitleLabel.Margin = new Padding(4, 0, 4, 0);
-            appTitleLabel.Name = "appTitleLabel";
-            appTitleLabel.Size = new Size(158, 31);
-            appTitleLabel.TabIndex = 0;
-            appTitleLabel.Text = "造波控制系统";
+            adsStatusLabel.Dock = DockStyle.Top;
+            adsStatusLabel.Font = new Font("Microsoft YaHei UI", 10.8F, FontStyle.Bold, GraphicsUnit.Point, 134);
+            adsStatusLabel.ForeColor = Color.FromArgb(154, 52, 18);
+            adsStatusLabel.Location = new Point(15, 8);
+            adsStatusLabel.Margin = new Padding(4, 0, 4, 0);
+            adsStatusLabel.Name = "adsStatusLabel";
+            adsStatusLabel.Size = new Size(387, 31);
+            adsStatusLabel.TabIndex = 0;
+            adsStatusLabel.Text = "● ADS：手动未连接 / 监控未连接";
+            adsStatusLabel.TextAlign = ContentAlignment.MiddleRight;
             // 
             // panel2
             // 
@@ -177,7 +178,7 @@
             panel2.Controls.Add(correctionButton);
             panel2.Dock = DockStyle.Left;
             panel2.Location = new Point(0, 75);
-            panel2.Margin = new Padding(4, 4, 4, 4);
+            panel2.Margin = new Padding(4);
             panel2.Name = "panel2";
             panel2.Padding = new Padding(15, 0, 15, 15);
             panel2.Size = new Size(220, 950);
@@ -227,7 +228,7 @@
             bu_Configuration.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
             bu_Configuration.ForeColor = Color.FromArgb(15, 23, 42);
             bu_Configuration.Location = new Point(15, 652);
-            bu_Configuration.Margin = new Padding(4, 4, 4, 4);
+            bu_Configuration.Margin = new Padding(4);
             bu_Configuration.Name = "bu_Configuration";
             bu_Configuration.Padding = new Padding(15, 0, 0, 0);
             bu_Configuration.Size = new Size(181, 55);
@@ -248,7 +249,7 @@
             button5.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
             button5.ForeColor = Color.FromArgb(15, 23, 42);
             button5.Location = new Point(15, 420);
-            button5.Margin = new Padding(4, 4, 4, 4);
+            button5.Margin = new Padding(4);
             button5.Name = "button5";
             button5.Padding = new Padding(15, 0, 0, 0);
             button5.Size = new Size(181, 55);
@@ -269,7 +270,7 @@
             button2.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
             button2.ForeColor = Color.FromArgb(15, 23, 42);
             button2.Location = new Point(15, 358);
-            button2.Margin = new Padding(4, 4, 4, 4);
+            button2.Margin = new Padding(4);
             button2.Name = "button2";
             button2.Padding = new Padding(15, 0, 0, 0);
             button2.Size = new Size(181, 55);
@@ -290,7 +291,7 @@
             Bu_data.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
             Bu_data.ForeColor = Color.FromArgb(15, 23, 42);
             Bu_data.Location = new Point(15, 295);
-            Bu_data.Margin = new Padding(4, 4, 4, 4);
+            Bu_data.Margin = new Padding(4);
             Bu_data.Name = "Bu_data";
             Bu_data.Padding = new Padding(15, 0, 0, 0);
             Bu_data.Size = new Size(181, 55);
@@ -311,7 +312,7 @@
             Bu_Calibration.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
             Bu_Calibration.ForeColor = Color.FromArgb(15, 23, 42);
             Bu_Calibration.Location = new Point(15, 232);
-            Bu_Calibration.Margin = new Padding(4, 4, 4, 4);
+            Bu_Calibration.Margin = new Padding(4);
             Bu_Calibration.Name = "Bu_Calibration";
             Bu_Calibration.Padding = new Padding(15, 0, 0, 0);
             Bu_Calibration.Size = new Size(181, 55);
@@ -332,7 +333,7 @@
             Bu_manual.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
             Bu_manual.ForeColor = Color.FromArgb(15, 23, 42);
             Bu_manual.Location = new Point(15, 118);
-            Bu_manual.Margin = new Padding(4, 4, 4, 4);
+            Bu_manual.Margin = new Padding(4);
             Bu_manual.Name = "Bu_manual";
             Bu_manual.Padding = new Padding(15, 0, 0, 0);
             Bu_manual.Size = new Size(181, 55);
@@ -353,7 +354,7 @@
             Bu_auto.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
             Bu_auto.ForeColor = Color.White;
             Bu_auto.Location = new Point(15, 55);
-            Bu_auto.Margin = new Padding(4, 4, 4, 4);
+            Bu_auto.Margin = new Padding(4);
             Bu_auto.Name = "Bu_auto";
             Bu_auto.Padding = new Padding(15, 0, 0, 0);
             Bu_auto.Size = new Size(181, 55);
@@ -367,49 +368,49 @@
             // 
             navigationMarker.BackColor = Color.FromArgb(29, 78, 216);
             navigationMarker.Location = new Point(0, 55);
-            navigationMarker.Margin = new Padding(4, 4, 4, 4);
+            navigationMarker.Margin = new Padding(4);
             navigationMarker.Name = "navigationMarker";
             navigationMarker.Size = new Size(4, 55);
             navigationMarker.TabIndex = 11;
-            //
-            // contentPanel：只承载主页面和日志位置栏，不再初始化旧操作记录控件。
-            //
+            // 
+            // contentPanel
+            // 
             contentPanel.BackColor = Color.FromArgb(241, 245, 249);
             contentPanel.Controls.Add(panelswitch);
             contentPanel.Controls.Add(operationGroup);
             contentPanel.Dock = DockStyle.Fill;
             contentPanel.Location = new Point(220, 75);
-            contentPanel.Margin = new Padding(4, 4, 4, 4);
+            contentPanel.Margin = new Padding(4);
             contentPanel.Name = "contentPanel";
             contentPanel.Size = new Size(1380, 950);
             contentPanel.TabIndex = 2;
-            //
+            // 
             // panelswitch
-            //
+            // 
             panelswitch.BackColor = Color.FromArgb(241, 245, 249);
             panelswitch.Dock = DockStyle.Fill;
             panelswitch.Location = new Point(0, 0);
-            panelswitch.Margin = new Padding(4, 4, 4, 4);
+            panelswitch.Margin = new Padding(4);
             panelswitch.Name = "panelswitch";
             panelswitch.Size = new Size(1380, 908);
             panelswitch.TabIndex = 2;
-            //
+            // 
             // operationGroup
-            //
+            // 
             operationGroup.BackColor = Color.White;
             operationGroup.Controls.Add(operationPathLabel);
             operationGroup.Controls.Add(operationFolderButton);
             operationGroup.Dock = DockStyle.Bottom;
             operationGroup.ForeColor = Color.FromArgb(15, 23, 42);
             operationGroup.Location = new Point(0, 908);
-            operationGroup.Margin = new Padding(4, 4, 4, 4);
+            operationGroup.Margin = new Padding(4);
             operationGroup.Name = "operationGroup";
             operationGroup.Padding = new Padding(15, 0, 15, 0);
             operationGroup.Size = new Size(1380, 42);
             operationGroup.TabIndex = 3;
-            //
+            // 
             // operationPathLabel
-            //
+            // 
             operationPathLabel.AutoEllipsis = true;
             operationPathLabel.Dock = DockStyle.Fill;
             operationPathLabel.Font = new Font("Microsoft YaHei UI", 8F);
@@ -421,9 +422,9 @@
             operationPathLabel.TabIndex = 1;
             operationPathLabel.Text = "日志保存位置：";
             operationPathLabel.TextAlign = ContentAlignment.MiddleLeft;
-            //
+            // 
             // operationFolderButton
-            //
+            // 
             operationFolderButton.BackColor = Color.White;
             operationFolderButton.Cursor = Cursors.Hand;
             operationFolderButton.Dock = DockStyle.Right;
@@ -432,29 +433,28 @@
             operationFolderButton.FlatStyle = FlatStyle.Flat;
             operationFolderButton.ForeColor = Color.FromArgb(71, 85, 105);
             operationFolderButton.Location = new Point(1235, 0);
-            operationFolderButton.Margin = new Padding(4, 4, 4, 4);
+            operationFolderButton.Margin = new Padding(4);
             operationFolderButton.Name = "operationFolderButton";
             operationFolderButton.Size = new Size(130, 42);
             operationFolderButton.TabIndex = 2;
             operationFolderButton.Text = "打开日志目录";
             operationFolderButton.UseVisualStyleBackColor = false;
             operationFolderButton.Click += OpenOperationFolderButton_Click;
-            //
-            // adsStatusLabel
-            //
-            adsStatusLabel.Dock = DockStyle.Top;
-            adsStatusLabel.Font = new Font("Microsoft YaHei UI", 10.8F, FontStyle.Bold, GraphicsUnit.Point, 134);
-            adsStatusLabel.ForeColor = Color.FromArgb(154, 52, 18);
-            adsStatusLabel.Location = new Point(15, 8);
-            adsStatusLabel.Margin = new Padding(4, 0, 4, 0);
-            adsStatusLabel.Name = "adsStatusLabel";
-            adsStatusLabel.Size = new Size(387, 31);
-            adsStatusLabel.TabIndex = 0;
-            adsStatusLabel.Text = "● ADS：手动未连接 / 监控未连接";
-            adsStatusLabel.TextAlign = ContentAlignment.MiddleRight;
-            //
+            // 
+            // appTitleLabel
+            // 
+            appTitleLabel.AutoSize = true;
+            appTitleLabel.Font = new Font("Microsoft YaHei UI", 14F, FontStyle.Bold);
+            appTitleLabel.ForeColor = Color.FromArgb(15, 23, 42);
+            appTitleLabel.Location = new Point(25, 19);
+            appTitleLabel.Margin = new Padding(4, 0, 4, 0);
+            appTitleLabel.Name = "appTitleLabel";
+            appTitleLabel.Size = new Size(158, 31);
+            appTitleLabel.TabIndex = 0;
+            appTitleLabel.Text = "造波控制系统";
+            // 
             // Mainpage
-            //
+            // 
             AutoScaleDimensions = new SizeF(120F, 120F);
             AutoScaleMode = AutoScaleMode.Dpi;
             BackColor = Color.FromArgb(241, 245, 249);
@@ -464,7 +464,7 @@
             Controls.Add(panel1);
             Font = new Font("Microsoft YaHei UI", 9F);
             ForeColor = Color.FromArgb(15, 23, 42);
-            Margin = new Padding(4, 4, 4, 4);
+            Margin = new Padding(4);
             MinimumSize = new Size(1346, 888);
             Name = "Mainpage";
             ShowIcon = false;
@@ -499,11 +499,11 @@
         private Button button5;
         private Button button2;
         private Button Bu_data;
-        private Label appTitleLabel;
         private Label controlSectionLabel;
         private Label toolsSectionLabel;
         private Label systemSectionLabel;
         private Label controlStatusLabel;
         private Label adsStatusLabel;
+        private Label appTitleLabel;
     }
 }
