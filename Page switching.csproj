@@ -40,6 +40,19 @@
     <EmbeddedResource Update="panel\WaveAnalysisPage.resx">
       <DependentUpon>WaveAnalysisPage.cs</DependentUpon>
     </EmbeddedResource>
+    <!-- 显式登记恢复的页面，使用与波浪分析页相同的设计器类型和文件关联。 -->
+    <Compile Remove="panel\ControlAuthority.cs;panel\ControlAuthority.Designer.cs" />
+    <EmbeddedResource Remove="panel\ControlAuthority.resx" />
+    <Compile Include="panel\ControlAuthority.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="panel\ControlAuthority.Designer.cs">
+      <SubType>Code</SubType>
+      <DependentUpon>ControlAuthority.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="panel\ControlAuthority.resx">
+      <DependentUpon>ControlAuthority.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>

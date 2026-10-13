@@ -5,16 +5,25 @@ namespace Page_switching
     // 保持可继承的 partial UserControl，供 WinForms Designer 创建设计实例。
     public partial class ControlAuthority : UserControl
     {
+        // 与自动页相同：设计器设置 Site 后也应跳过运行时布局调整。
+        private bool IsDesignSurface => LicenseManager.UsageMode == LicenseUsageMode.Designtime
+            || DesignMode || Site?.DesignMode == true;
+
         public ControlAuthority()
         {
             InitializeComponent();
             // 设计模式只创建静态控件，不调用运行时快照格式化逻辑。
-            if (LicenseManager.UsageMode == LicenseUsageMode.Designtime) return;
+            if (IsDesignSurface) return;
             ApplyMonitorSnapshot(new MachineMonitorSnapshot());
         }
 
         protected override void OnLayout(LayoutEventArgs e)
         {
+            if (IsDesignSurface)
+            {
+                base.OnLayout(e);
+                return;
+            }
             // 同步已随 DPI 缩放的最小画布，小窗口可滚动到全部规则和按钮。
             if (pagePanel != null && AutoScrollMinSize != pagePanel.MinimumSize)
                 AutoScrollMinSize = pagePanel.MinimumSize;
