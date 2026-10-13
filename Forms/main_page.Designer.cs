@@ -35,6 +35,7 @@
         {
             analysisButton = new Button();
             correctionButton = new Button();
+            controlAuthorityButton = new Button();
             panel1 = new Panel();
             headerStatusPanel = new Panel();
             controlStatusLabel = new Label();
@@ -74,7 +75,7 @@
             analysisButton.FlatStyle = FlatStyle.Flat;
             analysisButton.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
             analysisButton.ForeColor = Color.FromArgb(15, 23, 42);
-            analysisButton.Location = new Point(15, 482);
+            analysisButton.Location = new Point(15, 545);
             analysisButton.Margin = new Padding(4);
             analysisButton.Name = "analysisButton";
             analysisButton.Padding = new Padding(15, 0, 0, 0);
@@ -95,7 +96,7 @@
             correctionButton.FlatStyle = FlatStyle.Flat;
             correctionButton.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
             correctionButton.ForeColor = Color.FromArgb(15, 23, 42);
-            correctionButton.Location = new Point(15, 545);
+            correctionButton.Location = new Point(15, 608);
             correctionButton.Margin = new Padding(4);
             correctionButton.Name = "correctionButton";
             correctionButton.Padding = new Padding(15, 0, 0, 0);
@@ -105,6 +106,27 @@
             correctionButton.TextAlign = ContentAlignment.MiddleLeft;
             correctionButton.UseVisualStyleBackColor = false;
             correctionButton.Click += CorrectionButton_Click;
+            //
+            // controlAuthorityButton
+            //
+            controlAuthorityButton.BackColor = Color.White;
+            controlAuthorityButton.Cursor = Cursors.Hand;
+            controlAuthorityButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
+            controlAuthorityButton.FlatAppearance.MouseDownBackColor = Color.FromArgb(226, 232, 240);
+            controlAuthorityButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(219, 234, 254);
+            controlAuthorityButton.FlatStyle = FlatStyle.Flat;
+            controlAuthorityButton.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
+            controlAuthorityButton.ForeColor = Color.FromArgb(15, 23, 42);
+            controlAuthorityButton.Location = new Point(15, 181);
+            controlAuthorityButton.Margin = new Padding(4);
+            controlAuthorityButton.Name = "controlAuthorityButton";
+            controlAuthorityButton.Padding = new Padding(15, 0, 0, 0);
+            controlAuthorityButton.Size = new Size(181, 55);
+            controlAuthorityButton.TabIndex = 14;
+            controlAuthorityButton.Text = "控制权申请";
+            controlAuthorityButton.TextAlign = ContentAlignment.MiddleLeft;
+            controlAuthorityButton.UseVisualStyleBackColor = false;
+            controlAuthorityButton.Click += ControlAuthorityButton_Click;
             // 
             // panel1
             // 
@@ -161,7 +183,7 @@
             // panel2
             // 
             panel2.AutoScroll = true;
-            panel2.AutoScrollMinSize = new Size(0, 580);
+            panel2.AutoScrollMinSize = new Size(0, 785);
             panel2.BackColor = Color.FromArgb(248, 250, 252);
             panel2.Controls.Add(systemSectionLabel);
             panel2.Controls.Add(toolsSectionLabel);
@@ -176,6 +198,7 @@
             panel2.Controls.Add(navigationMarker);
             panel2.Controls.Add(analysisButton);
             panel2.Controls.Add(correctionButton);
+            panel2.Controls.Add(controlAuthorityButton);
             panel2.Dock = DockStyle.Left;
             panel2.Location = new Point(0, 75);
             panel2.Margin = new Padding(4);
@@ -188,7 +211,7 @@
             // 
             systemSectionLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
             systemSectionLabel.ForeColor = Color.FromArgb(100, 116, 139);
-            systemSectionLabel.Location = new Point(36, 618);
+            systemSectionLabel.Location = new Point(36, 681);
             systemSectionLabel.Margin = new Padding(4, 0, 4, 0);
             systemSectionLabel.Name = "systemSectionLabel";
             systemSectionLabel.Size = new Size(169, 25);
@@ -199,7 +222,7 @@
             // 
             toolsSectionLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
             toolsSectionLabel.ForeColor = Color.FromArgb(100, 116, 139);
-            toolsSectionLabel.Location = new Point(36, 198);
+            toolsSectionLabel.Location = new Point(36, 261);
             toolsSectionLabel.Margin = new Padding(4, 0, 4, 0);
             toolsSectionLabel.Name = "toolsSectionLabel";
             toolsSectionLabel.Size = new Size(169, 25);
@@ -227,7 +250,7 @@
             bu_Configuration.FlatStyle = FlatStyle.Flat;
             bu_Configuration.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
             bu_Configuration.ForeColor = Color.FromArgb(15, 23, 42);
-            bu_Configuration.Location = new Point(15, 652);
+            bu_Configuration.Location = new Point(15, 715);
             bu_Configuration.Margin = new Padding(4);
             bu_Configuration.Name = "bu_Configuration";
             bu_Configuration.Padding = new Padding(15, 0, 0, 0);
@@ -248,7 +271,7 @@
             button5.FlatStyle = FlatStyle.Flat;
             button5.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
             button5.ForeColor = Color.FromArgb(15, 23, 42);
-            button5.Location = new Point(15, 420);
+            button5.Location = new Point(15, 483);
             button5.Margin = new Padding(4);
             button5.Name = "button5";
             button5.Padding = new Padding(15, 0, 0, 0);
@@ -269,7 +292,7 @@
             button2.FlatStyle = FlatStyle.Flat;
             button2.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
             button2.ForeColor = Color.FromArgb(15, 23, 42);
-            button2.Location = new Point(15, 358);
+            button2.Location = new Point(15, 421);
             button2.Margin = new Padding(4);
             button2.Name = "button2";
             button2.Padding = new Padding(15, 0, 0, 0);
@@ -290,7 +313,7 @@
             Bu_data.FlatStyle = FlatStyle.Flat;
             Bu_data.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
             Bu_data.ForeColor = Color.FromArgb(15, 23, 42);
-            Bu_data.Location = new Point(15, 295);
+            Bu_data.Location = new Point(15, 358);
             Bu_data.Margin = new Padding(4);
             Bu_data.Name = "Bu_data";
             Bu_data.Padding = new Padding(15, 0, 0, 0);
@@ -311,7 +334,7 @@
             Bu_Calibration.FlatStyle = FlatStyle.Flat;
             Bu_Calibration.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
             Bu_Calibration.ForeColor = Color.FromArgb(15, 23, 42);
-            Bu_Calibration.Location = new Point(15, 232);
+            Bu_Calibration.Location = new Point(15, 295);
             Bu_Calibration.Margin = new Padding(4);
             Bu_Calibration.Name = "Bu_Calibration";
             Bu_Calibration.Padding = new Padding(15, 0, 0, 0);
@@ -483,6 +506,7 @@
 
         private Button analysisButton;
         private Button correctionButton;
+        private Button controlAuthorityButton;
         private Panel panel1;
         private Panel headerStatusPanel;
         private Panel panel2;

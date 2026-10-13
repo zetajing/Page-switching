@@ -9,6 +9,7 @@ namespace Page_switching
     {
         private readonly Auto _autoPage;
         private readonly Manual _manualPage;
+        private readonly ControlAuthority _controlAuthorityPage;
         private readonly Config _config;
         private readonly WaveformPage _waveformPage;
         private readonly AxisService _axisService;
@@ -61,6 +62,8 @@ namespace Page_switching
                 if (!_closing) _autoPage.AddLog(message);
             });
             _manualPage = new Manual(_axisService);
+            _controlAuthorityPage = new ControlAuthority();
+            _controlAuthorityPage.RefreshRequested += async (_, _) => await RefreshMonitorAsync();
             _config = new Config();
             _waveformPage = new WaveformPage();
             _wave_Height_Meter = new Wave_Height_Meter();
@@ -71,7 +74,7 @@ namespace Page_switching
             _correction = new SignalCorrectionPage();
             // 页面集合统一用于日志注册和退出释放，不再维护两份清单。
             _pages = [_autoPage, _manualPage, _config, _waveformPage, _wave_Height_Meter,
-                _data, _calibration, _batchCalibrationPage, _analysis, _correction];
+                _data, _calibration, _batchCalibrationPage, _analysis, _correction, _controlAuthorityPage];
             // 批量标定由主窗体管理，使用同一个 panelswitch 显示和返回。
             _calibration.BatchCalibrationRequested += (_, _) => NavigateTo(_batchCalibrationPage, Bu_Calibration);
             _batchCalibrationPage.BackRequested += (_, _) => NavigateTo(_calibration, Bu_Calibration);
@@ -154,6 +157,7 @@ namespace Page_switching
             if (_closing || IsDisposed) return;
             // 即使读取仍在执行，也按当前时间将历史反馈降为过期。
             _autoPage.ApplyMonitorSnapshot(_monitorService.LatestSnapshot);
+            _controlAuthorityPage.ApplyMonitorSnapshot(_monitorService.LatestSnapshot);
             UpdateHeaderStatus();
             await RefreshMonitorAsync();
         }
@@ -172,6 +176,7 @@ namespace Page_switching
                 if (_closing || IsDisposed) return;
                 _lastMonitorError = null;
                 _autoPage.ApplyMonitorSnapshot(_monitorService.LatestSnapshot);
+                _controlAuthorityPage.ApplyMonitorSnapshot(_monitorService.LatestSnapshot);
                 UpdateHeaderStatus();
             }
             catch (OperationCanceledException) when (_closing || cancellationToken.IsCancellationRequested) { }
@@ -297,7 +302,11 @@ namespace Page_switching
             if (_recordOperations) OperationJournal.Record("页面切换", "打开" + GetPageName(page));
             ShowPage(page);
             SetActiveNavigation(button);
-            if (ReferenceEquals(page, _autoPage)) _ = RefreshMonitorAsync();
+            if (ReferenceEquals(page, _autoPage) || ReferenceEquals(page, _controlAuthorityPage))
+            {
+                _controlAuthorityPage.ApplyMonitorSnapshot(_monitorService.LatestSnapshot);
+                _ = RefreshMonitorAsync();
+            }
         }
 
         // 日志内容只写入文件；新记录通知仅用于同步配置后的保存目录。
@@ -365,7 +374,7 @@ namespace Page_switching
         private void SetActiveNavigation(Button activeButton)
         {
             foreach (var button in new[] { Bu_auto, Bu_manual, Bu_Calibration, Bu_data, button2, button5,
-                         analysisButton, correctionButton, bu_Configuration })
+                         analysisButton, correctionButton, bu_Configuration, controlAuthorityButton })
             {
                 var isActive = ReferenceEquals(button, activeButton);
                 button.BackColor = isActive ? UiPalette.Primary : UiPalette.Surface;
@@ -413,6 +422,7 @@ namespace Page_switching
         {
             Auto => "自动运行",
             Manual => "手动控制",
+            ControlAuthority => "控制权申请",
             Calibration => "标定管理",
             WaveBatchCalibrationPage => "批量标定",
             Data => "数据管理",
@@ -437,6 +447,9 @@ namespace Page_switching
 
         // 切换到手动控制页面。
         private void Bu_manual_Click(object sender, EventArgs e) => NavigateTo(_manualPage, Bu_manual);
+
+        private void ControlAuthorityButton_Click(object sender, EventArgs e) =>
+            NavigateTo(_controlAuthorityPage, controlAuthorityButton);
 
         // 切换到配置页面。
         private void bu_Configuration_Click(object sender, EventArgs e) => NavigateTo(_config, bu_Configuration);
