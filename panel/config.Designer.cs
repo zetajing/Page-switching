@@ -3,6 +3,12 @@ namespace Page_switching.panel;
 partial class Config
 {
     private Panel pagePanel;
+    private GroupBox controlStationGroup;
+    private TableLayoutPanel controlStationLayout;
+    private Label controlStationCaptionLabel;
+    private ComboBox controlStationComboBox;
+    private Button saveControlStationButton;
+    private Label controlStationStateLabel;
 
     private System.ComponentModel.IContainer components = null!;
     private TableLayoutPanel rootLayout;
@@ -73,6 +79,12 @@ partial class Config
     private void InitializeComponent()
     {
         pagePanel = new Panel();
+        controlStationGroup = new GroupBox();
+        controlStationLayout = new TableLayoutPanel();
+        controlStationCaptionLabel = new Label();
+        controlStationComboBox = new ComboBox();
+        saveControlStationButton = new Button();
+        controlStationStateLabel = new Label();
         rootLayout = new TableLayoutPanel();
         titleLabel = new Label();
         subtitleLabel = new Label();
@@ -128,6 +140,8 @@ partial class Config
         operationLogGroup.SuspendLayout();
         operationLogLayout.SuspendLayout();
         pagePanel.SuspendLayout();
+        controlStationGroup.SuspendLayout();
+        controlStationLayout.SuspendLayout();
         rootLayout.SuspendLayout();
         routerGroup.SuspendLayout();
         routerLayout.SuspendLayout();
@@ -156,10 +170,11 @@ partial class Config
         rootLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
         rootLayout.Controls.Add(titleLabel, 0, 0);
         rootLayout.Controls.Add(subtitleLabel, 0, 1);
-        rootLayout.Controls.Add(operationLogGroup, 0, 2);
-        rootLayout.Controls.Add(routerGroup, 0, 3);
-        rootLayout.Controls.Add(waveGeneratorGroup, 0, 4);
-        rootLayout.Controls.Add(_databaseGroup, 0, 5);
+        rootLayout.Controls.Add(controlStationGroup, 0, 2);
+        rootLayout.Controls.Add(operationLogGroup, 0, 3);
+        rootLayout.Controls.Add(routerGroup, 0, 4);
+        rootLayout.Controls.Add(waveGeneratorGroup, 0, 5);
+        rootLayout.Controls.Add(_databaseGroup, 0, 6);
         // 内容按分组高度展开，由外层滚动面板确保所有配置入口可达。
         rootLayout.AutoSize = true;
         rootLayout.AutoSizeMode = AutoSizeMode.GrowAndShrink;
@@ -168,9 +183,10 @@ partial class Config
         rootLayout.Margin = new Padding(2, 4, 2, 4);
         rootLayout.Name = "rootLayout";
         rootLayout.Padding = new Padding(20, 20, 20, 20);
-        rootLayout.RowCount = 6;
+        rootLayout.RowCount = 7;
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 52F));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 150F));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 145F));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 365F));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 215F));
@@ -201,9 +217,73 @@ partial class Config
         subtitleLabel.Name = "subtitleLabel";
         subtitleLabel.Size = new Size(1187, 32);
         subtitleLabel.TabIndex = 1;
-        subtitleLabel.Text = "日志保存位置、手动控制 ADS 路由、波形程序和数据库连接";
+        subtitleLabel.Text = "本站身份、日志保存位置、手动控制 ADS 路由、波形程序和数据库连接";
         subtitleLabel.TextAlign = ContentAlignment.MiddleLeft;
         // 
+        // controlStationGroup
+        //
+        controlStationGroup.BackColor = Color.White;
+        controlStationGroup.Controls.Add(controlStationLayout);
+        controlStationGroup.Dock = DockStyle.Fill;
+        controlStationGroup.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
+        controlStationGroup.ForeColor = Color.FromArgb(15, 23, 42);
+        controlStationGroup.Margin = new Padding(2, 4, 2, 4);
+        controlStationGroup.Name = "controlStationGroup";
+        controlStationGroup.Padding = new Padding(14, 19, 14, 10);
+        controlStationGroup.Size = new Size(1166, 142);
+        controlStationGroup.TabIndex = 2;
+        controlStationGroup.TabStop = false;
+        controlStationGroup.Text = "本站身份";
+        controlStationLayout.ColumnCount = 3;
+        controlStationLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 175F));
+        controlStationLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+        controlStationLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 160F));
+        controlStationLayout.Controls.Add(controlStationCaptionLabel, 0, 0);
+        controlStationLayout.Controls.Add(controlStationComboBox, 1, 0);
+        controlStationLayout.Controls.Add(saveControlStationButton, 2, 0);
+        controlStationLayout.Controls.Add(controlStationStateLabel, 0, 1);
+        controlStationLayout.Dock = DockStyle.Fill;
+        controlStationLayout.Margin = new Padding(0);
+        controlStationLayout.Name = "controlStationLayout";
+        controlStationLayout.RowCount = 2;
+        controlStationLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 45F));
+        controlStationLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+        controlStationLayout.Size = new Size(1138, 91);
+        controlStationCaptionLabel.Dock = DockStyle.Fill;
+        controlStationCaptionLabel.Font = new Font("Microsoft YaHei UI", 9F);
+        controlStationCaptionLabel.ForeColor = Color.FromArgb(71, 85, 105);
+        controlStationCaptionLabel.Name = "controlStationCaptionLabel";
+        controlStationCaptionLabel.Text = "本机所属控制端";
+        controlStationCaptionLabel.TextAlign = ContentAlignment.MiddleLeft;
+        controlStationComboBox.Dock = DockStyle.Fill;
+        controlStationComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
+        controlStationComboBox.Font = new Font("Microsoft YaHei UI", 9F);
+        controlStationComboBox.Items.AddRange(new object[] { "未配置", "造波控制室", "拖车本地", "远程操作室" });
+        controlStationComboBox.SelectedIndex = 0;
+        controlStationComboBox.Margin = new Padding(2, 6, 12, 6);
+        controlStationComboBox.Name = "controlStationComboBox";
+        controlStationComboBox.TabIndex = 0;
+        saveControlStationButton.BackColor = Color.FromArgb(29, 78, 216);
+        saveControlStationButton.Cursor = Cursors.Hand;
+        saveControlStationButton.Dock = DockStyle.Fill;
+        saveControlStationButton.FlatAppearance.BorderSize = 0;
+        saveControlStationButton.FlatStyle = FlatStyle.Flat;
+        saveControlStationButton.Font = new Font("Microsoft YaHei UI", 9F);
+        saveControlStationButton.ForeColor = Color.White;
+        saveControlStationButton.Margin = new Padding(2, 4, 2, 4);
+        saveControlStationButton.Name = "saveControlStationButton";
+        saveControlStationButton.TabIndex = 1;
+        saveControlStationButton.Text = "保存本站身份";
+        saveControlStationButton.UseVisualStyleBackColor = false;
+        saveControlStationButton.Click += SaveControlStationButton_Click;
+        controlStationLayout.SetColumnSpan(controlStationStateLabel, 3);
+        controlStationStateLabel.Dock = DockStyle.Fill;
+        controlStationStateLabel.Font = new Font("Microsoft YaHei UI", 8F);
+        controlStationStateLabel.ForeColor = Color.FromArgb(100, 116, 139);
+        controlStationStateLabel.Name = "controlStationStateLabel";
+        controlStationStateLabel.Text = "选择本机所属站点后保存；本站身份不代表取得控制权，控制权由 PLC 统一管理。";
+        controlStationStateLabel.TextAlign = ContentAlignment.MiddleLeft;
+        //
         // operationLogGroup
         //
         operationLogGroup.BackColor = Color.White;
@@ -973,6 +1053,9 @@ partial class Config
         pagePanel.PerformLayout();
         rootLayout.ResumeLayout(false);
         routerGroup.ResumeLayout(false);
+        controlStationGroup.ResumeLayout(false);
+        controlStationLayout.ResumeLayout(false);
+        controlStationLayout.PerformLayout();
         routerLayout.ResumeLayout(false);
         routerLayout.PerformLayout();
         ((System.ComponentModel.ISupportInitialize)routerTcpPortInput).EndInit();

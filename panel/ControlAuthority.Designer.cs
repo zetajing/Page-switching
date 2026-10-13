@@ -230,7 +230,7 @@ namespace Page_switching
             _stationValue.Dock = DockStyle.Fill;
             _stationValue.Font = new Font("Microsoft YaHei UI", 10.5F, FontStyle.Bold);
             _stationValue.Name = "_stationValue";
-            _stationValue.Text = "待确认本站所属站点";
+            _stationValue.Text = "未配置本站身份";
             _stationValue.TextAlign = ContentAlignment.MiddleLeft;
             _ownerValue.Dock = DockStyle.Fill;
             _ownerValue.Font = new Font("Microsoft YaHei UI", 10.5F, FontStyle.Bold);
@@ -330,7 +330,7 @@ namespace Page_switching
             _hintLabel.ForeColor = Color.FromArgb(154, 52, 18);
             _hintLabel.Margin = new Padding(0);
             _hintLabel.Name = "_hintLabel";
-            _hintLabel.Text = "PLC 申请、释放接口尚未定义，暂不可操作；本站身份及授权以 PLC 反馈为准。";
+            _hintLabel.Text = "本站身份在系统配置中设置；PLC 申请、释放接口尚未定义，暂不可操作。";
             _hintLabel.TextAlign = ContentAlignment.MiddleLeft;
             //
             // rulesGroup / rulesLayout

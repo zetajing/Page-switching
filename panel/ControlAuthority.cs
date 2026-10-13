@@ -36,7 +36,7 @@ namespace Page_switching
 
             _connectionValue.Text = snapshot.IsConnected ? "已连接" : "未连接";
             _connectionValue.ForeColor = snapshot.IsConnected ? UiPalette.Success : UiPalette.Warning;
-            _stationValue.Text = "待确认本站所属站点";
+            _stationValue.Text = ControlStationIdentity.Format(ControlStationIdentity.Current);
             // 沿用已定义的 Owner 编码，不擅自将 1/2/3 解释为三站优先级。
             _ownerValue.Text = Auto.FormatMonitorField(snapshot.ControlOwner, Auto.FormatControlOwner);
             _stateValue.Text = Auto.FormatMonitorField(snapshot.ControlMode, Auto.FormatControlMode);

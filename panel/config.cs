@@ -10,8 +10,32 @@ public partial class Config : UserControl
     public Config()
     {
         InitializeComponent();
+        controlStationComboBox.SelectedIndex = (int)ControlStationIdentity.Current;
+        controlStationStateLabel.Text = "当前配置：" + ControlStationIdentity.Format(ControlStationIdentity.Current)
+            + "；控制权由 PLC 统一管理。";
         LoadSettings();
         LoadDatabaseSettings();
+    }
+
+    // 本站身份只保存软件部署位置，不申请、释放或改变 PLC 控制权。
+    private void SaveControlStationButton_Click(object? sender, EventArgs e)
+    {
+        try
+        {
+            var station = (ControlStation)controlStationComboBox.SelectedIndex;
+            var value = ControlStationIdentity.ToSettingValue(station);
+            AdsConnectionSettings.Save((ControlStationIdentity.SettingKey, value));
+            controlStationStateLabel.ForeColor = UiPalette.Success;
+            controlStationStateLabel.Text = "本站身份已保存：" + ControlStationIdentity.Format(station)
+                + "；控制权仍由 PLC 决定。";
+            OperationJournal.Record("系统配置", controlStationStateLabel.Text);
+        }
+        catch (Exception ex)
+        {
+            controlStationStateLabel.ForeColor = UiPalette.Danger;
+            controlStationStateLabel.Text = "本站身份保存失败：" + ex.Message;
+            OperationJournal.Record("系统配置", controlStationStateLabel.Text);
+        }
     }
 
     // 将 Router 和波形生成器配置加载到界面控件。

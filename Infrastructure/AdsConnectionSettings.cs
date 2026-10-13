@@ -14,7 +14,8 @@ internal static class AdsConnectionSettings
         "AdsAmsNetId", "AdsPort", "AdsConnectTimeoutMs", "AdsOperationTimeoutMs",
         "AdsTcpRouterEnabled", "AdsTcpRouterName", "AdsTcpRouterLocalNetId",
         "AdsTcpRouterTcpPort", "AdsTcpRouterLoopbackIp", "AdsTcpRouterLoopbackPort",
-        "AdsTcpRouterRemoteName", "AdsTcpRouterRemoteAddress", "AdsTcpRouterRemoteNetId"
+        "AdsTcpRouterRemoteName", "AdsTcpRouterRemoteAddress", "AdsTcpRouterRemoteNetId",
+        ControlStationIdentity.SettingKey
     };
 
     internal static string FilePath => Path.Combine(
@@ -23,7 +24,7 @@ internal static class AdsConnectionSettings
 
     internal static string? LoadError { get; private set; }
 
-    // 用户保存的连接参数优先于构建输出中的 App.config，避免重新生成覆盖现场设置。
+    // 用户保存的连接参数和本站身份优先于 App.config，避免重新生成覆盖现场设置。
     internal static NameValueCollection GetSettings()
     {
         var settings = new NameValueCollection(ConfigurationManager.AppSettings);
@@ -47,7 +48,7 @@ internal static class AdsConnectionSettings
         return ConfigurationManager.AppSettings[key];
     }
 
-    // 只保存 ADS 连接和 Router 参数；写入完成后才替换旧文件并更新缓存。
+    // 保存连接、Router 参数和本站身份；写入完成后才替换旧文件并更新缓存。
     internal static void Save(params (string Key, string Value)[] values)
     {
         lock (SettingsLock)
@@ -58,7 +59,7 @@ internal static class AdsConnectionSettings
             foreach (var (key, value) in values)
             {
                 if (!ConnectionKeys.Contains(key))
-                    throw new ArgumentException("不支持的 ADS 连接配置项：" + key);
+                    throw new ArgumentException("不支持的本机配置项：" + key);
                 savedValues[key] = value;
             }
 
