@@ -2,7 +2,9 @@
 
 这版沿用 .NET 8 WinForms、Designer 页面布局和统一页面切换。新增依赖为 AntdUI 2.4.12、ScottPlot.WinForms 5.1.59，使用 Windows 10 2004（19041）及以上的平台目标，以匹配现代 SkiaSharp WinForms 依赖。
 
-静态控件的创建、布局、外观属性与本次新增按钮事件绑定位于 `.Designer.cs`；普通 `.cs` 保留数据更新、曲线配置和业务订阅。工程统一关联 `Forms`、`panel`、`Controls` 中的 Designer 与同名 `.cs`，资源文件同样关联；不再单独 Remove / Include 控制权页面。更新工程后重新加载项目，关闭旧设计标签，再从对应 `.cs` 打开设计器。
+静态控件的创建、布局、外观属性与本次新增按钮事件绑定位于 `.Designer.cs`；普通 `.cs` 保留数据更新、曲线配置和业务订阅。工程对 `Forms`、`panel`、`Controls` 中的每个 Designer 和资源文件明确填写同名父 `.cs`，不通过文件名表达式推算关联，也不重复 Remove / Include 页面。
+
+控制权页曾出现命令行 `DependentUpon` 正确、VS 仍将 Designer 当独立文件的情况。此次刷新当前 VS 项目的控制权文件关联后，实际项目对象确认 `ControlAuthority.cs` 下有 Designer 和 resx 两个子文件，两者的 `IsDependentFile` 均为 `true`。旧的空白设计标签需要关闭后，从 `ControlAuthority.cs` 重新打开设计器；其他页面有未保存编辑时，不应为此关闭整个解决方案。
 
 ## 已接入的页面
 
@@ -20,7 +22,9 @@
 
 ## 验证范围
 
-验证包含采样时间轴、单位、窄尖峰、百万点显示、单点与常量、缩放范围保持、清空和复位、自动页快照、四轴反馈、按钮单次日志、11 个页面切换和原有默认选项。使用 .NET DesignSurface 检查自动页和曲线预览加载，并做显式 125% / 150% 布局缩放检查。
+验证包含采样时间轴、单位、窄尖峰、百万点显示、单点与常量、缩放范围保持、清空和复位、自动页快照、四轴反馈、按钮单次日志、11 个页面切换和原有默认选项。使用 .NET DesignSurface 检查自动页、控制权页和曲线预览加载，并做显式 125% / 150% 布局缩放检查。控制权页额外检查根面板、标题、状态控件，以及运行时申请和释放按钮仍禁用，共 47 项检查通过。
+
+当前 VS 的文件父子关系已经实测。窗口捕获工具两次超时，未完成实际 VS 设计画布的保存重开验证，不能以 DesignSurface 检查替代这一结果。
 
 预览图使用合成波形与测试反馈，不代表设备现场状态。DesignSurface 和显式缩放检查不替代真实 Visual Studio 保存重开及多显示器 DPI 验证。试用后可在当前 Visual Studio 打开 `auto.cs` 和 `WaveformPreviewControl.cs` 的设计器，检查布局和控件属性。
 

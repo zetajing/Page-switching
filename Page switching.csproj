@@ -26,13 +26,115 @@
     <Compile Update="panel\*.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <!-- 所有 Designer 文件统一依附同名 .cs，避免为单个页面重复 Include。 -->
-    <Compile Update="Forms\*.Designer.cs;panel\*.Designer.cs;Controls\*.Designer.cs">
+    <!-- 使用明确的父文件名，让 Visual Studio 和命令行构建采用同一份 Designer 关联。 -->
+    <Compile Update="Controls\WaveformPreviewControl.Designer.cs">
       <SubType>Code</SubType>
-      <DependentUpon>$([System.String]::Copy('%(Filename)').Replace('.Designer', '')).cs</DependentUpon>
+      <DependentUpon>WaveformPreviewControl.cs</DependentUpon>
     </Compile>
-    <EmbeddedResource Update="Forms\*.resx;panel\*.resx;Controls\*.resx">
-      <DependentUpon>%(Filename).cs</DependentUpon>
+    <Compile Update="Forms\main_page.Designer.cs">
+      <SubType>Code</SubType>
+      <DependentUpon>main_page.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Update="Forms\main_page.resx">
+      <DependentUpon>main_page.cs</DependentUpon>
+    </EmbeddedResource>
+    <Compile Update="panel\auto.Designer.cs">
+      <SubType>Code</SubType>
+      <DependentUpon>auto.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Update="panel\auto.resx">
+      <DependentUpon>auto.cs</DependentUpon>
+    </EmbeddedResource>
+    <Compile Update="panel\Calibration.Designer.cs">
+      <SubType>Code</SubType>
+      <DependentUpon>Calibration.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Update="panel\Calibration.resx">
+      <DependentUpon>Calibration.cs</DependentUpon>
+    </EmbeddedResource>
+    <Compile Update="panel\config.Designer.cs">
+      <SubType>Code</SubType>
+      <DependentUpon>config.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Update="panel\config.resx">
+      <DependentUpon>config.cs</DependentUpon>
+    </EmbeddedResource>
+    <Compile Update="panel\ControlAuthority.Designer.cs">
+      <SubType>Code</SubType>
+      <DependentUpon>ControlAuthority.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Update="panel\ControlAuthority.resx">
+      <DependentUpon>ControlAuthority.cs</DependentUpon>
+    </EmbeddedResource>
+    <Compile Update="panel\CustomSpectrumPage.Designer.cs">
+      <SubType>Code</SubType>
+      <DependentUpon>CustomSpectrumPage.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Update="panel\CustomSpectrumPage.resx">
+      <DependentUpon>CustomSpectrumPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <Compile Update="panel\Data.Designer.cs">
+      <SubType>Code</SubType>
+      <DependentUpon>Data.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Update="panel\Data.resx">
+      <DependentUpon>Data.cs</DependentUpon>
+    </EmbeddedResource>
+    <Compile Update="panel\IrregularWavePage.Designer.cs">
+      <SubType>Code</SubType>
+      <DependentUpon>IrregularWavePage.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Update="panel\IrregularWavePage.resx">
+      <DependentUpon>IrregularWavePage.cs</DependentUpon>
+    </EmbeddedResource>
+    <Compile Update="panel\manual.Designer.cs">
+      <SubType>Code</SubType>
+      <DependentUpon>manual.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Update="panel\manual.resx">
+      <DependentUpon>manual.cs</DependentUpon>
+    </EmbeddedResource>
+    <Compile Update="panel\RegularWavePage.Designer.cs">
+      <SubType>Code</SubType>
+      <DependentUpon>RegularWavePage.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Update="panel\RegularWavePage.resx">
+      <DependentUpon>RegularWavePage.cs</DependentUpon>
+    </EmbeddedResource>
+    <Compile Update="panel\SignalCorrectionPage.Designer.cs">
+      <SubType>Code</SubType>
+      <DependentUpon>SignalCorrectionPage.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Update="panel\SignalCorrectionPage.resx">
+      <DependentUpon>SignalCorrectionPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <Compile Update="panel\Wave_Height_Meter.Designer.cs">
+      <SubType>Code</SubType>
+      <DependentUpon>Wave_Height_Meter.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Update="panel\Wave_Height_Meter.resx">
+      <DependentUpon>Wave_Height_Meter.cs</DependentUpon>
+    </EmbeddedResource>
+    <Compile Update="panel\WaveAnalysisPage.Designer.cs">
+      <SubType>Code</SubType>
+      <DependentUpon>WaveAnalysisPage.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Update="panel\WaveAnalysisPage.resx">
+      <DependentUpon>WaveAnalysisPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <Compile Update="panel\WaveBatchCalibrationPage.Designer.cs">
+      <SubType>Code</SubType>
+      <DependentUpon>WaveBatchCalibrationPage.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Update="panel\WaveBatchCalibrationPage.resx">
+      <DependentUpon>WaveBatchCalibrationPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <Compile Update="panel\waveform.Designer.cs">
+      <SubType>Code</SubType>
+      <DependentUpon>waveform.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Update="panel\waveform.resx">
+      <DependentUpon>waveform.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
 
