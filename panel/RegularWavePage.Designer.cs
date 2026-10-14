@@ -33,7 +33,7 @@ namespace Page_switching.panel
         internal Button regularGenerateButton;
         internal Label regularStatusLabel;
         private GroupBox regularPreviewGroup;
-        internal WaveformPreviewControl regularPreview;
+        internal global::Page_switching.WaveformPreviewControl regularPreview;
 
         protected override void Dispose(bool disposing)
         {
@@ -73,7 +73,7 @@ namespace Page_switching.panel
             regularGenerateButton = new Button();
             regularStatusLabel = new Label();
             regularPreviewGroup = new GroupBox();
-            regularPreview = new WaveformPreviewControl();
+            regularPreview = new global::Page_switching.WaveformPreviewControl();
             pagePanel.SuspendLayout();
             regularLayout.SuspendLayout();
             regularParameterGroup.SuspendLayout();

@@ -1,118 +1,90 @@
-using System.Drawing.Drawing2D;
-using System.Globalization;
+using System.ComponentModel;
 
 namespace Page_switching;
 
-public sealed class WaveformPreviewControl : Control
+// 保留原有 SetSamples 接口，所有调用页面直接使用 ScottPlot 显示已有采样值。
+public sealed partial class WaveformPreviewControl : UserControl
 {
-    private IReadOnlyList<double> _samples = Array.Empty<double>();
+    private string _unitText = "m";
 
-    // 初始化波形预览控件的绘制样式。
     public WaveformPreviewControl()
     {
-        SetStyle(
-            ControlStyles.AllPaintingInWmPaint |
-            ControlStyles.UserPaint |
-            ControlStyles.OptimizedDoubleBuffer |
-            ControlStyles.ResizeRedraw,
-            true);
-        BackColor = UiPalette.Surface;
-        ForeColor = UiPalette.Primary;
-        MinimumSize = new Size(360, 260);
+        InitializeComponent();
+        plotView.Plot.Font.Set("Microsoft YaHei UI");
+        plotView.Plot.XLabel("时间 (s)");
+        plotView.Plot.YLabel(_unitText);
+        plotView.Plot.Axes.SetLimits(0, 1, -1, 1);
     }
 
+    [Browsable(false)]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public double SampleIntervalSeconds { get; private set; } = 0.02;
 
-    public string UnitText { get; set; } = "m";
+    [DefaultValue("m")]
+    public string UnitText
+    {
+        get => _unitText;
+        set
+        {
+            var unit = value ?? "";
+            // 浪高仪每个采样都会设置单位，未变化时不重复绘制一次。
+            if (_unitText == unit) return;
+            _unitText = unit;
+            if (IsDisposed || Disposing) return;
+            plotView.Plot.YLabel(_unitText);
+            plotView.Refresh();
+        }
+    }
 
-    // 设置需要显示的采样点和采样时间间隔，并触发重绘。
+    // Signal 使用真实采样间隔构造时间轴，保留完整数据，不按固定步长丢弃尖峰。
     public void SetSamples(IReadOnlyList<double> samples, double sampleIntervalSeconds)
     {
-        _samples = samples?.ToArray() ?? Array.Empty<double>();
-        SampleIntervalSeconds = sampleIntervalSeconds > 0 ? sampleIntervalSeconds : 0.02;
-        Invalidate();
+        if (IsDisposed || Disposing) return;
+        var values = samples?.ToArray() ?? Array.Empty<double>();
+        SampleIntervalSeconds = double.IsFinite(sampleIntervalSeconds) && sampleIntervalSeconds > 0
+            ? sampleIntervalSeconds : 0.02;
+        plotView.Plot.Clear();
+        emptyLabel.Visible = values.Length == 0;
+        if (values.Length == 1)
+        {
+            // 首个采样值也显示出来，不等待第二个点才有曲线。
+            var point = plotView.Plot.Add.Scatter([0.0], values);
+            point.Color = ScottPlot.Color.FromColor(ForeColor);
+            point.MarkerSize = 6;
+        }
+        else if (values.Length > 1)
+        {
+            var signal = plotView.Plot.Add.Signal(values, period: SampleIntervalSeconds);
+            signal.Color = ScottPlot.Color.FromColor(ForeColor);
+            signal.LineWidth = 2;
+        }
+        else
+        {
+            plotView.Plot.Axes.SetLimits(0, 1, -1, 1);
+        }
+        // 关闭自动跟随后保留用户缩放范围，接收新数据时仍然可以查看局部细节。
+        if (values.Length > 0 && autoScaleCheckBox.Checked) plotView.Plot.Axes.AutoScale();
+        plotView.Refresh();
     }
 
-    // 清空当前波形数据并刷新控件。
-    public void ClearSamples()
+    public void ClearSamples() => SetSamples(Array.Empty<double>(), SampleIntervalSeconds);
+
+    private void ResetViewButton_Click(object? sender, EventArgs e)
     {
-        _samples = Array.Empty<double>();
-        Invalidate();
+        if (plotView.Plot.GetPlottables().Any()) plotView.Plot.Axes.AutoScale();
+        plotView.Refresh();
+        if (!DesignMode && Site?.DesignMode != true && LicenseManager.UsageMode != LicenseUsageMode.Designtime)
+            OperationJournal.Record("曲线预览", "已复位曲线视图");
     }
 
-    // 绘制背景、坐标和当前波形曲线。
-    protected override void OnPaint(PaintEventArgs e)
+    private void AutoScaleCheckBox_CheckedChanged(object? sender, EventArgs e)
     {
-        base.OnPaint(e);
-        e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-        e.Graphics.Clear(BackColor);
-
-        var plot = new RectangleF(58, 24, Math.Max(1, Width - 82), Math.Max(1, Height - 58));
-        using var gridPen = new Pen(UiPalette.SecondaryButton);
-        using var axisPen = new Pen(UiPalette.Muted);
-        using var curvePen = new Pen(ForeColor, 2f);
-        using var textBrush = new SolidBrush(UiPalette.SecondaryText);
-        using var emptyBrush = new SolidBrush(UiPalette.Muted);
-        using var labelFont = new Font(Font.FontFamily, 8.5F);
-
-        for (var i = 0; i <= 4; i++)
+        if (autoScaleCheckBox.Checked && plotView.Plot.GetPlottables().Any())
         {
-            var y = plot.Top + plot.Height * i / 4F;
-            e.Graphics.DrawLine(gridPen, plot.Left, y, plot.Right, y);
+            plotView.Plot.Axes.AutoScale();
+            plotView.Refresh();
         }
-
-        for (var i = 0; i <= 5; i++)
-        {
-            var x = plot.Left + plot.Width * i / 5F;
-            e.Graphics.DrawLine(gridPen, x, plot.Top, x, plot.Bottom);
-        }
-
-        e.Graphics.DrawLine(axisPen, plot.Left, plot.Bottom, plot.Right, plot.Bottom);
-        e.Graphics.DrawLine(axisPen, plot.Left, plot.Top, plot.Left, plot.Bottom);
-
-        if (_samples.Count < 2)
-        {
-            const string message = "暂无波形数据";
-            var size = e.Graphics.MeasureString(message, Font);
-            e.Graphics.DrawString(message, Font, emptyBrush,
-                plot.Left + (plot.Width - size.Width) / 2,
-                plot.Top + (plot.Height - size.Height) / 2);
-            return;
-        }
-
-        var min = _samples.Min();
-        var max = _samples.Max();
-        if (Math.Abs(max - min) < 1e-12)
-        {
-            min -= 1;
-            max += 1;
-        }
-
-        e.Graphics.DrawString(max.ToString("0.###"), labelFont, textBrush, 4, plot.Top - 6);
-        e.Graphics.DrawString(min.ToString("0.###"), labelFont, textBrush, 4, plot.Bottom - 9);
-        e.Graphics.DrawString(UnitText, labelFont, textBrush, 4, plot.Top - 22);
-        var duration = (_samples.Count - 1) * SampleIntervalSeconds;
-        e.Graphics.DrawString("0 s", labelFont, textBrush, plot.Left - 9, plot.Bottom + 6);
-        var endText = duration.ToString("0.###", CultureInfo.InvariantCulture) + " s";
-        var endSize = e.Graphics.MeasureString(endText, labelFont);
-        e.Graphics.DrawString(endText, labelFont, textBrush, plot.Right - endSize.Width, plot.Bottom + 6);
-
-        var stride = Math.Max(1, (int)Math.Ceiling(_samples.Count / 4000D));
-        var pointCount = (_samples.Count + stride - 1) / stride;
-        var points = new PointF[pointCount];
-        var pointIndex = 0;
-        for (var index = 0; index < _samples.Count; index += stride)
-        {
-            var normalizedX = _samples.Count == 1 ? 0 : (float)index / (_samples.Count - 1);
-            var normalizedY = (float)((_samples[index] - min) / (max - min));
-            points[pointIndex++] = new PointF(
-                plot.Left + plot.Width * normalizedX,
-                plot.Bottom - plot.Height * normalizedY);
-        }
-
-        if (pointIndex > 1)
-        {
-            e.Graphics.DrawLines(curvePen, points);
-        }
+        if (!DesignMode && Site?.DesignMode != true && LicenseManager.UsageMode != LicenseUsageMode.Designtime)
+            OperationJournal.Record("曲线预览", "自动跟随：" + (autoScaleCheckBox.Checked ? "开启" : "关闭"));
     }
 }

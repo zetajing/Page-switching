@@ -70,7 +70,7 @@ namespace Page_switching.panel
             _chartStatusLabel = new Label();
             channelTabs = new TabControl();
             channelOneTab = new TabPage();
-            _waveformPreview = new WaveformPreviewControl();
+            _waveformPreview = new global::Page_switching.WaveformPreviewControl();
             channel2Tab = new TabPage();
             channel2Notice = new Label();
             channel3Tab = new TabPage();
@@ -1119,7 +1119,7 @@ namespace Page_switching.panel
         private Button _clearButton;
         private Button _exportButton;
         private Label _chartStatusLabel;
-        private WaveformPreviewControl _waveformPreview;
+        private global::Page_switching.WaveformPreviewControl _waveformPreview;
         private TabControl channelTabs;
         private TabPage channelOneTab;
         private TabPage channel2Tab;

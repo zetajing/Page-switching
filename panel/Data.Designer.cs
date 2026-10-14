@@ -34,7 +34,7 @@ partial class Data
         sampleChannelColumn = new DataGridViewTextBoxColumn();
         rawColumn = new DataGridViewTextBoxColumn();
         levelColumn = new DataGridViewTextBoxColumn();
-        preview = new WaveformPreviewControl();
+        preview = new global::Page_switching.WaveformPreviewControl();
         status = new Label();
         ((System.ComponentModel.ISupportInitialize)sessionGrid).BeginInit();
         ((System.ComponentModel.ISupportInitialize)sampleGrid).BeginInit();
@@ -334,6 +334,6 @@ partial class Data
     private DataGridViewTextBoxColumn sampleChannelColumn;
     private DataGridViewTextBoxColumn rawColumn;
     private DataGridViewTextBoxColumn levelColumn;
-    private WaveformPreviewControl preview;
+    private global::Page_switching.WaveformPreviewControl preview;
     private Label status;
 }

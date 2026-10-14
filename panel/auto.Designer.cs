@@ -9,17 +9,17 @@ namespace Page_switching
         private Label titleLabel;
         private Label subtitleLabel;
         private TableLayoutPanel cardsLayout;
-        private Panel controlCard;
+        private AntdUI.Panel controlCard;
         private TableLayoutPanel controlCardLayout;
         private Label controlCaptionLabel;
         private Label controlValueLabel;
         private Label controlDetailLabel;
-        private Panel modeCard;
+        private AntdUI.Panel modeCard;
         private TableLayoutPanel modeCardLayout;
         private Label modeCaptionLabel;
         private Label modeValueLabel;
         private Label modeDetailLabel;
-        private Panel waveCard;
+        private AntdUI.Panel waveCard;
         private TableLayoutPanel waveCardLayout;
         private Label waveCaptionLabel;
         private Label _runStateLabel;
@@ -33,7 +33,7 @@ namespace Page_switching
         private Label progressPlaceholderLabel;
         private TableLayoutPanel rightLayout;
         private GroupBox axisGroup;
-        private AxisFeedbackGrid axisGrid;
+        private global::Page_switching.AxisFeedbackGrid axisGrid;
         private DataGridViewTextBoxColumn axisNumberColumn;
         private DataGridViewTextBoxColumn positionColumn;
         private DataGridViewTextBoxColumn speedColumn;
@@ -49,7 +49,7 @@ namespace Page_switching
         private Label messageSummaryLabel;
         private ToolTip messageToolTip;
         private ListBox _logList;
-        private Button clearLogButton;
+        private AntdUI.Button clearLogButton;
 
         protected override void Dispose(bool disposing)
         {
@@ -70,17 +70,17 @@ namespace Page_switching
             subtitleLabel = new Label();
             titleLabel = new Label();
             cardsLayout = new TableLayoutPanel();
-            controlCard = new Panel();
+            controlCard = new AntdUI.Panel();
             controlCardLayout = new TableLayoutPanel();
             controlCaptionLabel = new Label();
             controlValueLabel = new Label();
             controlDetailLabel = new Label();
-            modeCard = new Panel();
+            modeCard = new AntdUI.Panel();
             modeCardLayout = new TableLayoutPanel();
             modeCaptionLabel = new Label();
             modeValueLabel = new Label();
             modeDetailLabel = new Label();
-            waveCard = new Panel();
+            waveCard = new AntdUI.Panel();
             waveCardLayout = new TableLayoutPanel();
             waveCaptionLabel = new Label();
             _runStateLabel = new Label();
@@ -94,7 +94,7 @@ namespace Page_switching
             progressPlaceholderLabel = new Label();
             rightLayout = new TableLayoutPanel();
             axisGroup = new GroupBox();
-            axisGrid = new AxisFeedbackGrid();
+            axisGrid = new global::Page_switching.AxisFeedbackGrid();
             axisNumberColumn = new DataGridViewTextBoxColumn();
             positionColumn = new DataGridViewTextBoxColumn();
             speedColumn = new DataGridViewTextBoxColumn();
@@ -109,7 +109,7 @@ namespace Page_switching
             messageCountLabel = new Label();
             messageSummaryLabel = new Label();
             _logList = new ListBox();
-            clearLogButton = new Button();
+            clearLogButton = new AntdUI.Button();
             messageToolTip = new ToolTip(components);
             pagePanel.SuspendLayout();
             rootLayout.SuspendLayout();
@@ -221,8 +221,11 @@ namespace Page_switching
             // 
             // controlCard
             // 
-            controlCard.BackColor = Color.White;
-            controlCard.BorderStyle = BorderStyle.FixedSingle;
+            // AntdUI 卡片保留 Designer 内的布局，显示逻辑继续直接更新原有标签。
+            controlCard.Back = Color.White;
+            controlCard.BorderColor = Color.FromArgb(203, 213, 225);
+            controlCard.BorderWidth = 1F;
+            controlCard.Radius = 10;
             controlCard.Controls.Add(controlCardLayout);
             controlCard.Dock = DockStyle.Fill;
             controlCard.Location = new Point(5, 0);
@@ -235,6 +238,7 @@ namespace Page_switching
             // controlCardLayout
             // 
             controlCardLayout.ColumnCount = 1;
+            controlCardLayout.BackColor = Color.White;
             controlCardLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
             controlCardLayout.Controls.Add(controlCaptionLabel, 0, 0);
             controlCardLayout.Controls.Add(controlValueLabel, 0, 1);
@@ -294,8 +298,10 @@ namespace Page_switching
             // 
             // modeCard
             // 
-            modeCard.BackColor = Color.White;
-            modeCard.BorderStyle = BorderStyle.FixedSingle;
+            modeCard.Back = Color.White;
+            modeCard.BorderColor = Color.FromArgb(203, 213, 225);
+            modeCard.BorderWidth = 1F;
+            modeCard.Radius = 10;
             modeCard.Controls.Add(modeCardLayout);
             modeCard.Dock = DockStyle.Fill;
             modeCard.Location = new Point(451, 0);
@@ -308,6 +314,7 @@ namespace Page_switching
             // modeCardLayout
             // 
             modeCardLayout.ColumnCount = 1;
+            modeCardLayout.BackColor = Color.White;
             modeCardLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
             modeCardLayout.Controls.Add(modeCaptionLabel, 0, 0);
             modeCardLayout.Controls.Add(modeValueLabel, 0, 1);
@@ -367,8 +374,10 @@ namespace Page_switching
             // 
             // waveCard
             // 
-            waveCard.BackColor = Color.White;
-            waveCard.BorderStyle = BorderStyle.FixedSingle;
+            waveCard.Back = Color.White;
+            waveCard.BorderColor = Color.FromArgb(203, 213, 225);
+            waveCard.BorderWidth = 1F;
+            waveCard.Radius = 10;
             waveCard.Controls.Add(waveCardLayout);
             waveCard.Dock = DockStyle.Fill;
             waveCard.Location = new Point(897, 0);
@@ -381,6 +390,7 @@ namespace Page_switching
             // waveCardLayout
             // 
             waveCardLayout.ColumnCount = 1;
+            waveCardLayout.BackColor = Color.White;
             waveCardLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
             waveCardLayout.Controls.Add(waveCaptionLabel, 0, 0);
             waveCardLayout.Controls.Add(_runStateLabel, 0, 1);
@@ -798,9 +808,10 @@ namespace Page_switching
             clearLogButton.AutoSize = true;
             clearLogButton.BackColor = Color.FromArgb(248, 250, 252);
             clearLogButton.Cursor = Cursors.Hand;
-            clearLogButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
-            clearLogButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(226, 232, 240);
-            clearLogButton.FlatStyle = FlatStyle.Flat;
+            clearLogButton.DefaultBack = Color.FromArgb(248, 250, 252);
+            clearLogButton.DefaultBorderColor = Color.FromArgb(203, 213, 225);
+            clearLogButton.BorderWidth = 1F;
+            clearLogButton.Radius = 6;
             clearLogButton.Font = new Font("Microsoft YaHei UI", 9F);
             clearLogButton.ForeColor = Color.FromArgb(15, 23, 42);
             clearLogButton.Location = new Point(4, 49);
@@ -810,7 +821,6 @@ namespace Page_switching
             clearLogButton.Size = new Size(142, 40);
             clearLogButton.TabIndex = 2;
             clearLogButton.Text = "清空本页消息";
-            clearLogButton.UseVisualStyleBackColor = false;
             clearLogButton.Click += ClearLogButton_Click;
             // 
             // Auto

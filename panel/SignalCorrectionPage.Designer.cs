@@ -38,7 +38,7 @@ namespace Page_switching.panel
         private Label caption_channelInput;
         private Label caption_passesInput;
         private Label caption_pointsInput;
-        private ComparisonPlotControl plot;
+        private global::Page_switching.ComparisonPlotControl plot;
 
         protected override void Dispose(bool disposing)
         {
@@ -83,7 +83,7 @@ namespace Page_switching.panel
             caption_channelInput = new Label();
             caption_passesInput = new Label();
             caption_pointsInput = new Label();
-            plot = new ComparisonPlotControl();
+            plot = new global::Page_switching.ComparisonPlotControl();
             ((System.ComponentModel.ISupportInitialize)rateInput).BeginInit();
             ((System.ComponentModel.ISupportInitialize)channelInput).BeginInit();
             ((System.ComponentModel.ISupportInitialize)passesInput).BeginInit();

@@ -53,7 +53,7 @@ namespace Page_switching.panel
         internal Button irregularGenerateButton;
         internal Label irregularStatusLabel;
         private GroupBox irregularPreviewGroup;
-        internal WaveformPreviewControl irregularPreview;
+        internal global::Page_switching.WaveformPreviewControl irregularPreview;
 
         protected override void Dispose(bool disposing)
         {
@@ -113,7 +113,7 @@ namespace Page_switching.panel
             irregularGenerateButton = new Button();
             irregularStatusLabel = new Label();
             irregularPreviewGroup = new GroupBox();
-            irregularPreview = new WaveformPreviewControl();
+            irregularPreview = new global::Page_switching.WaveformPreviewControl();
             pagePanel.SuspendLayout();
             irregularLayout.SuspendLayout();
             irregularParameterGroup.SuspendLayout();

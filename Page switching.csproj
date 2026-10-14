@@ -2,7 +2,8 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <!-- ScottPlot 的现代 SkiaSharp WinForms 依赖以 Windows 10 2004 为平台基线。 -->
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
     <RootNamespace>Page_switching</RootNamespace>
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
@@ -13,7 +14,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Update="Forms\main_page.cs">
+    <Compile Update="Controls\WaveformPreviewControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Forms\*.cs">
       <SubType>Form</SubType>
     </Compile>
   </ItemGroup>
@@ -22,40 +26,20 @@
     <Compile Update="panel\*.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Update="panel\*.Designer.cs">
+    <!-- 所有 Designer 文件统一依附同名 .cs，避免为单个页面重复 Include。 -->
+    <Compile Update="Forms\*.Designer.cs;panel\*.Designer.cs;Controls\*.Designer.cs">
       <SubType>Code</SubType>
       <DependentUpon>$([System.String]::Copy('%(Filename)').Replace('.Designer', '')).cs</DependentUpon>
     </Compile>
-    <EmbeddedResource Update="panel\*.resx">
+    <EmbeddedResource Update="Forms\*.resx;panel\*.resx;Controls\*.resx">
       <DependentUpon>%(Filename).cs</DependentUpon>
-    </EmbeddedResource>
-    <!-- 波浪分析页明确声明设计器类型及文件关联。 -->
-    <Compile Update="panel\WaveAnalysisPage.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Update="panel\WaveAnalysisPage.Designer.cs">
-      <SubType>Code</SubType>
-      <DependentUpon>WaveAnalysisPage.cs</DependentUpon>
-    </Compile>
-    <EmbeddedResource Update="panel\WaveAnalysisPage.resx">
-      <DependentUpon>WaveAnalysisPage.cs</DependentUpon>
-    </EmbeddedResource>
-    <!-- 显式登记恢复的页面，使用与波浪分析页相同的设计器类型和文件关联。 -->
-    <Compile Remove="panel\ControlAuthority.cs;panel\ControlAuthority.Designer.cs" />
-    <EmbeddedResource Remove="panel\ControlAuthority.resx" />
-    <Compile Include="panel\ControlAuthority.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="panel\ControlAuthority.Designer.cs">
-      <SubType>Code</SubType>
-      <DependentUpon>ControlAuthority.cs</DependentUpon>
-    </Compile>
-    <EmbeddedResource Include="panel\ControlAuthority.resx">
-      <DependentUpon>ControlAuthority.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>
+    <!-- UI 试用：AntdUI 负责自动页控件，ScottPlot 负责现有采样数据的曲线显示。 -->
+    <PackageReference Include="AntdUI" Version="2.4.12" />
+    <PackageReference Include="ScottPlot.WinForms" Version="5.1.59" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
     <!-- DLL 引用不会传递原工程的 NuGet 依赖，显式保留对应版本供运行时使用。 -->

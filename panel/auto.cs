@@ -356,6 +356,8 @@ namespace Page_switching
         {
             _logList.Items.Clear();
             UpdateMessageSummary();
+            // 第三方按钮不依赖主窗体对原生 Button 的监听，操作仍记录一次。
+            OperationJournal.Record("自动运行", "点击 清空本页消息");
         }
     }
 }

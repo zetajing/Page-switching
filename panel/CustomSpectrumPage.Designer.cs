@@ -38,7 +38,7 @@
         private Label caption_theoryInput;
         private Label caption_sideInput;
         private Label caption_modeInput;
-        private ComparisonPlotControl plot;
+        private global::Page_switching.ComparisonPlotControl plot;
 
         protected override void Dispose(bool disposing)
         {
@@ -83,7 +83,7 @@
             previewButton = new Button();
             status = new Label();
             previewGroup = new GroupBox();
-            plot = new ComparisonPlotControl();
+            plot = new global::Page_switching.ComparisonPlotControl();
             pagePanel.SuspendLayout();
             root.SuspendLayout();
             parameterGroup.SuspendLayout();
