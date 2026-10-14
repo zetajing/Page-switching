@@ -1,4 +1,4 @@
-﻿namespace Page_switching
+namespace Page_switching
 {
     partial class Mainpage
     {
@@ -30,34 +30,34 @@
         ///  Required method for Designer support - do not modify
         ///  the contents of this method with the code editor.
         /// </summary>
-        // 创建设计器中的控件并设置布局和事件。
+        // 可见按钮、标题和状态文字统一使用 AntdUI；滚动容器及页面承载面板保留 WinForms 布局。
         private void InitializeComponent()
         {
-            analysisButton = new Button();
-            correctionButton = new Button();
-            controlAuthorityButton = new Button();
-            panel1 = new Panel();
-            headerStatusPanel = new Panel();
-            controlStatusLabel = new Label();
-            adsStatusLabel = new Label();
+            analysisButton = new AntdUI.Button();
+            correctionButton = new AntdUI.Button();
+            controlAuthorityButton = new AntdUI.Button();
+            panel1 = new AntdUI.Panel();
+            headerStatusPanel = new AntdUI.Panel();
+            controlStatusLabel = new AntdUI.Label();
+            adsStatusLabel = new AntdUI.Label();
             panel2 = new Panel();
-            systemSectionLabel = new Label();
-            toolsSectionLabel = new Label();
-            controlSectionLabel = new Label();
-            bu_Configuration = new Button();
-            button5 = new Button();
-            button2 = new Button();
-            Bu_data = new Button();
-            Bu_Calibration = new Button();
-            Bu_manual = new Button();
-            Bu_auto = new Button();
+            systemSectionLabel = new AntdUI.Label();
+            toolsSectionLabel = new AntdUI.Label();
+            controlSectionLabel = new AntdUI.Label();
+            bu_Configuration = new AntdUI.Button();
+            button5 = new AntdUI.Button();
+            button2 = new AntdUI.Button();
+            Bu_data = new AntdUI.Button();
+            Bu_Calibration = new AntdUI.Button();
+            Bu_manual = new AntdUI.Button();
+            Bu_auto = new AntdUI.Button();
             navigationMarker = new Panel();
             contentPanel = new Panel();
             panelswitch = new Panel();
-            operationGroup = new Panel();
-            operationPathLabel = new Label();
-            operationFolderButton = new Button();
-            appTitleLabel = new Label();
+            operationGroup = new AntdUI.Panel();
+            operationPathLabel = new AntdUI.Label();
+            operationFolderButton = new AntdUI.Button();
+            appTitleLabel = new AntdUI.Label();
             panel1.SuspendLayout();
             headerStatusPanel.SuspendLayout();
             panel2.SuspendLayout();
@@ -68,11 +68,13 @@
             // analysisButton
             // 
             analysisButton.BackColor = Color.White;
+            analysisButton.DefaultBack = Color.White;
+            analysisButton.Radius = 6;
+            analysisButton.BorderWidth = 1F;
             analysisButton.Cursor = Cursors.Hand;
-            analysisButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
-            analysisButton.FlatAppearance.MouseDownBackColor = Color.FromArgb(226, 232, 240);
-            analysisButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(219, 234, 254);
-            analysisButton.FlatStyle = FlatStyle.Flat;
+            analysisButton.DefaultBorderColor = Color.FromArgb(203, 213, 225);
+            analysisButton.BackActive = Color.FromArgb(226, 232, 240);
+            analysisButton.BackHover = Color.FromArgb(219, 234, 254);
             analysisButton.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
             analysisButton.ForeColor = Color.FromArgb(15, 23, 42);
             analysisButton.Location = new Point(15, 545);
@@ -83,17 +85,18 @@
             analysisButton.TabIndex = 12;
             analysisButton.Text = "波浪分析";
             analysisButton.TextAlign = ContentAlignment.MiddleLeft;
-            analysisButton.UseVisualStyleBackColor = false;
             analysisButton.Click += AnalysisButton_Click;
             // 
             // correctionButton
             // 
             correctionButton.BackColor = Color.White;
+            correctionButton.DefaultBack = Color.White;
+            correctionButton.Radius = 6;
+            correctionButton.BorderWidth = 1F;
             correctionButton.Cursor = Cursors.Hand;
-            correctionButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
-            correctionButton.FlatAppearance.MouseDownBackColor = Color.FromArgb(226, 232, 240);
-            correctionButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(219, 234, 254);
-            correctionButton.FlatStyle = FlatStyle.Flat;
+            correctionButton.DefaultBorderColor = Color.FromArgb(203, 213, 225);
+            correctionButton.BackActive = Color.FromArgb(226, 232, 240);
+            correctionButton.BackHover = Color.FromArgb(219, 234, 254);
             correctionButton.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
             correctionButton.ForeColor = Color.FromArgb(15, 23, 42);
             correctionButton.Location = new Point(15, 608);
@@ -104,17 +107,18 @@
             correctionButton.TabIndex = 13;
             correctionButton.Text = "信号修正";
             correctionButton.TextAlign = ContentAlignment.MiddleLeft;
-            correctionButton.UseVisualStyleBackColor = false;
             correctionButton.Click += CorrectionButton_Click;
             //
             // controlAuthorityButton
             //
             controlAuthorityButton.BackColor = Color.White;
+            controlAuthorityButton.DefaultBack = Color.White;
+            controlAuthorityButton.Radius = 6;
+            controlAuthorityButton.BorderWidth = 1F;
             controlAuthorityButton.Cursor = Cursors.Hand;
-            controlAuthorityButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
-            controlAuthorityButton.FlatAppearance.MouseDownBackColor = Color.FromArgb(226, 232, 240);
-            controlAuthorityButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(219, 234, 254);
-            controlAuthorityButton.FlatStyle = FlatStyle.Flat;
+            controlAuthorityButton.DefaultBorderColor = Color.FromArgb(203, 213, 225);
+            controlAuthorityButton.BackActive = Color.FromArgb(226, 232, 240);
+            controlAuthorityButton.BackHover = Color.FromArgb(219, 234, 254);
             controlAuthorityButton.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
             controlAuthorityButton.ForeColor = Color.FromArgb(15, 23, 42);
             controlAuthorityButton.Location = new Point(15, 181);
@@ -125,12 +129,12 @@
             controlAuthorityButton.TabIndex = 14;
             controlAuthorityButton.Text = "控制权申请";
             controlAuthorityButton.TextAlign = ContentAlignment.MiddleLeft;
-            controlAuthorityButton.UseVisualStyleBackColor = false;
             controlAuthorityButton.Click += ControlAuthorityButton_Click;
             // 
             // panel1
             // 
             panel1.BackColor = Color.White;
+            panel1.Radius = 0;
             panel1.Controls.Add(headerStatusPanel);
             panel1.Controls.Add(appTitleLabel);
             panel1.Dock = DockStyle.Top;
@@ -143,6 +147,7 @@
             // headerStatusPanel
             // 
             headerStatusPanel.BackColor = Color.White;
+            headerStatusPanel.Radius = 0;
             headerStatusPanel.Controls.Add(controlStatusLabel);
             headerStatusPanel.Controls.Add(adsStatusLabel);
             headerStatusPanel.Dock = DockStyle.Right;
@@ -243,11 +248,13 @@
             // bu_Configuration
             // 
             bu_Configuration.BackColor = Color.White;
+            bu_Configuration.DefaultBack = Color.White;
+            bu_Configuration.Radius = 6;
+            bu_Configuration.BorderWidth = 1F;
             bu_Configuration.Cursor = Cursors.Hand;
-            bu_Configuration.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
-            bu_Configuration.FlatAppearance.MouseDownBackColor = Color.FromArgb(226, 232, 240);
-            bu_Configuration.FlatAppearance.MouseOverBackColor = Color.FromArgb(219, 234, 254);
-            bu_Configuration.FlatStyle = FlatStyle.Flat;
+            bu_Configuration.DefaultBorderColor = Color.FromArgb(203, 213, 225);
+            bu_Configuration.BackActive = Color.FromArgb(226, 232, 240);
+            bu_Configuration.BackHover = Color.FromArgb(219, 234, 254);
             bu_Configuration.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
             bu_Configuration.ForeColor = Color.FromArgb(15, 23, 42);
             bu_Configuration.Location = new Point(15, 715);
@@ -258,17 +265,18 @@
             bu_Configuration.TabIndex = 7;
             bu_Configuration.Text = "系统配置";
             bu_Configuration.TextAlign = ContentAlignment.MiddleLeft;
-            bu_Configuration.UseVisualStyleBackColor = false;
             bu_Configuration.Click += bu_Configuration_Click;
             // 
             // button5
             // 
             button5.BackColor = Color.White;
+            button5.DefaultBack = Color.White;
+            button5.Radius = 6;
+            button5.BorderWidth = 1F;
             button5.Cursor = Cursors.Hand;
-            button5.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
-            button5.FlatAppearance.MouseDownBackColor = Color.FromArgb(226, 232, 240);
-            button5.FlatAppearance.MouseOverBackColor = Color.FromArgb(219, 234, 254);
-            button5.FlatStyle = FlatStyle.Flat;
+            button5.DefaultBorderColor = Color.FromArgb(203, 213, 225);
+            button5.BackActive = Color.FromArgb(226, 232, 240);
+            button5.BackHover = Color.FromArgb(219, 234, 254);
             button5.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
             button5.ForeColor = Color.FromArgb(15, 23, 42);
             button5.Location = new Point(15, 483);
@@ -279,17 +287,18 @@
             button5.TabIndex = 6;
             button5.Text = "浪高监测";
             button5.TextAlign = ContentAlignment.MiddleLeft;
-            button5.UseVisualStyleBackColor = false;
             button5.Click += button5_Click;
             // 
             // button2
             // 
             button2.BackColor = Color.White;
+            button2.DefaultBack = Color.White;
+            button2.Radius = 6;
+            button2.BorderWidth = 1F;
             button2.Cursor = Cursors.Hand;
-            button2.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
-            button2.FlatAppearance.MouseDownBackColor = Color.FromArgb(226, 232, 240);
-            button2.FlatAppearance.MouseOverBackColor = Color.FromArgb(219, 234, 254);
-            button2.FlatStyle = FlatStyle.Flat;
+            button2.DefaultBorderColor = Color.FromArgb(203, 213, 225);
+            button2.BackActive = Color.FromArgb(226, 232, 240);
+            button2.BackHover = Color.FromArgb(219, 234, 254);
             button2.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
             button2.ForeColor = Color.FromArgb(15, 23, 42);
             button2.Location = new Point(15, 421);
@@ -300,17 +309,18 @@
             button2.TabIndex = 5;
             button2.Text = "波形生成";
             button2.TextAlign = ContentAlignment.MiddleLeft;
-            button2.UseVisualStyleBackColor = false;
             button2.Click += WaveformButton_Click;
             // 
             // Bu_data
             // 
             Bu_data.BackColor = Color.White;
+            Bu_data.DefaultBack = Color.White;
+            Bu_data.Radius = 6;
+            Bu_data.BorderWidth = 1F;
             Bu_data.Cursor = Cursors.Hand;
-            Bu_data.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
-            Bu_data.FlatAppearance.MouseDownBackColor = Color.FromArgb(226, 232, 240);
-            Bu_data.FlatAppearance.MouseOverBackColor = Color.FromArgb(219, 234, 254);
-            Bu_data.FlatStyle = FlatStyle.Flat;
+            Bu_data.DefaultBorderColor = Color.FromArgb(203, 213, 225);
+            Bu_data.BackActive = Color.FromArgb(226, 232, 240);
+            Bu_data.BackHover = Color.FromArgb(219, 234, 254);
             Bu_data.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
             Bu_data.ForeColor = Color.FromArgb(15, 23, 42);
             Bu_data.Location = new Point(15, 358);
@@ -321,17 +331,18 @@
             Bu_data.TabIndex = 4;
             Bu_data.Text = "数据管理";
             Bu_data.TextAlign = ContentAlignment.MiddleLeft;
-            Bu_data.UseVisualStyleBackColor = false;
             Bu_data.Click += Bu_data_Click;
             // 
             // Bu_Calibration
             // 
             Bu_Calibration.BackColor = Color.White;
+            Bu_Calibration.DefaultBack = Color.White;
+            Bu_Calibration.Radius = 6;
+            Bu_Calibration.BorderWidth = 1F;
             Bu_Calibration.Cursor = Cursors.Hand;
-            Bu_Calibration.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
-            Bu_Calibration.FlatAppearance.MouseDownBackColor = Color.FromArgb(226, 232, 240);
-            Bu_Calibration.FlatAppearance.MouseOverBackColor = Color.FromArgb(219, 234, 254);
-            Bu_Calibration.FlatStyle = FlatStyle.Flat;
+            Bu_Calibration.DefaultBorderColor = Color.FromArgb(203, 213, 225);
+            Bu_Calibration.BackActive = Color.FromArgb(226, 232, 240);
+            Bu_Calibration.BackHover = Color.FromArgb(219, 234, 254);
             Bu_Calibration.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
             Bu_Calibration.ForeColor = Color.FromArgb(15, 23, 42);
             Bu_Calibration.Location = new Point(15, 295);
@@ -342,17 +353,18 @@
             Bu_Calibration.TabIndex = 3;
             Bu_Calibration.Text = "标定管理";
             Bu_Calibration.TextAlign = ContentAlignment.MiddleLeft;
-            Bu_Calibration.UseVisualStyleBackColor = false;
             Bu_Calibration.Click += Bu_Calibration_Click;
             // 
             // Bu_manual
             // 
             Bu_manual.BackColor = Color.White;
+            Bu_manual.DefaultBack = Color.White;
+            Bu_manual.Radius = 6;
+            Bu_manual.BorderWidth = 1F;
             Bu_manual.Cursor = Cursors.Hand;
-            Bu_manual.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
-            Bu_manual.FlatAppearance.MouseDownBackColor = Color.FromArgb(226, 232, 240);
-            Bu_manual.FlatAppearance.MouseOverBackColor = Color.FromArgb(219, 234, 254);
-            Bu_manual.FlatStyle = FlatStyle.Flat;
+            Bu_manual.DefaultBorderColor = Color.FromArgb(203, 213, 225);
+            Bu_manual.BackActive = Color.FromArgb(226, 232, 240);
+            Bu_manual.BackHover = Color.FromArgb(219, 234, 254);
             Bu_manual.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
             Bu_manual.ForeColor = Color.FromArgb(15, 23, 42);
             Bu_manual.Location = new Point(15, 118);
@@ -363,17 +375,18 @@
             Bu_manual.TabIndex = 1;
             Bu_manual.Text = "手动控制";
             Bu_manual.TextAlign = ContentAlignment.MiddleLeft;
-            Bu_manual.UseVisualStyleBackColor = false;
             Bu_manual.Click += Bu_manual_Click;
             // 
             // Bu_auto
             // 
             Bu_auto.BackColor = Color.FromArgb(29, 78, 216);
+            Bu_auto.DefaultBack = Color.FromArgb(29, 78, 216);
+            Bu_auto.Radius = 6;
+            Bu_auto.BorderWidth = 1F;
             Bu_auto.Cursor = Cursors.Hand;
-            Bu_auto.FlatAppearance.BorderColor = Color.FromArgb(29, 78, 216);
-            Bu_auto.FlatAppearance.MouseDownBackColor = Color.FromArgb(30, 64, 175);
-            Bu_auto.FlatAppearance.MouseOverBackColor = Color.FromArgb(30, 64, 175);
-            Bu_auto.FlatStyle = FlatStyle.Flat;
+            Bu_auto.DefaultBorderColor = Color.FromArgb(29, 78, 216);
+            Bu_auto.BackActive = Color.FromArgb(30, 64, 175);
+            Bu_auto.BackHover = Color.FromArgb(30, 64, 175);
             Bu_auto.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
             Bu_auto.ForeColor = Color.White;
             Bu_auto.Location = new Point(15, 55);
@@ -384,7 +397,6 @@
             Bu_auto.TabIndex = 0;
             Bu_auto.Text = "自动运行";
             Bu_auto.TextAlign = ContentAlignment.MiddleLeft;
-            Bu_auto.UseVisualStyleBackColor = false;
             Bu_auto.Click += Bu_auto_Click;
             // 
             // navigationMarker
@@ -421,6 +433,7 @@
             // operationGroup
             // 
             operationGroup.BackColor = Color.White;
+            operationGroup.Radius = 0;
             operationGroup.Controls.Add(operationPathLabel);
             operationGroup.Controls.Add(operationFolderButton);
             operationGroup.Dock = DockStyle.Bottom;
@@ -449,11 +462,12 @@
             // operationFolderButton
             // 
             operationFolderButton.BackColor = Color.White;
+            operationFolderButton.DefaultBack = Color.White;
+            operationFolderButton.Radius = 6;
             operationFolderButton.Cursor = Cursors.Hand;
             operationFolderButton.Dock = DockStyle.Right;
-            operationFolderButton.FlatAppearance.BorderSize = 0;
-            operationFolderButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(241, 245, 249);
-            operationFolderButton.FlatStyle = FlatStyle.Flat;
+            operationFolderButton.BorderWidth = 0;
+            operationFolderButton.BackHover = Color.FromArgb(241, 245, 249);
             operationFolderButton.ForeColor = Color.FromArgb(71, 85, 105);
             operationFolderButton.Location = new Point(1235, 0);
             operationFolderButton.Margin = new Padding(4);
@@ -461,7 +475,6 @@
             operationFolderButton.Size = new Size(130, 42);
             operationFolderButton.TabIndex = 2;
             operationFolderButton.Text = "打开日志目录";
-            operationFolderButton.UseVisualStyleBackColor = false;
             operationFolderButton.Click += OpenOperationFolderButton_Click;
             // 
             // appTitleLabel
@@ -504,30 +517,30 @@
 
         #endregion
 
-        private Button analysisButton;
-        private Button correctionButton;
-        private Button controlAuthorityButton;
-        private Panel panel1;
-        private Panel headerStatusPanel;
+        private AntdUI.Button analysisButton;
+        private AntdUI.Button correctionButton;
+        private AntdUI.Button controlAuthorityButton;
+        private AntdUI.Panel panel1;
+        private AntdUI.Panel headerStatusPanel;
         private Panel panel2;
         private Panel panelswitch;
         private Panel contentPanel;
-        private Panel operationGroup;
-        private Button operationFolderButton;
+        private AntdUI.Panel operationGroup;
+        private AntdUI.Button operationFolderButton;
         private Panel navigationMarker;
-        private Label operationPathLabel;
-        private Button Bu_Calibration;
-        private Button Bu_manual;
-        private Button Bu_auto;
-        private Button bu_Configuration;
-        private Button button5;
-        private Button button2;
-        private Button Bu_data;
-        private Label controlSectionLabel;
-        private Label toolsSectionLabel;
-        private Label systemSectionLabel;
-        private Label controlStatusLabel;
-        private Label adsStatusLabel;
-        private Label appTitleLabel;
+        private AntdUI.Label operationPathLabel;
+        private AntdUI.Button Bu_Calibration;
+        private AntdUI.Button Bu_manual;
+        private AntdUI.Button Bu_auto;
+        private AntdUI.Button bu_Configuration;
+        private AntdUI.Button button5;
+        private AntdUI.Button button2;
+        private AntdUI.Button Bu_data;
+        private AntdUI.Label controlSectionLabel;
+        private AntdUI.Label toolsSectionLabel;
+        private AntdUI.Label systemSectionLabel;
+        private AntdUI.Label controlStatusLabel;
+        private AntdUI.Label adsStatusLabel;
+        private AntdUI.Label appTitleLabel;
     }
 }

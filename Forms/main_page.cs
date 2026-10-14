@@ -297,7 +297,7 @@ namespace Page_switching
             }
         }
 
-        private void NavigateTo(UserControl page, Button button)
+        private void NavigateTo(UserControl page, AntdUI.Button button)
         {
             if (_recordOperations) OperationJournal.Record("页面切换", "打开" + GetPageName(page));
             ShowPage(page);
@@ -370,18 +370,18 @@ namespace Page_switching
             }
         }
 
-        // 普通按钮保留白底边框；当前页面使用蓝底白字，并区分悬停和按下状态。
-        private void SetActiveNavigation(Button activeButton)
+        // AntdUI 导航统一更新默认、悬停和按下颜色；页面切换仍使用同一个入口。
+        private void SetActiveNavigation(AntdUI.Button activeButton)
         {
             foreach (var button in new[] { Bu_auto, Bu_manual, Bu_Calibration, Bu_data, button2, button5,
                          analysisButton, correctionButton, bu_Configuration, controlAuthorityButton })
             {
                 var isActive = ReferenceEquals(button, activeButton);
-                button.BackColor = isActive ? UiPalette.Primary : UiPalette.Surface;
+                button.DefaultBack = isActive ? UiPalette.Primary : UiPalette.Surface;
                 button.ForeColor = isActive ? Color.White : UiPalette.Text;
-                button.FlatAppearance.BorderColor = isActive ? UiPalette.Primary : UiPalette.Border;
-                button.FlatAppearance.MouseOverBackColor = isActive ? UiPalette.PrimaryHover : UiPalette.Selection;
-                button.FlatAppearance.MouseDownBackColor = isActive ? UiPalette.PrimaryHover : UiPalette.SecondaryButton;
+                button.DefaultBorderColor = isActive ? UiPalette.Primary : UiPalette.Border;
+                button.BackHover = isActive ? UiPalette.PrimaryHover : UiPalette.Selection;
+                button.BackActive = isActive ? UiPalette.PrimaryHover : UiPalette.SecondaryButton;
             }
 
             navigationMarker.Top = activeButton.Top;
