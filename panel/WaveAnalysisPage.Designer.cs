@@ -183,7 +183,8 @@ namespace Page_switching.panel
             this.caption_inputPath.Margin = new System.Windows.Forms.Padding(6, 9, 3, 3);
             this.options.Controls.Add(this.caption_inputPath);
             this.inputPath.Margin = new System.Windows.Forms.Padding(3, 3, 8, 8);
-            this.inputPath.Width = 410;
+            // AntdUI 输入控件需要明确高度，流式布局不会替它们补齐高度。
+            this.inputPath.Size = new System.Drawing.Size(410, 32);
             this.inputPath.Text = "";
             this.inputPath.ReadOnly = true;
             this.inputPath.BackColor = System.Drawing.Color.White;
@@ -201,7 +202,7 @@ namespace Page_switching.panel
             this.caption_channelInput.Margin = new System.Windows.Forms.Padding(6, 9, 3, 3);
             this.options.Controls.Add(this.caption_channelInput);
             this.channelInput.Margin = new System.Windows.Forms.Padding(3, 3, 8, 8);
-            this.channelInput.Width = 78;
+            this.channelInput.Size = new System.Drawing.Size(78, 32);
             this.channelInput.Maximum = 6M;
             this.channelInput.Minimum = 1M;
             this.channelInput.DecimalPlaces = 0;
@@ -213,7 +214,7 @@ namespace Page_switching.panel
             this.caption_unitInput.Margin = new System.Windows.Forms.Padding(6, 9, 3, 3);
             this.options.Controls.Add(this.caption_unitInput);
             this.unitInput.Margin = new System.Windows.Forms.Padding(3, 3, 8, 8);
-            this.unitInput.Width = 135;
+            this.unitInput.Size = new System.Drawing.Size(135, 32);
             this.unitInput.Items.AddRange(new object[] { "mm", "m" });
             this.unitInput.SelectedIndex = 0;
             this.options.Controls.Add(this.unitInput);
@@ -222,7 +223,7 @@ namespace Page_switching.panel
             this.caption_rateInput.Margin = new System.Windows.Forms.Padding(6, 9, 3, 3);
             this.options.Controls.Add(this.caption_rateInput);
             this.rateInput.Margin = new System.Windows.Forms.Padding(3, 3, 8, 8);
-            this.rateInput.Width = 78;
+            this.rateInput.Size = new System.Drawing.Size(78, 32);
             this.rateInput.Maximum = 1000M;
             this.rateInput.Minimum = 1M;
             this.rateInput.DecimalPlaces = 2;
@@ -234,7 +235,7 @@ namespace Page_switching.panel
             this.caption_heightInput.Margin = new System.Windows.Forms.Padding(6, 9, 3, 3);
             this.options.Controls.Add(this.caption_heightInput);
             this.heightInput.Margin = new System.Windows.Forms.Padding(3, 3, 8, 8);
-            this.heightInput.Width = 78;
+            this.heightInput.Size = new System.Drawing.Size(78, 32);
             this.heightInput.Maximum = 10M;
             this.heightInput.Minimum = 0.001M;
             this.heightInput.DecimalPlaces = 3;
@@ -246,7 +247,7 @@ namespace Page_switching.panel
             this.caption_periodInput.Margin = new System.Windows.Forms.Padding(6, 9, 3, 3);
             this.options.Controls.Add(this.caption_periodInput);
             this.periodInput.Margin = new System.Windows.Forms.Padding(3, 3, 8, 8);
-            this.periodInput.Width = 78;
+            this.periodInput.Size = new System.Drawing.Size(78, 32);
             this.periodInput.Maximum = 100M;
             this.periodInput.Minimum = 0.01M;
             this.periodInput.DecimalPlaces = 3;
@@ -258,19 +259,21 @@ namespace Page_switching.panel
             this.caption_gammaInput.Margin = new System.Windows.Forms.Padding(6, 9, 3, 3);
             this.options.Controls.Add(this.caption_gammaInput);
             this.gammaInput.Margin = new System.Windows.Forms.Padding(3, 3, 8, 8);
-            this.gammaInput.Width = 78;
+            this.gammaInput.Size = new System.Drawing.Size(78, 32);
             this.gammaInput.Maximum = 20M;
             this.gammaInput.Minimum = 0.01M;
             this.gammaInput.DecimalPlaces = 2;
             this.gammaInput.Increment = 0.01M;
             this.gammaInput.Value = 3.3M;
             this.options.Controls.Add(this.gammaInput);
+            // 在参数组之间换行，避免“理论谱”标题与下拉框分到两行。
+            this.options.SetFlowBreak(this.gammaInput, true);
             this.caption_spectrumInput.Text = "理论谱";
             this.caption_spectrumInput.AutoSize = true;
             this.caption_spectrumInput.Margin = new System.Windows.Forms.Padding(6, 9, 3, 3);
             this.options.Controls.Add(this.caption_spectrumInput);
             this.spectrumInput.Margin = new System.Windows.Forms.Padding(3, 3, 8, 8);
-            this.spectrumInput.Width = 135;
+            this.spectrumInput.Size = new System.Drawing.Size(135, 32);
             this.spectrumInput.Items.AddRange(new object[] { "JONSWAP", "P-M", "B谱", "ITTC", "规范谱", "Scott", "Darbyshire", "Wallops" });
             this.spectrumInput.SelectedIndex = 0;
             this.options.Controls.Add(this.spectrumInput);
@@ -279,7 +282,7 @@ namespace Page_switching.panel
             this.caption_passesInput.Margin = new System.Windows.Forms.Padding(6, 9, 3, 3);
             this.options.Controls.Add(this.caption_passesInput);
             this.passesInput.Margin = new System.Windows.Forms.Padding(3, 3, 8, 8);
-            this.passesInput.Width = 78;
+            this.passesInput.Size = new System.Drawing.Size(78, 32);
             this.passesInput.Maximum = 20M;
             this.passesInput.Minimum = 0M;
             this.passesInput.DecimalPlaces = 0;
@@ -291,7 +294,7 @@ namespace Page_switching.panel
             this.caption_pointsInput.Margin = new System.Windows.Forms.Padding(6, 9, 3, 3);
             this.options.Controls.Add(this.caption_pointsInput);
             this.pointsInput.Margin = new System.Windows.Forms.Padding(3, 3, 8, 8);
-            this.pointsInput.Width = 78;
+            this.pointsInput.Size = new System.Drawing.Size(78, 32);
             this.pointsInput.Maximum = 101M;
             this.pointsInput.Minimum = 1M;
             this.pointsInput.DecimalPlaces = 0;
@@ -304,7 +307,7 @@ namespace Page_switching.panel
             this.analyzeButton.DefaultBorderColor = System.Drawing.Color.FromArgb(203, 213, 225);
             this.analyzeButton.BackColor = System.Drawing.Color.FromArgb(248, 250, 252);
             analyzeButton.DefaultBack = System.Drawing.Color.FromArgb(248, 250, 252);
-            this.analyzeButton.BackColor = System.Drawing.Color.FromArgb(29, 78, 216);
+            this.analyzeButton.DefaultBack = System.Drawing.Color.FromArgb(29, 78, 216);
             this.analyzeButton.ForeColor = System.Drawing.Color.White;
             this.options.Controls.Add(this.analyzeButton);
             this.exportSpectrumButton.Margin = new System.Windows.Forms.Padding(3, 3, 8, 8);
@@ -331,7 +334,7 @@ namespace Page_switching.panel
             this.methodCaption.Margin = new System.Windows.Forms.Padding(6, 9, 3, 3);
             this.methodCaption.Name = "methodCaption";
             this.methodInput.Name = "methodInput";
-            this.methodInput.Width = 180;
+            this.methodInput.Size = new System.Drawing.Size(180, 32);
             this.methodInput.Items.AddRange(new object[] { "内置FFT", "旧WaveTJU程序" });
             this.methodInput.SelectedIndex = 0;
             this.methodInput.Margin = new System.Windows.Forms.Padding(3, 3, 8, 8);
@@ -345,7 +348,7 @@ namespace Page_switching.panel
             this.depthInput.Minimum = 0.001M;
             this.depthInput.DecimalPlaces = 3;
             this.depthInput.Value = 0.6M;
-            this.depthInput.Width = 78;
+            this.depthInput.Size = new System.Drawing.Size(78, 32);
             this.importResultsButton.Name = "importResultsButton";
             this.importResultsButton.Text = "导入旧分析结果";
             this.importResultsButton.Size = new System.Drawing.Size(140, 32);
