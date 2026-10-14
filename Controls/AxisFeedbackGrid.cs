@@ -5,7 +5,18 @@ namespace Page_switching;
 // 四轴反馈直接绑定 AntdUI 表格；不提供编辑入口，设计器也能显示四条占位行。
 public sealed class AxisFeedbackGrid : AntdUI.Table
 {
+    // 数据由控件自己创建，禁止 Designer 把占位行写入二进制资源。
+    [System.ComponentModel.Browsable(false)]
+    [System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
     public DataTable FeedbackRows { get; } = new();
+
+    [System.ComponentModel.Browsable(false)]
+    [System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
+    public new object? DataSource
+    {
+        get => base.DataSource;
+        set => base.DataSource = value;
+    }
 
     public AxisFeedbackGrid()
     {

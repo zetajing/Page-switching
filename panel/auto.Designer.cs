@@ -83,25 +83,19 @@ namespace Page_switching
             heartbeatLabel = new AntdUI.Label();
             bodyLayout = new TableLayoutPanel();
             progressGroup = new AntdUI.Panel();
-            progressGroupCaption = new AntdUI.Label();
             progressPlaceholderLabel = new AntdUI.Label();
+            progressGroupCaption = new AntdUI.Label();
             rightLayout = new TableLayoutPanel();
             axisGroup = new AntdUI.Panel();
             axisGroupCaption = new AntdUI.Label();
             logGroup = new AntdUI.Panel();
-            logGroupCaption = new AntdUI.Label();
             logLayout = new TableLayoutPanel();
             messageHeader = new TableLayoutPanel();
             messageCountLabel = new AntdUI.Label();
             messageSummaryLabel = new AntdUI.Label();
             _logList = new AntdUI.Input();
-            _logList.WaveSize = 0;
-            _logList.Radius = 6;
-            _logList.Multiline = true;
-            _logList.ReadOnly = true;
-            _logList.WordWrap = false;
             clearLogButton = new AntdUI.Button();
-            clearLogButton.Radius = 6;
+            logGroupCaption = new AntdUI.Label();
             messageToolTip = new ToolTip(components);
             pagePanel.SuspendLayout();
             rootLayout.SuspendLayout();
@@ -125,37 +119,18 @@ namespace Page_switching
             //
             // axisGrid
             //
+            axisGrid.AutoSizeColumnsMode = AntdUI.ColumnsMode.Fill;
             axisGrid.Dock = DockStyle.Fill;
             axisGrid.Font = new Font("Microsoft YaHei UI", 9F);
-            axisGrid.Location = new Point(14, 34);
+            axisGrid.Gap = 4;
+            axisGrid.Gaps = new Size(4, 4);
+            axisGrid.Location = new Point(15, 33);
             axisGrid.Margin = new Padding(4);
             axisGrid.Name = "axisGrid";
-            axisGrid.Size = new Size(652, 144);
+            axisGrid.RowHeight = 28;
+            axisGrid.RowHeightHeader = 28;
+            axisGrid.Size = new Size(650, 194);
             axisGrid.TabIndex = 0;
-            //
-            // axisNumberColumn
-            //
-            //
-            // positionColumn
-            //
-            //
-            // speedColumn
-            //
-            //
-            // homedColumn
-            //
-            //
-            // alarmColumn
-            //
-            //
-            // negativeLimitColumn
-            //
-            //
-            // positiveLimitColumn
-            //
-            //
-            // originColumn
-            //
             //
             // pagePanel
             //
@@ -209,7 +184,6 @@ namespace Page_switching
             subtitleLabel.Size = new Size(1223, 22);
             subtitleLabel.TabIndex = 0;
             subtitleLabel.Text = "控制端、运行模式与造波反馈 · 只读监控";
-            subtitleLabel.TextAlign = ContentAlignment.MiddleLeft;
             //
             // titleLabel
             //
@@ -221,7 +195,6 @@ namespace Page_switching
             titleLabel.Size = new Size(1223, 34);
             titleLabel.TabIndex = 1;
             titleLabel.Text = "自动运行";
-            titleLabel.TextAlign = ContentAlignment.MiddleLeft;
             //
             // cardsLayout
             //
@@ -287,7 +260,6 @@ namespace Page_switching
             controlCaptionLabel.Size = new Size(373, 20);
             controlCaptionLabel.TabIndex = 0;
             controlCaptionLabel.Text = "当前控制端";
-            controlCaptionLabel.TextAlign = ContentAlignment.MiddleLeft;
             //
             // controlValueLabel
             //
@@ -301,7 +273,6 @@ namespace Page_switching
             controlValueLabel.Size = new Size(373, 28);
             controlValueLabel.TabIndex = 1;
             controlValueLabel.Text = "等待反馈";
-            controlValueLabel.TextAlign = ContentAlignment.MiddleLeft;
             //
             // controlDetailLabel
             //
@@ -315,7 +286,6 @@ namespace Page_switching
             controlDetailLabel.Size = new Size(373, 20);
             controlDetailLabel.TabIndex = 2;
             controlDetailLabel.Text = "等待有效反馈";
-            controlDetailLabel.TextAlign = ContentAlignment.MiddleLeft;
             //
             // modeCard
             //
@@ -363,7 +333,6 @@ namespace Page_switching
             modeCaptionLabel.Size = new Size(373, 20);
             modeCaptionLabel.TabIndex = 0;
             modeCaptionLabel.Text = "运行模式";
-            modeCaptionLabel.TextAlign = ContentAlignment.MiddleLeft;
             //
             // modeValueLabel
             //
@@ -377,7 +346,6 @@ namespace Page_switching
             modeValueLabel.Size = new Size(373, 28);
             modeValueLabel.TabIndex = 1;
             modeValueLabel.Text = "等待反馈";
-            modeValueLabel.TextAlign = ContentAlignment.MiddleLeft;
             //
             // modeDetailLabel
             //
@@ -391,7 +359,6 @@ namespace Page_switching
             modeDetailLabel.Size = new Size(373, 20);
             modeDetailLabel.TabIndex = 2;
             modeDetailLabel.Text = "等待有效反馈";
-            modeDetailLabel.TextAlign = ContentAlignment.MiddleLeft;
             //
             // waveCard
             //
@@ -439,7 +406,6 @@ namespace Page_switching
             waveCaptionLabel.Size = new Size(375, 20);
             waveCaptionLabel.TabIndex = 0;
             waveCaptionLabel.Text = "造波状态";
-            waveCaptionLabel.TextAlign = ContentAlignment.MiddleLeft;
             //
             // _runStateLabel
             //
@@ -453,7 +419,6 @@ namespace Page_switching
             _runStateLabel.Size = new Size(375, 28);
             _runStateLabel.TabIndex = 1;
             _runStateLabel.Text = "等待反馈";
-            _runStateLabel.TextAlign = ContentAlignment.MiddleLeft;
             //
             // faultCodeLabel
             //
@@ -467,7 +432,6 @@ namespace Page_switching
             faultCodeLabel.Size = new Size(375, 20);
             faultCodeLabel.TabIndex = 2;
             faultCodeLabel.Text = "故障码：--";
-            faultCodeLabel.TextAlign = ContentAlignment.MiddleLeft;
             //
             // monitorInfoLayout
             //
@@ -498,7 +462,6 @@ namespace Page_switching
             connectionLabel.Size = new Size(440, 32);
             connectionLabel.TabIndex = 0;
             connectionLabel.Text = "● ADS 未连接";
-            connectionLabel.TextAlign = ContentAlignment.MiddleLeft;
             //
             // feedbackLabel
             //
@@ -511,7 +474,6 @@ namespace Page_switching
             feedbackLabel.Size = new Size(428, 32);
             feedbackLabel.TabIndex = 1;
             feedbackLabel.Text = "反馈时间：--";
-            feedbackLabel.TextAlign = ContentAlignment.MiddleLeft;
             //
             // heartbeatLabel
             //
@@ -524,7 +486,6 @@ namespace Page_switching
             heartbeatLabel.Size = new Size(355, 32);
             heartbeatLabel.TabIndex = 2;
             heartbeatLabel.Text = "心跳：--";
-            heartbeatLabel.TextAlign = ContentAlignment.MiddleLeft;
             //
             // bodyLayout
             //
@@ -545,7 +506,10 @@ namespace Page_switching
             // progressGroup
             //
             progressGroup.BackColor = Color.White;
+            progressGroup.BorderColor = Color.FromArgb(203, 213, 225);
+            progressGroup.BorderWidth = 1F;
             progressGroup.Controls.Add(progressPlaceholderLabel);
+            progressGroup.Controls.Add(progressGroupCaption);
             progressGroup.Dock = DockStyle.Fill;
             progressGroup.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
             progressGroup.ForeColor = Color.FromArgb(15, 23, 42);
@@ -555,30 +519,29 @@ namespace Page_switching
             progressGroup.Padding = new Padding(14, 32, 14, 12);
             progressGroup.Size = new Size(531, 697);
             progressGroup.TabIndex = 0;
-            // AntdUI 面板用独立标题标签保留原分组标题，布局仍可在 Designer 编辑。
-            progressGroupCaption.Text = "造波进度";
-            progressGroupCaption.AutoSize = true;
-            progressGroupCaption.Name = "progressGroupCaption";
-            progressGroupCaption.Location = new Point(10, 2);
-            progressGroupCaption.ForeColor = Color.FromArgb(15, 23, 42);
-            progressGroup.BorderWidth = 1F;
-            progressGroup.BorderColor = Color.FromArgb(203, 213, 225);
-            progressGroup.Radius = 6;
-            progressGroup.Controls.Add(progressGroupCaption);
-            progressGroupCaption.BringToFront();
             //
             // progressPlaceholderLabel
             //
             progressPlaceholderLabel.Dock = DockStyle.Fill;
             progressPlaceholderLabel.Font = new Font("Microsoft YaHei UI", 9F);
             progressPlaceholderLabel.ForeColor = Color.FromArgb(100, 116, 139);
-            progressPlaceholderLabel.Location = new Point(14, 34);
+            progressPlaceholderLabel.Location = new Point(15, 33);
             progressPlaceholderLabel.Margin = new Padding(2, 0, 2, 0);
             progressPlaceholderLabel.Name = "progressPlaceholderLabel";
-            progressPlaceholderLabel.Size = new Size(503, 651);
+            progressPlaceholderLabel.Size = new Size(501, 651);
             progressPlaceholderLabel.TabIndex = 0;
             progressPlaceholderLabel.Text = "造波进度显示区域";
             progressPlaceholderLabel.TextAlign = ContentAlignment.MiddleCenter;
+            //
+            // progressGroupCaption
+            //
+            progressGroupCaption.AutoSizeMode = AntdUI.TAutoSize.Auto;
+            progressGroupCaption.ForeColor = Color.FromArgb(15, 23, 42);
+            progressGroupCaption.Location = new Point(10, 2);
+            progressGroupCaption.Name = "progressGroupCaption";
+            progressGroupCaption.Size = new Size(48, 16);
+            progressGroupCaption.TabIndex = 1;
+            progressGroupCaption.Text = "造波进度";
             //
             // rightLayout
             //
@@ -600,7 +563,10 @@ namespace Page_switching
             // axisGroup
             //
             axisGroup.BackColor = Color.White;
+            axisGroup.BorderColor = Color.FromArgb(203, 213, 225);
+            axisGroup.BorderWidth = 1F;
             axisGroup.Controls.Add(axisGrid);
+            axisGroup.Controls.Add(axisGroupCaption);
             axisGroup.Dock = DockStyle.Fill;
             axisGroup.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
             axisGroup.ForeColor = Color.FromArgb(15, 23, 42);
@@ -608,24 +574,26 @@ namespace Page_switching
             axisGroup.Margin = new Padding(0);
             axisGroup.Name = "axisGroup";
             axisGroup.Padding = new Padding(14, 32, 14, 12);
-            axisGroup.Size = new Size(680, 190);
+            axisGroup.Size = new Size(680, 240);
             axisGroup.TabIndex = 3;
-            // AntdUI 面板用独立标题标签保留原分组标题，布局仍可在 Designer 编辑。
-            axisGroupCaption.Text = "四轴反馈";
-            axisGroupCaption.AutoSize = true;
-            axisGroupCaption.Name = "axisGroupCaption";
-            axisGroupCaption.Location = new Point(10, 2);
+            //
+            // axisGroupCaption
+            //
+            axisGroupCaption.AutoSizeMode = AntdUI.TAutoSize.Auto;
             axisGroupCaption.ForeColor = Color.FromArgb(15, 23, 42);
-            axisGroup.BorderWidth = 1F;
-            axisGroup.BorderColor = Color.FromArgb(203, 213, 225);
-            axisGroup.Radius = 6;
-            axisGroup.Controls.Add(axisGroupCaption);
-            axisGroupCaption.BringToFront();
+            axisGroupCaption.Location = new Point(10, 2);
+            axisGroupCaption.Name = "axisGroupCaption";
+            axisGroupCaption.Size = new Size(48, 16);
+            axisGroupCaption.TabIndex = 1;
+            axisGroupCaption.Text = "四轴反馈";
             //
             // logGroup
             //
             logGroup.BackColor = Color.White;
+            logGroup.BorderColor = Color.FromArgb(203, 213, 225);
+            logGroup.BorderWidth = 1F;
             logGroup.Controls.Add(logLayout);
+            logGroup.Controls.Add(logGroupCaption);
             logGroup.Dock = DockStyle.Fill;
             logGroup.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
             logGroup.ForeColor = Color.FromArgb(15, 23, 42);
@@ -635,17 +603,6 @@ namespace Page_switching
             logGroup.Padding = new Padding(14, 32, 14, 12);
             logGroup.Size = new Size(680, 296);
             logGroup.TabIndex = 4;
-            // AntdUI 面板用独立标题标签保留原分组标题，布局仍可在 Designer 编辑。
-            logGroupCaption.Text = "运行消息";
-            logGroupCaption.AutoSize = true;
-            logGroupCaption.Name = "logGroupCaption";
-            logGroupCaption.Location = new Point(10, 2);
-            logGroupCaption.ForeColor = Color.FromArgb(15, 23, 42);
-            logGroup.BorderWidth = 1F;
-            logGroup.BorderColor = Color.FromArgb(203, 213, 225);
-            logGroup.Radius = 6;
-            logGroup.Controls.Add(logGroupCaption);
-            logGroupCaption.BringToFront();
             //
             // logLayout
             //
@@ -655,14 +612,14 @@ namespace Page_switching
             logLayout.Controls.Add(_logList, 0, 1);
             logLayout.Controls.Add(clearLogButton, 0, 2);
             logLayout.Dock = DockStyle.Fill;
-            logLayout.Location = new Point(14, 34);
+            logLayout.Location = new Point(15, 33);
             logLayout.Margin = new Padding(0);
             logLayout.Name = "logLayout";
             logLayout.RowCount = 3;
             logLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
             logLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             logLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 38F));
-            logLayout.Size = new Size(652, 250);
+            logLayout.Size = new Size(650, 250);
             logLayout.TabIndex = 0;
             //
             // messageHeader
@@ -678,7 +635,7 @@ namespace Page_switching
             messageHeader.Name = "messageHeader";
             messageHeader.RowCount = 1;
             messageHeader.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            messageHeader.Size = new Size(652, 32);
+            messageHeader.Size = new Size(650, 32);
             messageHeader.TabIndex = 0;
             //
             // messageCountLabel
@@ -692,7 +649,6 @@ namespace Page_switching
             messageCountLabel.Size = new Size(120, 32);
             messageCountLabel.TabIndex = 0;
             messageCountLabel.Text = "消息：0 条";
-            messageCountLabel.TextAlign = ContentAlignment.MiddleLeft;
             //
             // messageSummaryLabel
             //
@@ -703,10 +659,9 @@ namespace Page_switching
             messageSummaryLabel.Location = new Point(120, 0);
             messageSummaryLabel.Margin = new Padding(0, 0, 12, 0);
             messageSummaryLabel.Name = "messageSummaryLabel";
-            messageSummaryLabel.Size = new Size(520, 32);
+            messageSummaryLabel.Size = new Size(518, 32);
             messageSummaryLabel.TabIndex = 1;
             messageSummaryLabel.Text = "暂无运行消息";
-            messageSummaryLabel.TextAlign = ContentAlignment.MiddleLeft;
             //
             // _logList
             //
@@ -714,9 +669,13 @@ namespace Page_switching
             _logList.Dock = DockStyle.Fill;
             _logList.Font = new Font("Microsoft YaHei UI", 9F);
             _logList.Location = new Point(3, 35);
+            _logList.Multiline = true;
             _logList.Name = "_logList";
-            _logList.Size = new Size(646, 174);
+            _logList.ReadOnly = true;
+            _logList.Size = new Size(644, 174);
             _logList.TabIndex = 1;
+            _logList.WaveSize = 0;
+            _logList.WordWrap = false;
             //
             // clearLogButton
             //
@@ -737,6 +696,16 @@ namespace Page_switching
             clearLogButton.Text = "清空本页消息";
             clearLogButton.Click += ClearLogButton_Click;
             //
+            // logGroupCaption
+            //
+            logGroupCaption.AutoSizeMode = AntdUI.TAutoSize.Auto;
+            logGroupCaption.ForeColor = Color.FromArgb(15, 23, 42);
+            logGroupCaption.Location = new Point(10, 2);
+            logGroupCaption.Name = "logGroupCaption";
+            logGroupCaption.Size = new Size(48, 16);
+            logGroupCaption.TabIndex = 1;
+            logGroupCaption.Text = "运行消息";
+            //
             // Auto
             //
             AutoScaleDimensions = new SizeF(96F, 96F);
@@ -748,7 +717,7 @@ namespace Page_switching
             Font = new Font("Microsoft YaHei UI", 9F);
             ForeColor = Color.FromArgb(15, 23, 42);
             Name = "Auto";
-            Size = new Size(1019, 655);
+            Size = new Size(951, 587);
             pagePanel.ResumeLayout(false);
             rootLayout.ResumeLayout(false);
             headerPanel.ResumeLayout(false);
@@ -762,9 +731,12 @@ namespace Page_switching
             monitorInfoLayout.ResumeLayout(false);
             bodyLayout.ResumeLayout(false);
             progressGroup.ResumeLayout(false);
+            progressGroup.PerformLayout();
             rightLayout.ResumeLayout(false);
             axisGroup.ResumeLayout(false);
+            axisGroup.PerformLayout();
             logGroup.ResumeLayout(false);
+            logGroup.PerformLayout();
             logLayout.ResumeLayout(false);
             logLayout.PerformLayout();
             messageHeader.ResumeLayout(false);

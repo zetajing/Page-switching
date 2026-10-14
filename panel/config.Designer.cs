@@ -210,7 +210,7 @@ partial class Config
         pagePanel.Dock = DockStyle.Fill;
         pagePanel.Location = new Point(0, 0);
         pagePanel.Name = "pagePanel";
-        pagePanel.Size = new Size(866, 720);
+        pagePanel.Size = new Size(860, 720);
         pagePanel.TabIndex = 0;
         //
         // rootLayout
@@ -240,7 +240,7 @@ partial class Config
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 292F));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 172F));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 156F));
-        rootLayout.Size = new Size(849, 956);
+        rootLayout.Size = new Size(843, 956);
         rootLayout.TabIndex = 0;
         //
         // titleLabel
@@ -251,7 +251,7 @@ partial class Config
         titleLabel.Location = new Point(18, 16);
         titleLabel.Margin = new Padding(2, 0, 2, 0);
         titleLabel.Name = "titleLabel";
-        titleLabel.Size = new Size(813, 42);
+        titleLabel.Size = new Size(807, 42);
         titleLabel.TabIndex = 0;
         titleLabel.Text = "系统配置";
         titleLabel.TextAlign = ContentAlignment.MiddleLeft;
@@ -264,7 +264,7 @@ partial class Config
         subtitleLabel.Location = new Point(18, 58);
         subtitleLabel.Margin = new Padding(2, 0, 2, 0);
         subtitleLabel.Name = "subtitleLabel";
-        subtitleLabel.Size = new Size(813, 26);
+        subtitleLabel.Size = new Size(807, 26);
         subtitleLabel.TabIndex = 1;
         subtitleLabel.Text = "本站身份、日志保存位置、手动控制 ADS 路由、波形程序和数据库连接";
         subtitleLabel.TextAlign = ContentAlignment.MiddleLeft;
@@ -280,7 +280,7 @@ partial class Config
         controlStationGroup.Margin = new Padding(2, 3, 2, 3);
         controlStationGroup.Name = "controlStationGroup";
         controlStationGroup.Padding = new Padding(11, 32, 11, 8);
-        controlStationGroup.Size = new Size(813, 114);
+        controlStationGroup.Size = new Size(807, 114);
         controlStationGroup.TabIndex = 2;
         // AntdUI 面板用独立标题标签保留原分组标题，布局仍可在 Designer 编辑。
             controlStationGroupCaption.Text = "本站身份";
@@ -311,7 +311,7 @@ partial class Config
         controlStationLayout.RowCount = 2;
         controlStationLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 36F));
         controlStationLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-        controlStationLayout.Size = new Size(791, 74);
+        controlStationLayout.Size = new Size(785, 74);
         controlStationLayout.TabIndex = 0;
         //
         // controlStationCaptionLabel
@@ -335,7 +335,7 @@ partial class Config
         controlStationComboBox.Location = new Point(142, 5);
         controlStationComboBox.Margin = new Padding(2, 5, 10, 5);
         controlStationComboBox.Name = "controlStationComboBox";
-        controlStationComboBox.Size = new Size(511, 25);
+        controlStationComboBox.Size = new Size(505, 25);
         controlStationComboBox.TabIndex = 0;
         //
         // saveControlStationButton
@@ -347,7 +347,7 @@ partial class Config
         saveControlStationButton.BorderWidth = 0;
         saveControlStationButton.Font = new Font("Microsoft YaHei UI", 9F);
         saveControlStationButton.ForeColor = Color.White;
-        saveControlStationButton.Location = new Point(665, 3);
+        saveControlStationButton.Location = new Point(659, 3);
         saveControlStationButton.Margin = new Padding(2, 3, 2, 3);
         saveControlStationButton.Name = "saveControlStationButton";
         saveControlStationButton.Size = new Size(124, 30);
@@ -364,7 +364,7 @@ partial class Config
         controlStationStateLabel.Location = new Point(2, 36);
         controlStationStateLabel.Margin = new Padding(2, 0, 2, 0);
         controlStationStateLabel.Name = "controlStationStateLabel";
-        controlStationStateLabel.Size = new Size(787, 38);
+        controlStationStateLabel.Size = new Size(781, 38);
         controlStationStateLabel.TabIndex = 2;
         controlStationStateLabel.Text = "选择本机所属站点后保存；本站身份不代表取得控制权，控制权由 PLC 统一管理。";
         controlStationStateLabel.TextAlign = ContentAlignment.MiddleLeft;
@@ -380,7 +380,7 @@ partial class Config
         operationLogGroup.Margin = new Padding(2, 3, 2, 3);
         operationLogGroup.Name = "operationLogGroup";
         operationLogGroup.Padding = new Padding(11, 32, 11, 8);
-        operationLogGroup.Size = new Size(813, 110);
+        operationLogGroup.Size = new Size(807, 110);
         operationLogGroup.TabIndex = 2;
         // AntdUI 面板用独立标题标签保留原分组标题，布局仍可在 Designer 编辑。
             operationLogGroupCaption.Text = "操作日志";
@@ -413,7 +413,7 @@ partial class Config
         operationLogLayout.RowCount = 2;
         operationLogLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 36F));
         operationLogLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-        operationLogLayout.Size = new Size(791, 77);
+        operationLogLayout.Size = new Size(785, 77);
         operationLogLayout.TabIndex = 0;
         //
         // operationLogDirectoryLabel
@@ -436,7 +436,7 @@ partial class Config
         operationLogDirectoryTextBox.Margin = new Padding(2, 3, 2, 3);
         operationLogDirectoryTextBox.Name = "operationLogDirectoryTextBox";
         operationLogDirectoryTextBox.PlaceholderText = "留空使用默认日志目录";
-        operationLogDirectoryTextBox.Size = new Size(445, 23);
+        operationLogDirectoryTextBox.Size = new Size(439, 23);
         operationLogDirectoryTextBox.TabIndex = 0;
         //
         // browseOperationLogDirectoryButton
@@ -446,7 +446,7 @@ partial class Config
         browseOperationLogDirectoryButton.Cursor = Cursors.Hand;
         browseOperationLogDirectoryButton.Dock = DockStyle.Fill;
         browseOperationLogDirectoryButton.Font = new Font("Microsoft YaHei UI", 9F);
-        browseOperationLogDirectoryButton.Location = new Point(591, 3);
+        browseOperationLogDirectoryButton.Location = new Point(585, 3);
         browseOperationLogDirectoryButton.Margin = new Padding(2, 3, 2, 3);
         browseOperationLogDirectoryButton.Name = "browseOperationLogDirectoryButton";
         browseOperationLogDirectoryButton.Size = new Size(86, 30);
@@ -463,7 +463,7 @@ partial class Config
         saveOperationLogDirectoryButton.BorderWidth = 0;
         saveOperationLogDirectoryButton.Font = new Font("Microsoft YaHei UI", 9F);
         saveOperationLogDirectoryButton.ForeColor = Color.White;
-        saveOperationLogDirectoryButton.Location = new Point(681, 3);
+        saveOperationLogDirectoryButton.Location = new Point(675, 3);
         saveOperationLogDirectoryButton.Margin = new Padding(2, 3, 2, 3);
         saveOperationLogDirectoryButton.Name = "saveOperationLogDirectoryButton";
         saveOperationLogDirectoryButton.Size = new Size(108, 30);
@@ -480,7 +480,7 @@ partial class Config
         operationLogStateLabel.Location = new Point(2, 36);
         operationLogStateLabel.Margin = new Padding(2, 0, 2, 0);
         operationLogStateLabel.Name = "operationLogStateLabel";
-        operationLogStateLabel.Size = new Size(787, 41);
+        operationLogStateLabel.Size = new Size(781, 41);
         operationLogStateLabel.TabIndex = 3;
         operationLogStateLabel.Text = "日志按小时保存。保存目录立即生效，已有日志保留在原目录；留空恢复默认位置。";
         operationLogStateLabel.TextAlign = ContentAlignment.MiddleLeft;
@@ -496,7 +496,7 @@ partial class Config
         routerGroup.Margin = new Padding(2, 3, 2, 3);
         routerGroup.Name = "routerGroup";
         routerGroup.Padding = new Padding(16, 32, 16, 12);
-        routerGroup.Size = new Size(813, 286);
+        routerGroup.Size = new Size(807, 286);
         routerGroup.TabIndex = 2;
         // AntdUI 面板用独立标题标签保留原分组标题，布局仍可在 Designer 编辑。
             routerGroupCaption.Text = "手动控制 ADS 路由";
@@ -545,7 +545,7 @@ partial class Config
         routerLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 38F));
         routerLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 42F));
         routerLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-        routerLayout.Size = new Size(781, 245);
+        routerLayout.Size = new Size(775, 245);
         routerLayout.TabIndex = 0;
         //
         // routerEnabledCheckBox
@@ -556,7 +556,7 @@ partial class Config
         routerEnabledCheckBox.Location = new Point(2, 3);
         routerEnabledCheckBox.Margin = new Padding(2, 3, 2, 3);
         routerEnabledCheckBox.Name = "routerEnabledCheckBox";
-        routerEnabledCheckBox.Size = new Size(386, 26);
+        routerEnabledCheckBox.Size = new Size(383, 26);
         routerEnabledCheckBox.TabIndex = 0;
         routerEnabledCheckBox.Text = "启用独立 TCP Router";
         routerEnabledCheckBox.CheckedChanged += RouterEnabledCheckBox_CheckedChanged;
@@ -566,10 +566,10 @@ partial class Config
         routerLayout.SetColumnSpan(routerStateLabel, 2);
         routerStateLabel.Dock = DockStyle.Fill;
         routerStateLabel.Font = new Font("Microsoft YaHei UI", 9F);
-        routerStateLabel.Location = new Point(392, 0);
+        routerStateLabel.Location = new Point(389, 0);
         routerStateLabel.Margin = new Padding(2, 0, 2, 0);
         routerStateLabel.Name = "routerStateLabel";
-        routerStateLabel.Size = new Size(387, 32);
+        routerStateLabel.Size = new Size(384, 32);
         routerStateLabel.TabIndex = 1;
         routerStateLabel.TextAlign = ContentAlignment.MiddleLeft;
         //
@@ -595,7 +595,7 @@ partial class Config
         routerNameTextBox.Location = new Point(132, 37);
         routerNameTextBox.Margin = new Padding(2, 5, 2, 5);
         routerNameTextBox.Name = "routerNameTextBox";
-        routerNameTextBox.Size = new Size(256, 24);
+        routerNameTextBox.Size = new Size(253, 24);
         routerNameTextBox.TabIndex = 3;
         //
         // localNetIdLabel
@@ -620,7 +620,7 @@ partial class Config
         localNetIdTextBox.Location = new Point(132, 75);
         localNetIdTextBox.Margin = new Padding(2, 5, 2, 5);
         localNetIdTextBox.Name = "localNetIdTextBox";
-        localNetIdTextBox.Size = new Size(256, 24);
+        localNetIdTextBox.Size = new Size(253, 24);
         localNetIdTextBox.TabIndex = 5;
         //
         // routerTcpPortLabel
@@ -647,7 +647,7 @@ partial class Config
         routerTcpPortInput.Maximum = new decimal(new int[] { 65535, 0, 0, 0 });
         routerTcpPortInput.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
         routerTcpPortInput.Name = "routerTcpPortInput";
-        routerTcpPortInput.Size = new Size(256, 24);
+        routerTcpPortInput.Size = new Size(253, 24);
         routerTcpPortInput.TabIndex = 7;
         routerTcpPortInput.Value = new decimal(new int[] { 48898, 0, 0, 0 });
         //
@@ -656,7 +656,7 @@ partial class Config
         remoteNameLabel.Dock = DockStyle.Fill;
         remoteNameLabel.Font = new Font("Microsoft YaHei UI", 9F);
         remoteNameLabel.ForeColor = Color.FromArgb(71, 85, 105);
-        remoteNameLabel.Location = new Point(392, 32);
+        remoteNameLabel.Location = new Point(389, 32);
         remoteNameLabel.Margin = new Padding(2, 0, 2, 0);
         remoteNameLabel.Name = "remoteNameLabel";
         remoteNameLabel.Size = new Size(126, 38);
@@ -670,10 +670,10 @@ partial class Config
         remoteNameTextBox.Dock = DockStyle.Fill;
         remoteNameTextBox.Font = new Font("Microsoft YaHei UI", 10F);
         remoteNameTextBox.ForeColor = Color.FromArgb(15, 23, 42);
-        remoteNameTextBox.Location = new Point(522, 37);
+        remoteNameTextBox.Location = new Point(519, 37);
         remoteNameTextBox.Margin = new Padding(2, 5, 2, 5);
         remoteNameTextBox.Name = "remoteNameTextBox";
-        remoteNameTextBox.Size = new Size(257, 24);
+        remoteNameTextBox.Size = new Size(254, 24);
         remoteNameTextBox.TabIndex = 9;
         //
         // remoteAddressLabel
@@ -681,7 +681,7 @@ partial class Config
         remoteAddressLabel.Dock = DockStyle.Fill;
         remoteAddressLabel.Font = new Font("Microsoft YaHei UI", 9F);
         remoteAddressLabel.ForeColor = Color.FromArgb(71, 85, 105);
-        remoteAddressLabel.Location = new Point(392, 70);
+        remoteAddressLabel.Location = new Point(389, 70);
         remoteAddressLabel.Margin = new Padding(2, 0, 2, 0);
         remoteAddressLabel.Name = "remoteAddressLabel";
         remoteAddressLabel.Size = new Size(126, 38);
@@ -695,10 +695,10 @@ partial class Config
         remoteAddressTextBox.Dock = DockStyle.Fill;
         remoteAddressTextBox.Font = new Font("Microsoft YaHei UI", 10F);
         remoteAddressTextBox.ForeColor = Color.FromArgb(15, 23, 42);
-        remoteAddressTextBox.Location = new Point(522, 75);
+        remoteAddressTextBox.Location = new Point(519, 75);
         remoteAddressTextBox.Margin = new Padding(2, 5, 2, 5);
         remoteAddressTextBox.Name = "remoteAddressTextBox";
-        remoteAddressTextBox.Size = new Size(257, 24);
+        remoteAddressTextBox.Size = new Size(254, 24);
         remoteAddressTextBox.TabIndex = 11;
         //
         // remoteNetIdLabel
@@ -706,7 +706,7 @@ partial class Config
         remoteNetIdLabel.Dock = DockStyle.Fill;
         remoteNetIdLabel.Font = new Font("Microsoft YaHei UI", 9F);
         remoteNetIdLabel.ForeColor = Color.FromArgb(71, 85, 105);
-        remoteNetIdLabel.Location = new Point(392, 108);
+        remoteNetIdLabel.Location = new Point(389, 108);
         remoteNetIdLabel.Margin = new Padding(2, 0, 2, 0);
         remoteNetIdLabel.Name = "remoteNetIdLabel";
         remoteNetIdLabel.Size = new Size(126, 38);
@@ -720,10 +720,10 @@ partial class Config
         remoteNetIdTextBox.Dock = DockStyle.Fill;
         remoteNetIdTextBox.Font = new Font("Microsoft YaHei UI", 10F);
         remoteNetIdTextBox.ForeColor = Color.FromArgb(15, 23, 42);
-        remoteNetIdTextBox.Location = new Point(522, 113);
+        remoteNetIdTextBox.Location = new Point(519, 113);
         remoteNetIdTextBox.Margin = new Padding(2, 5, 2, 5);
         remoteNetIdTextBox.Name = "remoteNetIdTextBox";
-        remoteNetIdTextBox.Size = new Size(257, 24);
+        remoteNetIdTextBox.Size = new Size(254, 24);
         remoteNetIdTextBox.TabIndex = 13;
         //
         // saveRouterButton
@@ -749,10 +749,10 @@ partial class Config
         routerLayout.SetColumnSpan(saveResultLabel, 2);
         saveResultLabel.Dock = DockStyle.Fill;
         saveResultLabel.Font = new Font("Microsoft YaHei UI", 9F);
-        saveResultLabel.Location = new Point(392, 146);
+        saveResultLabel.Location = new Point(389, 146);
         saveResultLabel.Margin = new Padding(2, 0, 2, 0);
         saveResultLabel.Name = "saveResultLabel";
-        saveResultLabel.Size = new Size(387, 42);
+        saveResultLabel.Size = new Size(384, 42);
         saveResultLabel.TabIndex = 15;
         saveResultLabel.TextAlign = ContentAlignment.MiddleLeft;
         //
@@ -767,7 +767,7 @@ partial class Config
         routerNoticeLabel.Margin = new Padding(2, 0, 2, 0);
         routerNoticeLabel.Name = "routerNoticeLabel";
         routerNoticeLabel.Padding = new Padding(0, 3, 0, 0);
-        routerNoticeLabel.Size = new Size(777, 57);
+        routerNoticeLabel.Size = new Size(771, 57);
         routerNoticeLabel.TabIndex = 16;
         routerNoticeLabel.Text = "系统 TwinCAT Router 运行时应关闭独立 Router；PLC 需配置到本机 AMS Net ID 的返回路由。";
         //
@@ -782,7 +782,7 @@ partial class Config
         waveGeneratorGroup.Margin = new Padding(2, 3, 2, 3);
         waveGeneratorGroup.Name = "waveGeneratorGroup";
         waveGeneratorGroup.Padding = new Padding(11, 32, 11, 8);
-        waveGeneratorGroup.Size = new Size(813, 166);
+        waveGeneratorGroup.Size = new Size(807, 166);
         waveGeneratorGroup.TabIndex = 3;
         // AntdUI 面板用独立标题标签保留原分组标题，布局仍可在 Designer 编辑。
             waveGeneratorGroupCaption.Text = "波形生成器";
@@ -824,7 +824,7 @@ partial class Config
         waveGeneratorLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 24F));
         waveGeneratorLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
         waveGeneratorLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
-        waveGeneratorLayout.Size = new Size(791, 126);
+        waveGeneratorLayout.Size = new Size(785, 126);
         waveGeneratorLayout.TabIndex = 0;
         //
         // waveGeneratorPathLabel
@@ -849,7 +849,7 @@ partial class Config
         waveGeneratorPathTextBox.Location = new Point(142, 3);
         waveGeneratorPathTextBox.Margin = new Padding(2, 3, 2, 3);
         waveGeneratorPathTextBox.Name = "waveGeneratorPathTextBox";
-        waveGeneratorPathTextBox.Size = new Size(445, 23);
+        waveGeneratorPathTextBox.Size = new Size(439, 23);
         waveGeneratorPathTextBox.TabIndex = 1;
         waveGeneratorPathTextBox.TextChanged += WaveGeneratorPathTextBox_TextChanged;
         //
@@ -863,7 +863,7 @@ partial class Config
         browseWaveGeneratorButton.BackHover = Color.FromArgb(226, 232, 240);
         browseWaveGeneratorButton.Font = new Font("Microsoft YaHei UI", 9F);
         browseWaveGeneratorButton.ForeColor = Color.FromArgb(15, 23, 42);
-        browseWaveGeneratorButton.Location = new Point(591, 3);
+        browseWaveGeneratorButton.Location = new Point(585, 3);
         browseWaveGeneratorButton.Margin = new Padding(2, 3, 2, 3);
         browseWaveGeneratorButton.Name = "browseWaveGeneratorButton";
         browseWaveGeneratorButton.Size = new Size(86, 28);
@@ -881,7 +881,7 @@ partial class Config
         saveWaveGeneratorButton.BackHover = Color.FromArgb(30, 64, 175);
         saveWaveGeneratorButton.Font = new Font("Microsoft YaHei UI", 9F);
         saveWaveGeneratorButton.ForeColor = Color.White;
-        saveWaveGeneratorButton.Location = new Point(681, 3);
+        saveWaveGeneratorButton.Location = new Point(675, 3);
         saveWaveGeneratorButton.Margin = new Padding(2, 3, 2, 3);
         saveWaveGeneratorButton.Name = "saveWaveGeneratorButton";
         saveWaveGeneratorButton.Size = new Size(108, 28);
@@ -897,7 +897,7 @@ partial class Config
         waveGeneratorStateLabel.Location = new Point(142, 34);
         waveGeneratorStateLabel.Margin = new Padding(2, 0, 2, 0);
         waveGeneratorStateLabel.Name = "waveGeneratorStateLabel";
-        waveGeneratorStateLabel.Size = new Size(535, 24);
+        waveGeneratorStateLabel.Size = new Size(529, 24);
         waveGeneratorStateLabel.TabIndex = 3;
         waveGeneratorStateLabel.TextAlign = ContentAlignment.MiddleLeft;
         //
@@ -948,7 +948,7 @@ partial class Config
         waveProgramDirectoryTextBox.ForeColor = Color.FromArgb(15, 23, 42);
         waveProgramDirectoryTextBox.Location = new Point(143, 95);
         waveProgramDirectoryTextBox.Name = "waveProgramDirectoryTextBox";
-        waveProgramDirectoryTextBox.Size = new Size(443, 23);
+        waveProgramDirectoryTextBox.Size = new Size(437, 23);
         waveProgramDirectoryTextBox.TabIndex = 6;
         //
         // browseWaveProgramDirectoryButton
@@ -958,7 +958,7 @@ partial class Config
         browseWaveProgramDirectoryButton.Dock = DockStyle.Fill;
         browseWaveProgramDirectoryButton.DefaultBorderColor = Color.FromArgb(203, 213, 225);
         browseWaveProgramDirectoryButton.Font = new Font("Microsoft YaHei UI", 9F);
-        browseWaveProgramDirectoryButton.Location = new Point(592, 95);
+        browseWaveProgramDirectoryButton.Location = new Point(586, 95);
         browseWaveProgramDirectoryButton.Name = "browseWaveProgramDirectoryButton";
         browseWaveProgramDirectoryButton.Size = new Size(84, 28);
         browseWaveProgramDirectoryButton.TabIndex = 7;
@@ -973,7 +973,7 @@ partial class Config
         saveWaveProgramDirectoryButton.BorderWidth = 0;
         saveWaveProgramDirectoryButton.Font = new Font("Microsoft YaHei UI", 9F);
         saveWaveProgramDirectoryButton.ForeColor = Color.White;
-        saveWaveProgramDirectoryButton.Location = new Point(682, 95);
+        saveWaveProgramDirectoryButton.Location = new Point(676, 95);
         saveWaveProgramDirectoryButton.Name = "saveWaveProgramDirectoryButton";
         saveWaveProgramDirectoryButton.Size = new Size(106, 28);
         saveWaveProgramDirectoryButton.TabIndex = 8;
@@ -991,7 +991,7 @@ partial class Config
         _databaseGroup.Margin = new Padding(2, 3, 2, 3);
         _databaseGroup.Name = "_databaseGroup";
         _databaseGroup.Padding = new Padding(11, 32, 11, 8);
-        _databaseGroup.Size = new Size(813, 150);
+        _databaseGroup.Size = new Size(807, 150);
         _databaseGroup.TabIndex = 4;
         // AntdUI 面板用独立标题标签保留原分组标题，布局仍可在 Designer 编辑。
             _databaseGroupCaption.Text = "SQL Server 任务索引";
@@ -1029,7 +1029,7 @@ partial class Config
         _databaseLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 36F));
         _databaseLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 36F));
         _databaseLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-        _databaseLayout.Size = new Size(791, 110);
+        _databaseLayout.Size = new Size(785, 110);
         _databaseLayout.TabIndex = 0;
         //
         // _databaseEnabledCheckBox
@@ -1055,7 +1055,7 @@ partial class Config
         _databaseConnectionTextBox.Margin = new Padding(2, 3, 2, 3);
         _databaseConnectionTextBox.Name = "_databaseConnectionTextBox";
         _databaseConnectionTextBox.PlaceholderText = "SQL Server 连接字符串";
-        _databaseConnectionTextBox.Size = new Size(546, 23);
+        _databaseConnectionTextBox.Size = new Size(540, 23);
         _databaseConnectionTextBox.TabIndex = 1;
         //
         // _databaseUserNameLabel
@@ -1081,7 +1081,7 @@ partial class Config
         _databaseUserNameTextBox.Margin = new Padding(2, 3, 2, 3);
         _databaseUserNameTextBox.Name = "_databaseUserNameTextBox";
         _databaseUserNameTextBox.PlaceholderText = "SQL Server 账号";
-        _databaseUserNameTextBox.Size = new Size(227, 23);
+        _databaseUserNameTextBox.Size = new Size(224, 23);
         _databaseUserNameTextBox.TabIndex = 3;
         //
         // _databasePasswordLabel
@@ -1089,7 +1089,7 @@ partial class Config
         _databasePasswordLabel.Dock = DockStyle.Fill;
         _databasePasswordLabel.Font = new Font("Microsoft YaHei UI", 9F);
         _databasePasswordLabel.ForeColor = Color.FromArgb(71, 85, 105);
-        _databasePasswordLabel.Location = new Point(361, 36);
+        _databasePasswordLabel.Location = new Point(358, 36);
         _databasePasswordLabel.Margin = new Padding(2, 0, 2, 0);
         _databasePasswordLabel.Name = "_databasePasswordLabel";
         _databasePasswordLabel.Size = new Size(84, 36);
@@ -1103,11 +1103,11 @@ partial class Config
         _databasePasswordTextBox.Dock = DockStyle.Fill;
         _databasePasswordTextBox.Font = new Font("Microsoft YaHei UI", 9F);
         _databasePasswordTextBox.ForeColor = Color.FromArgb(15, 23, 42);
-        _databasePasswordTextBox.Location = new Point(449, 39);
+        _databasePasswordTextBox.Location = new Point(446, 39);
         _databasePasswordTextBox.Margin = new Padding(2, 3, 2, 3);
         _databasePasswordTextBox.Name = "_databasePasswordTextBox";
         _databasePasswordTextBox.PlaceholderText = "SQL Server 密码";
-        _databasePasswordTextBox.Size = new Size(227, 23);
+        _databasePasswordTextBox.Size = new Size(224, 23);
         _databasePasswordTextBox.TabIndex = 5;
         _databasePasswordTextBox.UseSystemPasswordChar = true;
         //
@@ -1121,7 +1121,7 @@ partial class Config
         _saveDatabaseButton.BackHover = Color.FromArgb(30, 64, 175);
         _saveDatabaseButton.Font = new Font("Microsoft YaHei UI", 9F);
         _saveDatabaseButton.ForeColor = Color.White;
-        _saveDatabaseButton.Location = new Point(680, 3);
+        _saveDatabaseButton.Location = new Point(674, 3);
         _saveDatabaseButton.Margin = new Padding(2, 3, 2, 3);
         _saveDatabaseButton.Name = "_saveDatabaseButton";
         _saveDatabaseButton.Size = new Size(109, 30);
@@ -1138,7 +1138,7 @@ partial class Config
         _databaseStateLabel.Location = new Point(2, 72);
         _databaseStateLabel.Margin = new Padding(2, 0, 2, 0);
         _databaseStateLabel.Name = "_databaseStateLabel";
-        _databaseStateLabel.Size = new Size(787, 38);
+        _databaseStateLabel.Size = new Size(781, 38);
         _databaseStateLabel.TabIndex = 3;
         _databaseStateLabel.Text = "数据库日志未启用。";
         _databaseStateLabel.TextAlign = ContentAlignment.MiddleLeft;
