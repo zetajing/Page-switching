@@ -1,4 +1,4 @@
-namespace Page_switching.panel
+﻿namespace Page_switching.panel
 {
     partial class RegularWavePage
     {
@@ -43,6 +43,7 @@ namespace Page_switching.panel
 
         private void InitializeComponent()
         {
+            regularPreview = new WaveformPreviewControl();
             pagePanel = new Panel();
             regularLayout = new TableLayoutPanel();
             regularParameterGroup = new GroupBox();
@@ -73,13 +74,23 @@ namespace Page_switching.panel
             regularGenerateButton = new Button();
             regularStatusLabel = new Label();
             regularPreviewGroup = new GroupBox();
-            regularPreview = new global::Page_switching.WaveformPreviewControl();
             pagePanel.SuspendLayout();
             regularLayout.SuspendLayout();
             regularParameterGroup.SuspendLayout();
             regularParameterLayout.SuspendLayout();
             regularPreviewGroup.SuspendLayout();
             SuspendLayout();
+            //
+            // regularPreview
+            //
+            regularPreview.BackColor = Color.White;
+            regularPreview.Dock = DockStyle.Fill;
+            regularPreview.ForeColor = Color.FromArgb(29, 78, 216);
+            regularPreview.Location = new Point(10, 34);
+            regularPreview.MinimumSize = new Size(300, 180);
+            regularPreview.Name = "regularPreview";
+            regularPreview.Size = new Size(617, 540);
+            regularPreview.TabIndex = 0;
             //
             // pagePanel
             //
@@ -518,18 +529,6 @@ namespace Page_switching.panel
             regularPreviewGroup.TabIndex = 1;
             regularPreviewGroup.TabStop = false;
             regularPreviewGroup.Text = "波形预览";
-            //
-            // regularPreview
-            //
-            regularPreview.BackColor = Color.White;
-            regularPreview.Dock = DockStyle.Fill;
-            regularPreview.ForeColor = Color.FromArgb(29, 78, 216);
-            regularPreview.Location = new Point(10, 34);
-            regularPreview.MinimumSize = new Size(300, 180);
-            regularPreview.Name = "regularPreview";
-            regularPreview.Size = new Size(617, 540);
-            regularPreview.TabIndex = 0;
-            regularPreview.UnitText = "m";
             //
             // RegularWavePage
             //

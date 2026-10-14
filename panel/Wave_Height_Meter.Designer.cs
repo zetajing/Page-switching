@@ -1,4 +1,4 @@
-namespace Page_switching.panel
+﻿namespace Page_switching.panel
 {
     partial class Wave_Height_Meter
     {
@@ -70,7 +70,7 @@ namespace Page_switching.panel
             _chartStatusLabel = new Label();
             channelTabs = new TabControl();
             channelOneTab = new TabPage();
-            _waveformPreview = new global::Page_switching.WaveformPreviewControl();
+            _waveformPreview = new WaveformPreviewControl();
             channel2Tab = new TabPage();
             channel2Notice = new Label();
             channel3Tab = new TabPage();

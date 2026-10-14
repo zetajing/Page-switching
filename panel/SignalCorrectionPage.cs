@@ -8,6 +8,8 @@ namespace Page_switching.panel
         public SignalCorrectionPage()
         {
             InitializeComponent();
+            // 保留原来的 mm 默认单位，避免 Designer 保存省略 SelectedIndex 后误按 m 处理。
+            unitInput.SelectedIndex = 0;
             if (System.ComponentModel.LicenseManager.UsageMode == System.ComponentModel.LicenseUsageMode.Designtime) return;
             originalBrowse.Click += (_, _) => Select(originalPath, false);
             measuredBrowse.Click += (_, _) => Select(measuredPath, false);
