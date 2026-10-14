@@ -31,6 +31,8 @@ namespace Page_switching.panel
 
             Disposed += (_, _) =>
             {
+                // Designer 和父窗体可能重复释放；会话和任务对象只清理一次。
+                if (_disposed) return;
                 _disposed = true;
                 _lifetimeCancellation.Cancel();
                 _client?.Dispose();
@@ -405,9 +407,9 @@ namespace Page_switching.panel
             channel1Selector.Enabled = !_connecting && !connected;
         }
 
-        private static void SetNumericValue(NumericUpDown input, int value)
+        private static void SetNumericValue(AntdUI.InputNumber input, int value)
         {
-            input.Value = Math.Clamp(value, decimal.ToInt32(input.Minimum), decimal.ToInt32(input.Maximum));
+            input.Value = Math.Clamp(value, decimal.ToInt32(input.Minimum ?? 0M), decimal.ToInt32(input.Maximum ?? decimal.MaxValue));
         }
 
         private static string ReadSetting(string key, string fallback) =>

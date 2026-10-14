@@ -30,7 +30,7 @@ namespace Page_switching.panel
             SelectOutputPath(irregularPage.irregularOutputTextBox);
 
         // 打开保存对话框，并把选择的路径写入指定文本框。
-        private static void SelectOutputPath(TextBox target)
+        private static void SelectOutputPath(AntdUI.Input target)
         {
             using var dialog = new SaveFileDialog
             {
@@ -178,7 +178,7 @@ namespace Page_switching.panel
         }
 
         // 生成期间禁用操作按钮并更新状态提示。
-        private void SetGenerationState(bool generating, Label statusLabel)
+        private void SetGenerationState(bool generating, AntdUI.Label statusLabel)
         {
             _generationInProgress = generating;
             regularPage.regularGenerateButton.Enabled = !generating;
@@ -189,14 +189,14 @@ namespace Page_switching.panel
             {
                 statusLabel.ForeColor = UiPalette.Primary;
             }
-            else if (!statusLabel.Text.Contains("失败", StringComparison.Ordinal))
+            else if (!(statusLabel.Text ?? "").Contains("失败", StringComparison.Ordinal))
             {
                 statusLabel.ForeColor = UiPalette.Success;
             }
         }
 
         // 获取必填输出路径，空值时提示用户。
-        private static string RequireOutputPath(TextBox textBox)
+        private static string RequireOutputPath(AntdUI.Input textBox)
         {
             if (string.IsNullOrWhiteSpace(textBox.Text))
             {
@@ -207,7 +207,7 @@ namespace Page_switching.panel
         }
 
         // 读取并校验一个浮点参数的范围。
-        private static double ParseDouble(TextBox textBox, string caption, double minimum, double? maximum = null)
+        private static double ParseDouble(AntdUI.Input textBox, string caption, double minimum, double? maximum = null)
         {
             if (!double.TryParse(textBox.Text.Trim(), NumberStyles.Float,
                     CultureInfo.InvariantCulture, out var value) || !double.IsFinite(value))
@@ -225,7 +225,7 @@ namespace Page_switching.panel
         }
 
         // 读取并校验一个整数参数的范围。
-        private static int ParseInt(TextBox textBox, string caption, int minimum, int maximum)
+        private static int ParseInt(AntdUI.Input textBox, string caption, int minimum, int maximum)
         {
             if (!int.TryParse(textBox.Text.Trim(), NumberStyles.Integer,
                     CultureInfo.InvariantCulture, out var value) || value < minimum || value > maximum)
@@ -237,7 +237,7 @@ namespace Page_switching.panel
         }
 
         // 将界面中的造波方向转换为外部程序需要的数字代码。
-        private static int GetSideCode(ComboBox comboBox) => comboBox.SelectedIndex switch
+        private static int GetSideCode(AntdUI.Select comboBox) => comboBox.SelectedIndex switch
         {
             1 => 2,
             2 => 3,
@@ -245,7 +245,7 @@ namespace Page_switching.panel
         };
 
         // 将频谱名称转换为外部程序需要的数字代码。
-        private static int GetSpectrumCode(ComboBox comboBox) => comboBox.SelectedItem?.ToString() switch
+        private static int GetSpectrumCode(AntdUI.Select comboBox) => comboBox.SelectedValue?.ToString() switch
         {
             "Scott" => 2,
             "ITTC" => 9,

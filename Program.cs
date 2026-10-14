@@ -7,6 +7,8 @@ namespace Page_switching
         static void Main()
         {
             ApplicationConfiguration.Initialize();
+            // 页面使用统一浅色调，弹出菜单和日期选择器也采用同一主题。
+            AntdUI.Config.Mode = AntdUI.TMode.Light;
             Application.Run(new Mainpage());
         }
     }

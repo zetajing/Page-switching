@@ -1,4 +1,4 @@
-﻿namespace Page_switching
+namespace Page_switching
 {
     partial class Manual
     {
@@ -6,70 +6,72 @@
 
         private System.ComponentModel.IContainer components = null!;
         private TableLayoutPanel axis1FeedbackLayout;
-        private Label axis1NegativeLimitLamp;
-        private Label axis1OriginLamp;
-        private Label axis1PositiveLimitLamp;
+        private AntdUI.Label axis1NegativeLimitLamp;
+        private AntdUI.Label axis1OriginLamp;
+        private AntdUI.Label axis1PositiveLimitLamp;
         private TableLayoutPanel axis2FeedbackLayout;
-        private Label axis2NegativeLimitLamp;
-        private Label axis2OriginLamp;
-        private Label axis2PositiveLimitLamp;
+        private AntdUI.Label axis2NegativeLimitLamp;
+        private AntdUI.Label axis2OriginLamp;
+        private AntdUI.Label axis2PositiveLimitLamp;
         private TableLayoutPanel axis3FeedbackLayout;
-        private Label axis3NegativeLimitLamp;
-        private Label axis3OriginLamp;
-        private Label axis3PositiveLimitLamp;
+        private AntdUI.Label axis3NegativeLimitLamp;
+        private AntdUI.Label axis3OriginLamp;
+        private AntdUI.Label axis3PositiveLimitLamp;
         private TableLayoutPanel axis4FeedbackLayout;
-        private Label axis4NegativeLimitLamp;
-        private Label axis4OriginLamp;
-        private Label axis4PositiveLimitLamp;
+        private AntdUI.Label axis4NegativeLimitLamp;
+        private AntdUI.Label axis4OriginLamp;
+        private AntdUI.Label axis4PositiveLimitLamp;
         private TableLayoutPanel rootLayout;
         private Panel headerPanel;
-        private Label titleLabel;
-        private Label connectionStateLabel;
+        private AntdUI.Label titleLabel;
+        private AntdUI.Label connectionStateLabel;
         private FlowLayoutPanel globalActionsPanel;
-        private Button enableAllButton;
-        private Button disableAllButton;
-        private Button resetAlarmButton;
-        private Button homeAllButton;
-        private Button stopAllButton;
+        private AntdUI.Button enableAllButton;
+        private AntdUI.Button disableAllButton;
+        private AntdUI.Button resetAlarmButton;
+        private AntdUI.Button homeAllButton;
+        private AntdUI.Button stopAllButton;
         private TableLayoutPanel contentLayout;
-        private GroupBox overviewGroup;
+        private AntdUI.Panel overviewGroup;
+        private AntdUI.Label overviewGroupCaption;
         private TableLayoutPanel axisOverviewLayout;
-        private Label axisHeaderLabel;
-        private Label positionHeaderLabel;
-        private Label statusHeaderLabel;
-        private Label axis1NameLabel;
-        private Label axis2NameLabel;
-        private Label axis3NameLabel;
-        private Label axis4NameLabel;
-        private Label axis1StatusLabel;
-        private Label axis2StatusLabel;
-        private Label axis3StatusLabel;
-        private Label axis4StatusLabel;
+        private AntdUI.Label axisHeaderLabel;
+        private AntdUI.Label positionHeaderLabel;
+        private AntdUI.Label statusHeaderLabel;
+        private AntdUI.Label axis1NameLabel;
+        private AntdUI.Label axis2NameLabel;
+        private AntdUI.Label axis3NameLabel;
+        private AntdUI.Label axis4NameLabel;
+        private AntdUI.Label axis1StatusLabel;
+        private AntdUI.Label axis2StatusLabel;
+        private AntdUI.Label axis3StatusLabel;
+        private AntdUI.Label axis4StatusLabel;
         private global::Page_switching.ServoPositionIndicator axis1PositionIndicator;
         private global::Page_switching.ServoPositionIndicator axis2PositionIndicator;
         private global::Page_switching.ServoPositionIndicator axis3PositionIndicator;
         private global::Page_switching.ServoPositionIndicator axis4PositionIndicator;
-        private GroupBox controlGroup;
+        private AntdUI.Panel controlGroup;
+        private AntdUI.Label controlGroupCaption;
         private TableLayoutPanel controlLayout;
-        private Label selectedAxisCaptionLabel;
-        private ComboBox axisSelector;
-        private Label selectedStatusCaptionLabel;
-        private Label selectedStatusLabel;
-        private Label selectedActualCaptionLabel;
-        private Label selectedActualLabel;
-        private Label selectedSpeedCaptionLabel;
-        private Label selectedSpeedLabel;
-        private Label jogSpeedCaptionLabel;
-        private NumericUpDown jogSpeedInput;
-        private Label jogSectionLabel;
+        private AntdUI.Label selectedAxisCaptionLabel;
+        private AntdUI.Select axisSelector;
+        private AntdUI.Label selectedStatusCaptionLabel;
+        private AntdUI.Label selectedStatusLabel;
+        private AntdUI.Label selectedActualCaptionLabel;
+        private AntdUI.Label selectedActualLabel;
+        private AntdUI.Label selectedSpeedCaptionLabel;
+        private AntdUI.Label selectedSpeedLabel;
+        private AntdUI.Label jogSpeedCaptionLabel;
+        private AntdUI.InputNumber jogSpeedInput;
+        private AntdUI.Label jogSectionLabel;
         private FlowLayoutPanel jogButtonsPanel;
         private FlowLayoutPanel singleAxisButtonsPanel;
-        private Button jogNegativeButton;
-        private Button jogPositiveButton;
-        private Label singleAxisSectionLabel;
-        private Button homeSelectedButton;
-        private Button stopSelectedButton;
-        private Label helperLabel;
+        private AntdUI.Button jogNegativeButton;
+        private AntdUI.Button jogPositiveButton;
+        private AntdUI.Label singleAxisSectionLabel;
+        private AntdUI.Button homeSelectedButton;
+        private AntdUI.Button stopSelectedButton;
+        private AntdUI.Label helperLabel;
 
         // 释放设计器创建的手动页面组件。
         protected override void Dispose(bool disposing)
@@ -92,65 +94,87 @@
             pagePanel = new Panel();
             rootLayout = new TableLayoutPanel();
             headerPanel = new Panel();
-            connectionStateLabel = new Label();
-            titleLabel = new Label();
+            connectionStateLabel = new AntdUI.Label();
+            titleLabel = new AntdUI.Label();
             globalActionsPanel = new FlowLayoutPanel();
-            enableAllButton = new Button();
-            disableAllButton = new Button();
-            resetAlarmButton = new Button();
-            homeAllButton = new Button();
-            stopAllButton = new Button();
+            enableAllButton = new AntdUI.Button();
+            enableAllButton.Radius = 6;
+            disableAllButton = new AntdUI.Button();
+            disableAllButton.Radius = 6;
+            disableAllButton.BorderWidth = 1F;
+            resetAlarmButton = new AntdUI.Button();
+            resetAlarmButton.Radius = 6;
+            resetAlarmButton.BorderWidth = 1F;
+            homeAllButton = new AntdUI.Button();
+            homeAllButton.Radius = 6;
+            homeAllButton.BorderWidth = 1F;
+            stopAllButton = new AntdUI.Button();
+            stopAllButton.Radius = 6;
             contentLayout = new TableLayoutPanel();
-            overviewGroup = new GroupBox();
+            overviewGroup = new AntdUI.Panel();
+            overviewGroupCaption = new AntdUI.Label();
             axisOverviewLayout = new TableLayoutPanel();
-            axisHeaderLabel = new Label();
-            positionHeaderLabel = new Label();
-            statusHeaderLabel = new Label();
-            axis1NameLabel = new Label();
+            axisHeaderLabel = new AntdUI.Label();
+            positionHeaderLabel = new AntdUI.Label();
+            statusHeaderLabel = new AntdUI.Label();
+            axis1NameLabel = new AntdUI.Label();
             axis1FeedbackLayout = new TableLayoutPanel();
-            axis1NegativeLimitLamp = new Label();
-            axis1OriginLamp = new Label();
-            axis1PositiveLimitLamp = new Label();
-            axis1StatusLabel = new Label();
-            axis2NameLabel = new Label();
+            axis1NegativeLimitLamp = new AntdUI.Label();
+            axis1OriginLamp = new AntdUI.Label();
+            axis1PositiveLimitLamp = new AntdUI.Label();
+            axis1StatusLabel = new AntdUI.Label();
+            axis2NameLabel = new AntdUI.Label();
             axis2FeedbackLayout = new TableLayoutPanel();
-            axis2NegativeLimitLamp = new Label();
-            axis2OriginLamp = new Label();
-            axis2PositiveLimitLamp = new Label();
-            axis2StatusLabel = new Label();
-            axis3NameLabel = new Label();
+            axis2NegativeLimitLamp = new AntdUI.Label();
+            axis2OriginLamp = new AntdUI.Label();
+            axis2PositiveLimitLamp = new AntdUI.Label();
+            axis2StatusLabel = new AntdUI.Label();
+            axis3NameLabel = new AntdUI.Label();
             axis3FeedbackLayout = new TableLayoutPanel();
-            axis3NegativeLimitLamp = new Label();
-            axis3OriginLamp = new Label();
-            axis3PositiveLimitLamp = new Label();
-            axis3StatusLabel = new Label();
-            axis4NameLabel = new Label();
+            axis3NegativeLimitLamp = new AntdUI.Label();
+            axis3OriginLamp = new AntdUI.Label();
+            axis3PositiveLimitLamp = new AntdUI.Label();
+            axis3StatusLabel = new AntdUI.Label();
+            axis4NameLabel = new AntdUI.Label();
             axis4FeedbackLayout = new TableLayoutPanel();
-            axis4NegativeLimitLamp = new Label();
-            axis4OriginLamp = new Label();
-            axis4PositiveLimitLamp = new Label();
-            axis4StatusLabel = new Label();
-            controlGroup = new GroupBox();
+            axis4NegativeLimitLamp = new AntdUI.Label();
+            axis4OriginLamp = new AntdUI.Label();
+            axis4PositiveLimitLamp = new AntdUI.Label();
+            axis4StatusLabel = new AntdUI.Label();
+            controlGroup = new AntdUI.Panel();
+            controlGroupCaption = new AntdUI.Label();
             controlLayout = new TableLayoutPanel();
-            selectedAxisCaptionLabel = new Label();
-            axisSelector = new ComboBox();
-            selectedStatusCaptionLabel = new Label();
-            selectedStatusLabel = new Label();
-            selectedActualCaptionLabel = new Label();
-            selectedActualLabel = new Label();
-            selectedSpeedCaptionLabel = new Label();
-            selectedSpeedLabel = new Label();
-            jogSpeedCaptionLabel = new Label();
-            jogSpeedInput = new NumericUpDown();
-            jogSectionLabel = new Label();
+            selectedAxisCaptionLabel = new AntdUI.Label();
+            axisSelector = new AntdUI.Select();
+            axisSelector.WaveSize = 0;
+            axisSelector.Radius = 6;
+            axisSelector.List = true;
+            selectedStatusCaptionLabel = new AntdUI.Label();
+            selectedStatusLabel = new AntdUI.Label();
+            selectedActualCaptionLabel = new AntdUI.Label();
+            selectedActualLabel = new AntdUI.Label();
+            selectedSpeedCaptionLabel = new AntdUI.Label();
+            selectedSpeedLabel = new AntdUI.Label();
+            jogSpeedCaptionLabel = new AntdUI.Label();
+            jogSpeedInput = new AntdUI.InputNumber();
+            jogSpeedInput.WaveSize = 0;
+            jogSpeedInput.Radius = 6;
+            jogSectionLabel = new AntdUI.Label();
             jogButtonsPanel = new FlowLayoutPanel();
-            jogNegativeButton = new Button();
-            jogPositiveButton = new Button();
-            singleAxisSectionLabel = new Label();
+            jogNegativeButton = new AntdUI.Button();
+            jogNegativeButton.Radius = 6;
+            jogNegativeButton.BorderWidth = 1F;
+            jogPositiveButton = new AntdUI.Button();
+            jogPositiveButton.Radius = 6;
+            jogPositiveButton.BorderWidth = 1F;
+            singleAxisSectionLabel = new AntdUI.Label();
             singleAxisButtonsPanel = new FlowLayoutPanel();
-            homeSelectedButton = new Button();
-            stopSelectedButton = new Button();
-            helperLabel = new Label();
+            homeSelectedButton = new AntdUI.Button();
+            homeSelectedButton.Radius = 6;
+            homeSelectedButton.BorderWidth = 1F;
+            stopSelectedButton = new AntdUI.Button();
+            stopSelectedButton.Radius = 6;
+            helperLabel = new AntdUI.Label();
             pagePanel.SuspendLayout();
             rootLayout.SuspendLayout();
             headerPanel.SuspendLayout();
@@ -164,7 +188,6 @@
             axis4FeedbackLayout.SuspendLayout();
             controlGroup.SuspendLayout();
             controlLayout.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)jogSpeedInput).BeginInit();
             jogButtonsPanel.SuspendLayout();
             singleAxisButtonsPanel.SuspendLayout();
             SuspendLayout();
@@ -188,7 +211,6 @@
             axis4PositionIndicator.PositiveLimit = false;
             axis4PositionIndicator.Size = new Size(445, 100);
             axis4PositionIndicator.TabIndex = 13;
-            axis4PositionIndicator.TabStop = false;
             axis4PositionIndicator.UnitText = "°";
             //
             // axis3PositionIndicator
@@ -210,7 +232,6 @@
             axis3PositionIndicator.PositiveLimit = false;
             axis3PositionIndicator.Size = new Size(445, 99);
             axis3PositionIndicator.TabIndex = 10;
-            axis3PositionIndicator.TabStop = false;
             axis3PositionIndicator.UnitText = "°";
             //
             // axis2PositionIndicator
@@ -232,7 +253,6 @@
             axis2PositionIndicator.PositiveLimit = false;
             axis2PositionIndicator.Size = new Size(445, 99);
             axis2PositionIndicator.TabIndex = 7;
-            axis2PositionIndicator.TabStop = false;
             axis2PositionIndicator.UnitText = "°";
             //
             // axis1PositionIndicator
@@ -254,7 +274,6 @@
             axis1PositionIndicator.PositiveLimit = false;
             axis1PositionIndicator.Size = new Size(445, 99);
             axis1PositionIndicator.TabIndex = 4;
-            axis1PositionIndicator.TabStop = false;
             axis1PositionIndicator.UnitText = "°";
             //
             // pagePanel
@@ -346,9 +365,9 @@
             // enableAllButton
             //
             enableAllButton.BackColor = Color.FromArgb(4, 120, 87);
+            enableAllButton.DefaultBack = Color.FromArgb(4, 120, 87);
             enableAllButton.Cursor = Cursors.Hand;
-            enableAllButton.FlatAppearance.BorderSize = 0;
-            enableAllButton.FlatStyle = FlatStyle.Flat;
+            enableAllButton.BorderWidth = 0;
             enableAllButton.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
             enableAllButton.ForeColor = Color.White;
             enableAllButton.Location = new Point(0, 0);
@@ -357,15 +376,14 @@
             enableAllButton.Size = new Size(152, 51);
             enableAllButton.TabIndex = 0;
             enableAllButton.Text = "全部使能";
-            enableAllButton.UseVisualStyleBackColor = false;
             enableAllButton.Click += EnableAllButton_Click;
             //
             // disableAllButton
             //
             disableAllButton.BackColor = Color.FromArgb(248, 250, 252);
+            disableAllButton.DefaultBack = Color.FromArgb(248, 250, 252);
             disableAllButton.Cursor = Cursors.Hand;
-            disableAllButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
-            disableAllButton.FlatStyle = FlatStyle.Flat;
+            disableAllButton.DefaultBorderColor = Color.FromArgb(203, 213, 225);
             disableAllButton.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
             disableAllButton.ForeColor = Color.FromArgb(71, 85, 105);
             disableAllButton.Location = new Point(162, 0);
@@ -374,15 +392,14 @@
             disableAllButton.Size = new Size(152, 51);
             disableAllButton.TabIndex = 1;
             disableAllButton.Text = "取消使能";
-            disableAllButton.UseVisualStyleBackColor = false;
             disableAllButton.Click += DisableAllButton_Click;
             //
             // resetAlarmButton
             //
             resetAlarmButton.BackColor = Color.FromArgb(255, 247, 237);
+            resetAlarmButton.DefaultBack = Color.FromArgb(255, 247, 237);
             resetAlarmButton.Cursor = Cursors.Hand;
-            resetAlarmButton.FlatAppearance.BorderColor = Color.FromArgb(254, 215, 170);
-            resetAlarmButton.FlatStyle = FlatStyle.Flat;
+            resetAlarmButton.DefaultBorderColor = Color.FromArgb(254, 215, 170);
             resetAlarmButton.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
             resetAlarmButton.ForeColor = Color.FromArgb(154, 52, 18);
             resetAlarmButton.Location = new Point(324, 0);
@@ -391,16 +408,15 @@
             resetAlarmButton.Size = new Size(152, 51);
             resetAlarmButton.TabIndex = 2;
             resetAlarmButton.Text = "全部复位报警";
-            resetAlarmButton.UseVisualStyleBackColor = false;
             resetAlarmButton.Click += ResetAlarmButton_Click;
             //
             // homeAllButton
             //
             homeAllButton.BackColor = Color.FromArgb(248, 250, 252);
+            homeAllButton.DefaultBack = Color.FromArgb(248, 250, 252);
             homeAllButton.Cursor = Cursors.Hand;
-            homeAllButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
-            homeAllButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(226, 232, 240);
-            homeAllButton.FlatStyle = FlatStyle.Flat;
+            homeAllButton.DefaultBorderColor = Color.FromArgb(203, 213, 225);
+            homeAllButton.BackHover = Color.FromArgb(226, 232, 240);
             homeAllButton.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
             homeAllButton.ForeColor = Color.FromArgb(15, 23, 42);
             homeAllButton.Location = new Point(486, 0);
@@ -409,15 +425,14 @@
             homeAllButton.Size = new Size(152, 51);
             homeAllButton.TabIndex = 3;
             homeAllButton.Text = "全部回零";
-            homeAllButton.UseVisualStyleBackColor = false;
             homeAllButton.Click += HomeAllButton_Click;
             //
             // stopAllButton
             //
             stopAllButton.BackColor = Color.FromArgb(185, 28, 28);
+            stopAllButton.DefaultBack = Color.FromArgb(185, 28, 28);
             stopAllButton.Cursor = Cursors.Hand;
-            stopAllButton.FlatAppearance.BorderSize = 0;
-            stopAllButton.FlatStyle = FlatStyle.Flat;
+            stopAllButton.BorderWidth = 0;
             stopAllButton.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
             stopAllButton.ForeColor = Color.White;
             stopAllButton.Location = new Point(648, 0);
@@ -426,7 +441,6 @@
             stopAllButton.Size = new Size(152, 51);
             stopAllButton.TabIndex = 4;
             stopAllButton.Text = "全部停止";
-            stopAllButton.UseVisualStyleBackColor = false;
             stopAllButton.Click += StopAllButton_Click;
             //
             // contentLayout
@@ -456,11 +470,20 @@
             overviewGroup.Location = new Point(2, 2);
             overviewGroup.Margin = new Padding(2);
             overviewGroup.Name = "overviewGroup";
-            overviewGroup.Padding = new Padding(8, 14, 8, 8);
+            overviewGroup.Padding = new Padding(8, 32, 8, 8);
             overviewGroup.Size = new Size(601, 622);
             overviewGroup.TabIndex = 0;
-            overviewGroup.TabStop = false;
-            overviewGroup.Text = "四轴位置总览";
+            // AntdUI 面板用独立标题标签保留原分组标题，布局仍可在 Designer 编辑。
+            overviewGroupCaption.Text = "四轴位置总览";
+            overviewGroupCaption.AutoSize = true;
+            overviewGroupCaption.Name = "overviewGroupCaption";
+            overviewGroupCaption.Location = new Point(10, 2);
+            overviewGroupCaption.ForeColor = Color.FromArgb(15, 23, 42);
+            overviewGroup.BorderWidth = 1F;
+            overviewGroup.BorderColor = Color.FromArgb(203, 213, 225);
+            overviewGroup.Radius = 6;
+            overviewGroup.Controls.Add(overviewGroupCaption);
+            overviewGroupCaption.BringToFront();
             //
             // axisOverviewLayout
             //
@@ -898,11 +921,20 @@
             controlGroup.Location = new Point(607, 2);
             controlGroup.Margin = new Padding(2);
             controlGroup.Name = "controlGroup";
-            controlGroup.Padding = new Padding(10, 14, 10, 10);
+            controlGroup.Padding = new Padding(10, 32, 10, 10);
             controlGroup.Size = new Size(435, 622);
             controlGroup.TabIndex = 1;
-            controlGroup.TabStop = false;
-            controlGroup.Text = "选定轴手动操作";
+            // AntdUI 面板用独立标题标签保留原分组标题，布局仍可在 Designer 编辑。
+            controlGroupCaption.Text = "选定轴手动操作";
+            controlGroupCaption.AutoSize = true;
+            controlGroupCaption.Name = "controlGroupCaption";
+            controlGroupCaption.Location = new Point(10, 2);
+            controlGroupCaption.ForeColor = Color.FromArgb(15, 23, 42);
+            controlGroup.BorderWidth = 1F;
+            controlGroup.BorderColor = Color.FromArgb(203, 213, 225);
+            controlGroup.Radius = 6;
+            controlGroup.Controls.Add(controlGroupCaption);
+            controlGroupCaption.BringToFront();
             //
             // controlLayout
             //
@@ -958,11 +990,8 @@
             // axisSelector
             //
             axisSelector.Dock = DockStyle.Fill;
-            axisSelector.DropDownStyle = ComboBoxStyle.DropDownList;
-            axisSelector.FlatStyle = FlatStyle.Flat;
             axisSelector.Font = new Font("Microsoft YaHei UI", 10F);
             axisSelector.ForeColor = Color.FromArgb(15, 23, 42);
-            axisSelector.FormattingEnabled = true;
             axisSelector.Items.AddRange(new object[] { "轴 1", "轴 2", "轴 3", "轴 4" });
             axisSelector.Location = new Point(176, 2);
             axisSelector.Margin = new Padding(2);
@@ -1110,10 +1139,10 @@
             // jogNegativeButton
             //
             jogNegativeButton.BackColor = Color.FromArgb(248, 250, 252);
+            jogNegativeButton.DefaultBack = Color.FromArgb(248, 250, 252);
             jogNegativeButton.Cursor = Cursors.Hand;
-            jogNegativeButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
-            jogNegativeButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(226, 232, 240);
-            jogNegativeButton.FlatStyle = FlatStyle.Flat;
+            jogNegativeButton.DefaultBorderColor = Color.FromArgb(203, 213, 225);
+            jogNegativeButton.BackHover = Color.FromArgb(226, 232, 240);
             jogNegativeButton.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
             jogNegativeButton.ForeColor = Color.FromArgb(15, 23, 42);
             jogNegativeButton.Location = new Point(2, 2);
@@ -1122,7 +1151,6 @@
             jogNegativeButton.Size = new Size(128, 43);
             jogNegativeButton.TabIndex = 11;
             jogNegativeButton.Text = "◀ 负向点动";
-            jogNegativeButton.UseVisualStyleBackColor = false;
             jogNegativeButton.MouseDown += JogNegativeButton_MouseDown;
             jogNegativeButton.MouseLeave += JogButton_MouseUp;
             jogNegativeButton.MouseUp += JogButton_MouseUp;
@@ -1130,10 +1158,10 @@
             // jogPositiveButton
             //
             jogPositiveButton.BackColor = Color.FromArgb(248, 250, 252);
+            jogPositiveButton.DefaultBack = Color.FromArgb(248, 250, 252);
             jogPositiveButton.Cursor = Cursors.Hand;
-            jogPositiveButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
-            jogPositiveButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(226, 232, 240);
-            jogPositiveButton.FlatStyle = FlatStyle.Flat;
+            jogPositiveButton.DefaultBorderColor = Color.FromArgb(203, 213, 225);
+            jogPositiveButton.BackHover = Color.FromArgb(226, 232, 240);
             jogPositiveButton.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
             jogPositiveButton.ForeColor = Color.FromArgb(15, 23, 42);
             jogPositiveButton.Location = new Point(134, 2);
@@ -1142,7 +1170,6 @@
             jogPositiveButton.Size = new Size(128, 43);
             jogPositiveButton.TabIndex = 12;
             jogPositiveButton.Text = "正向点动 ▶";
-            jogPositiveButton.UseVisualStyleBackColor = false;
             jogPositiveButton.MouseDown += JogPositiveButton_MouseDown;
             jogPositiveButton.MouseLeave += JogButton_MouseUp;
             jogPositiveButton.MouseUp += JogButton_MouseUp;
@@ -1179,10 +1206,10 @@
             // homeSelectedButton
             //
             homeSelectedButton.BackColor = Color.FromArgb(248, 250, 252);
+            homeSelectedButton.DefaultBack = Color.FromArgb(248, 250, 252);
             homeSelectedButton.Cursor = Cursors.Hand;
-            homeSelectedButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
-            homeSelectedButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(226, 232, 240);
-            homeSelectedButton.FlatStyle = FlatStyle.Flat;
+            homeSelectedButton.DefaultBorderColor = Color.FromArgb(203, 213, 225);
+            homeSelectedButton.BackHover = Color.FromArgb(226, 232, 240);
             homeSelectedButton.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
             homeSelectedButton.ForeColor = Color.FromArgb(15, 23, 42);
             homeSelectedButton.Location = new Point(2, 2);
@@ -1191,15 +1218,14 @@
             homeSelectedButton.Size = new Size(128, 43);
             homeSelectedButton.TabIndex = 14;
             homeSelectedButton.Text = "选定轴回零";
-            homeSelectedButton.UseVisualStyleBackColor = false;
             homeSelectedButton.Click += HomeSelectedButton_Click;
             //
             // stopSelectedButton
             //
             stopSelectedButton.BackColor = Color.FromArgb(185, 28, 28);
+            stopSelectedButton.DefaultBack = Color.FromArgb(185, 28, 28);
             stopSelectedButton.Cursor = Cursors.Hand;
-            stopSelectedButton.FlatAppearance.BorderSize = 0;
-            stopSelectedButton.FlatStyle = FlatStyle.Flat;
+            stopSelectedButton.BorderWidth = 0;
             stopSelectedButton.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
             stopSelectedButton.ForeColor = Color.White;
             stopSelectedButton.Location = new Point(134, 2);
@@ -1208,7 +1234,6 @@
             stopSelectedButton.Size = new Size(128, 43);
             stopSelectedButton.TabIndex = 15;
             stopSelectedButton.Text = "选定轴停止";
-            stopSelectedButton.UseVisualStyleBackColor = false;
             stopSelectedButton.Click += StopSelectedButton_Click;
             //
             // helperLabel
@@ -1253,7 +1278,6 @@
             controlGroup.ResumeLayout(false);
             controlLayout.ResumeLayout(false);
             controlLayout.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)jogSpeedInput).EndInit();
             jogButtonsPanel.ResumeLayout(false);
             singleAxisButtonsPanel.ResumeLayout(false);
             ResumeLayout(false);

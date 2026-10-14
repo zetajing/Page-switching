@@ -7,10 +7,10 @@ namespace Page_switching
         private readonly System.Windows.Forms.Timer _refreshTimer;
         private readonly CancellationTokenSource _lifetimeCancellation = new();
         private readonly ServoPositionIndicator[] _positionIndicators;
-        private readonly Label[] _statusLabels;
-        private readonly Label[] _negativeLimitLamps;
-        private readonly Label[] _originLamps;
-        private readonly Label[] _positiveLimitLamps;
+        private readonly AntdUI.Label[] _statusLabels;
+        private readonly AntdUI.Label[] _negativeLimitLamps;
+        private readonly AntdUI.Label[] _originLamps;
+        private readonly AntdUI.Label[] _positiveLimitLamps;
         private IReadOnlyList<AxisSnapshot> _lastSnapshots = Array.Empty<AxisSnapshot>();
         private bool _refreshInProgress;
         private bool _commandInProgress;
@@ -176,7 +176,7 @@ namespace Page_switching
         }
 
         // 根据布尔信号更新一个状态灯的文字和颜色。
-        private static void UpdateSignalLamp(Label lamp, string caption, bool? active, Color activeColor)
+        private static void UpdateSignalLamp(AntdUI.Label lamp, string caption, bool? active, Color activeColor)
         {
             lamp.Text = $"{(active == true ? "●" : "○")} {caption}{(active.HasValue ? string.Empty : " --")}";
             lamp.BackColor = active == true ? activeColor : UiPalette.Canvas;
@@ -228,7 +228,7 @@ namespace Page_switching
         }
 
         // 普通命令执行中禁用普通按钮；停止按钮始终可受理新的停止请求。
-        private void SetCommandButtonEnabled(Button button, bool canControl)
+        private void SetCommandButtonEnabled(AntdUI.Button button, bool canControl)
         {
             var isStopButton = ReferenceEquals(button, stopAllButton) || ReferenceEquals(button, stopSelectedButton);
             var enabled = canControl && (isStopButton || (!_commandInProgress && _stopRequestsInProgress == 0));
@@ -502,9 +502,11 @@ namespace Page_switching
         // 页面释放时停止定时器、取消任务并按需释放轴服务。
         private void Manual_Disposed(object? sender, EventArgs e)
         {
+            // Designer 或父窗体重复 Dispose 时，不能再次取消已释放的任务对象。
+            Disposed -= Manual_Disposed;
             _refreshTimer.Stop();
             _refreshTimer.Dispose();
-             _lifetimeCancellation.Cancel();
+            _lifetimeCancellation.Cancel();
             _lifetimeCancellation.Dispose();
             if (_ownsAxisService)
             {

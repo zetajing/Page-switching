@@ -1,58 +1,60 @@
-﻿namespace Page_switching.panel
+namespace Page_switching.panel
 {
     partial class IrregularWavePage
     {
         private System.ComponentModel.IContainer components = null;
         private Panel pagePanel;
         private TableLayoutPanel irregularLayout;
-        private GroupBox irregularParameterGroup;
+        private AntdUI.Panel irregularParameterGroup;
+        private AntdUI.Label irregularParameterGroupCaption;
         private TableLayoutPanel irregularParameterLayout;
-        private Label irregularModeLabel;
-        internal ComboBox irregularModeComboBox;
-        private Label irregularTheoryLabel;
-        internal ComboBox irregularTheoryComboBox;
-        private Label irregularSpectrumLabel;
-        internal ComboBox irregularSpectrumComboBox;
-        private Label irregularSegmentLabel;
-        internal ComboBox irregularSegmentComboBox;
-        private Label irregularDirectionLabel;
-        internal TextBox irregularDirectionTextBox;
-        private Label irregularDepthLabel;
-        internal TextBox irregularDepthTextBox;
-        private Label irregularSignificantPeriodLabel;
-        internal TextBox irregularSignificantPeriodTextBox;
-        private Label irregularSignificantHeightLabel;
-        internal TextBox irregularSignificantHeightTextBox;
-        private Label irregularTimeStepLabel;
-        internal TextBox irregularTimeStepTextBox;
-        private Label irregularSampleCountLabel;
-        internal TextBox irregularSampleCountTextBox;
-        private Label irregularFrequencyLabel;
-        internal TextBox irregularCharacteristicFrequencyTextBox;
-        private Label irregularCharacteristicPeriodLabel;
-        internal TextBox irregularCharacteristicPeriodTextBox;
-        private Label irregularPeakFactorLabel;
-        internal TextBox irregularPeakFactorTextBox;
-        private Label irregularRandomSeedLabel;
-        internal TextBox irregularRandomSeedTextBox;
-        private Label irregularMinimumPeriodLabel;
-        internal TextBox irregularMinimumPeriodTextBox;
-        private Label irregularMaximumPeriodLabel;
-        internal TextBox irregularMaximumPeriodTextBox;
-        private Label irregularMinimumDifferencePeriodLabel;
-        internal TextBox irregularMinimumDifferencePeriodTextBox;
-        private Label irregularMaximumDifferencePeriodLabel;
-        internal TextBox irregularMaximumDifferencePeriodTextBox;
-        private Label irregularNegativeDirectionLabel;
-        internal TextBox irregularNegativeDirectionTextBox;
-        private Label irregularPositiveDirectionLabel;
-        internal TextBox irregularPositiveDirectionTextBox;
-        private Label irregularOutputLabel;
-        internal TextBox irregularOutputTextBox;
-        internal Button irregularBrowseOutputButton;
-        internal Button irregularGenerateButton;
-        internal Label irregularStatusLabel;
-        private GroupBox irregularPreviewGroup;
+        private AntdUI.Label irregularModeLabel;
+        internal AntdUI.Select irregularModeComboBox;
+        private AntdUI.Label irregularTheoryLabel;
+        internal AntdUI.Select irregularTheoryComboBox;
+        private AntdUI.Label irregularSpectrumLabel;
+        internal AntdUI.Select irregularSpectrumComboBox;
+        private AntdUI.Label irregularSegmentLabel;
+        internal AntdUI.Select irregularSegmentComboBox;
+        private AntdUI.Label irregularDirectionLabel;
+        internal AntdUI.Input irregularDirectionTextBox;
+        private AntdUI.Label irregularDepthLabel;
+        internal AntdUI.Input irregularDepthTextBox;
+        private AntdUI.Label irregularSignificantPeriodLabel;
+        internal AntdUI.Input irregularSignificantPeriodTextBox;
+        private AntdUI.Label irregularSignificantHeightLabel;
+        internal AntdUI.Input irregularSignificantHeightTextBox;
+        private AntdUI.Label irregularTimeStepLabel;
+        internal AntdUI.Input irregularTimeStepTextBox;
+        private AntdUI.Label irregularSampleCountLabel;
+        internal AntdUI.Input irregularSampleCountTextBox;
+        private AntdUI.Label irregularFrequencyLabel;
+        internal AntdUI.Input irregularCharacteristicFrequencyTextBox;
+        private AntdUI.Label irregularCharacteristicPeriodLabel;
+        internal AntdUI.Input irregularCharacteristicPeriodTextBox;
+        private AntdUI.Label irregularPeakFactorLabel;
+        internal AntdUI.Input irregularPeakFactorTextBox;
+        private AntdUI.Label irregularRandomSeedLabel;
+        internal AntdUI.Input irregularRandomSeedTextBox;
+        private AntdUI.Label irregularMinimumPeriodLabel;
+        internal AntdUI.Input irregularMinimumPeriodTextBox;
+        private AntdUI.Label irregularMaximumPeriodLabel;
+        internal AntdUI.Input irregularMaximumPeriodTextBox;
+        private AntdUI.Label irregularMinimumDifferencePeriodLabel;
+        internal AntdUI.Input irregularMinimumDifferencePeriodTextBox;
+        private AntdUI.Label irregularMaximumDifferencePeriodLabel;
+        internal AntdUI.Input irregularMaximumDifferencePeriodTextBox;
+        private AntdUI.Label irregularNegativeDirectionLabel;
+        internal AntdUI.Input irregularNegativeDirectionTextBox;
+        private AntdUI.Label irregularPositiveDirectionLabel;
+        internal AntdUI.Input irregularPositiveDirectionTextBox;
+        private AntdUI.Label irregularOutputLabel;
+        internal AntdUI.Input irregularOutputTextBox;
+        internal AntdUI.Button irregularBrowseOutputButton;
+        internal AntdUI.Button irregularGenerateButton;
+        internal AntdUI.Label irregularStatusLabel;
+        private AntdUI.Panel irregularPreviewGroup;
+        private AntdUI.Label irregularPreviewGroupCaption;
         internal global::Page_switching.WaveformPreviewControl irregularPreview;
 
         protected override void Dispose(bool disposing)
@@ -66,54 +68,105 @@
             irregularPreview = new WaveformPreviewControl();
             pagePanel = new Panel();
             irregularLayout = new TableLayoutPanel();
-            irregularParameterGroup = new GroupBox();
+            irregularParameterGroup = new AntdUI.Panel();
+            irregularParameterGroupCaption = new AntdUI.Label();
             irregularParameterLayout = new TableLayoutPanel();
-            irregularModeLabel = new Label();
-            irregularModeComboBox = new ComboBox();
-            irregularTheoryLabel = new Label();
-            irregularTheoryComboBox = new ComboBox();
-            irregularSpectrumLabel = new Label();
-            irregularSpectrumComboBox = new ComboBox();
-            irregularSegmentLabel = new Label();
-            irregularSegmentComboBox = new ComboBox();
-            irregularDirectionLabel = new Label();
-            irregularDirectionTextBox = new TextBox();
-            irregularDepthLabel = new Label();
-            irregularDepthTextBox = new TextBox();
-            irregularSignificantPeriodLabel = new Label();
-            irregularSignificantPeriodTextBox = new TextBox();
-            irregularSignificantHeightLabel = new Label();
-            irregularSignificantHeightTextBox = new TextBox();
-            irregularTimeStepLabel = new Label();
-            irregularTimeStepTextBox = new TextBox();
-            irregularSampleCountLabel = new Label();
-            irregularSampleCountTextBox = new TextBox();
-            irregularFrequencyLabel = new Label();
-            irregularCharacteristicFrequencyTextBox = new TextBox();
-            irregularCharacteristicPeriodLabel = new Label();
-            irregularCharacteristicPeriodTextBox = new TextBox();
-            irregularPeakFactorLabel = new Label();
-            irregularPeakFactorTextBox = new TextBox();
-            irregularRandomSeedLabel = new Label();
-            irregularRandomSeedTextBox = new TextBox();
-            irregularMinimumPeriodLabel = new Label();
-            irregularMinimumPeriodTextBox = new TextBox();
-            irregularMaximumPeriodLabel = new Label();
-            irregularMaximumPeriodTextBox = new TextBox();
-            irregularMinimumDifferencePeriodLabel = new Label();
-            irregularMinimumDifferencePeriodTextBox = new TextBox();
-            irregularMaximumDifferencePeriodLabel = new Label();
-            irregularMaximumDifferencePeriodTextBox = new TextBox();
-            irregularNegativeDirectionLabel = new Label();
-            irregularNegativeDirectionTextBox = new TextBox();
-            irregularPositiveDirectionLabel = new Label();
-            irregularPositiveDirectionTextBox = new TextBox();
-            irregularOutputLabel = new Label();
-            irregularOutputTextBox = new TextBox();
-            irregularBrowseOutputButton = new Button();
-            irregularGenerateButton = new Button();
-            irregularStatusLabel = new Label();
-            irregularPreviewGroup = new GroupBox();
+            irregularModeLabel = new AntdUI.Label();
+            irregularModeComboBox = new AntdUI.Select();
+            irregularModeComboBox.WaveSize = 0;
+            irregularModeComboBox.Radius = 6;
+            irregularModeComboBox.List = true;
+            irregularTheoryLabel = new AntdUI.Label();
+            irregularTheoryComboBox = new AntdUI.Select();
+            irregularTheoryComboBox.WaveSize = 0;
+            irregularTheoryComboBox.Radius = 6;
+            irregularTheoryComboBox.List = true;
+            irregularSpectrumLabel = new AntdUI.Label();
+            irregularSpectrumComboBox = new AntdUI.Select();
+            irregularSpectrumComboBox.WaveSize = 0;
+            irregularSpectrumComboBox.Radius = 6;
+            irregularSpectrumComboBox.List = true;
+            irregularSegmentLabel = new AntdUI.Label();
+            irregularSegmentComboBox = new AntdUI.Select();
+            irregularSegmentComboBox.WaveSize = 0;
+            irregularSegmentComboBox.Radius = 6;
+            irregularSegmentComboBox.List = true;
+            irregularDirectionLabel = new AntdUI.Label();
+            irregularDirectionTextBox = new AntdUI.Input();
+            irregularDirectionTextBox.WaveSize = 0;
+            irregularDirectionTextBox.Radius = 6;
+            irregularDepthLabel = new AntdUI.Label();
+            irregularDepthTextBox = new AntdUI.Input();
+            irregularDepthTextBox.WaveSize = 0;
+            irregularDepthTextBox.Radius = 6;
+            irregularSignificantPeriodLabel = new AntdUI.Label();
+            irregularSignificantPeriodTextBox = new AntdUI.Input();
+            irregularSignificantPeriodTextBox.WaveSize = 0;
+            irregularSignificantPeriodTextBox.Radius = 6;
+            irregularSignificantHeightLabel = new AntdUI.Label();
+            irregularSignificantHeightTextBox = new AntdUI.Input();
+            irregularSignificantHeightTextBox.WaveSize = 0;
+            irregularSignificantHeightTextBox.Radius = 6;
+            irregularTimeStepLabel = new AntdUI.Label();
+            irregularTimeStepTextBox = new AntdUI.Input();
+            irregularTimeStepTextBox.WaveSize = 0;
+            irregularTimeStepTextBox.Radius = 6;
+            irregularSampleCountLabel = new AntdUI.Label();
+            irregularSampleCountTextBox = new AntdUI.Input();
+            irregularSampleCountTextBox.WaveSize = 0;
+            irregularSampleCountTextBox.Radius = 6;
+            irregularFrequencyLabel = new AntdUI.Label();
+            irregularCharacteristicFrequencyTextBox = new AntdUI.Input();
+            irregularCharacteristicFrequencyTextBox.WaveSize = 0;
+            irregularCharacteristicFrequencyTextBox.Radius = 6;
+            irregularCharacteristicPeriodLabel = new AntdUI.Label();
+            irregularCharacteristicPeriodTextBox = new AntdUI.Input();
+            irregularCharacteristicPeriodTextBox.WaveSize = 0;
+            irregularCharacteristicPeriodTextBox.Radius = 6;
+            irregularPeakFactorLabel = new AntdUI.Label();
+            irregularPeakFactorTextBox = new AntdUI.Input();
+            irregularPeakFactorTextBox.WaveSize = 0;
+            irregularPeakFactorTextBox.Radius = 6;
+            irregularRandomSeedLabel = new AntdUI.Label();
+            irregularRandomSeedTextBox = new AntdUI.Input();
+            irregularRandomSeedTextBox.WaveSize = 0;
+            irregularRandomSeedTextBox.Radius = 6;
+            irregularMinimumPeriodLabel = new AntdUI.Label();
+            irregularMinimumPeriodTextBox = new AntdUI.Input();
+            irregularMinimumPeriodTextBox.WaveSize = 0;
+            irregularMinimumPeriodTextBox.Radius = 6;
+            irregularMaximumPeriodLabel = new AntdUI.Label();
+            irregularMaximumPeriodTextBox = new AntdUI.Input();
+            irregularMaximumPeriodTextBox.WaveSize = 0;
+            irregularMaximumPeriodTextBox.Radius = 6;
+            irregularMinimumDifferencePeriodLabel = new AntdUI.Label();
+            irregularMinimumDifferencePeriodTextBox = new AntdUI.Input();
+            irregularMinimumDifferencePeriodTextBox.WaveSize = 0;
+            irregularMinimumDifferencePeriodTextBox.Radius = 6;
+            irregularMaximumDifferencePeriodLabel = new AntdUI.Label();
+            irregularMaximumDifferencePeriodTextBox = new AntdUI.Input();
+            irregularMaximumDifferencePeriodTextBox.WaveSize = 0;
+            irregularMaximumDifferencePeriodTextBox.Radius = 6;
+            irregularNegativeDirectionLabel = new AntdUI.Label();
+            irregularNegativeDirectionTextBox = new AntdUI.Input();
+            irregularNegativeDirectionTextBox.WaveSize = 0;
+            irregularNegativeDirectionTextBox.Radius = 6;
+            irregularPositiveDirectionLabel = new AntdUI.Label();
+            irregularPositiveDirectionTextBox = new AntdUI.Input();
+            irregularPositiveDirectionTextBox.WaveSize = 0;
+            irregularPositiveDirectionTextBox.Radius = 6;
+            irregularOutputLabel = new AntdUI.Label();
+            irregularOutputTextBox = new AntdUI.Input();
+            irregularOutputTextBox.WaveSize = 0;
+            irregularOutputTextBox.Radius = 6;
+            irregularBrowseOutputButton = new AntdUI.Button();
+            irregularBrowseOutputButton.Radius = 6;
+            irregularBrowseOutputButton.BorderWidth = 1F;
+            irregularGenerateButton = new AntdUI.Button();
+            irregularGenerateButton.Radius = 6;
+            irregularStatusLabel = new AntdUI.Label();
+            irregularPreviewGroup = new AntdUI.Panel();
+            irregularPreviewGroupCaption = new AntdUI.Label();
             pagePanel.SuspendLayout();
             irregularLayout.SuspendLayout();
             irregularParameterGroup.SuspendLayout();
@@ -167,11 +220,20 @@
             irregularParameterGroup.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
             irregularParameterGroup.Location = new Point(3, 3);
             irregularParameterGroup.Name = "irregularParameterGroup";
-            irregularParameterGroup.Padding = new Padding(10, 16, 10, 10);
+            irregularParameterGroup.Padding = new Padding(10, 32, 10, 10);
             irregularParameterGroup.Size = new Size(474, 584);
             irregularParameterGroup.TabIndex = 0;
-            irregularParameterGroup.TabStop = false;
-            irregularParameterGroup.Text = "不规则波参数";
+            // AntdUI 面板用独立标题标签保留原分组标题，布局仍可在 Designer 编辑。
+            irregularParameterGroupCaption.Text = "不规则波参数";
+            irregularParameterGroupCaption.AutoSize = true;
+            irregularParameterGroupCaption.Name = "irregularParameterGroupCaption";
+            irregularParameterGroupCaption.Location = new Point(10, 2);
+            irregularParameterGroupCaption.ForeColor = Color.FromArgb(15, 23, 42);
+            irregularParameterGroup.BorderWidth = 1F;
+            irregularParameterGroup.BorderColor = Color.FromArgb(203, 213, 225);
+            irregularParameterGroup.Radius = 6;
+            irregularParameterGroup.Controls.Add(irregularParameterGroupCaption);
+            irregularParameterGroupCaption.BringToFront();
             //
             // irregularParameterLayout
             //
@@ -262,7 +324,6 @@
             //
             irregularModeComboBox.BackColor = Color.White;
             irregularModeComboBox.Dock = DockStyle.Fill;
-            irregularModeComboBox.FlatStyle = FlatStyle.Flat;
             irregularModeComboBox.Font = new Font("Microsoft YaHei UI", 9F);
             irregularModeComboBox.ForeColor = Color.FromArgb(15, 23, 42);
             irregularModeComboBox.Items.AddRange(new object[] { "单向不规则波", "多向不规则波" });
@@ -288,7 +349,6 @@
             //
             irregularTheoryComboBox.BackColor = Color.White;
             irregularTheoryComboBox.Dock = DockStyle.Fill;
-            irregularTheoryComboBox.FlatStyle = FlatStyle.Flat;
             irregularTheoryComboBox.Font = new Font("Microsoft YaHei UI", 9F);
             irregularTheoryComboBox.ForeColor = Color.FromArgb(15, 23, 42);
             irregularTheoryComboBox.Items.AddRange(new object[] { "线性理论", "非线性理论" });
@@ -314,7 +374,6 @@
             //
             irregularSpectrumComboBox.BackColor = Color.White;
             irregularSpectrumComboBox.Dock = DockStyle.Fill;
-            irregularSpectrumComboBox.FlatStyle = FlatStyle.Flat;
             irregularSpectrumComboBox.Font = new Font("Microsoft YaHei UI", 9F);
             irregularSpectrumComboBox.ForeColor = Color.FromArgb(15, 23, 42);
             irregularSpectrumComboBox.Items.AddRange(new object[] { "JONSWAP", "Scott", "ITTC", "B谱", "Wallops", "P-M", "规范谱", "Darbyshire" });
@@ -340,7 +399,6 @@
             //
             irregularSegmentComboBox.BackColor = Color.White;
             irregularSegmentComboBox.Dock = DockStyle.Fill;
-            irregularSegmentComboBox.FlatStyle = FlatStyle.Flat;
             irregularSegmentComboBox.Font = new Font("Microsoft YaHei UI", 9F);
             irregularSegmentComboBox.ForeColor = Color.FromArgb(15, 23, 42);
             irregularSegmentComboBox.Items.AddRange(new object[] { "X轴+Y轴", "X轴", "Y轴" });
@@ -365,7 +423,6 @@
             // irregularDirectionTextBox
             //
             irregularDirectionTextBox.BackColor = Color.White;
-            irregularDirectionTextBox.BorderStyle = BorderStyle.FixedSingle;
             irregularDirectionTextBox.Dock = DockStyle.Fill;
             irregularDirectionTextBox.Font = new Font("Microsoft YaHei UI", 9F);
             irregularDirectionTextBox.ForeColor = Color.FromArgb(15, 23, 42);
@@ -391,7 +448,6 @@
             // irregularDepthTextBox
             //
             irregularDepthTextBox.BackColor = Color.White;
-            irregularDepthTextBox.BorderStyle = BorderStyle.FixedSingle;
             irregularDepthTextBox.Dock = DockStyle.Fill;
             irregularDepthTextBox.Font = new Font("Microsoft YaHei UI", 9F);
             irregularDepthTextBox.ForeColor = Color.FromArgb(15, 23, 42);
@@ -417,7 +473,6 @@
             // irregularSignificantPeriodTextBox
             //
             irregularSignificantPeriodTextBox.BackColor = Color.White;
-            irregularSignificantPeriodTextBox.BorderStyle = BorderStyle.FixedSingle;
             irregularSignificantPeriodTextBox.Dock = DockStyle.Fill;
             irregularSignificantPeriodTextBox.Font = new Font("Microsoft YaHei UI", 9F);
             irregularSignificantPeriodTextBox.ForeColor = Color.FromArgb(15, 23, 42);
@@ -443,7 +498,6 @@
             // irregularSignificantHeightTextBox
             //
             irregularSignificantHeightTextBox.BackColor = Color.White;
-            irregularSignificantHeightTextBox.BorderStyle = BorderStyle.FixedSingle;
             irregularSignificantHeightTextBox.Dock = DockStyle.Fill;
             irregularSignificantHeightTextBox.Font = new Font("Microsoft YaHei UI", 9F);
             irregularSignificantHeightTextBox.ForeColor = Color.FromArgb(15, 23, 42);
@@ -469,7 +523,6 @@
             // irregularTimeStepTextBox
             //
             irregularTimeStepTextBox.BackColor = Color.White;
-            irregularTimeStepTextBox.BorderStyle = BorderStyle.FixedSingle;
             irregularTimeStepTextBox.Dock = DockStyle.Fill;
             irregularTimeStepTextBox.Font = new Font("Microsoft YaHei UI", 9F);
             irregularTimeStepTextBox.ForeColor = Color.FromArgb(15, 23, 42);
@@ -495,7 +548,6 @@
             // irregularSampleCountTextBox
             //
             irregularSampleCountTextBox.BackColor = Color.White;
-            irregularSampleCountTextBox.BorderStyle = BorderStyle.FixedSingle;
             irregularSampleCountTextBox.Dock = DockStyle.Fill;
             irregularSampleCountTextBox.Font = new Font("Microsoft YaHei UI", 9F);
             irregularSampleCountTextBox.ForeColor = Color.FromArgb(15, 23, 42);
@@ -521,7 +573,6 @@
             // irregularCharacteristicFrequencyTextBox
             //
             irregularCharacteristicFrequencyTextBox.BackColor = Color.White;
-            irregularCharacteristicFrequencyTextBox.BorderStyle = BorderStyle.FixedSingle;
             irregularCharacteristicFrequencyTextBox.Dock = DockStyle.Fill;
             irregularCharacteristicFrequencyTextBox.Font = new Font("Microsoft YaHei UI", 9F);
             irregularCharacteristicFrequencyTextBox.ForeColor = Color.FromArgb(15, 23, 42);
@@ -547,7 +598,6 @@
             // irregularCharacteristicPeriodTextBox
             //
             irregularCharacteristicPeriodTextBox.BackColor = Color.White;
-            irregularCharacteristicPeriodTextBox.BorderStyle = BorderStyle.FixedSingle;
             irregularCharacteristicPeriodTextBox.Dock = DockStyle.Fill;
             irregularCharacteristicPeriodTextBox.Font = new Font("Microsoft YaHei UI", 9F);
             irregularCharacteristicPeriodTextBox.ForeColor = Color.FromArgb(15, 23, 42);
@@ -573,7 +623,6 @@
             // irregularPeakFactorTextBox
             //
             irregularPeakFactorTextBox.BackColor = Color.White;
-            irregularPeakFactorTextBox.BorderStyle = BorderStyle.FixedSingle;
             irregularPeakFactorTextBox.Dock = DockStyle.Fill;
             irregularPeakFactorTextBox.Font = new Font("Microsoft YaHei UI", 9F);
             irregularPeakFactorTextBox.ForeColor = Color.FromArgb(15, 23, 42);
@@ -599,7 +648,6 @@
             // irregularRandomSeedTextBox
             //
             irregularRandomSeedTextBox.BackColor = Color.White;
-            irregularRandomSeedTextBox.BorderStyle = BorderStyle.FixedSingle;
             irregularRandomSeedTextBox.Dock = DockStyle.Fill;
             irregularRandomSeedTextBox.Font = new Font("Microsoft YaHei UI", 9F);
             irregularRandomSeedTextBox.ForeColor = Color.FromArgb(15, 23, 42);
@@ -625,7 +673,6 @@
             // irregularMinimumPeriodTextBox
             //
             irregularMinimumPeriodTextBox.BackColor = Color.White;
-            irregularMinimumPeriodTextBox.BorderStyle = BorderStyle.FixedSingle;
             irregularMinimumPeriodTextBox.Dock = DockStyle.Fill;
             irregularMinimumPeriodTextBox.Font = new Font("Microsoft YaHei UI", 9F);
             irregularMinimumPeriodTextBox.ForeColor = Color.FromArgb(15, 23, 42);
@@ -651,7 +698,6 @@
             // irregularMaximumPeriodTextBox
             //
             irregularMaximumPeriodTextBox.BackColor = Color.White;
-            irregularMaximumPeriodTextBox.BorderStyle = BorderStyle.FixedSingle;
             irregularMaximumPeriodTextBox.Dock = DockStyle.Fill;
             irregularMaximumPeriodTextBox.Font = new Font("Microsoft YaHei UI", 9F);
             irregularMaximumPeriodTextBox.ForeColor = Color.FromArgb(15, 23, 42);
@@ -677,7 +723,6 @@
             // irregularMinimumDifferencePeriodTextBox
             //
             irregularMinimumDifferencePeriodTextBox.BackColor = Color.White;
-            irregularMinimumDifferencePeriodTextBox.BorderStyle = BorderStyle.FixedSingle;
             irregularMinimumDifferencePeriodTextBox.Dock = DockStyle.Fill;
             irregularMinimumDifferencePeriodTextBox.Font = new Font("Microsoft YaHei UI", 9F);
             irregularMinimumDifferencePeriodTextBox.ForeColor = Color.FromArgb(15, 23, 42);
@@ -703,7 +748,6 @@
             // irregularMaximumDifferencePeriodTextBox
             //
             irregularMaximumDifferencePeriodTextBox.BackColor = Color.White;
-            irregularMaximumDifferencePeriodTextBox.BorderStyle = BorderStyle.FixedSingle;
             irregularMaximumDifferencePeriodTextBox.Dock = DockStyle.Fill;
             irregularMaximumDifferencePeriodTextBox.Font = new Font("Microsoft YaHei UI", 9F);
             irregularMaximumDifferencePeriodTextBox.ForeColor = Color.FromArgb(15, 23, 42);
@@ -729,7 +773,6 @@
             // irregularNegativeDirectionTextBox
             //
             irregularNegativeDirectionTextBox.BackColor = Color.White;
-            irregularNegativeDirectionTextBox.BorderStyle = BorderStyle.FixedSingle;
             irregularNegativeDirectionTextBox.Dock = DockStyle.Fill;
             irregularNegativeDirectionTextBox.Font = new Font("Microsoft YaHei UI", 9F);
             irregularNegativeDirectionTextBox.ForeColor = Color.FromArgb(15, 23, 42);
@@ -755,7 +798,6 @@
             // irregularPositiveDirectionTextBox
             //
             irregularPositiveDirectionTextBox.BackColor = Color.White;
-            irregularPositiveDirectionTextBox.BorderStyle = BorderStyle.FixedSingle;
             irregularPositiveDirectionTextBox.Dock = DockStyle.Fill;
             irregularPositiveDirectionTextBox.Font = new Font("Microsoft YaHei UI", 9F);
             irregularPositiveDirectionTextBox.ForeColor = Color.FromArgb(15, 23, 42);
@@ -781,7 +823,6 @@
             // irregularOutputTextBox
             //
             irregularOutputTextBox.BackColor = Color.White;
-            irregularOutputTextBox.BorderStyle = BorderStyle.FixedSingle;
             irregularParameterLayout.SetColumnSpan(irregularOutputTextBox, 2);
             irregularOutputTextBox.Dock = DockStyle.Fill;
             irregularOutputTextBox.Font = new Font("Microsoft YaHei UI", 9F);
@@ -795,11 +836,11 @@
             // irregularBrowseOutputButton
             //
             irregularBrowseOutputButton.BackColor = Color.FromArgb(248, 250, 252);
+            irregularBrowseOutputButton.DefaultBack = Color.FromArgb(248, 250, 252);
             irregularBrowseOutputButton.Cursor = Cursors.Hand;
             irregularBrowseOutputButton.Dock = DockStyle.Fill;
-            irregularBrowseOutputButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
-            irregularBrowseOutputButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(226, 232, 240);
-            irregularBrowseOutputButton.FlatStyle = FlatStyle.Flat;
+            irregularBrowseOutputButton.DefaultBorderColor = Color.FromArgb(203, 213, 225);
+            irregularBrowseOutputButton.BackHover = Color.FromArgb(226, 232, 240);
             irregularBrowseOutputButton.ForeColor = Color.FromArgb(15, 23, 42);
             irregularBrowseOutputButton.Location = new Point(318, 344);
             irregularBrowseOutputButton.Margin = new Padding(3, 4, 3, 4);
@@ -807,17 +848,16 @@
             irregularBrowseOutputButton.Size = new Size(133, 26);
             irregularBrowseOutputButton.TabIndex = 42;
             irregularBrowseOutputButton.Text = "浏览";
-            irregularBrowseOutputButton.UseVisualStyleBackColor = false;
             irregularBrowseOutputButton.Click += BrowseIrregularOutputButton_Click;
             //
             // irregularGenerateButton
             //
             irregularGenerateButton.BackColor = Color.FromArgb(29, 78, 216);
+            irregularGenerateButton.DefaultBack = Color.FromArgb(29, 78, 216);
             irregularParameterLayout.SetColumnSpan(irregularGenerateButton, 2);
             irregularGenerateButton.Cursor = Cursors.Hand;
-            irregularGenerateButton.FlatAppearance.BorderSize = 0;
-            irregularGenerateButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(30, 64, 175);
-            irregularGenerateButton.FlatStyle = FlatStyle.Flat;
+            irregularGenerateButton.BorderWidth = 0;
+            irregularGenerateButton.BackHover = Color.FromArgb(30, 64, 175);
             irregularGenerateButton.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
             irregularGenerateButton.ForeColor = Color.White;
             irregularGenerateButton.Location = new Point(3, 377);
@@ -825,7 +865,6 @@
             irregularGenerateButton.Size = new Size(160, 34);
             irregularGenerateButton.TabIndex = 43;
             irregularGenerateButton.Text = "计算并保存";
-            irregularGenerateButton.UseVisualStyleBackColor = false;
             irregularGenerateButton.Click += GenerateIrregularButton_Click;
             //
             // irregularStatusLabel
@@ -850,11 +889,20 @@
             irregularPreviewGroup.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
             irregularPreviewGroup.Location = new Point(483, 3);
             irregularPreviewGroup.Name = "irregularPreviewGroup";
-            irregularPreviewGroup.Padding = new Padding(10, 18, 10, 10);
+            irregularPreviewGroup.Padding = new Padding(10, 32, 10, 10);
             irregularPreviewGroup.Size = new Size(602, 584);
             irregularPreviewGroup.TabIndex = 1;
-            irregularPreviewGroup.TabStop = false;
-            irregularPreviewGroup.Text = "波形预览";
+            // AntdUI 面板用独立标题标签保留原分组标题，布局仍可在 Designer 编辑。
+            irregularPreviewGroupCaption.Text = "波形预览";
+            irregularPreviewGroupCaption.AutoSize = true;
+            irregularPreviewGroupCaption.Name = "irregularPreviewGroupCaption";
+            irregularPreviewGroupCaption.Location = new Point(10, 2);
+            irregularPreviewGroupCaption.ForeColor = Color.FromArgb(15, 23, 42);
+            irregularPreviewGroup.BorderWidth = 1F;
+            irregularPreviewGroup.BorderColor = Color.FromArgb(203, 213, 225);
+            irregularPreviewGroup.Radius = 6;
+            irregularPreviewGroup.Controls.Add(irregularPreviewGroupCaption);
+            irregularPreviewGroupCaption.BringToFront();
             //
             // IrregularWavePage
             //

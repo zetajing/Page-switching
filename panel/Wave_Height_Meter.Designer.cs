@@ -1,4 +1,4 @@
-﻿namespace Page_switching.panel
+namespace Page_switching.panel
 {
     partial class Wave_Height_Meter
     {
@@ -17,70 +17,87 @@
             pagePanel = new Panel();
             rootLayout = new TableLayoutPanel();
             headerPanel = new Panel();
-            titleLabel = new Label();
-            subtitleLabel = new Label();
+            titleLabel = new AntdUI.Label();
+            subtitleLabel = new AntdUI.Label();
             connectionCard = new Panel();
             connectionLayout = new TableLayoutPanel();
             connectionSettings = new FlowLayoutPanel();
             ipField = new Panel();
-            ipCaption = new Label();
-            _ipAddressInput = new TextBox();
+            ipCaption = new AntdUI.Label();
+            _ipAddressInput = new AntdUI.Input();
+            _ipAddressInput.WaveSize = 0;
+            _ipAddressInput.Radius = 6;
             portField = new Panel();
-            portCaption = new Label();
-            _portInput = new NumericUpDown();
+            portCaption = new AntdUI.Label();
+            _portInput = new AntdUI.InputNumber();
+            _portInput.WaveSize = 0;
+            _portInput.Radius = 6;
             sampleRateField = new Panel();
-            sampleRateCaption = new Label();
-            _sampleRateInput = new NumericUpDown();
+            sampleRateCaption = new AntdUI.Label();
+            _sampleRateInput = new AntdUI.InputNumber();
+            _sampleRateInput.WaveSize = 0;
+            _sampleRateInput.Radius = 6;
             sampleLimitField = new Panel();
-            sampleLimitCaption = new Label();
-            _sampleLimitInput = new NumericUpDown();
-            _connectButton = new Button();
-            _disconnectButton = new Button();
-            _saveSettingsButton = new Button();
+            sampleLimitCaption = new AntdUI.Label();
+            _sampleLimitInput = new AntdUI.InputNumber();
+            _sampleLimitInput.WaveSize = 0;
+            _sampleLimitInput.Radius = 6;
+            _connectButton = new AntdUI.Button();
+            _connectButton.Radius = 6;
+            _disconnectButton = new AntdUI.Button();
+            _disconnectButton.Radius = 6;
+            _disconnectButton.BorderWidth = 1F;
+            _saveSettingsButton = new AntdUI.Button();
+            _saveSettingsButton.Radius = 6;
+            _saveSettingsButton.BorderWidth = 1F;
             connectionStatusPanel = new Panel();
-            connectionStatusCaption = new Label();
-            _connectionStatusLabel = new Label();
+            connectionStatusCaption = new AntdUI.Label();
+            _connectionStatusLabel = new AntdUI.Label();
             channelStatusPanel = new FlowLayoutPanel();
-            channel1Selector = new CheckBox();
-            channel2Selector = new CheckBox();
-            channel3Selector = new CheckBox();
-            channel4Selector = new CheckBox();
-            channel5Selector = new CheckBox();
-            channel6Selector = new CheckBox();
+            channel1Selector = new AntdUI.Checkbox();
+            channel2Selector = new AntdUI.Checkbox();
+            channel3Selector = new AntdUI.Checkbox();
+            channel4Selector = new AntdUI.Checkbox();
+            channel5Selector = new AntdUI.Checkbox();
+            channel6Selector = new AntdUI.Checkbox();
             readoutLayout = new TableLayoutPanel();
             latestValueCard = new Panel();
-            latestValueCaption = new Label();
-            _latestValueLabel = new Label();
-            latestValueDetail = new Label();
+            latestValueCaption = new AntdUI.Label();
+            _latestValueLabel = new AntdUI.Label();
+            latestValueDetail = new AntdUI.Label();
             sampleCountCard = new Panel();
-            sampleCountCaption = new Label();
-            _sampleCountLabel = new Label();
-            sampleCountDetail = new Label();
+            sampleCountCaption = new AntdUI.Label();
+            _sampleCountLabel = new AntdUI.Label();
+            sampleCountDetail = new AntdUI.Label();
             sampleRateCard = new Panel();
-            sampleRateCardCaption = new Label();
-            _sampleRateLabel = new Label();
-            sampleRateDetail = new Label();
+            sampleRateCardCaption = new AntdUI.Label();
+            _sampleRateLabel = new AntdUI.Label();
+            sampleRateDetail = new AntdUI.Label();
             chartCard = new Panel();
             chartLayout = new TableLayoutPanel();
             chartHeader = new TableLayoutPanel();
-            chartTitleLabel = new Label();
+            chartTitleLabel = new AntdUI.Label();
             chartActions = new FlowLayoutPanel();
-            _clearButton = new Button();
-            _exportButton = new Button();
-            _chartStatusLabel = new Label();
-            channelTabs = new TabControl();
-            channelOneTab = new TabPage();
+            _clearButton = new AntdUI.Button();
+            _clearButton.Radius = 6;
+            _clearButton.BorderWidth = 1F;
+            _exportButton = new AntdUI.Button();
+            _exportButton.Radius = 6;
+            _exportButton.BorderWidth = 1F;
+            _chartStatusLabel = new AntdUI.Label();
+            channelTabs = new AntdUI.Tabs();
+            channelOneTab = new AntdUI.TabPage();
             _waveformPreview = new WaveformPreviewControl();
-            channel2Tab = new TabPage();
-            channel2Notice = new Label();
-            channel3Tab = new TabPage();
-            channel3Notice = new Label();
-            channel4Tab = new TabPage();
-            channel4Notice = new Label();
-            channel5Tab = new TabPage();
-            channel5Notice = new Label();
-            channel6Tab = new TabPage();
-            channel6Notice = new Label();
+            channel2Tab = new AntdUI.TabPage();
+            channel2Notice = new AntdUI.Label();
+            channel3Tab = new AntdUI.TabPage();
+            channel3Notice = new AntdUI.Label();
+            channel4Tab = new AntdUI.TabPage();
+            channel4Notice = new AntdUI.Label();
+            channel5Tab = new AntdUI.TabPage();
+            channel5Notice = new AntdUI.Label();
+            channel6Tab = new AntdUI.TabPage();
+            channel6Notice = new AntdUI.Label();
             pagePanel.SuspendLayout();
             rootLayout.SuspendLayout();
             headerPanel.SuspendLayout();
@@ -89,11 +106,8 @@
             connectionSettings.SuspendLayout();
             ipField.SuspendLayout();
             portField.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)_portInput).BeginInit();
             sampleRateField.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)_sampleRateInput).BeginInit();
             sampleLimitField.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)_sampleLimitInput).BeginInit();
             connectionStatusPanel.SuspendLayout();
             channelStatusPanel.SuspendLayout();
             readoutLayout.SuspendLayout();
@@ -237,6 +251,7 @@
             // ipCaption
             //
             ipCaption.AutoSize = true;
+            ipCaption.Name = "ipCaption";
             ipCaption.Font = new Font("Microsoft YaHei UI", 8F);
             ipCaption.ForeColor = Color.FromArgb(71, 85, 105);
             ipCaption.Location = new Point(0, 0);
@@ -249,7 +264,6 @@
             //
             _ipAddressInput.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             _ipAddressInput.BackColor = Color.White;
-            _ipAddressInput.BorderStyle = BorderStyle.FixedSingle;
             _ipAddressInput.Font = new Font("Microsoft YaHei UI", 9F);
             _ipAddressInput.ForeColor = Color.FromArgb(15, 23, 42);
             _ipAddressInput.Location = new Point(0, 23);
@@ -271,6 +285,7 @@
             // portCaption
             //
             portCaption.AutoSize = true;
+            portCaption.Name = "portCaption";
             portCaption.Font = new Font("Microsoft YaHei UI", 8F);
             portCaption.ForeColor = Color.FromArgb(71, 85, 105);
             portCaption.Location = new Point(0, 0);
@@ -283,7 +298,6 @@
             //
             _portInput.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             _portInput.BackColor = Color.White;
-            _portInput.BorderStyle = BorderStyle.FixedSingle;
             _portInput.Font = new Font("Microsoft YaHei UI", 9F);
             _portInput.ForeColor = Color.FromArgb(15, 23, 42);
             _portInput.Location = new Point(0, 23);
@@ -307,6 +321,7 @@
             // sampleRateCaption
             //
             sampleRateCaption.AutoSize = true;
+            sampleRateCaption.Name = "sampleRateCaption";
             sampleRateCaption.Font = new Font("Microsoft YaHei UI", 8F);
             sampleRateCaption.ForeColor = Color.FromArgb(71, 85, 105);
             sampleRateCaption.Location = new Point(0, 0);
@@ -319,7 +334,6 @@
             //
             _sampleRateInput.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             _sampleRateInput.BackColor = Color.White;
-            _sampleRateInput.BorderStyle = BorderStyle.FixedSingle;
             _sampleRateInput.Font = new Font("Microsoft YaHei UI", 9F);
             _sampleRateInput.ForeColor = Color.FromArgb(15, 23, 42);
             _sampleRateInput.Location = new Point(0, 23);
@@ -343,6 +357,7 @@
             // sampleLimitCaption
             //
             sampleLimitCaption.AutoSize = true;
+            sampleLimitCaption.Name = "sampleLimitCaption";
             sampleLimitCaption.Font = new Font("Microsoft YaHei UI", 8F);
             sampleLimitCaption.Location = new Point(0, 0);
             sampleLimitCaption.Name = "sampleLimitCaption";
@@ -353,7 +368,6 @@
             // _sampleLimitInput
             //
             _sampleLimitInput.BackColor = Color.White;
-            _sampleLimitInput.BorderStyle = BorderStyle.FixedSingle;
             _sampleLimitInput.ForeColor = Color.FromArgb(15, 23, 42);
             _sampleLimitInput.Location = new Point(0, 23);
             _sampleLimitInput.Maximum = new decimal(new int[] { 10000000, 0, 0, 0 });
@@ -366,10 +380,10 @@
             // _connectButton
             //
             _connectButton.BackColor = Color.FromArgb(29, 78, 216);
+            _connectButton.DefaultBack = Color.FromArgb(29, 78, 216);
             _connectButton.Cursor = Cursors.Hand;
-            _connectButton.FlatAppearance.BorderSize = 0;
-            _connectButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(30, 64, 175);
-            _connectButton.FlatStyle = FlatStyle.Flat;
+            _connectButton.BorderWidth = 0;
+            _connectButton.BackHover = Color.FromArgb(30, 64, 175);
             _connectButton.Font = new Font("Microsoft YaHei UI", 8.5F, FontStyle.Bold);
             _connectButton.ForeColor = Color.White;
             _connectButton.Location = new Point(487, 20);
@@ -378,17 +392,16 @@
             _connectButton.Size = new Size(104, 34);
             _connectButton.TabIndex = 3;
             _connectButton.Text = "连接并采集";
-            _connectButton.UseVisualStyleBackColor = false;
             _connectButton.Click += ConnectButton_Click;
             //
             // _disconnectButton
             //
             _disconnectButton.BackColor = Color.FromArgb(248, 250, 252);
+            _disconnectButton.DefaultBack = Color.FromArgb(248, 250, 252);
             _disconnectButton.Cursor = Cursors.Hand;
             _disconnectButton.Enabled = false;
-            _disconnectButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
-            _disconnectButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(226, 232, 240);
-            _disconnectButton.FlatStyle = FlatStyle.Flat;
+            _disconnectButton.DefaultBorderColor = Color.FromArgb(203, 213, 225);
+            _disconnectButton.BackHover = Color.FromArgb(226, 232, 240);
             _disconnectButton.Font = new Font("Microsoft YaHei UI", 8.5F, FontStyle.Bold);
             _disconnectButton.ForeColor = Color.FromArgb(15, 23, 42);
             _disconnectButton.Location = new Point(597, 20);
@@ -397,16 +410,15 @@
             _disconnectButton.Size = new Size(100, 34);
             _disconnectButton.TabIndex = 4;
             _disconnectButton.Text = "停止并断开";
-            _disconnectButton.UseVisualStyleBackColor = false;
             _disconnectButton.Click += DisconnectButton_Click;
             //
             // _saveSettingsButton
             //
             _saveSettingsButton.BackColor = Color.FromArgb(248, 250, 252);
+            _saveSettingsButton.DefaultBack = Color.FromArgb(248, 250, 252);
             _saveSettingsButton.Cursor = Cursors.Hand;
-            _saveSettingsButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
-            _saveSettingsButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(226, 232, 240);
-            _saveSettingsButton.FlatStyle = FlatStyle.Flat;
+            _saveSettingsButton.DefaultBorderColor = Color.FromArgb(203, 213, 225);
+            _saveSettingsButton.BackHover = Color.FromArgb(226, 232, 240);
             _saveSettingsButton.Font = new Font("Microsoft YaHei UI", 8.5F, FontStyle.Bold);
             _saveSettingsButton.ForeColor = Color.FromArgb(15, 23, 42);
             _saveSettingsButton.Location = new Point(703, 20);
@@ -415,7 +427,6 @@
             _saveSettingsButton.Size = new Size(88, 34);
             _saveSettingsButton.TabIndex = 5;
             _saveSettingsButton.Text = "保存参数";
-            _saveSettingsButton.UseVisualStyleBackColor = false;
             _saveSettingsButton.Click += SaveSettingsButton_Click;
             //
             // connectionStatusPanel
@@ -432,6 +443,7 @@
             // connectionStatusCaption
             //
             connectionStatusCaption.AutoSize = true;
+            connectionStatusCaption.Name = "connectionStatusCaption";
             connectionStatusCaption.Font = new Font("Microsoft YaHei UI", 8.5F);
             connectionStatusCaption.ForeColor = Color.FromArgb(71, 85, 105);
             connectionStatusCaption.Location = new Point(0, 5);
@@ -471,13 +483,9 @@
             //
             // channel1Selector
             //
-            channel1Selector.Appearance = Appearance.Button;
             channel1Selector.BackColor = Color.White;
             channel1Selector.Checked = true;
             channel1Selector.CheckState = CheckState.Checked;
-            channel1Selector.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
-            channel1Selector.FlatAppearance.CheckedBackColor = Color.FromArgb(219, 234, 254);
-            channel1Selector.FlatStyle = FlatStyle.Flat;
             channel1Selector.Font = new Font("Microsoft YaHei UI", 9F);
             channel1Selector.ForeColor = Color.FromArgb(15, 23, 42);
             channel1Selector.Location = new Point(0, 0);
@@ -487,16 +495,11 @@
             channel1Selector.TabIndex = 0;
             channel1Selector.Text = "CH1\r\n等待采集";
             channel1Selector.TextAlign = ContentAlignment.MiddleCenter;
-            channel1Selector.UseVisualStyleBackColor = false;
             //
             // channel2Selector
             //
-            channel2Selector.Appearance = Appearance.Button;
             channel2Selector.BackColor = Color.White;
             channel2Selector.Enabled = false;
-            channel2Selector.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
-            channel2Selector.FlatAppearance.CheckedBackColor = Color.FromArgb(219, 234, 254);
-            channel2Selector.FlatStyle = FlatStyle.Flat;
             channel2Selector.Font = new Font("Microsoft YaHei UI", 9F);
             channel2Selector.ForeColor = Color.FromArgb(100, 116, 139);
             channel2Selector.Location = new Point(138, 0);
@@ -506,16 +509,11 @@
             channel2Selector.TabIndex = 1;
             channel2Selector.Text = "CH2\r\n待协议验证";
             channel2Selector.TextAlign = ContentAlignment.MiddleCenter;
-            channel2Selector.UseVisualStyleBackColor = false;
             //
             // channel3Selector
             //
-            channel3Selector.Appearance = Appearance.Button;
             channel3Selector.BackColor = Color.White;
             channel3Selector.Enabled = false;
-            channel3Selector.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
-            channel3Selector.FlatAppearance.CheckedBackColor = Color.FromArgb(219, 234, 254);
-            channel3Selector.FlatStyle = FlatStyle.Flat;
             channel3Selector.Font = new Font("Microsoft YaHei UI", 9F);
             channel3Selector.ForeColor = Color.FromArgb(100, 116, 139);
             channel3Selector.Location = new Point(276, 0);
@@ -525,16 +523,11 @@
             channel3Selector.TabIndex = 2;
             channel3Selector.Text = "CH3\r\n待协议验证";
             channel3Selector.TextAlign = ContentAlignment.MiddleCenter;
-            channel3Selector.UseVisualStyleBackColor = false;
             //
             // channel4Selector
             //
-            channel4Selector.Appearance = Appearance.Button;
             channel4Selector.BackColor = Color.White;
             channel4Selector.Enabled = false;
-            channel4Selector.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
-            channel4Selector.FlatAppearance.CheckedBackColor = Color.FromArgb(219, 234, 254);
-            channel4Selector.FlatStyle = FlatStyle.Flat;
             channel4Selector.Font = new Font("Microsoft YaHei UI", 9F);
             channel4Selector.ForeColor = Color.FromArgb(100, 116, 139);
             channel4Selector.Location = new Point(414, 0);
@@ -544,16 +537,11 @@
             channel4Selector.TabIndex = 3;
             channel4Selector.Text = "CH4\r\n待协议验证";
             channel4Selector.TextAlign = ContentAlignment.MiddleCenter;
-            channel4Selector.UseVisualStyleBackColor = false;
             //
             // channel5Selector
             //
-            channel5Selector.Appearance = Appearance.Button;
             channel5Selector.BackColor = Color.White;
             channel5Selector.Enabled = false;
-            channel5Selector.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
-            channel5Selector.FlatAppearance.CheckedBackColor = Color.FromArgb(219, 234, 254);
-            channel5Selector.FlatStyle = FlatStyle.Flat;
             channel5Selector.Font = new Font("Microsoft YaHei UI", 9F);
             channel5Selector.ForeColor = Color.FromArgb(100, 116, 139);
             channel5Selector.Location = new Point(552, 0);
@@ -563,16 +551,11 @@
             channel5Selector.TabIndex = 4;
             channel5Selector.Text = "CH5\r\n待协议验证";
             channel5Selector.TextAlign = ContentAlignment.MiddleCenter;
-            channel5Selector.UseVisualStyleBackColor = false;
             //
             // channel6Selector
             //
-            channel6Selector.Appearance = Appearance.Button;
             channel6Selector.BackColor = Color.White;
             channel6Selector.Enabled = false;
-            channel6Selector.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
-            channel6Selector.FlatAppearance.CheckedBackColor = Color.FromArgb(219, 234, 254);
-            channel6Selector.FlatStyle = FlatStyle.Flat;
             channel6Selector.Font = new Font("Microsoft YaHei UI", 9F);
             channel6Selector.ForeColor = Color.FromArgb(100, 116, 139);
             channel6Selector.Location = new Point(690, 0);
@@ -582,7 +565,6 @@
             channel6Selector.TabIndex = 5;
             channel6Selector.Text = "CH6\r\n待协议验证";
             channel6Selector.TextAlign = ContentAlignment.MiddleCenter;
-            channel6Selector.UseVisualStyleBackColor = false;
             //
             // readoutLayout
             //
@@ -619,6 +601,7 @@
             // latestValueCaption
             //
             latestValueCaption.AutoSize = true;
+            latestValueCaption.Name = "latestValueCaption";
             latestValueCaption.Font = new Font("Microsoft YaHei UI", 8.5F);
             latestValueCaption.ForeColor = Color.FromArgb(100, 116, 139);
             latestValueCaption.Location = new Point(12, 6);
@@ -668,6 +651,7 @@
             // sampleCountCaption
             //
             sampleCountCaption.AutoSize = true;
+            sampleCountCaption.Name = "sampleCountCaption";
             sampleCountCaption.Font = new Font("Microsoft YaHei UI", 8.5F);
             sampleCountCaption.ForeColor = Color.FromArgb(100, 116, 139);
             sampleCountCaption.Location = new Point(12, 6);
@@ -710,13 +694,14 @@
             sampleRateCard.Location = new Point(718, 4);
             sampleRateCard.Margin = new Padding(4);
             sampleRateCard.Name = "sampleRateCard";
-            sampleRateCard.Padding = new Padding(16, 10, 12, 8);
+            sampleRateCard.Padding = new Padding(16, 32, 12, 8);
             sampleRateCard.Size = new Size(350, 80);
             sampleRateCard.TabIndex = 2;
             //
             // sampleRateCardCaption
             //
             sampleRateCardCaption.AutoSize = true;
+            sampleRateCardCaption.Name = "sampleRateCardCaption";
             sampleRateCardCaption.Font = new Font("Microsoft YaHei UI", 8.5F);
             sampleRateCardCaption.ForeColor = Color.FromArgb(100, 116, 139);
             sampleRateCardCaption.Location = new Point(12, 6);
@@ -823,10 +808,10 @@
             // _clearButton
             //
             _clearButton.BackColor = Color.FromArgb(248, 250, 252);
+            _clearButton.DefaultBack = Color.FromArgb(248, 250, 252);
             _clearButton.Cursor = Cursors.Hand;
-            _clearButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
-            _clearButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(226, 232, 240);
-            _clearButton.FlatStyle = FlatStyle.Flat;
+            _clearButton.DefaultBorderColor = Color.FromArgb(203, 213, 225);
+            _clearButton.BackHover = Color.FromArgb(226, 232, 240);
             _clearButton.Font = new Font("Microsoft YaHei UI", 8.5F, FontStyle.Bold);
             _clearButton.ForeColor = Color.FromArgb(15, 23, 42);
             _clearButton.Location = new Point(360, 0);
@@ -835,16 +820,15 @@
             _clearButton.Size = new Size(94, 38);
             _clearButton.TabIndex = 7;
             _clearButton.Text = "清空预览";
-            _clearButton.UseVisualStyleBackColor = false;
             _clearButton.Click += ClearButton_Click;
             //
             // _exportButton
             //
             _exportButton.BackColor = Color.FromArgb(248, 250, 252);
+            _exportButton.DefaultBack = Color.FromArgb(248, 250, 252);
             _exportButton.Cursor = Cursors.Hand;
-            _exportButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
-            _exportButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(226, 232, 240);
-            _exportButton.FlatStyle = FlatStyle.Flat;
+            _exportButton.DefaultBorderColor = Color.FromArgb(203, 213, 225);
+            _exportButton.BackHover = Color.FromArgb(226, 232, 240);
             _exportButton.Font = new Font("Microsoft YaHei UI", 8.5F, FontStyle.Bold);
             _exportButton.ForeColor = Color.FromArgb(15, 23, 42);
             _exportButton.Location = new Point(256, 0);
@@ -853,7 +837,6 @@
             _exportButton.Size = new Size(94, 38);
             _exportButton.TabIndex = 6;
             _exportButton.Text = "导出 CSV";
-            _exportButton.UseVisualStyleBackColor = false;
             _exportButton.Click += ExportButton_Click;
             //
             // _chartStatusLabel
@@ -870,14 +853,14 @@
             //
             // channelTabs
             //
-            channelTabs.Controls.Add(channelOneTab);
-            channelTabs.Controls.Add(channel2Tab);
-            channelTabs.Controls.Add(channel3Tab);
-            channelTabs.Controls.Add(channel4Tab);
-            channelTabs.Controls.Add(channel5Tab);
-            channelTabs.Controls.Add(channel6Tab);
+            channelTabs.Pages.Add(channelOneTab);
+            channelTabs.Pages.Add(channel2Tab);
+            channelTabs.Pages.Add(channel3Tab);
+            channelTabs.Pages.Add(channel4Tab);
+            channelTabs.Pages.Add(channel5Tab);
+            channelTabs.Pages.Add(channel6Tab);
             channelTabs.Dock = DockStyle.Fill;
-            channelTabs.ItemSize = new Size(60, 26);
+            channelTabs.ItemSize = 80;
             channelTabs.Location = new Point(3, 41);
             channelTabs.Name = "channelTabs";
             channelTabs.SelectedIndex = 0;
@@ -1034,13 +1017,10 @@
             ipField.PerformLayout();
             portField.ResumeLayout(false);
             portField.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)_portInput).EndInit();
             sampleRateField.ResumeLayout(false);
             sampleRateField.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)_sampleRateInput).EndInit();
             sampleLimitField.ResumeLayout(false);
             sampleLimitField.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)_sampleLimitInput).EndInit();
             connectionStatusPanel.ResumeLayout(false);
             connectionStatusPanel.PerformLayout();
             channelStatusPanel.ResumeLayout(false);
@@ -1068,69 +1048,69 @@
 
         private TableLayoutPanel rootLayout;
         private Panel headerPanel;
-        private Label titleLabel;
-        private Label subtitleLabel;
+        private AntdUI.Label titleLabel;
+        private AntdUI.Label subtitleLabel;
         private Panel connectionCard;
         private TableLayoutPanel connectionLayout;
         private FlowLayoutPanel connectionSettings;
         private Panel ipField;
-        private Label ipCaption;
-        private TextBox _ipAddressInput;
+        private AntdUI.Label ipCaption;
+        private AntdUI.Input _ipAddressInput;
         private Panel portField;
-        private Label portCaption;
-        private NumericUpDown _portInput;
+        private AntdUI.Label portCaption;
+        private AntdUI.InputNumber _portInput;
         private Panel sampleRateField;
-        private Label sampleRateCaption;
-        private NumericUpDown _sampleRateInput;
+        private AntdUI.Label sampleRateCaption;
+        private AntdUI.InputNumber _sampleRateInput;
         private Panel sampleLimitField;
-        private Label sampleLimitCaption;
-        private NumericUpDown _sampleLimitInput;
-        private Button _connectButton;
-        private Button _disconnectButton;
-        private Button _saveSettingsButton;
+        private AntdUI.Label sampleLimitCaption;
+        private AntdUI.InputNumber _sampleLimitInput;
+        private AntdUI.Button _connectButton;
+        private AntdUI.Button _disconnectButton;
+        private AntdUI.Button _saveSettingsButton;
         private Panel connectionStatusPanel;
-        private Label connectionStatusCaption;
-        private Label _connectionStatusLabel;
+        private AntdUI.Label connectionStatusCaption;
+        private AntdUI.Label _connectionStatusLabel;
         private FlowLayoutPanel channelStatusPanel;
-        private CheckBox channel1Selector;
-        private CheckBox channel2Selector;
-        private CheckBox channel3Selector;
-        private CheckBox channel4Selector;
-        private CheckBox channel5Selector;
-        private CheckBox channel6Selector;
+        private AntdUI.Checkbox channel1Selector;
+        private AntdUI.Checkbox channel2Selector;
+        private AntdUI.Checkbox channel3Selector;
+        private AntdUI.Checkbox channel4Selector;
+        private AntdUI.Checkbox channel5Selector;
+        private AntdUI.Checkbox channel6Selector;
         private TableLayoutPanel readoutLayout;
         private Panel latestValueCard;
-        private Label latestValueCaption;
-        private Label _latestValueLabel;
-        private Label latestValueDetail;
+        private AntdUI.Label latestValueCaption;
+        private AntdUI.Label _latestValueLabel;
+        private AntdUI.Label latestValueDetail;
         private Panel sampleCountCard;
-        private Label sampleCountCaption;
-        private Label _sampleCountLabel;
-        private Label sampleCountDetail;
+        private AntdUI.Label sampleCountCaption;
+        private AntdUI.Label _sampleCountLabel;
+        private AntdUI.Label sampleCountDetail;
         private Panel sampleRateCard;
-        private Label sampleRateCardCaption;
-        private Label _sampleRateLabel;
-        private Label sampleRateDetail;
+        private AntdUI.Label sampleRateCardCaption;
+        private AntdUI.Label _sampleRateLabel;
+        private AntdUI.Label sampleRateDetail;
         private Panel chartCard;
         private TableLayoutPanel chartLayout;
         private TableLayoutPanel chartHeader;
-        private Label chartTitleLabel;
+        private AntdUI.Label chartTitleLabel;
         private FlowLayoutPanel chartActions;
-        private Button _clearButton;
-        private Button _exportButton;
-        private Label _chartStatusLabel;
+        private AntdUI.Button _clearButton;
+        private AntdUI.Button _exportButton;
+        private AntdUI.Label _chartStatusLabel;
         private global::Page_switching.WaveformPreviewControl _waveformPreview;
-        private TabControl channelTabs;
-        private TabPage channelOneTab;
-        private TabPage channel2Tab;
-        private Label channel2Notice;
-        private TabPage channel3Tab;
-        private Label channel3Notice;
-        private TabPage channel4Tab;
-        private Label channel4Notice;
-        private TabPage channel5Tab;
-        private Label channel5Notice;
-        private TabPage channel6Tab;
-        private Label channel6Notice;
+        private AntdUI.Tabs channelTabs;
+        private AntdUI.TabPage channelOneTab;
+        private AntdUI.TabPage channel2Tab;
+        private AntdUI.Label channel2Notice;
+        private AntdUI.TabPage channel3Tab;
+        private AntdUI.Label channel3Notice;
+        private AntdUI.TabPage channel4Tab;
+        private AntdUI.Label channel4Notice;
+        private AntdUI.TabPage channel5Tab;
+        private AntdUI.Label channel5Notice;
+        private AntdUI.TabPage channel6Tab;
+        private AntdUI.Label channel6Notice;
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace Page_switching.panel
+namespace Page_switching.panel
 {
     partial class SignalCorrectionPage
     {
@@ -6,7 +6,7 @@
 
         private System.ComponentModel.IContainer components = null;
         private TableLayoutPanel root;
-        private Label title;
+        private AntdUI.Label title;
         private TableLayoutPanel options;
         private TableLayoutPanel parameters;
         private TableLayoutPanel unitGroup;
@@ -16,28 +16,28 @@
         private TableLayoutPanel pointsGroup;
         private TableLayoutPanel actions;
         private TableLayoutPanel body;
-        private Label status;
-        private TextBox originalPath;
-        private Button originalBrowse;
-        private TextBox measuredPath;
-        private Button measuredBrowse;
-        private TextBox outputPath;
-        private Button outputBrowse;
-        private ComboBox unitInput;
-        private NumericUpDown rateInput;
-        private NumericUpDown channelInput;
-        private NumericUpDown passesInput;
-        private NumericUpDown pointsInput;
-        private Button runButton;
-        private Button previewButton;
-        private Label caption_originalPath;
-        private Label caption_measuredPath;
-        private Label caption_outputPath;
-        private Label caption_unitInput;
-        private Label caption_rateInput;
-        private Label caption_channelInput;
-        private Label caption_passesInput;
-        private Label caption_pointsInput;
+        private AntdUI.Label status;
+        private AntdUI.Input originalPath;
+        private AntdUI.Button originalBrowse;
+        private AntdUI.Input measuredPath;
+        private AntdUI.Button measuredBrowse;
+        private AntdUI.Input outputPath;
+        private AntdUI.Button outputBrowse;
+        private AntdUI.Select unitInput;
+        private AntdUI.InputNumber rateInput;
+        private AntdUI.InputNumber channelInput;
+        private AntdUI.InputNumber passesInput;
+        private AntdUI.InputNumber pointsInput;
+        private AntdUI.Button runButton;
+        private AntdUI.Button previewButton;
+        private AntdUI.Label caption_originalPath;
+        private AntdUI.Label caption_measuredPath;
+        private AntdUI.Label caption_outputPath;
+        private AntdUI.Label caption_unitInput;
+        private AntdUI.Label caption_rateInput;
+        private AntdUI.Label caption_channelInput;
+        private AntdUI.Label caption_passesInput;
+        private AntdUI.Label caption_pointsInput;
         private global::Page_switching.ComparisonPlotControl plot;
 
         protected override void Dispose(bool disposing)
@@ -51,51 +51,75 @@
             plot = new ComparisonPlotControl();
             pagePanel = new Panel();
             root = new TableLayoutPanel();
-            title = new Label();
+            title = new AntdUI.Label();
             options = new TableLayoutPanel();
-            caption_originalPath = new Label();
-            originalPath = new TextBox();
-            originalBrowse = new Button();
-            caption_measuredPath = new Label();
-            measuredPath = new TextBox();
-            measuredBrowse = new Button();
-            caption_outputPath = new Label();
-            outputPath = new TextBox();
-            outputBrowse = new Button();
+            caption_originalPath = new AntdUI.Label();
+            originalPath = new AntdUI.Input();
+            originalPath.WaveSize = 0;
+            originalPath.Radius = 6;
+            originalBrowse = new AntdUI.Button();
+            originalBrowse.Radius = 6;
+            originalBrowse.BorderWidth = 1F;
+            caption_measuredPath = new AntdUI.Label();
+            measuredPath = new AntdUI.Input();
+            measuredPath.WaveSize = 0;
+            measuredPath.Radius = 6;
+            measuredBrowse = new AntdUI.Button();
+            measuredBrowse.Radius = 6;
+            measuredBrowse.BorderWidth = 1F;
+            caption_outputPath = new AntdUI.Label();
+            outputPath = new AntdUI.Input();
+            outputPath.WaveSize = 0;
+            outputPath.Radius = 6;
+            outputBrowse = new AntdUI.Button();
+            outputBrowse.Radius = 6;
+            outputBrowse.BorderWidth = 1F;
             parameters = new TableLayoutPanel();
             unitGroup = new TableLayoutPanel();
-            caption_unitInput = new Label();
-            unitInput = new ComboBox();
+            caption_unitInput = new AntdUI.Label();
+            unitInput = new AntdUI.Select();
+            unitInput.WaveSize = 0;
+            unitInput.Radius = 6;
+            unitInput.List = true;
             rateGroup = new TableLayoutPanel();
-            caption_rateInput = new Label();
-            rateInput = new NumericUpDown();
+            caption_rateInput = new AntdUI.Label();
+            rateInput = new AntdUI.InputNumber();
+            rateInput.WaveSize = 0;
+            rateInput.Radius = 6;
             channelGroup = new TableLayoutPanel();
-            caption_channelInput = new Label();
-            channelInput = new NumericUpDown();
+            caption_channelInput = new AntdUI.Label();
+            channelInput = new AntdUI.InputNumber();
+            channelInput.WaveSize = 0;
+            channelInput.Radius = 6;
             passesGroup = new TableLayoutPanel();
-            caption_passesInput = new Label();
-            passesInput = new NumericUpDown();
+            caption_passesInput = new AntdUI.Label();
+            passesInput = new AntdUI.InputNumber();
+            passesInput.WaveSize = 0;
+            passesInput.Radius = 6;
+            passesInput.Minimum = 0M;
             pointsGroup = new TableLayoutPanel();
-            caption_pointsInput = new Label();
-            pointsInput = new NumericUpDown();
+            caption_pointsInput = new AntdUI.Label();
+            pointsInput = new AntdUI.InputNumber();
+            pointsInput.WaveSize = 0;
+            pointsInput.Radius = 6;
             actions = new TableLayoutPanel();
-            previewButton = new Button();
-            runButton = new Button();
+            previewButton = new AntdUI.Button();
+            previewButton.Radius = 6;
+            previewButton.BorderWidth = 1F;
+            runButton = new AntdUI.Button();
+            runButton.Radius = 6;
+            runButton.BorderWidth = 1F;
             body = new TableLayoutPanel();
-            status = new Label();
+            status = new AntdUI.Label();
             pagePanel.SuspendLayout();
             root.SuspendLayout();
             options.SuspendLayout();
             parameters.SuspendLayout();
             unitGroup.SuspendLayout();
             rateGroup.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)rateInput).BeginInit();
             channelGroup.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)channelInput).BeginInit();
             passesGroup.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)passesInput).BeginInit();
             pointsGroup.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)pointsInput).BeginInit();
             actions.SuspendLayout();
             body.SuspendLayout();
             SuspendLayout();
@@ -204,7 +228,6 @@
             //
             originalPath.Anchor = AnchorStyles.Left | AnchorStyles.Right;
             originalPath.BackColor = Color.White;
-            originalPath.BorderStyle = BorderStyle.FixedSingle;
             originalPath.Location = new Point(120, 13);
             originalPath.Margin = new Padding(0);
             originalPath.Name = "originalPath";
@@ -215,16 +238,15 @@
             // originalBrowse
             //
             originalBrowse.BackColor = Color.FromArgb(248, 250, 252);
+            originalBrowse.DefaultBack = Color.FromArgb(248, 250, 252);
             originalBrowse.Dock = DockStyle.Fill;
-            originalBrowse.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
-            originalBrowse.FlatStyle = FlatStyle.Flat;
+            originalBrowse.DefaultBorderColor = Color.FromArgb(203, 213, 225);
             originalBrowse.Location = new Point(944, 9);
             originalBrowse.Margin = new Padding(8, 1, 0, 1);
             originalBrowse.Name = "originalBrowse";
             originalBrowse.Size = new Size(120, 32);
             originalBrowse.TabIndex = 2;
             originalBrowse.Text = "选择信号";
-            originalBrowse.UseVisualStyleBackColor = false;
             //
             // caption_measuredPath
             //
@@ -241,7 +263,6 @@
             //
             measuredPath.Anchor = AnchorStyles.Left | AnchorStyles.Right;
             measuredPath.BackColor = Color.White;
-            measuredPath.BorderStyle = BorderStyle.FixedSingle;
             measuredPath.Location = new Point(120, 47);
             measuredPath.Margin = new Padding(0);
             measuredPath.Name = "measuredPath";
@@ -252,16 +273,15 @@
             // measuredBrowse
             //
             measuredBrowse.BackColor = Color.FromArgb(248, 250, 252);
+            measuredBrowse.DefaultBack = Color.FromArgb(248, 250, 252);
             measuredBrowse.Dock = DockStyle.Fill;
-            measuredBrowse.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
-            measuredBrowse.FlatStyle = FlatStyle.Flat;
+            measuredBrowse.DefaultBorderColor = Color.FromArgb(203, 213, 225);
             measuredBrowse.Location = new Point(944, 43);
             measuredBrowse.Margin = new Padding(8, 1, 0, 1);
             measuredBrowse.Name = "measuredBrowse";
             measuredBrowse.Size = new Size(120, 32);
             measuredBrowse.TabIndex = 5;
             measuredBrowse.Text = "选择实测文件";
-            measuredBrowse.UseVisualStyleBackColor = false;
             //
             // caption_outputPath
             //
@@ -278,7 +298,6 @@
             //
             outputPath.Anchor = AnchorStyles.Left | AnchorStyles.Right;
             outputPath.BackColor = Color.White;
-            outputPath.BorderStyle = BorderStyle.FixedSingle;
             outputPath.Location = new Point(120, 81);
             outputPath.Margin = new Padding(0);
             outputPath.Name = "outputPath";
@@ -289,16 +308,15 @@
             // outputBrowse
             //
             outputBrowse.BackColor = Color.FromArgb(248, 250, 252);
+            outputBrowse.DefaultBack = Color.FromArgb(248, 250, 252);
             outputBrowse.Dock = DockStyle.Fill;
-            outputBrowse.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
-            outputBrowse.FlatStyle = FlatStyle.Flat;
+            outputBrowse.DefaultBorderColor = Color.FromArgb(203, 213, 225);
             outputBrowse.Location = new Point(944, 77);
             outputBrowse.Margin = new Padding(8, 1, 0, 1);
             outputBrowse.Name = "outputBrowse";
             outputBrowse.Size = new Size(120, 32);
             outputBrowse.TabIndex = 8;
             outputBrowse.Text = "保存路径";
-            outputBrowse.UseVisualStyleBackColor = false;
             //
             // parameters
             //
@@ -353,7 +371,6 @@
             // unitInput
             //
             unitInput.Dock = DockStyle.Fill;
-            unitInput.DropDownStyle = ComboBoxStyle.DropDownList;
             unitInput.Items.AddRange(new object[] { "mm", "m" });
             unitInput.Location = new Point(0, 24);
             unitInput.Margin = new Padding(0, 0, 0, 4);
@@ -539,23 +556,22 @@
             // previewButton
             //
             previewButton.BackColor = Color.FromArgb(248, 250, 252);
+            previewButton.DefaultBack = Color.FromArgb(248, 250, 252);
             previewButton.Dock = DockStyle.Fill;
-            previewButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
-            previewButton.FlatStyle = FlatStyle.Flat;
+            previewButton.DefaultBorderColor = Color.FromArgb(203, 213, 225);
             previewButton.Location = new Point(792, 2);
             previewButton.Margin = new Padding(8, 2, 0, 2);
             previewButton.Name = "previewButton";
             previewButton.Size = new Size(128, 32);
             previewButton.TabIndex = 0;
             previewButton.Text = "新旧信号对比";
-            previewButton.UseVisualStyleBackColor = false;
             //
             // runButton
             //
             runButton.BackColor = Color.FromArgb(29, 78, 216);
+            runButton.DefaultBack = Color.FromArgb(29, 78, 216);
             runButton.Dock = DockStyle.Fill;
-            runButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
-            runButton.FlatStyle = FlatStyle.Flat;
+            runButton.DefaultBorderColor = Color.FromArgb(203, 213, 225);
             runButton.ForeColor = Color.White;
             runButton.Location = new Point(928, 2);
             runButton.Margin = new Padding(8, 2, 0, 2);
@@ -563,7 +579,6 @@
             runButton.Size = new Size(128, 32);
             runButton.TabIndex = 1;
             runButton.Text = "修正并保存";
-            runButton.UseVisualStyleBackColor = false;
             //
             // body
             //
@@ -609,13 +624,9 @@
             parameters.ResumeLayout(false);
             unitGroup.ResumeLayout(false);
             rateGroup.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)rateInput).EndInit();
             channelGroup.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)channelInput).EndInit();
             passesGroup.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)passesInput).EndInit();
             pointsGroup.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)pointsInput).EndInit();
             actions.ResumeLayout(false);
             body.ResumeLayout(false);
             ResumeLayout(false);

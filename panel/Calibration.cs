@@ -5,12 +5,26 @@ namespace Page_switching.panel;
 
 public partial class Calibration : UserControl
 {
+    private readonly System.Data.DataTable pointsGridRows = new();
+    private void InitializeTables()
+    {
+        // 直接绑定原始表格数据；列定义不依赖 AntdUI 的隐藏 Designer Columns 属性。
+        pointsGridRows.Columns.Add("C0", typeof(object));
+        pointsGrid.Columns.Add(new AntdUI.Column("C0", "原始计数") { Editable = true, ReadOnly = false });
+        pointsGridRows.Columns.Add("C1", typeof(object));
+        pointsGrid.Columns.Add(new AntdUI.Column("C1", "标定水位 (mm)") { Editable = true, ReadOnly = false });
+        pointsGrid.DataSource = pointsGridRows;
+        pointsGrid.EditMode = AntdUI.TEditMode.DoubleClick;
+        pointsGrid.MultipleRows = true;
+    }
+
     private WaveDataWorkspace? _workspace;
     private WaveCalibrationProfile? _profile;
 
     public Calibration()
     {
         InitializeComponent();
+        InitializeTables();
         if (LicenseManager.UsageMode == LicenseUsageMode.Designtime) return;
 
         _workspace = WaveDataWorkspace.Shared;
@@ -39,10 +53,11 @@ public partial class Calibration : UserControl
         if (_workspace is null || channelPicker.SelectedIndex < 0) return;
         var channel = channelPicker.SelectedIndex + 1;
         _profile = _workspace.GetCalibration(channel);
-        pointsGrid.Rows.Clear();
+        pointsGridRows.Rows.Clear();
         foreach (var point in _profile.Points)
-            pointsGrid.Rows.Add(point.RawCount.ToString("R", CultureInfo.InvariantCulture),
+            pointsGridRows.Rows.Add(point.RawCount.ToString("R", CultureInfo.InvariantCulture),
                 point.WaterLevel.ToString("R", CultureInfo.InvariantCulture));
+        pointsGrid.Refresh();
         rawValue.Text = _workspace.GetLatestRaw(channel)?.ToString(CultureInfo.CurrentCulture) ?? "--";
         result.Text = $"CH{channel}：零点 {_profile.ZeroRawCount:0.###}，斜率 {_profile.Slope:0.######}，截距 {_profile.Intercept:0.######}；版本 {_profile.Version[..8]}";
         if (channel > 1)
@@ -69,14 +84,16 @@ public partial class Calibration : UserControl
     {
         if (_workspace is null || channelPicker.SelectedIndex < 0) return;
         var raw = _workspace.GetLatestRaw(channelPicker.SelectedIndex + 1);
-        pointsGrid.Rows.Add(raw?.ToString(CultureInfo.InvariantCulture) ?? "", "");
+        pointsGridRows.Rows.Add(raw?.ToString(CultureInfo.InvariantCulture) ?? "", "");
+        pointsGrid.Refresh();
         result.Text = raw.HasValue ? "已加入当前原始值，请填写对应标定水位。" : "设备没有实时值，请手动填写原始计数和标定水位。";
     }
 
     private void RemoveSelectedPoint()
     {
-        foreach (DataGridViewRow row in pointsGrid.SelectedRows)
-            if (!row.IsNewRow) pointsGrid.Rows.Remove(row);
+        foreach (System.Data.DataRow row in pointsGrid.SelectedsReal().OfType<System.Data.DataRow>().ToArray())
+            pointsGridRows.Rows.Remove(row);
+        pointsGrid.Refresh();
     }
 
     private void SetZero()
@@ -97,16 +114,15 @@ public partial class Calibration : UserControl
         if (_profile is null) return false;
         try
         {
-            pointsGrid.EndEdit();
+            pointsGrid.EditModeClose();
             var points = new List<WaveCalibrationPoint>();
-            foreach (DataGridViewRow row in pointsGrid.Rows)
+            foreach (System.Data.DataRow row in pointsGridRows.Rows)
             {
-                if (row.IsNewRow) continue;
-                var rawText = Convert.ToString(row.Cells[0].Value)?.Trim() ?? "";
-                var levelText = Convert.ToString(row.Cells[1].Value)?.Trim() ?? "";
+                var rawText = Convert.ToString(row[0])?.Trim() ?? "";
+                var levelText = Convert.ToString(row[1])?.Trim() ?? "";
                 if (!TryNumber(rawText, out var raw) || !TryNumber(levelText, out var level) ||
                     !double.IsFinite(raw) || !double.IsFinite(level))
-                    throw new InvalidOperationException($"第 {row.Index + 1} 行需要有效的原始计数和水位。");
+                    throw new InvalidOperationException($"第 {pointsGridRows.Rows.IndexOf(row) + 1} 行需要有效的原始计数和水位。");
                 points.Add(new WaveCalibrationPoint(raw, level));
             }
             _profile.Points = points;
@@ -156,7 +172,9 @@ public partial class Calibration : UserControl
         if (_workspace is null) return;
         using var dialog = new SaveFileDialog
         {
-            Filter = "旧标定文件 (*.conf)|*.conf", DefaultExt = "conf", AddExtension = true
+            Filter = "旧标定文件 (*.conf)|*.conf",
+            DefaultExt = "conf",
+            AddExtension = true
         };
         if (dialog.ShowDialog(this) != DialogResult.OK) return;
         try

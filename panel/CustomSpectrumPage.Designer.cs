@@ -1,43 +1,45 @@
-﻿namespace Page_switching.panel
+namespace Page_switching.panel
 {
     partial class CustomSpectrumPage
     {
         private System.ComponentModel.IContainer components = null;
         private Panel pagePanel;
         private TableLayoutPanel root;
-        private GroupBox parameterGroup;
+        private AntdUI.Panel parameterGroup;
+        private AntdUI.Label parameterGroupCaption;
         private TableLayoutPanel options;
-        private GroupBox previewGroup;
-        private Label status;
-        private TextBox spectrumPath;
-        private Button spectrumBrowse;
-        private TextBox outputPath;
-        private Button outputBrowse;
-        private NumericUpDown depthInput;
-        private NumericUpDown stepInput;
-        private NumericUpDown countInput;
-        private NumericUpDown seedInput;
-        private NumericUpDown frequencyInput;
-        private NumericUpDown periodInput;
-        private NumericUpDown angleInput;
-        private ComboBox theoryInput;
-        private ComboBox sideInput;
-        private ComboBox modeInput;
-        private CheckBox absorbInput;
-        private Button runButton;
-        private Button previewButton;
-        private Label caption_spectrumPath;
-        private Label caption_outputPath;
-        private Label caption_depthInput;
-        private Label caption_stepInput;
-        private Label caption_countInput;
-        private Label caption_seedInput;
-        private Label caption_frequencyInput;
-        private Label caption_periodInput;
-        private Label caption_angleInput;
-        private Label caption_theoryInput;
-        private Label caption_sideInput;
-        private Label caption_modeInput;
+        private AntdUI.Panel previewGroup;
+        private AntdUI.Label previewGroupCaption;
+        private AntdUI.Label status;
+        private AntdUI.Input spectrumPath;
+        private AntdUI.Button spectrumBrowse;
+        private AntdUI.Input outputPath;
+        private AntdUI.Button outputBrowse;
+        private AntdUI.InputNumber depthInput;
+        private AntdUI.InputNumber stepInput;
+        private AntdUI.InputNumber countInput;
+        private AntdUI.InputNumber seedInput;
+        private AntdUI.InputNumber frequencyInput;
+        private AntdUI.InputNumber periodInput;
+        private AntdUI.InputNumber angleInput;
+        private AntdUI.Select theoryInput;
+        private AntdUI.Select sideInput;
+        private AntdUI.Select modeInput;
+        private AntdUI.Checkbox absorbInput;
+        private AntdUI.Button runButton;
+        private AntdUI.Button previewButton;
+        private AntdUI.Label caption_spectrumPath;
+        private AntdUI.Label caption_outputPath;
+        private AntdUI.Label caption_depthInput;
+        private AntdUI.Label caption_stepInput;
+        private AntdUI.Label caption_countInput;
+        private AntdUI.Label caption_seedInput;
+        private AntdUI.Label caption_frequencyInput;
+        private AntdUI.Label caption_periodInput;
+        private AntdUI.Label caption_angleInput;
+        private AntdUI.Label caption_theoryInput;
+        private AntdUI.Label caption_sideInput;
+        private AntdUI.Label caption_modeInput;
         private global::Page_switching.ComparisonPlotControl plot;
 
         protected override void Dispose(bool disposing)
@@ -51,50 +53,84 @@
             plot = new ComparisonPlotControl();
             pagePanel = new Panel();
             root = new TableLayoutPanel();
-            parameterGroup = new GroupBox();
+            parameterGroup = new AntdUI.Panel();
+            parameterGroupCaption = new AntdUI.Label();
             options = new TableLayoutPanel();
-            caption_modeInput = new Label();
-            modeInput = new ComboBox();
-            caption_theoryInput = new Label();
-            theoryInput = new ComboBox();
-            caption_sideInput = new Label();
-            sideInput = new ComboBox();
-            caption_angleInput = new Label();
-            angleInput = new NumericUpDown();
-            caption_depthInput = new Label();
-            depthInput = new NumericUpDown();
-            caption_stepInput = new Label();
-            stepInput = new NumericUpDown();
-            caption_countInput = new Label();
-            countInput = new NumericUpDown();
-            caption_seedInput = new Label();
-            seedInput = new NumericUpDown();
-            caption_frequencyInput = new Label();
-            frequencyInput = new NumericUpDown();
-            caption_periodInput = new Label();
-            periodInput = new NumericUpDown();
-            absorbInput = new CheckBox();
-            caption_spectrumPath = new Label();
-            spectrumPath = new TextBox();
-            spectrumBrowse = new Button();
-            caption_outputPath = new Label();
-            outputPath = new TextBox();
-            outputBrowse = new Button();
-            runButton = new Button();
-            previewButton = new Button();
-            status = new Label();
-            previewGroup = new GroupBox();
+            caption_modeInput = new AntdUI.Label();
+            modeInput = new AntdUI.Select();
+            modeInput.WaveSize = 0;
+            modeInput.Radius = 6;
+            modeInput.List = true;
+            caption_theoryInput = new AntdUI.Label();
+            theoryInput = new AntdUI.Select();
+            theoryInput.WaveSize = 0;
+            theoryInput.Radius = 6;
+            theoryInput.List = true;
+            caption_sideInput = new AntdUI.Label();
+            sideInput = new AntdUI.Select();
+            sideInput.WaveSize = 0;
+            sideInput.Radius = 6;
+            sideInput.List = true;
+            caption_angleInput = new AntdUI.Label();
+            angleInput = new AntdUI.InputNumber();
+            angleInput.WaveSize = 0;
+            angleInput.Radius = 6;
+            angleInput.Minimum = 0M;
+            caption_depthInput = new AntdUI.Label();
+            depthInput = new AntdUI.InputNumber();
+            depthInput.WaveSize = 0;
+            depthInput.Radius = 6;
+            depthInput.Maximum = 100M;
+            caption_stepInput = new AntdUI.Label();
+            stepInput = new AntdUI.InputNumber();
+            stepInput.WaveSize = 0;
+            stepInput.Radius = 6;
+            caption_countInput = new AntdUI.Label();
+            countInput = new AntdUI.InputNumber();
+            countInput.WaveSize = 0;
+            countInput.Radius = 6;
+            caption_seedInput = new AntdUI.Label();
+            seedInput = new AntdUI.InputNumber();
+            seedInput.WaveSize = 0;
+            seedInput.Radius = 6;
+            seedInput.Minimum = 0M;
+            caption_frequencyInput = new AntdUI.Label();
+            frequencyInput = new AntdUI.InputNumber();
+            frequencyInput.WaveSize = 0;
+            frequencyInput.Radius = 6;
+            frequencyInput.Maximum = 100M;
+            caption_periodInput = new AntdUI.Label();
+            periodInput = new AntdUI.InputNumber();
+            periodInput.WaveSize = 0;
+            periodInput.Radius = 6;
+            periodInput.Maximum = 100M;
+            absorbInput = new AntdUI.Checkbox();
+            caption_spectrumPath = new AntdUI.Label();
+            spectrumPath = new AntdUI.Input();
+            spectrumPath.WaveSize = 0;
+            spectrumPath.Radius = 6;
+            spectrumBrowse = new AntdUI.Button();
+            spectrumBrowse.Radius = 6;
+            spectrumBrowse.BorderWidth = 1F;
+            caption_outputPath = new AntdUI.Label();
+            outputPath = new AntdUI.Input();
+            outputPath.WaveSize = 0;
+            outputPath.Radius = 6;
+            outputBrowse = new AntdUI.Button();
+            outputBrowse.Radius = 6;
+            outputBrowse.BorderWidth = 1F;
+            runButton = new AntdUI.Button();
+            runButton.Radius = 6;
+            previewButton = new AntdUI.Button();
+            previewButton.Radius = 6;
+            previewButton.BorderWidth = 1F;
+            status = new AntdUI.Label();
+            previewGroup = new AntdUI.Panel();
+            previewGroupCaption = new AntdUI.Label();
             pagePanel.SuspendLayout();
             root.SuspendLayout();
             parameterGroup.SuspendLayout();
             options.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)angleInput).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)depthInput).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)stepInput).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)countInput).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)seedInput).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)frequencyInput).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)periodInput).BeginInit();
             previewGroup.SuspendLayout();
             SuspendLayout();
             //
@@ -150,11 +186,20 @@
             parameterGroup.ForeColor = Color.FromArgb(15, 23, 42);
             parameterGroup.Location = new Point(3, 3);
             parameterGroup.Name = "parameterGroup";
-            parameterGroup.Padding = new Padding(10, 16, 10, 10);
+            parameterGroup.Padding = new Padding(10, 32, 10, 10);
             parameterGroup.Size = new Size(474, 584);
             parameterGroup.TabIndex = 0;
-            parameterGroup.TabStop = false;
-            parameterGroup.Text = "自定义谱参数";
+            // AntdUI 面板用独立标题标签保留原分组标题，布局仍可在 Designer 编辑。
+            parameterGroupCaption.Text = "自定义谱参数";
+            parameterGroupCaption.AutoSize = true;
+            parameterGroupCaption.Name = "parameterGroupCaption";
+            parameterGroupCaption.Location = new Point(10, 2);
+            parameterGroupCaption.ForeColor = Color.FromArgb(15, 23, 42);
+            parameterGroup.BorderWidth = 1F;
+            parameterGroup.BorderColor = Color.FromArgb(203, 213, 225);
+            parameterGroup.Radius = 6;
+            parameterGroup.Controls.Add(parameterGroupCaption);
+            parameterGroupCaption.BringToFront();
             //
             // options
             //
@@ -228,8 +273,6 @@
             //
             modeInput.BackColor = Color.White;
             modeInput.Dock = DockStyle.Fill;
-            modeInput.DropDownStyle = ComboBoxStyle.DropDownList;
-            modeInput.FlatStyle = FlatStyle.Flat;
             modeInput.Font = new Font("Microsoft YaHei UI", 9F);
             modeInput.ForeColor = Color.FromArgb(15, 23, 42);
             modeInput.Items.AddRange(new object[] { "单向", "多向" });
@@ -255,8 +298,6 @@
             //
             theoryInput.BackColor = Color.White;
             theoryInput.Dock = DockStyle.Fill;
-            theoryInput.DropDownStyle = ComboBoxStyle.DropDownList;
-            theoryInput.FlatStyle = FlatStyle.Flat;
             theoryInput.Font = new Font("Microsoft YaHei UI", 9F);
             theoryInput.ForeColor = Color.FromArgb(15, 23, 42);
             theoryInput.Items.AddRange(new object[] { "线性", "非线性" });
@@ -282,8 +323,6 @@
             //
             sideInput.BackColor = Color.White;
             sideInput.Dock = DockStyle.Fill;
-            sideInput.DropDownStyle = ComboBoxStyle.DropDownList;
-            sideInput.FlatStyle = FlatStyle.Flat;
             sideInput.Font = new Font("Microsoft YaHei UI", 9F);
             sideInput.ForeColor = Color.FromArgb(15, 23, 42);
             sideInput.Items.AddRange(new object[] { "X轴+Y轴", "X轴", "Y轴" });
@@ -308,7 +347,6 @@
             // angleInput
             //
             angleInput.BackColor = Color.White;
-            angleInput.BorderStyle = BorderStyle.FixedSingle;
             angleInput.DecimalPlaces = 3;
             angleInput.Dock = DockStyle.Fill;
             angleInput.Font = new Font("Microsoft YaHei UI", 9F);
@@ -337,7 +375,6 @@
             // depthInput
             //
             depthInput.BackColor = Color.White;
-            depthInput.BorderStyle = BorderStyle.FixedSingle;
             depthInput.DecimalPlaces = 3;
             depthInput.Dock = DockStyle.Fill;
             depthInput.Font = new Font("Microsoft YaHei UI", 9F);
@@ -366,7 +403,6 @@
             // stepInput
             //
             stepInput.BackColor = Color.White;
-            stepInput.BorderStyle = BorderStyle.FixedSingle;
             stepInput.DecimalPlaces = 3;
             stepInput.Dock = DockStyle.Fill;
             stepInput.Font = new Font("Microsoft YaHei UI", 9F);
@@ -396,7 +432,6 @@
             // countInput
             //
             countInput.BackColor = Color.White;
-            countInput.BorderStyle = BorderStyle.FixedSingle;
             countInput.Dock = DockStyle.Fill;
             countInput.Font = new Font("Microsoft YaHei UI", 9F);
             countInput.ForeColor = Color.FromArgb(15, 23, 42);
@@ -424,7 +459,6 @@
             // seedInput
             //
             seedInput.BackColor = Color.White;
-            seedInput.BorderStyle = BorderStyle.FixedSingle;
             seedInput.Dock = DockStyle.Fill;
             seedInput.Font = new Font("Microsoft YaHei UI", 9F);
             seedInput.ForeColor = Color.FromArgb(15, 23, 42);
@@ -451,7 +485,6 @@
             // frequencyInput
             //
             frequencyInput.BackColor = Color.White;
-            frequencyInput.BorderStyle = BorderStyle.FixedSingle;
             frequencyInput.DecimalPlaces = 3;
             frequencyInput.Dock = DockStyle.Fill;
             frequencyInput.Font = new Font("Microsoft YaHei UI", 9F);
@@ -480,7 +513,6 @@
             // periodInput
             //
             periodInput.BackColor = Color.White;
-            periodInput.BorderStyle = BorderStyle.FixedSingle;
             periodInput.DecimalPlaces = 3;
             periodInput.Dock = DockStyle.Fill;
             periodInput.Font = new Font("Microsoft YaHei UI", 9F);
@@ -522,7 +554,6 @@
             // spectrumPath
             //
             spectrumPath.BackColor = Color.White;
-            spectrumPath.BorderStyle = BorderStyle.FixedSingle;
             options.SetColumnSpan(spectrumPath, 2);
             spectrumPath.Dock = DockStyle.Fill;
             spectrumPath.Font = new Font("Microsoft YaHei UI", 9F);
@@ -537,11 +568,11 @@
             // spectrumBrowse
             //
             spectrumBrowse.BackColor = Color.FromArgb(248, 250, 252);
+            spectrumBrowse.DefaultBack = Color.FromArgb(248, 250, 252);
             spectrumBrowse.Cursor = Cursors.Hand;
             spectrumBrowse.Dock = DockStyle.Fill;
-            spectrumBrowse.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
-            spectrumBrowse.FlatAppearance.MouseOverBackColor = Color.FromArgb(226, 232, 240);
-            spectrumBrowse.FlatStyle = FlatStyle.Flat;
+            spectrumBrowse.DefaultBorderColor = Color.FromArgb(203, 213, 225);
+            spectrumBrowse.BackHover = Color.FromArgb(226, 232, 240);
             spectrumBrowse.Font = new Font("Microsoft YaHei UI", 9F);
             spectrumBrowse.ForeColor = Color.FromArgb(15, 23, 42);
             spectrumBrowse.Location = new Point(318, 208);
@@ -550,7 +581,6 @@
             spectrumBrowse.Size = new Size(133, 32);
             spectrumBrowse.TabIndex = 23;
             spectrumBrowse.Text = "浏览";
-            spectrumBrowse.UseVisualStyleBackColor = false;
             //
             // caption_outputPath
             //
@@ -567,7 +597,6 @@
             // outputPath
             //
             outputPath.BackColor = Color.White;
-            outputPath.BorderStyle = BorderStyle.FixedSingle;
             options.SetColumnSpan(outputPath, 2);
             outputPath.Dock = DockStyle.Fill;
             outputPath.Font = new Font("Microsoft YaHei UI", 9F);
@@ -582,11 +611,11 @@
             // outputBrowse
             //
             outputBrowse.BackColor = Color.FromArgb(248, 250, 252);
+            outputBrowse.DefaultBack = Color.FromArgb(248, 250, 252);
             outputBrowse.Cursor = Cursors.Hand;
             outputBrowse.Dock = DockStyle.Fill;
-            outputBrowse.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
-            outputBrowse.FlatAppearance.MouseOverBackColor = Color.FromArgb(226, 232, 240);
-            outputBrowse.FlatStyle = FlatStyle.Flat;
+            outputBrowse.DefaultBorderColor = Color.FromArgb(203, 213, 225);
+            outputBrowse.BackHover = Color.FromArgb(226, 232, 240);
             outputBrowse.Font = new Font("Microsoft YaHei UI", 9F);
             outputBrowse.ForeColor = Color.FromArgb(15, 23, 42);
             outputBrowse.Location = new Point(318, 248);
@@ -595,17 +624,16 @@
             outputBrowse.Size = new Size(133, 32);
             outputBrowse.TabIndex = 26;
             outputBrowse.Text = "浏览";
-            outputBrowse.UseVisualStyleBackColor = false;
             //
             // runButton
             //
             runButton.BackColor = Color.FromArgb(29, 78, 216);
+            runButton.DefaultBack = Color.FromArgb(29, 78, 216);
             options.SetColumnSpan(runButton, 2);
             runButton.Cursor = Cursors.Hand;
-            runButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
-            runButton.FlatAppearance.BorderSize = 0;
-            runButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(30, 64, 175);
-            runButton.FlatStyle = FlatStyle.Flat;
+            runButton.DefaultBorderColor = Color.FromArgb(203, 213, 225);
+            runButton.BorderWidth = 0;
+            runButton.BackHover = Color.FromArgb(30, 64, 175);
             runButton.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
             runButton.ForeColor = Color.White;
             runButton.Location = new Point(3, 287);
@@ -613,16 +641,15 @@
             runButton.Size = new Size(160, 34);
             runButton.TabIndex = 27;
             runButton.Text = "计算并保存";
-            runButton.UseVisualStyleBackColor = false;
             //
             // previewButton
             //
             previewButton.BackColor = Color.FromArgb(248, 250, 252);
+            previewButton.DefaultBack = Color.FromArgb(248, 250, 252);
             options.SetColumnSpan(previewButton, 2);
             previewButton.Cursor = Cursors.Hand;
-            previewButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
-            previewButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(226, 232, 240);
-            previewButton.FlatStyle = FlatStyle.Flat;
+            previewButton.DefaultBorderColor = Color.FromArgb(203, 213, 225);
+            previewButton.BackHover = Color.FromArgb(226, 232, 240);
             previewButton.Font = new Font("Microsoft YaHei UI", 9F);
             previewButton.ForeColor = Color.FromArgb(15, 23, 42);
             previewButton.Location = new Point(218, 287);
@@ -630,7 +657,6 @@
             previewButton.Size = new Size(160, 34);
             previewButton.TabIndex = 28;
             previewButton.Text = "查看输入谱";
-            previewButton.UseVisualStyleBackColor = false;
             //
             // status
             //
@@ -655,11 +681,20 @@
             previewGroup.ForeColor = Color.FromArgb(15, 23, 42);
             previewGroup.Location = new Point(483, 3);
             previewGroup.Name = "previewGroup";
-            previewGroup.Padding = new Padding(10, 18, 10, 10);
+            previewGroup.Padding = new Padding(10, 32, 10, 10);
             previewGroup.Size = new Size(602, 584);
             previewGroup.TabIndex = 1;
-            previewGroup.TabStop = false;
-            previewGroup.Text = "波谱与波形预览";
+            // AntdUI 面板用独立标题标签保留原分组标题，布局仍可在 Designer 编辑。
+            previewGroupCaption.Text = "波谱与波形预览";
+            previewGroupCaption.AutoSize = true;
+            previewGroupCaption.Name = "previewGroupCaption";
+            previewGroupCaption.Location = new Point(10, 2);
+            previewGroupCaption.ForeColor = Color.FromArgb(15, 23, 42);
+            previewGroup.BorderWidth = 1F;
+            previewGroup.BorderColor = Color.FromArgb(203, 213, 225);
+            previewGroup.Radius = 6;
+            previewGroup.Controls.Add(previewGroupCaption);
+            previewGroupCaption.BringToFront();
             //
             // CustomSpectrumPage
             //
@@ -679,13 +714,6 @@
             parameterGroup.PerformLayout();
             options.ResumeLayout(false);
             options.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)angleInput).EndInit();
-            ((System.ComponentModel.ISupportInitialize)depthInput).EndInit();
-            ((System.ComponentModel.ISupportInitialize)stepInput).EndInit();
-            ((System.ComponentModel.ISupportInitialize)countInput).EndInit();
-            ((System.ComponentModel.ISupportInitialize)seedInput).EndInit();
-            ((System.ComponentModel.ISupportInitialize)frequencyInput).EndInit();
-            ((System.ComponentModel.ISupportInitialize)periodInput).EndInit();
             previewGroup.ResumeLayout(false);
             ResumeLayout(false);
         }

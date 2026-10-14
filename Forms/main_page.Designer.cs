@@ -64,9 +64,9 @@ namespace Page_switching
             contentPanel.SuspendLayout();
             operationGroup.SuspendLayout();
             SuspendLayout();
-            // 
+            //
             // analysisButton
-            // 
+            //
             analysisButton.BackColor = Color.White;
             analysisButton.DefaultBack = Color.White;
             analysisButton.Radius = 6;
@@ -86,9 +86,9 @@ namespace Page_switching
             analysisButton.Text = "波浪分析";
             analysisButton.TextAlign = ContentAlignment.MiddleLeft;
             analysisButton.Click += AnalysisButton_Click;
-            // 
+            //
             // correctionButton
-            // 
+            //
             correctionButton.BackColor = Color.White;
             correctionButton.DefaultBack = Color.White;
             correctionButton.Radius = 6;
@@ -130,9 +130,9 @@ namespace Page_switching
             controlAuthorityButton.Text = "控制权申请";
             controlAuthorityButton.TextAlign = ContentAlignment.MiddleLeft;
             controlAuthorityButton.Click += ControlAuthorityButton_Click;
-            // 
+            //
             // panel1
-            // 
+            //
             panel1.BackColor = Color.White;
             panel1.Radius = 0;
             panel1.Controls.Add(headerStatusPanel);
@@ -143,9 +143,9 @@ namespace Page_switching
             panel1.Name = "panel1";
             panel1.Size = new Size(1600, 75);
             panel1.TabIndex = 0;
-            // 
+            //
             // headerStatusPanel
-            // 
+            //
             headerStatusPanel.BackColor = Color.White;
             headerStatusPanel.Radius = 0;
             headerStatusPanel.Controls.Add(controlStatusLabel);
@@ -157,9 +157,9 @@ namespace Page_switching
             headerStatusPanel.Padding = new Padding(15, 8, 25, 8);
             headerStatusPanel.Size = new Size(427, 75);
             headerStatusPanel.TabIndex = 2;
-            // 
+            //
             // controlStatusLabel
-            // 
+            //
             controlStatusLabel.AutoEllipsis = true;
             controlStatusLabel.Dock = DockStyle.Fill;
             controlStatusLabel.Font = new Font("Microsoft YaHei UI", 7.8F, FontStyle.Regular, GraphicsUnit.Point, 134);
@@ -171,9 +171,9 @@ namespace Page_switching
             controlStatusLabel.TabIndex = 1;
             controlStatusLabel.Text = "页面：自动运行    控制端：等待反馈    模式：等待反馈";
             controlStatusLabel.TextAlign = ContentAlignment.MiddleRight;
-            // 
+            //
             // adsStatusLabel
-            // 
+            //
             adsStatusLabel.Dock = DockStyle.Top;
             adsStatusLabel.Font = new Font("Microsoft YaHei UI", 10.8F, FontStyle.Bold, GraphicsUnit.Point, 134);
             adsStatusLabel.ForeColor = Color.FromArgb(154, 52, 18);
@@ -184,9 +184,9 @@ namespace Page_switching
             adsStatusLabel.TabIndex = 0;
             adsStatusLabel.Text = "● ADS：手动未连接 / 监控未连接";
             adsStatusLabel.TextAlign = ContentAlignment.MiddleRight;
-            // 
+            //
             // panel2
-            // 
+            //
             panel2.AutoScroll = true;
             panel2.AutoScrollMinSize = new Size(0, 785);
             panel2.BackColor = Color.FromArgb(248, 250, 252);
@@ -211,9 +211,9 @@ namespace Page_switching
             panel2.Padding = new Padding(15, 0, 15, 15);
             panel2.Size = new Size(220, 950);
             panel2.TabIndex = 1;
-            // 
+            //
             // systemSectionLabel
-            // 
+            //
             systemSectionLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
             systemSectionLabel.ForeColor = Color.FromArgb(100, 116, 139);
             systemSectionLabel.Location = new Point(36, 681);
@@ -222,9 +222,9 @@ namespace Page_switching
             systemSectionLabel.Size = new Size(169, 25);
             systemSectionLabel.TabIndex = 10;
             systemSectionLabel.Text = "系统";
-            // 
+            //
             // toolsSectionLabel
-            // 
+            //
             toolsSectionLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
             toolsSectionLabel.ForeColor = Color.FromArgb(100, 116, 139);
             toolsSectionLabel.Location = new Point(36, 261);
@@ -233,9 +233,9 @@ namespace Page_switching
             toolsSectionLabel.Size = new Size(169, 25);
             toolsSectionLabel.TabIndex = 9;
             toolsSectionLabel.Text = "数据工具";
-            // 
+            //
             // controlSectionLabel
-            // 
+            //
             controlSectionLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
             controlSectionLabel.ForeColor = Color.FromArgb(100, 116, 139);
             controlSectionLabel.Location = new Point(36, 20);
@@ -244,9 +244,9 @@ namespace Page_switching
             controlSectionLabel.Size = new Size(169, 25);
             controlSectionLabel.TabIndex = 8;
             controlSectionLabel.Text = "设备控制";
-            // 
+            //
             // bu_Configuration
-            // 
+            //
             bu_Configuration.BackColor = Color.White;
             bu_Configuration.DefaultBack = Color.White;
             bu_Configuration.Radius = 6;
@@ -266,9 +266,9 @@ namespace Page_switching
             bu_Configuration.Text = "系统配置";
             bu_Configuration.TextAlign = ContentAlignment.MiddleLeft;
             bu_Configuration.Click += bu_Configuration_Click;
-            // 
+            //
             // button5
-            // 
+            //
             button5.BackColor = Color.White;
             button5.DefaultBack = Color.White;
             button5.Radius = 6;
@@ -288,9 +288,9 @@ namespace Page_switching
             button5.Text = "浪高监测";
             button5.TextAlign = ContentAlignment.MiddleLeft;
             button5.Click += button5_Click;
-            // 
+            //
             // button2
-            // 
+            //
             button2.BackColor = Color.White;
             button2.DefaultBack = Color.White;
             button2.Radius = 6;
@@ -310,9 +310,9 @@ namespace Page_switching
             button2.Text = "波形生成";
             button2.TextAlign = ContentAlignment.MiddleLeft;
             button2.Click += WaveformButton_Click;
-            // 
+            //
             // Bu_data
-            // 
+            //
             Bu_data.BackColor = Color.White;
             Bu_data.DefaultBack = Color.White;
             Bu_data.Radius = 6;
@@ -332,9 +332,9 @@ namespace Page_switching
             Bu_data.Text = "数据管理";
             Bu_data.TextAlign = ContentAlignment.MiddleLeft;
             Bu_data.Click += Bu_data_Click;
-            // 
+            //
             // Bu_Calibration
-            // 
+            //
             Bu_Calibration.BackColor = Color.White;
             Bu_Calibration.DefaultBack = Color.White;
             Bu_Calibration.Radius = 6;
@@ -354,9 +354,9 @@ namespace Page_switching
             Bu_Calibration.Text = "标定管理";
             Bu_Calibration.TextAlign = ContentAlignment.MiddleLeft;
             Bu_Calibration.Click += Bu_Calibration_Click;
-            // 
+            //
             // Bu_manual
-            // 
+            //
             Bu_manual.BackColor = Color.White;
             Bu_manual.DefaultBack = Color.White;
             Bu_manual.Radius = 6;
@@ -376,9 +376,9 @@ namespace Page_switching
             Bu_manual.Text = "手动控制";
             Bu_manual.TextAlign = ContentAlignment.MiddleLeft;
             Bu_manual.Click += Bu_manual_Click;
-            // 
+            //
             // Bu_auto
-            // 
+            //
             Bu_auto.BackColor = Color.FromArgb(29, 78, 216);
             Bu_auto.DefaultBack = Color.FromArgb(29, 78, 216);
             Bu_auto.Radius = 6;
@@ -398,18 +398,18 @@ namespace Page_switching
             Bu_auto.Text = "自动运行";
             Bu_auto.TextAlign = ContentAlignment.MiddleLeft;
             Bu_auto.Click += Bu_auto_Click;
-            // 
+            //
             // navigationMarker
-            // 
+            //
             navigationMarker.BackColor = Color.FromArgb(29, 78, 216);
             navigationMarker.Location = new Point(0, 55);
             navigationMarker.Margin = new Padding(4);
             navigationMarker.Name = "navigationMarker";
             navigationMarker.Size = new Size(4, 55);
             navigationMarker.TabIndex = 11;
-            // 
+            //
             // contentPanel
-            // 
+            //
             contentPanel.BackColor = Color.FromArgb(241, 245, 249);
             contentPanel.Controls.Add(panelswitch);
             contentPanel.Controls.Add(operationGroup);
@@ -419,9 +419,9 @@ namespace Page_switching
             contentPanel.Name = "contentPanel";
             contentPanel.Size = new Size(1380, 950);
             contentPanel.TabIndex = 2;
-            // 
+            //
             // panelswitch
-            // 
+            //
             panelswitch.BackColor = Color.FromArgb(241, 245, 249);
             panelswitch.Dock = DockStyle.Fill;
             panelswitch.Location = new Point(0, 0);
@@ -429,9 +429,9 @@ namespace Page_switching
             panelswitch.Name = "panelswitch";
             panelswitch.Size = new Size(1380, 908);
             panelswitch.TabIndex = 2;
-            // 
+            //
             // operationGroup
-            // 
+            //
             operationGroup.BackColor = Color.White;
             operationGroup.Radius = 0;
             operationGroup.Controls.Add(operationPathLabel);
@@ -444,9 +444,9 @@ namespace Page_switching
             operationGroup.Padding = new Padding(15, 0, 15, 0);
             operationGroup.Size = new Size(1380, 42);
             operationGroup.TabIndex = 3;
-            // 
+            //
             // operationPathLabel
-            // 
+            //
             operationPathLabel.AutoEllipsis = true;
             operationPathLabel.Dock = DockStyle.Fill;
             operationPathLabel.Font = new Font("Microsoft YaHei UI", 8F);
@@ -458,9 +458,9 @@ namespace Page_switching
             operationPathLabel.TabIndex = 1;
             operationPathLabel.Text = "日志保存位置：";
             operationPathLabel.TextAlign = ContentAlignment.MiddleLeft;
-            // 
+            //
             // operationFolderButton
-            // 
+            //
             operationFolderButton.BackColor = Color.White;
             operationFolderButton.DefaultBack = Color.White;
             operationFolderButton.Radius = 6;
@@ -476,9 +476,9 @@ namespace Page_switching
             operationFolderButton.TabIndex = 2;
             operationFolderButton.Text = "打开日志目录";
             operationFolderButton.Click += OpenOperationFolderButton_Click;
-            // 
+            //
             // appTitleLabel
-            // 
+            //
             appTitleLabel.AutoSize = true;
             appTitleLabel.Font = new Font("Microsoft YaHei UI", 14F, FontStyle.Bold);
             appTitleLabel.ForeColor = Color.FromArgb(15, 23, 42);
@@ -488,9 +488,9 @@ namespace Page_switching
             appTitleLabel.Size = new Size(158, 31);
             appTitleLabel.TabIndex = 0;
             appTitleLabel.Text = "造波控制系统";
-            // 
+            //
             // Mainpage
-            // 
+            //
             AutoScaleDimensions = new SizeF(120F, 120F);
             AutoScaleMode = AutoScaleMode.Dpi;
             BackColor = Color.FromArgb(241, 245, 249);

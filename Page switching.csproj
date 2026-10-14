@@ -14,6 +14,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- 对比曲线也保持可编辑的 UserControl Designer 结构。 -->
+    <Compile Update="Controls\ComparisonPlotControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Controls\ComparisonPlotControl.Designer.cs">
+      <SubType>Code</SubType>
+      <DependentUpon>ComparisonPlotControl.cs</DependentUpon>
+    </Compile>
     <Compile Update="Controls\WaveformPreviewControl.cs">
       <SubType>UserControl</SubType>
     </Compile>

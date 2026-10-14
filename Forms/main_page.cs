@@ -341,30 +341,41 @@ namespace Page_switching
         {
             foreach (Control control in parent.Controls)
             {
-                if (control is Button button && button.Name is not ("jogNegativeButton" or "jogPositiveButton"))
+                if (control is AntdUI.Button button && button.Name is not ("jogNegativeButton" or "jogPositiveButton" or "clearLogButton" or "resetViewButton"))
                     button.Click += (_, _) => OperationJournal.Record(GetPageName(page),
-                        "点击" + button.Text.Replace("\r", " ").Replace("\n", " ").Trim());
-                else if (control is CheckBox checkBox)
+                        "点击" + (button.Text ?? "").Replace("\r", " ").Replace("\n", " ").Trim());
+                else if (control is AntdUI.Checkbox checkBox && checkBox.Name != "autoScaleCheckBox" && page is not WaveBatchCalibrationPage)
                     checkBox.CheckedChanged += (_, _) => OperationJournal.Record(GetPageName(page),
-                        $"{checkBox.Text.Trim()}：{(checkBox.Checked ? "选中" : "取消")}");
-                else if (control is ComboBox comboBox)
-                    comboBox.SelectionChangeCommitted += (_, _) => OperationJournal.Record(GetPageName(page),
-                        "选择" + comboBox.Text);
-                else if (control is RadioButton radioButton)
+                        $"{(checkBox.Text ?? "").Trim()}：{(checkBox.Checked ? "选中" : "取消")}");
+                else if (control is AntdUI.Select comboBox)
+                    // AntdUI 没有 SelectionChangeCommitted；只记录用户正在操作的下拉框。
+                    comboBox.SelectedIndexChanged += (_, _) =>
+                    {
+                        if (comboBox.HasFocus || comboBox.Expand)
+                            OperationJournal.Record(GetPageName(page), "选择" + comboBox.Text);
+                    };
+                else if (control is AntdUI.Radio radioButton)
                     radioButton.CheckedChanged += (_, _) =>
                     {
                         if (radioButton.Checked)
                             OperationJournal.Record(GetPageName(page), "选择" + radioButton.Text);
                     };
-                else if (control is TabControl tabs)
+                else if (control is AntdUI.Tabs tabs)
                     tabs.SelectedIndexChanged += (_, _) => OperationJournal.Record(GetPageName(page),
                         "切换到" + tabs.SelectedTab?.Text);
+                else if (control is AntdUI.Table table && page is not WaveBatchCalibrationPage)
+                    table.CellEditComplete += (_, e) =>
+                    {
+                        if (e.Record is System.Data.DataRow row)
+                            OperationJournal.Record(GetPageName(page),
+                                $"第{row.Table.Rows.IndexOf(row) + 1}行{table.Columns[e.ColumnIndex].Title}：{row[e.ColumnIndex]}");
+                    };
                 // 已主动记录结果的页面不再从标签变化重复推断结果。
                 // 旧页面仍保留原来的标签日志，逐步迁移时不会丢失操作结果。
-                else if (control is Label label && ResultLabels.Contains(label.Name) &&
+                else if (control is AntdUI.Label label && ResultLabels.Contains(label.Name) &&
                     page is not (WaveAnalysisPage or SignalCorrectionPage or WaveBatchCalibrationPage) &&
                     !(page is WaveformPage && label.Name == "status"))
-                    label.TextChanged += (_, _) => OperationJournal.Record(GetPageName(page), label.Text);
+                    label.TextChanged += (_, _) => OperationJournal.Record(GetPageName(page), label.Text ?? "");
 
                 TrackActions(page, control);
             }

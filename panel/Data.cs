@@ -5,12 +5,43 @@ namespace Page_switching.panel;
 
 public partial class Data : UserControl
 {
+    private readonly System.Data.DataTable sessionGridRows = new();
+    private readonly System.Data.DataTable sampleGridRows = new();
+    private void InitializeTables()
+    {
+        // 直接绑定原始表格数据；列定义不依赖 AntdUI 的隐藏 Designer Columns 属性。
+        sessionGridRows.Columns.Add("C0", typeof(object));
+        sessionGrid.Columns.Add(new AntdUI.Column("C0", "任务 ID") { Editable = false, ReadOnly = true });
+        sessionGridRows.Columns.Add("C1", typeof(object));
+        sessionGrid.Columns.Add(new AntdUI.Column("C1", "开始时间") { Editable = false, ReadOnly = true });
+        sessionGridRows.Columns.Add("C2", typeof(object));
+        sessionGrid.Columns.Add(new AntdUI.Column("C2", "通道") { Editable = false, ReadOnly = true });
+        sessionGridRows.Columns.Add("C3", typeof(object));
+        sessionGrid.Columns.Add(new AntdUI.Column("C3", "样本数") { Editable = false, ReadOnly = true });
+        sessionGridRows.Columns.Add("C4", typeof(object));
+        sessionGrid.Columns.Add(new AntdUI.Column("C4", "数据库") { Editable = false, ReadOnly = true });
+        sessionGrid.DataSource = sessionGridRows;
+
+        // 直接绑定原始表格数据；列定义不依赖 AntdUI 的隐藏 Designer Columns 属性。
+        sampleGridRows.Columns.Add("C0", typeof(object));
+        sampleGrid.Columns.Add(new AntdUI.Column("C0", "采样时间") { Editable = false, ReadOnly = true });
+        sampleGridRows.Columns.Add("C1", typeof(object));
+        sampleGrid.Columns.Add(new AntdUI.Column("C1", "通道") { Editable = false, ReadOnly = true });
+        sampleGridRows.Columns.Add("C2", typeof(object));
+        sampleGrid.Columns.Add(new AntdUI.Column("C2", "原始计数") { Editable = false, ReadOnly = true });
+        sampleGridRows.Columns.Add("C3", typeof(object));
+        sampleGrid.Columns.Add(new AntdUI.Column("C3", "标定值 (mm)") { Editable = false, ReadOnly = true });
+        sampleGrid.DataSource = sampleGridRows;
+    }
+
     private WaveDataWorkspace? _workspace;
+    private readonly Dictionary<System.Data.DataRow, WaveCaptureManifest> _sessionManifests = new();
     internal event Action<WaveCaptureManifest, int?>? AnalysisRequested;
 
     public Data()
     {
         InitializeComponent();
+        InitializeTables();
         if (LicenseManager.UsageMode == LicenseUsageMode.Designtime) return;
         _workspace = WaveDataWorkspace.Shared;
         fromDate.Value = DateTime.Today.AddDays(-30);
@@ -20,7 +51,7 @@ public partial class Data : UserControl
         channelPicker.SelectedIndex = 0;
         refreshButton.Click += (_, _) => RefreshSessions();
         channelPicker.SelectedIndexChanged += (_, _) => RefreshSessions();
-        sessionGrid.SelectionChanged += (_, _) => ShowSelectedSession();
+        sessionGrid.SelectIndexChanged += (_, _) => ShowSelectedSession();
         importButton.Click += (_, _) => ImportLegacy();
         exportButton.Click += (_, _) => ExportSelected();
         syncButton.Click += async (_, _) => await SyncAsync();
@@ -45,50 +76,60 @@ public partial class Data : UserControl
     {
         if (_workspace is null) return;
         var selectedId = SelectedManifest()?.SessionId;
-        sessionGrid.Rows.Clear();
-        sampleGrid.Rows.Clear();
+        sessionGridRows.Rows.Clear();
+        _sessionManifests.Clear();
+        sampleGridRows.Rows.Clear();
         preview.ClearSamples();
         var channel = SelectedChannel();
         foreach (var manifest in _workspace.ListSessions())
         {
-            if (manifest.StartedAt.LocalDateTime.Date < fromDate.Value.Date ||
-                manifest.StartedAt.LocalDateTime.Date > toDate.Value.Date ||
+            if (manifest.StartedAt.LocalDateTime.Date < (fromDate.Value ?? DateTime.Today).Date ||
+                manifest.StartedAt.LocalDateTime.Date > (toDate.Value ?? DateTime.Today).Date ||
                 (channel.HasValue && !manifest.Channels.Contains(channel.Value)))
                 continue;
-            var index = sessionGrid.Rows.Add(manifest.SessionId.ToString("N")[..8],
+            var index = sessionGridRows.Rows.Add(manifest.SessionId.ToString("N")[..8],
                 manifest.StartedAt.LocalDateTime.ToString("yyyy-MM-dd HH:mm:ss"),
                 string.Join(", ", manifest.Channels.Select(x => $"CH{x}")),
                 manifest.SampleCount.ToString("N0"), manifest.SyncStatus);
-            sessionGrid.Rows[index].Tag = manifest;
-            if (manifest.SessionId == selectedId)
-                sessionGrid.Rows[index].Selected = true;
+            _sessionManifests[index] = manifest;
+
         }
-        status.Text = $"找到 {sessionGrid.Rows.Count} 个采集任务。";
-        if (sessionGrid.Rows.Count > 0 && sessionGrid.SelectedRows.Count == 0)
-            sessionGrid.Rows[0].Selected = true;
+        // 先刷新所有行，再按原任务 ID 恢复选中；AntdUI 不自动监听 DataTable 增删。
+        sessionGrid.Refresh();
+        sampleGrid.Refresh();
+        status.Text = $"找到 {sessionGridRows.Rows.Count} 个采集任务。";
+        if (sessionGridRows.Rows.Count > 0)
+        {
+            var selectedRow = _sessionManifests.FirstOrDefault(pair => pair.Value.SessionId == selectedId).Key
+                ?? sessionGridRows.Rows[0];
+            sessionGrid.SetSelected(selectedRow, true);
+        }
         ShowSelectedSession();
     }
 
-    private WaveCaptureManifest? SelectedManifest() =>
-        sessionGrid.SelectedRows.Count > 0
-            ? sessionGrid.SelectedRows[0].Tag as WaveCaptureManifest : null;
+    private WaveCaptureManifest? SelectedManifest()
+    {
+        var row = sessionGrid.SelectedsReal().OfType<System.Data.DataRow>().FirstOrDefault();
+        return row is not null && _sessionManifests.TryGetValue(row, out var manifest) ? manifest : null;
+    }
 
     private int? SelectedChannel() => channelPicker.SelectedIndex > 0 ? channelPicker.SelectedIndex : null;
 
     private void ShowSelectedSession()
     {
         if (_workspace is null) return;
-        sampleGrid.Rows.Clear();
+        sampleGridRows.Rows.Clear();
         preview.ClearSamples();
         var manifest = SelectedManifest();
-        if (manifest is null) return;
+        if (manifest is null) { sampleGrid.Refresh(); return; }
         try
         {
             var samples = _workspace.ReadSamples(manifest, SelectedChannel(), 2000);
             foreach (var sample in samples)
-                sampleGrid.Rows.Add(sample.Timestamp.LocalDateTime.ToString("HH:mm:ss.fff"),
+                sampleGridRows.Rows.Add(sample.Timestamp.LocalDateTime.ToString("HH:mm:ss.fff"),
                     $"CH{sample.Channel}", sample.RawCount?.ToString() ?? "—",
                     sample.CalibratedValue?.ToString("0.####") ?? "未标定");
+            sampleGrid.Refresh();
             var previewChannel = SelectedChannel() ?? manifest.Channels.FirstOrDefault();
             var recent = _workspace.ReadRecentSamples(manifest, previewChannel > 0 ? previewChannel : null);
             var chart = recent.Select(x => x.CalibratedValue ?? x.RawCount ?? 0)
@@ -130,7 +171,9 @@ public partial class Data : UserControl
         if (manifest is null) { status.Text = "请先选择采集任务。"; return; }
         using var dialog = new SaveFileDialog
         {
-            Filter = "CSV 文件 (*.csv)|*.csv", DefaultExt = "csv", AddExtension = true,
+            Filter = "CSV 文件 (*.csv)|*.csv",
+            DefaultExt = "csv",
+            AddExtension = true,
             FileName = $"WaveHeight_{manifest.StartedAt:yyyyMMdd_HHmmss}.csv"
         };
         if (dialog.ShowDialog(this) != DialogResult.OK) return;

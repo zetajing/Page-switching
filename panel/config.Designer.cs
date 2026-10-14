@@ -1,68 +1,73 @@
-﻿namespace Page_switching.panel;
+namespace Page_switching.panel;
 
 partial class Config
 {
     private Panel pagePanel;
-    private GroupBox controlStationGroup;
+    private AntdUI.Panel controlStationGroup;
+        private AntdUI.Label controlStationGroupCaption;
     private TableLayoutPanel controlStationLayout;
-    private Label controlStationCaptionLabel;
-    private ComboBox controlStationComboBox;
-    private Button saveControlStationButton;
-    private Label controlStationStateLabel;
+    private AntdUI.Label controlStationCaptionLabel;
+    private AntdUI.Select controlStationComboBox;
+    private AntdUI.Button saveControlStationButton;
+    private AntdUI.Label controlStationStateLabel;
 
     private System.ComponentModel.IContainer components = null!;
     private TableLayoutPanel rootLayout;
-    private Label titleLabel;
-    private Label subtitleLabel;
-    private GroupBox operationLogGroup;
+    private AntdUI.Label titleLabel;
+    private AntdUI.Label subtitleLabel;
+    private AntdUI.Panel operationLogGroup;
+        private AntdUI.Label operationLogGroupCaption;
     private TableLayoutPanel operationLogLayout;
-    private Label operationLogDirectoryLabel;
-    private TextBox operationLogDirectoryTextBox;
-    private Button browseOperationLogDirectoryButton;
-    private Button saveOperationLogDirectoryButton;
-    private Label operationLogStateLabel;
-    private GroupBox routerGroup;
+    private AntdUI.Label operationLogDirectoryLabel;
+    private AntdUI.Input operationLogDirectoryTextBox;
+    private AntdUI.Button browseOperationLogDirectoryButton;
+    private AntdUI.Button saveOperationLogDirectoryButton;
+    private AntdUI.Label operationLogStateLabel;
+    private AntdUI.Panel routerGroup;
+        private AntdUI.Label routerGroupCaption;
     private TableLayoutPanel routerLayout;
-    private CheckBox routerEnabledCheckBox;
-    private Label routerStateLabel;
-    private Label routerNameLabel;
-    private TextBox routerNameTextBox;
-    private Label localNetIdLabel;
-    private TextBox localNetIdTextBox;
-    private Label routerTcpPortLabel;
-    private NumericUpDown routerTcpPortInput;
-    private Label remoteNameLabel;
-    private TextBox remoteNameTextBox;
-    private Label remoteAddressLabel;
-    private TextBox remoteAddressTextBox;
-    private Label remoteNetIdLabel;
-    private TextBox remoteNetIdTextBox;
-    private Button saveRouterButton;
-    private Label saveResultLabel;
-    private Label routerNoticeLabel;
-    private GroupBox waveGeneratorGroup;
+    private AntdUI.Checkbox routerEnabledCheckBox;
+    private AntdUI.Label routerStateLabel;
+    private AntdUI.Label routerNameLabel;
+    private AntdUI.Input routerNameTextBox;
+    private AntdUI.Label localNetIdLabel;
+    private AntdUI.Input localNetIdTextBox;
+    private AntdUI.Label routerTcpPortLabel;
+    private AntdUI.InputNumber routerTcpPortInput;
+    private AntdUI.Label remoteNameLabel;
+    private AntdUI.Input remoteNameTextBox;
+    private AntdUI.Label remoteAddressLabel;
+    private AntdUI.Input remoteAddressTextBox;
+    private AntdUI.Label remoteNetIdLabel;
+    private AntdUI.Input remoteNetIdTextBox;
+    private AntdUI.Button saveRouterButton;
+    private AntdUI.Label saveResultLabel;
+    private AntdUI.Label routerNoticeLabel;
+    private AntdUI.Panel waveGeneratorGroup;
+        private AntdUI.Label waveGeneratorGroupCaption;
     private TableLayoutPanel waveGeneratorLayout;
-    private Label waveGeneratorPathLabel;
-    private TextBox waveGeneratorPathTextBox;
-    private Button browseWaveGeneratorButton;
-    private Button saveWaveGeneratorButton;
-    private Label waveGeneratorStateLabel;
-    private Label waveGeneratorModeLabel;
-    private ComboBox waveGeneratorModeComboBox;
-    private Label waveProgramDirectoryLabel;
-    private TextBox waveProgramDirectoryTextBox;
-    private Button browseWaveProgramDirectoryButton;
-    private Button saveWaveProgramDirectoryButton;
-    private GroupBox _databaseGroup;
+    private AntdUI.Label waveGeneratorPathLabel;
+    private AntdUI.Input waveGeneratorPathTextBox;
+    private AntdUI.Button browseWaveGeneratorButton;
+    private AntdUI.Button saveWaveGeneratorButton;
+    private AntdUI.Label waveGeneratorStateLabel;
+    private AntdUI.Label waveGeneratorModeLabel;
+    private AntdUI.Select waveGeneratorModeComboBox;
+    private AntdUI.Label waveProgramDirectoryLabel;
+    private AntdUI.Input waveProgramDirectoryTextBox;
+    private AntdUI.Button browseWaveProgramDirectoryButton;
+    private AntdUI.Button saveWaveProgramDirectoryButton;
+    private AntdUI.Panel _databaseGroup;
+        private AntdUI.Label _databaseGroupCaption;
     private TableLayoutPanel _databaseLayout;
-    private CheckBox _databaseEnabledCheckBox;
-    private TextBox _databaseConnectionTextBox;
-    private Label _databaseUserNameLabel;
-    private TextBox _databaseUserNameTextBox;
-    private Label _databasePasswordLabel;
-    private TextBox _databasePasswordTextBox;
-    private Button _saveDatabaseButton;
-    private Label _databaseStateLabel;
+    private AntdUI.Checkbox _databaseEnabledCheckBox;
+    private AntdUI.Input _databaseConnectionTextBox;
+    private AntdUI.Label _databaseUserNameLabel;
+    private AntdUI.Input _databaseUserNameTextBox;
+    private AntdUI.Label _databasePasswordLabel;
+    private AntdUI.Input _databasePasswordTextBox;
+    private AntdUI.Button _saveDatabaseButton;
+    private AntdUI.Label _databaseStateLabel;
 
     // 释放设计器创建的配置页面组件。
     protected override void Dispose(bool disposing)
@@ -80,63 +85,110 @@ partial class Config
     {
         pagePanel = new Panel();
         rootLayout = new TableLayoutPanel();
-        titleLabel = new Label();
-        subtitleLabel = new Label();
-        controlStationGroup = new GroupBox();
+        titleLabel = new AntdUI.Label();
+        subtitleLabel = new AntdUI.Label();
+        controlStationGroup = new AntdUI.Panel();
+            controlStationGroupCaption = new AntdUI.Label();
         controlStationLayout = new TableLayoutPanel();
-        controlStationCaptionLabel = new Label();
-        controlStationComboBox = new ComboBox();
-        saveControlStationButton = new Button();
-        controlStationStateLabel = new Label();
-        operationLogGroup = new GroupBox();
+        controlStationCaptionLabel = new AntdUI.Label();
+        controlStationComboBox = new AntdUI.Select();
+            controlStationComboBox.WaveSize = 0;
+            controlStationComboBox.Radius = 6;
+            controlStationComboBox.List = true;
+        saveControlStationButton = new AntdUI.Button();
+            saveControlStationButton.Radius = 6;
+        controlStationStateLabel = new AntdUI.Label();
+        operationLogGroup = new AntdUI.Panel();
+            operationLogGroupCaption = new AntdUI.Label();
         operationLogLayout = new TableLayoutPanel();
-        operationLogDirectoryLabel = new Label();
-        operationLogDirectoryTextBox = new TextBox();
-        browseOperationLogDirectoryButton = new Button();
-        saveOperationLogDirectoryButton = new Button();
-        operationLogStateLabel = new Label();
-        routerGroup = new GroupBox();
+        operationLogDirectoryLabel = new AntdUI.Label();
+        operationLogDirectoryTextBox = new AntdUI.Input();
+            operationLogDirectoryTextBox.WaveSize = 0;
+            operationLogDirectoryTextBox.Radius = 6;
+        browseOperationLogDirectoryButton = new AntdUI.Button();
+            browseOperationLogDirectoryButton.Radius = 6;
+            browseOperationLogDirectoryButton.BorderWidth = 1F;
+        saveOperationLogDirectoryButton = new AntdUI.Button();
+            saveOperationLogDirectoryButton.Radius = 6;
+        operationLogStateLabel = new AntdUI.Label();
+        routerGroup = new AntdUI.Panel();
+            routerGroupCaption = new AntdUI.Label();
         routerLayout = new TableLayoutPanel();
-        routerEnabledCheckBox = new CheckBox();
-        routerStateLabel = new Label();
-        routerNameLabel = new Label();
-        routerNameTextBox = new TextBox();
-        localNetIdLabel = new Label();
-        localNetIdTextBox = new TextBox();
-        routerTcpPortLabel = new Label();
-        routerTcpPortInput = new NumericUpDown();
-        remoteNameLabel = new Label();
-        remoteNameTextBox = new TextBox();
-        remoteAddressLabel = new Label();
-        remoteAddressTextBox = new TextBox();
-        remoteNetIdLabel = new Label();
-        remoteNetIdTextBox = new TextBox();
-        saveRouterButton = new Button();
-        saveResultLabel = new Label();
-        routerNoticeLabel = new Label();
-        waveGeneratorGroup = new GroupBox();
+        routerEnabledCheckBox = new AntdUI.Checkbox();
+        routerStateLabel = new AntdUI.Label();
+        routerNameLabel = new AntdUI.Label();
+        routerNameTextBox = new AntdUI.Input();
+            routerNameTextBox.WaveSize = 0;
+            routerNameTextBox.Radius = 6;
+        localNetIdLabel = new AntdUI.Label();
+        localNetIdTextBox = new AntdUI.Input();
+            localNetIdTextBox.WaveSize = 0;
+            localNetIdTextBox.Radius = 6;
+        routerTcpPortLabel = new AntdUI.Label();
+        routerTcpPortInput = new AntdUI.InputNumber();
+            routerTcpPortInput.WaveSize = 0;
+            routerTcpPortInput.Radius = 6;
+        remoteNameLabel = new AntdUI.Label();
+        remoteNameTextBox = new AntdUI.Input();
+            remoteNameTextBox.WaveSize = 0;
+            remoteNameTextBox.Radius = 6;
+        remoteAddressLabel = new AntdUI.Label();
+        remoteAddressTextBox = new AntdUI.Input();
+            remoteAddressTextBox.WaveSize = 0;
+            remoteAddressTextBox.Radius = 6;
+        remoteNetIdLabel = new AntdUI.Label();
+        remoteNetIdTextBox = new AntdUI.Input();
+            remoteNetIdTextBox.WaveSize = 0;
+            remoteNetIdTextBox.Radius = 6;
+        saveRouterButton = new AntdUI.Button();
+            saveRouterButton.Radius = 6;
+        saveResultLabel = new AntdUI.Label();
+        routerNoticeLabel = new AntdUI.Label();
+        waveGeneratorGroup = new AntdUI.Panel();
+            waveGeneratorGroupCaption = new AntdUI.Label();
         waveGeneratorLayout = new TableLayoutPanel();
-        waveGeneratorPathLabel = new Label();
-        waveGeneratorPathTextBox = new TextBox();
-        browseWaveGeneratorButton = new Button();
-        saveWaveGeneratorButton = new Button();
-        waveGeneratorStateLabel = new Label();
-        waveGeneratorModeLabel = new Label();
-        waveGeneratorModeComboBox = new ComboBox();
-        waveProgramDirectoryLabel = new Label();
-        waveProgramDirectoryTextBox = new TextBox();
-        browseWaveProgramDirectoryButton = new Button();
-        saveWaveProgramDirectoryButton = new Button();
-        _databaseGroup = new GroupBox();
+        waveGeneratorPathLabel = new AntdUI.Label();
+        waveGeneratorPathTextBox = new AntdUI.Input();
+            waveGeneratorPathTextBox.WaveSize = 0;
+            waveGeneratorPathTextBox.Radius = 6;
+        browseWaveGeneratorButton = new AntdUI.Button();
+            browseWaveGeneratorButton.Radius = 6;
+            browseWaveGeneratorButton.BorderWidth = 1F;
+        saveWaveGeneratorButton = new AntdUI.Button();
+            saveWaveGeneratorButton.Radius = 6;
+        waveGeneratorStateLabel = new AntdUI.Label();
+        waveGeneratorModeLabel = new AntdUI.Label();
+        waveGeneratorModeComboBox = new AntdUI.Select();
+            waveGeneratorModeComboBox.WaveSize = 0;
+            waveGeneratorModeComboBox.Radius = 6;
+            waveGeneratorModeComboBox.List = true;
+        waveProgramDirectoryLabel = new AntdUI.Label();
+        waveProgramDirectoryTextBox = new AntdUI.Input();
+            waveProgramDirectoryTextBox.WaveSize = 0;
+            waveProgramDirectoryTextBox.Radius = 6;
+        browseWaveProgramDirectoryButton = new AntdUI.Button();
+            browseWaveProgramDirectoryButton.Radius = 6;
+            browseWaveProgramDirectoryButton.BorderWidth = 1F;
+        saveWaveProgramDirectoryButton = new AntdUI.Button();
+            saveWaveProgramDirectoryButton.Radius = 6;
+        _databaseGroup = new AntdUI.Panel();
+            _databaseGroupCaption = new AntdUI.Label();
         _databaseLayout = new TableLayoutPanel();
-        _databaseEnabledCheckBox = new CheckBox();
-        _databaseConnectionTextBox = new TextBox();
-        _databaseUserNameLabel = new Label();
-        _databaseUserNameTextBox = new TextBox();
-        _databasePasswordLabel = new Label();
-        _databasePasswordTextBox = new TextBox();
-        _saveDatabaseButton = new Button();
-        _databaseStateLabel = new Label();
+        _databaseEnabledCheckBox = new AntdUI.Checkbox();
+        _databaseConnectionTextBox = new AntdUI.Input();
+            _databaseConnectionTextBox.WaveSize = 0;
+            _databaseConnectionTextBox.Radius = 6;
+        _databaseUserNameLabel = new AntdUI.Label();
+        _databaseUserNameTextBox = new AntdUI.Input();
+            _databaseUserNameTextBox.WaveSize = 0;
+            _databaseUserNameTextBox.Radius = 6;
+        _databasePasswordLabel = new AntdUI.Label();
+        _databasePasswordTextBox = new AntdUI.Input();
+            _databasePasswordTextBox.WaveSize = 0;
+            _databasePasswordTextBox.Radius = 6;
+        _saveDatabaseButton = new AntdUI.Button();
+            _saveDatabaseButton.Radius = 6;
+        _databaseStateLabel = new AntdUI.Label();
         pagePanel.SuspendLayout();
         rootLayout.SuspendLayout();
         controlStationGroup.SuspendLayout();
@@ -145,7 +197,6 @@ partial class Config
         operationLogLayout.SuspendLayout();
         routerGroup.SuspendLayout();
         routerLayout.SuspendLayout();
-        ((System.ComponentModel.ISupportInitialize)routerTcpPortInput).BeginInit();
         waveGeneratorGroup.SuspendLayout();
         waveGeneratorLayout.SuspendLayout();
         _databaseGroup.SuspendLayout();
@@ -228,11 +279,20 @@ partial class Config
         controlStationGroup.Location = new Point(18, 87);
         controlStationGroup.Margin = new Padding(2, 3, 2, 3);
         controlStationGroup.Name = "controlStationGroup";
-        controlStationGroup.Padding = new Padding(11, 15, 11, 8);
+        controlStationGroup.Padding = new Padding(11, 32, 11, 8);
         controlStationGroup.Size = new Size(813, 114);
         controlStationGroup.TabIndex = 2;
-        controlStationGroup.TabStop = false;
-        controlStationGroup.Text = "本站身份";
+        // AntdUI 面板用独立标题标签保留原分组标题，布局仍可在 Designer 编辑。
+            controlStationGroupCaption.Text = "本站身份";
+            controlStationGroupCaption.AutoSize = true;
+            controlStationGroupCaption.Name = "controlStationGroupCaption";
+            controlStationGroupCaption.Location = new Point(10, 2);
+            controlStationGroupCaption.ForeColor = Color.FromArgb(15, 23, 42);
+            controlStationGroup.BorderWidth = 1F;
+            controlStationGroup.BorderColor = Color.FromArgb(203, 213, 225);
+            controlStationGroup.Radius = 6;
+            controlStationGroup.Controls.Add(controlStationGroupCaption);
+            controlStationGroupCaption.BringToFront();
         //
         // controlStationLayout
         //
@@ -270,7 +330,6 @@ partial class Config
         // controlStationComboBox
         //
         controlStationComboBox.Dock = DockStyle.Fill;
-        controlStationComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
         controlStationComboBox.Font = new Font("Microsoft YaHei UI", 9F);
         controlStationComboBox.Items.AddRange(new object[] { "未配置", "造波控制室", "拖车本地", "远程操作室" });
         controlStationComboBox.Location = new Point(142, 5);
@@ -282,10 +341,10 @@ partial class Config
         // saveControlStationButton
         //
         saveControlStationButton.BackColor = Color.FromArgb(29, 78, 216);
+            saveControlStationButton.DefaultBack = Color.FromArgb(29, 78, 216);
         saveControlStationButton.Cursor = Cursors.Hand;
         saveControlStationButton.Dock = DockStyle.Fill;
-        saveControlStationButton.FlatAppearance.BorderSize = 0;
-        saveControlStationButton.FlatStyle = FlatStyle.Flat;
+        saveControlStationButton.BorderWidth = 0;
         saveControlStationButton.Font = new Font("Microsoft YaHei UI", 9F);
         saveControlStationButton.ForeColor = Color.White;
         saveControlStationButton.Location = new Point(665, 3);
@@ -294,7 +353,6 @@ partial class Config
         saveControlStationButton.Size = new Size(124, 30);
         saveControlStationButton.TabIndex = 1;
         saveControlStationButton.Text = "保存本站身份";
-        saveControlStationButton.UseVisualStyleBackColor = false;
         saveControlStationButton.Click += SaveControlStationButton_Click;
         //
         // controlStationStateLabel
@@ -321,11 +379,20 @@ partial class Config
         operationLogGroup.Location = new Point(18, 207);
         operationLogGroup.Margin = new Padding(2, 3, 2, 3);
         operationLogGroup.Name = "operationLogGroup";
-        operationLogGroup.Padding = new Padding(11, 8, 11, 8);
+        operationLogGroup.Padding = new Padding(11, 32, 11, 8);
         operationLogGroup.Size = new Size(813, 110);
         operationLogGroup.TabIndex = 2;
-        operationLogGroup.TabStop = false;
-        operationLogGroup.Text = "操作日志";
+        // AntdUI 面板用独立标题标签保留原分组标题，布局仍可在 Designer 编辑。
+            operationLogGroupCaption.Text = "操作日志";
+            operationLogGroupCaption.AutoSize = true;
+            operationLogGroupCaption.Name = "operationLogGroupCaption";
+            operationLogGroupCaption.Location = new Point(10, 2);
+            operationLogGroupCaption.ForeColor = Color.FromArgb(15, 23, 42);
+            operationLogGroup.BorderWidth = 1F;
+            operationLogGroup.BorderColor = Color.FromArgb(203, 213, 225);
+            operationLogGroup.Radius = 6;
+            operationLogGroup.Controls.Add(operationLogGroupCaption);
+            operationLogGroupCaption.BringToFront();
         //
         // operationLogLayout
         //
@@ -363,7 +430,6 @@ partial class Config
         //
         // operationLogDirectoryTextBox
         //
-        operationLogDirectoryTextBox.BorderStyle = BorderStyle.FixedSingle;
         operationLogDirectoryTextBox.Dock = DockStyle.Fill;
         operationLogDirectoryTextBox.Font = new Font("Microsoft YaHei UI", 9F);
         operationLogDirectoryTextBox.Location = new Point(142, 3);
@@ -376,9 +442,9 @@ partial class Config
         // browseOperationLogDirectoryButton
         //
         browseOperationLogDirectoryButton.BackColor = Color.White;
+            browseOperationLogDirectoryButton.DefaultBack = Color.White;
         browseOperationLogDirectoryButton.Cursor = Cursors.Hand;
         browseOperationLogDirectoryButton.Dock = DockStyle.Fill;
-        browseOperationLogDirectoryButton.FlatStyle = FlatStyle.Flat;
         browseOperationLogDirectoryButton.Font = new Font("Microsoft YaHei UI", 9F);
         browseOperationLogDirectoryButton.Location = new Point(591, 3);
         browseOperationLogDirectoryButton.Margin = new Padding(2, 3, 2, 3);
@@ -386,16 +452,15 @@ partial class Config
         browseOperationLogDirectoryButton.Size = new Size(86, 30);
         browseOperationLogDirectoryButton.TabIndex = 1;
         browseOperationLogDirectoryButton.Text = "选择目录";
-        browseOperationLogDirectoryButton.UseVisualStyleBackColor = false;
         browseOperationLogDirectoryButton.Click += BrowseOperationLogDirectoryButton_Click;
         //
         // saveOperationLogDirectoryButton
         //
         saveOperationLogDirectoryButton.BackColor = Color.FromArgb(29, 78, 216);
+            saveOperationLogDirectoryButton.DefaultBack = Color.FromArgb(29, 78, 216);
         saveOperationLogDirectoryButton.Cursor = Cursors.Hand;
         saveOperationLogDirectoryButton.Dock = DockStyle.Fill;
-        saveOperationLogDirectoryButton.FlatAppearance.BorderSize = 0;
-        saveOperationLogDirectoryButton.FlatStyle = FlatStyle.Flat;
+        saveOperationLogDirectoryButton.BorderWidth = 0;
         saveOperationLogDirectoryButton.Font = new Font("Microsoft YaHei UI", 9F);
         saveOperationLogDirectoryButton.ForeColor = Color.White;
         saveOperationLogDirectoryButton.Location = new Point(681, 3);
@@ -404,7 +469,6 @@ partial class Config
         saveOperationLogDirectoryButton.Size = new Size(108, 30);
         saveOperationLogDirectoryButton.TabIndex = 2;
         saveOperationLogDirectoryButton.Text = "保存日志目录";
-        saveOperationLogDirectoryButton.UseVisualStyleBackColor = false;
         saveOperationLogDirectoryButton.Click += SaveOperationLogDirectoryButton_Click;
         //
         // operationLogStateLabel
@@ -431,11 +495,20 @@ partial class Config
         routerGroup.Location = new Point(18, 323);
         routerGroup.Margin = new Padding(2, 3, 2, 3);
         routerGroup.Name = "routerGroup";
-        routerGroup.Padding = new Padding(16, 12, 16, 12);
+        routerGroup.Padding = new Padding(16, 32, 16, 12);
         routerGroup.Size = new Size(813, 286);
         routerGroup.TabIndex = 2;
-        routerGroup.TabStop = false;
-        routerGroup.Text = "手动控制 ADS 路由";
+        // AntdUI 面板用独立标题标签保留原分组标题，布局仍可在 Designer 编辑。
+            routerGroupCaption.Text = "手动控制 ADS 路由";
+            routerGroupCaption.AutoSize = true;
+            routerGroupCaption.Name = "routerGroupCaption";
+            routerGroupCaption.Location = new Point(10, 2);
+            routerGroupCaption.ForeColor = Color.FromArgb(15, 23, 42);
+            routerGroup.BorderWidth = 1F;
+            routerGroup.BorderColor = Color.FromArgb(203, 213, 225);
+            routerGroup.Radius = 6;
+            routerGroup.Controls.Add(routerGroupCaption);
+            routerGroupCaption.BringToFront();
         //
         // routerLayout
         //
@@ -516,7 +589,6 @@ partial class Config
         // routerNameTextBox
         //
         routerNameTextBox.BackColor = Color.White;
-        routerNameTextBox.BorderStyle = BorderStyle.FixedSingle;
         routerNameTextBox.Dock = DockStyle.Fill;
         routerNameTextBox.Font = new Font("Microsoft YaHei UI", 10F);
         routerNameTextBox.ForeColor = Color.FromArgb(15, 23, 42);
@@ -542,7 +614,6 @@ partial class Config
         // localNetIdTextBox
         //
         localNetIdTextBox.BackColor = Color.White;
-        localNetIdTextBox.BorderStyle = BorderStyle.FixedSingle;
         localNetIdTextBox.Dock = DockStyle.Fill;
         localNetIdTextBox.Font = new Font("Microsoft YaHei UI", 10F);
         localNetIdTextBox.ForeColor = Color.FromArgb(15, 23, 42);
@@ -568,7 +639,6 @@ partial class Config
         // routerTcpPortInput
         //
         routerTcpPortInput.BackColor = Color.White;
-        routerTcpPortInput.BorderStyle = BorderStyle.FixedSingle;
         routerTcpPortInput.Dock = DockStyle.Fill;
         routerTcpPortInput.Font = new Font("Microsoft YaHei UI", 10F);
         routerTcpPortInput.ForeColor = Color.FromArgb(15, 23, 42);
@@ -597,7 +667,6 @@ partial class Config
         // remoteNameTextBox
         //
         remoteNameTextBox.BackColor = Color.White;
-        remoteNameTextBox.BorderStyle = BorderStyle.FixedSingle;
         remoteNameTextBox.Dock = DockStyle.Fill;
         remoteNameTextBox.Font = new Font("Microsoft YaHei UI", 10F);
         remoteNameTextBox.ForeColor = Color.FromArgb(15, 23, 42);
@@ -623,7 +692,6 @@ partial class Config
         // remoteAddressTextBox
         //
         remoteAddressTextBox.BackColor = Color.White;
-        remoteAddressTextBox.BorderStyle = BorderStyle.FixedSingle;
         remoteAddressTextBox.Dock = DockStyle.Fill;
         remoteAddressTextBox.Font = new Font("Microsoft YaHei UI", 10F);
         remoteAddressTextBox.ForeColor = Color.FromArgb(15, 23, 42);
@@ -649,7 +717,6 @@ partial class Config
         // remoteNetIdTextBox
         //
         remoteNetIdTextBox.BackColor = Color.White;
-        remoteNetIdTextBox.BorderStyle = BorderStyle.FixedSingle;
         remoteNetIdTextBox.Dock = DockStyle.Fill;
         remoteNetIdTextBox.Font = new Font("Microsoft YaHei UI", 10F);
         remoteNetIdTextBox.ForeColor = Color.FromArgb(15, 23, 42);
@@ -663,10 +730,10 @@ partial class Config
         //
         saveRouterButton.Anchor = AnchorStyles.Left;
         saveRouterButton.BackColor = Color.FromArgb(29, 78, 216);
+            saveRouterButton.DefaultBack = Color.FromArgb(29, 78, 216);
         saveRouterButton.Cursor = Cursors.Hand;
-        saveRouterButton.FlatAppearance.BorderSize = 0;
-        saveRouterButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(30, 64, 175);
-        saveRouterButton.FlatStyle = FlatStyle.Flat;
+        saveRouterButton.BorderWidth = 0;
+        saveRouterButton.BackHover = Color.FromArgb(30, 64, 175);
         saveRouterButton.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
         saveRouterButton.ForeColor = Color.White;
         saveRouterButton.Location = new Point(132, 150);
@@ -675,7 +742,6 @@ partial class Config
         saveRouterButton.Size = new Size(140, 34);
         saveRouterButton.TabIndex = 14;
         saveRouterButton.Text = "保存 Router 配置";
-        saveRouterButton.UseVisualStyleBackColor = false;
         saveRouterButton.Click += SaveRouterButton_Click;
         //
         // saveResultLabel
@@ -715,11 +781,20 @@ partial class Config
         waveGeneratorGroup.Location = new Point(18, 615);
         waveGeneratorGroup.Margin = new Padding(2, 3, 2, 3);
         waveGeneratorGroup.Name = "waveGeneratorGroup";
-        waveGeneratorGroup.Padding = new Padding(11, 15, 11, 8);
+        waveGeneratorGroup.Padding = new Padding(11, 32, 11, 8);
         waveGeneratorGroup.Size = new Size(813, 166);
         waveGeneratorGroup.TabIndex = 3;
-        waveGeneratorGroup.TabStop = false;
-        waveGeneratorGroup.Text = "波形生成器";
+        // AntdUI 面板用独立标题标签保留原分组标题，布局仍可在 Designer 编辑。
+            waveGeneratorGroupCaption.Text = "波形生成器";
+            waveGeneratorGroupCaption.AutoSize = true;
+            waveGeneratorGroupCaption.Name = "waveGeneratorGroupCaption";
+            waveGeneratorGroupCaption.Location = new Point(10, 2);
+            waveGeneratorGroupCaption.ForeColor = Color.FromArgb(15, 23, 42);
+            waveGeneratorGroup.BorderWidth = 1F;
+            waveGeneratorGroup.BorderColor = Color.FromArgb(203, 213, 225);
+            waveGeneratorGroup.Radius = 6;
+            waveGeneratorGroup.Controls.Add(waveGeneratorGroupCaption);
+            waveGeneratorGroupCaption.BringToFront();
         //
         // waveGeneratorLayout
         //
@@ -768,7 +843,6 @@ partial class Config
         // waveGeneratorPathTextBox
         //
         waveGeneratorPathTextBox.BackColor = Color.White;
-        waveGeneratorPathTextBox.BorderStyle = BorderStyle.FixedSingle;
         waveGeneratorPathTextBox.Dock = DockStyle.Fill;
         waveGeneratorPathTextBox.Font = new Font("Microsoft YaHei UI", 9F);
         waveGeneratorPathTextBox.ForeColor = Color.FromArgb(15, 23, 42);
@@ -782,11 +856,11 @@ partial class Config
         // browseWaveGeneratorButton
         //
         browseWaveGeneratorButton.BackColor = Color.FromArgb(248, 250, 252);
+            browseWaveGeneratorButton.DefaultBack = Color.FromArgb(248, 250, 252);
         browseWaveGeneratorButton.Cursor = Cursors.Hand;
         browseWaveGeneratorButton.Dock = DockStyle.Fill;
-        browseWaveGeneratorButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
-        browseWaveGeneratorButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(226, 232, 240);
-        browseWaveGeneratorButton.FlatStyle = FlatStyle.Flat;
+        browseWaveGeneratorButton.DefaultBorderColor = Color.FromArgb(203, 213, 225);
+        browseWaveGeneratorButton.BackHover = Color.FromArgb(226, 232, 240);
         browseWaveGeneratorButton.Font = new Font("Microsoft YaHei UI", 9F);
         browseWaveGeneratorButton.ForeColor = Color.FromArgb(15, 23, 42);
         browseWaveGeneratorButton.Location = new Point(591, 3);
@@ -795,17 +869,16 @@ partial class Config
         browseWaveGeneratorButton.Size = new Size(86, 28);
         browseWaveGeneratorButton.TabIndex = 2;
         browseWaveGeneratorButton.Text = "浏览...";
-        browseWaveGeneratorButton.UseVisualStyleBackColor = false;
         browseWaveGeneratorButton.Click += BrowseWaveGeneratorButton_Click;
         //
         // saveWaveGeneratorButton
         //
         saveWaveGeneratorButton.BackColor = Color.FromArgb(29, 78, 216);
+            saveWaveGeneratorButton.DefaultBack = Color.FromArgb(29, 78, 216);
         saveWaveGeneratorButton.Cursor = Cursors.Hand;
         saveWaveGeneratorButton.Dock = DockStyle.Fill;
-        saveWaveGeneratorButton.FlatAppearance.BorderSize = 0;
-        saveWaveGeneratorButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(30, 64, 175);
-        saveWaveGeneratorButton.FlatStyle = FlatStyle.Flat;
+        saveWaveGeneratorButton.BorderWidth = 0;
+        saveWaveGeneratorButton.BackHover = Color.FromArgb(30, 64, 175);
         saveWaveGeneratorButton.Font = new Font("Microsoft YaHei UI", 9F);
         saveWaveGeneratorButton.ForeColor = Color.White;
         saveWaveGeneratorButton.Location = new Point(681, 3);
@@ -814,7 +887,6 @@ partial class Config
         saveWaveGeneratorButton.Size = new Size(108, 28);
         saveWaveGeneratorButton.TabIndex = 3;
         saveWaveGeneratorButton.Text = "保存方案";
-        saveWaveGeneratorButton.UseVisualStyleBackColor = false;
         saveWaveGeneratorButton.Click += SaveWaveGeneratorButton_Click;
         //
         // waveGeneratorStateLabel
@@ -847,11 +919,8 @@ partial class Config
         waveGeneratorModeComboBox.BackColor = Color.White;
         waveGeneratorLayout.SetColumnSpan(waveGeneratorModeComboBox, 3);
         waveGeneratorModeComboBox.Dock = DockStyle.Left;
-        waveGeneratorModeComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
-        waveGeneratorModeComboBox.FlatStyle = FlatStyle.Flat;
         waveGeneratorModeComboBox.Font = new Font("Microsoft YaHei UI", 9F);
         waveGeneratorModeComboBox.ForeColor = Color.FromArgb(15, 23, 42);
-        waveGeneratorModeComboBox.FormattingEnabled = true;
         waveGeneratorModeComboBox.Location = new Point(142, 61);
         waveGeneratorModeComboBox.Margin = new Padding(2, 3, 2, 3);
         waveGeneratorModeComboBox.Name = "waveGeneratorModeComboBox";
@@ -874,7 +943,6 @@ partial class Config
         // waveProgramDirectoryTextBox
         //
         waveProgramDirectoryTextBox.BackColor = Color.White;
-        waveProgramDirectoryTextBox.BorderStyle = BorderStyle.FixedSingle;
         waveProgramDirectoryTextBox.Dock = DockStyle.Fill;
         waveProgramDirectoryTextBox.Font = new Font("Microsoft YaHei UI", 9F);
         waveProgramDirectoryTextBox.ForeColor = Color.FromArgb(15, 23, 42);
@@ -886,24 +954,23 @@ partial class Config
         // browseWaveProgramDirectoryButton
         //
         browseWaveProgramDirectoryButton.BackColor = Color.FromArgb(248, 250, 252);
+            browseWaveProgramDirectoryButton.DefaultBack = Color.FromArgb(248, 250, 252);
         browseWaveProgramDirectoryButton.Dock = DockStyle.Fill;
-        browseWaveProgramDirectoryButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
-        browseWaveProgramDirectoryButton.FlatStyle = FlatStyle.Flat;
+        browseWaveProgramDirectoryButton.DefaultBorderColor = Color.FromArgb(203, 213, 225);
         browseWaveProgramDirectoryButton.Font = new Font("Microsoft YaHei UI", 9F);
         browseWaveProgramDirectoryButton.Location = new Point(592, 95);
         browseWaveProgramDirectoryButton.Name = "browseWaveProgramDirectoryButton";
         browseWaveProgramDirectoryButton.Size = new Size(84, 28);
         browseWaveProgramDirectoryButton.TabIndex = 7;
         browseWaveProgramDirectoryButton.Text = "浏览目录";
-        browseWaveProgramDirectoryButton.UseVisualStyleBackColor = false;
         browseWaveProgramDirectoryButton.Click += BrowseWaveProgramDirectoryButton_Click;
         //
         // saveWaveProgramDirectoryButton
         //
         saveWaveProgramDirectoryButton.BackColor = Color.FromArgb(29, 78, 216);
+            saveWaveProgramDirectoryButton.DefaultBack = Color.FromArgb(29, 78, 216);
         saveWaveProgramDirectoryButton.Dock = DockStyle.Fill;
-        saveWaveProgramDirectoryButton.FlatAppearance.BorderSize = 0;
-        saveWaveProgramDirectoryButton.FlatStyle = FlatStyle.Flat;
+        saveWaveProgramDirectoryButton.BorderWidth = 0;
         saveWaveProgramDirectoryButton.Font = new Font("Microsoft YaHei UI", 9F);
         saveWaveProgramDirectoryButton.ForeColor = Color.White;
         saveWaveProgramDirectoryButton.Location = new Point(682, 95);
@@ -911,7 +978,6 @@ partial class Config
         saveWaveProgramDirectoryButton.Size = new Size(106, 28);
         saveWaveProgramDirectoryButton.TabIndex = 8;
         saveWaveProgramDirectoryButton.Text = "保存目录";
-        saveWaveProgramDirectoryButton.UseVisualStyleBackColor = false;
         saveWaveProgramDirectoryButton.Click += SaveWaveProgramDirectoryButton_Click;
         //
         // _databaseGroup
@@ -924,11 +990,20 @@ partial class Config
         _databaseGroup.Location = new Point(18, 787);
         _databaseGroup.Margin = new Padding(2, 3, 2, 3);
         _databaseGroup.Name = "_databaseGroup";
-        _databaseGroup.Padding = new Padding(11, 15, 11, 8);
+        _databaseGroup.Padding = new Padding(11, 32, 11, 8);
         _databaseGroup.Size = new Size(813, 150);
         _databaseGroup.TabIndex = 4;
-        _databaseGroup.TabStop = false;
-        _databaseGroup.Text = "SQL Server 任务索引";
+        // AntdUI 面板用独立标题标签保留原分组标题，布局仍可在 Designer 编辑。
+            _databaseGroupCaption.Text = "SQL Server 任务索引";
+            _databaseGroupCaption.AutoSize = true;
+            _databaseGroupCaption.Name = "_databaseGroupCaption";
+            _databaseGroupCaption.Location = new Point(10, 2);
+            _databaseGroupCaption.ForeColor = Color.FromArgb(15, 23, 42);
+            _databaseGroup.BorderWidth = 1F;
+            _databaseGroup.BorderColor = Color.FromArgb(203, 213, 225);
+            _databaseGroup.Radius = 6;
+            _databaseGroup.Controls.Add(_databaseGroupCaption);
+            _databaseGroupCaption.BringToFront();
         //
         // _databaseLayout
         //
@@ -972,7 +1047,6 @@ partial class Config
         // _databaseConnectionTextBox
         //
         _databaseConnectionTextBox.BackColor = Color.White;
-        _databaseConnectionTextBox.BorderStyle = BorderStyle.FixedSingle;
         _databaseLayout.SetColumnSpan(_databaseConnectionTextBox, 3);
         _databaseConnectionTextBox.Dock = DockStyle.Fill;
         _databaseConnectionTextBox.Font = new Font("Microsoft YaHei UI", 9F);
@@ -1000,7 +1074,6 @@ partial class Config
         // _databaseUserNameTextBox
         //
         _databaseUserNameTextBox.BackColor = Color.White;
-        _databaseUserNameTextBox.BorderStyle = BorderStyle.FixedSingle;
         _databaseUserNameTextBox.Dock = DockStyle.Fill;
         _databaseUserNameTextBox.Font = new Font("Microsoft YaHei UI", 9F);
         _databaseUserNameTextBox.ForeColor = Color.FromArgb(15, 23, 42);
@@ -1027,7 +1100,6 @@ partial class Config
         // _databasePasswordTextBox
         //
         _databasePasswordTextBox.BackColor = Color.White;
-        _databasePasswordTextBox.BorderStyle = BorderStyle.FixedSingle;
         _databasePasswordTextBox.Dock = DockStyle.Fill;
         _databasePasswordTextBox.Font = new Font("Microsoft YaHei UI", 9F);
         _databasePasswordTextBox.ForeColor = Color.FromArgb(15, 23, 42);
@@ -1042,11 +1114,11 @@ partial class Config
         // _saveDatabaseButton
         //
         _saveDatabaseButton.BackColor = Color.FromArgb(29, 78, 216);
+            _saveDatabaseButton.DefaultBack = Color.FromArgb(29, 78, 216);
         _saveDatabaseButton.Cursor = Cursors.Hand;
         _saveDatabaseButton.Dock = DockStyle.Fill;
-        _saveDatabaseButton.FlatAppearance.BorderSize = 0;
-        _saveDatabaseButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(30, 64, 175);
-        _saveDatabaseButton.FlatStyle = FlatStyle.Flat;
+        _saveDatabaseButton.BorderWidth = 0;
+        _saveDatabaseButton.BackHover = Color.FromArgb(30, 64, 175);
         _saveDatabaseButton.Font = new Font("Microsoft YaHei UI", 9F);
         _saveDatabaseButton.ForeColor = Color.White;
         _saveDatabaseButton.Location = new Point(680, 3);
@@ -1055,7 +1127,6 @@ partial class Config
         _saveDatabaseButton.Size = new Size(109, 30);
         _saveDatabaseButton.TabIndex = 2;
         _saveDatabaseButton.Text = "保存数据库";
-        _saveDatabaseButton.UseVisualStyleBackColor = false;
         _saveDatabaseButton.Click += SaveDatabaseButton_Click;
         //
         // _databaseStateLabel
@@ -1096,7 +1167,6 @@ partial class Config
         routerGroup.ResumeLayout(false);
         routerLayout.ResumeLayout(false);
         routerLayout.PerformLayout();
-        ((System.ComponentModel.ISupportInitialize)routerTcpPortInput).EndInit();
         waveGeneratorGroup.ResumeLayout(false);
         waveGeneratorLayout.ResumeLayout(false);
         waveGeneratorLayout.PerformLayout();

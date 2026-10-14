@@ -1,4 +1,4 @@
-﻿namespace Page_switching
+namespace Page_switching
 {
     partial class Auto
     {
@@ -6,49 +6,44 @@
         private Panel pagePanel;
         private TableLayoutPanel rootLayout;
         private Panel headerPanel;
-        private Label titleLabel;
-        private Label subtitleLabel;
+        private AntdUI.Label titleLabel;
+        private AntdUI.Label subtitleLabel;
         private TableLayoutPanel cardsLayout;
         private AntdUI.Panel controlCard;
         private TableLayoutPanel controlCardLayout;
-        private Label controlCaptionLabel;
-        private Label controlValueLabel;
-        private Label controlDetailLabel;
+        private AntdUI.Label controlCaptionLabel;
+        private AntdUI.Label controlValueLabel;
+        private AntdUI.Label controlDetailLabel;
         private AntdUI.Panel modeCard;
         private TableLayoutPanel modeCardLayout;
-        private Label modeCaptionLabel;
-        private Label modeValueLabel;
-        private Label modeDetailLabel;
+        private AntdUI.Label modeCaptionLabel;
+        private AntdUI.Label modeValueLabel;
+        private AntdUI.Label modeDetailLabel;
         private AntdUI.Panel waveCard;
         private TableLayoutPanel waveCardLayout;
-        private Label waveCaptionLabel;
-        private Label _runStateLabel;
-        private Label faultCodeLabel;
+        private AntdUI.Label waveCaptionLabel;
+        private AntdUI.Label _runStateLabel;
+        private AntdUI.Label faultCodeLabel;
         private TableLayoutPanel monitorInfoLayout;
-        private Label connectionLabel;
-        private Label feedbackLabel;
-        private Label heartbeatLabel;
+        private AntdUI.Label connectionLabel;
+        private AntdUI.Label feedbackLabel;
+        private AntdUI.Label heartbeatLabel;
         private TableLayoutPanel bodyLayout;
-        private GroupBox progressGroup;
-        private Label progressPlaceholderLabel;
+        private AntdUI.Panel progressGroup;
+        private AntdUI.Label progressGroupCaption;
+        private AntdUI.Label progressPlaceholderLabel;
         private TableLayoutPanel rightLayout;
-        private GroupBox axisGroup;
+        private AntdUI.Panel axisGroup;
+        private AntdUI.Label axisGroupCaption;
         private global::Page_switching.AxisFeedbackGrid axisGrid;
-        private DataGridViewTextBoxColumn axisNumberColumn;
-        private DataGridViewTextBoxColumn positionColumn;
-        private DataGridViewTextBoxColumn speedColumn;
-        private DataGridViewTextBoxColumn homedColumn;
-        private DataGridViewTextBoxColumn alarmColumn;
-        private DataGridViewTextBoxColumn negativeLimitColumn;
-        private DataGridViewTextBoxColumn positiveLimitColumn;
-        private DataGridViewTextBoxColumn originColumn;
-        private GroupBox logGroup;
+        private AntdUI.Panel logGroup;
+        private AntdUI.Label logGroupCaption;
         private TableLayoutPanel logLayout;
         private TableLayoutPanel messageHeader;
-        private Label messageCountLabel;
-        private Label messageSummaryLabel;
+        private AntdUI.Label messageCountLabel;
+        private AntdUI.Label messageSummaryLabel;
         private ToolTip messageToolTip;
-        private ListBox _logList;
+        private AntdUI.Input _logList;
         private AntdUI.Button clearLogButton;
 
         protected override void Dispose(bool disposing)
@@ -60,58 +55,54 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle4 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
             axisGrid = new AxisFeedbackGrid();
-            axisNumberColumn = new DataGridViewTextBoxColumn();
-            positionColumn = new DataGridViewTextBoxColumn();
-            speedColumn = new DataGridViewTextBoxColumn();
-            homedColumn = new DataGridViewTextBoxColumn();
-            alarmColumn = new DataGridViewTextBoxColumn();
-            negativeLimitColumn = new DataGridViewTextBoxColumn();
-            positiveLimitColumn = new DataGridViewTextBoxColumn();
-            originColumn = new DataGridViewTextBoxColumn();
             pagePanel = new Panel();
             rootLayout = new TableLayoutPanel();
             headerPanel = new Panel();
-            subtitleLabel = new Label();
-            titleLabel = new Label();
+            subtitleLabel = new AntdUI.Label();
+            titleLabel = new AntdUI.Label();
             cardsLayout = new TableLayoutPanel();
             controlCard = new AntdUI.Panel();
             controlCardLayout = new TableLayoutPanel();
-            controlCaptionLabel = new Label();
-            controlValueLabel = new Label();
-            controlDetailLabel = new Label();
+            controlCaptionLabel = new AntdUI.Label();
+            controlValueLabel = new AntdUI.Label();
+            controlDetailLabel = new AntdUI.Label();
             modeCard = new AntdUI.Panel();
             modeCardLayout = new TableLayoutPanel();
-            modeCaptionLabel = new Label();
-            modeValueLabel = new Label();
-            modeDetailLabel = new Label();
+            modeCaptionLabel = new AntdUI.Label();
+            modeValueLabel = new AntdUI.Label();
+            modeDetailLabel = new AntdUI.Label();
             waveCard = new AntdUI.Panel();
             waveCardLayout = new TableLayoutPanel();
-            waveCaptionLabel = new Label();
-            _runStateLabel = new Label();
-            faultCodeLabel = new Label();
+            waveCaptionLabel = new AntdUI.Label();
+            _runStateLabel = new AntdUI.Label();
+            faultCodeLabel = new AntdUI.Label();
             monitorInfoLayout = new TableLayoutPanel();
-            connectionLabel = new Label();
-            feedbackLabel = new Label();
-            heartbeatLabel = new Label();
+            connectionLabel = new AntdUI.Label();
+            feedbackLabel = new AntdUI.Label();
+            heartbeatLabel = new AntdUI.Label();
             bodyLayout = new TableLayoutPanel();
-            progressGroup = new GroupBox();
-            progressPlaceholderLabel = new Label();
+            progressGroup = new AntdUI.Panel();
+            progressGroupCaption = new AntdUI.Label();
+            progressPlaceholderLabel = new AntdUI.Label();
             rightLayout = new TableLayoutPanel();
-            axisGroup = new GroupBox();
-            logGroup = new GroupBox();
+            axisGroup = new AntdUI.Panel();
+            axisGroupCaption = new AntdUI.Label();
+            logGroup = new AntdUI.Panel();
+            logGroupCaption = new AntdUI.Label();
             logLayout = new TableLayoutPanel();
             messageHeader = new TableLayoutPanel();
-            messageCountLabel = new Label();
-            messageSummaryLabel = new Label();
-            _logList = new ListBox();
+            messageCountLabel = new AntdUI.Label();
+            messageSummaryLabel = new AntdUI.Label();
+            _logList = new AntdUI.Input();
+            _logList.WaveSize = 0;
+            _logList.Radius = 6;
+            _logList.Multiline = true;
+            _logList.ReadOnly = true;
+            _logList.WordWrap = false;
             clearLogButton = new AntdUI.Button();
+            clearLogButton.Radius = 6;
             messageToolTip = new ToolTip(components);
-            ((System.ComponentModel.ISupportInitialize)axisGrid).BeginInit();
             pagePanel.SuspendLayout();
             rootLayout.SuspendLayout();
             headerPanel.SuspendLayout();
@@ -134,136 +125,37 @@
             //
             // axisGrid
             //
-            axisGrid.AllowUserToAddRows = false;
-            axisGrid.AllowUserToDeleteRows = false;
-            axisGrid.AllowUserToResizeColumns = false;
-            axisGrid.AllowUserToResizeRows = false;
-            axisGrid.BackgroundColor = Color.White;
-            axisGrid.BorderStyle = BorderStyle.None;
-            axisGrid.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
-            axisGrid.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
-            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle1.BackColor = Color.FromArgb(248, 250, 252);
-            dataGridViewCellStyle1.Font = new Font("Microsoft YaHei UI", 9F);
-            dataGridViewCellStyle1.ForeColor = Color.FromArgb(71, 85, 105);
-            dataGridViewCellStyle1.SelectionBackColor = Color.FromArgb(248, 250, 252);
-            dataGridViewCellStyle1.SelectionForeColor = Color.FromArgb(71, 85, 105);
-            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.False;
-            axisGrid.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
-            axisGrid.ColumnHeadersHeight = 28;
-            axisGrid.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            axisGrid.Columns.AddRange(new DataGridViewColumn[] { axisNumberColumn, positionColumn, speedColumn, homedColumn, alarmColumn, negativeLimitColumn, positiveLimitColumn, originColumn });
-            dataGridViewCellStyle4.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle4.BackColor = SystemColors.Window;
-            dataGridViewCellStyle4.Font = new Font("Microsoft YaHei UI", 9F);
-            dataGridViewCellStyle4.ForeColor = Color.FromArgb(15, 23, 42);
-            dataGridViewCellStyle4.Padding = new Padding(4, 0, 4, 0);
-            dataGridViewCellStyle4.SelectionBackColor = Color.FromArgb(219, 234, 254);
-            dataGridViewCellStyle4.SelectionForeColor = Color.FromArgb(15, 23, 42);
-            dataGridViewCellStyle4.WrapMode = DataGridViewTriState.False;
-            axisGrid.DefaultCellStyle = dataGridViewCellStyle4;
             axisGrid.Dock = DockStyle.Fill;
-            axisGrid.EnableHeadersVisualStyles = false;
             axisGrid.Font = new Font("Microsoft YaHei UI", 9F);
-            axisGrid.GridColor = Color.FromArgb(226, 232, 240);
             axisGrid.Location = new Point(14, 34);
             axisGrid.Margin = new Padding(4);
-            axisGrid.MultiSelect = false;
             axisGrid.Name = "axisGrid";
-            axisGrid.ReadOnly = true;
-            axisGrid.RowHeadersVisible = false;
-            axisGrid.RowHeadersWidth = 51;
-            axisGrid.RowTemplate.Height = 28;
-            axisGrid.ScrollBars = ScrollBars.None;
-            axisGrid.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             axisGrid.Size = new Size(652, 144);
             axisGrid.TabIndex = 0;
-            axisGrid.TabStop = false;
-            axisGrid.SizeChanged += AxisGrid_SizeChanged;
             //
             // axisNumberColumn
             //
-            axisNumberColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
-            axisNumberColumn.HeaderText = "轴";
-            axisNumberColumn.MinimumWidth = 48;
-            axisNumberColumn.Name = "axisNumberColumn";
-            axisNumberColumn.ReadOnly = true;
-            axisNumberColumn.SortMode = DataGridViewColumnSortMode.NotSortable;
-            axisNumberColumn.Width = 48;
             //
             // positionColumn
             //
-            positionColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
-            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleRight;
-            positionColumn.DefaultCellStyle = dataGridViewCellStyle2;
-            positionColumn.HeaderText = "位置反馈";
-            positionColumn.MinimumWidth = 120;
-            positionColumn.Name = "positionColumn";
-            positionColumn.ReadOnly = true;
-            positionColumn.SortMode = DataGridViewColumnSortMode.NotSortable;
-            positionColumn.Width = 120;
             //
             // speedColumn
             //
-            speedColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
-            dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleRight;
-            speedColumn.DefaultCellStyle = dataGridViewCellStyle3;
-            speedColumn.HeaderText = "速度反馈";
-            speedColumn.MinimumWidth = 120;
-            speedColumn.Name = "speedColumn";
-            speedColumn.ReadOnly = true;
-            speedColumn.SortMode = DataGridViewColumnSortMode.NotSortable;
-            speedColumn.Width = 120;
             //
             // homedColumn
             //
-            homedColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
-            homedColumn.HeaderText = "回零";
-            homedColumn.MinimumWidth = 64;
-            homedColumn.Name = "homedColumn";
-            homedColumn.ReadOnly = true;
-            homedColumn.SortMode = DataGridViewColumnSortMode.NotSortable;
-            homedColumn.Width = 64;
             //
             // alarmColumn
             //
-            alarmColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
-            alarmColumn.HeaderText = "报警";
-            alarmColumn.MinimumWidth = 64;
-            alarmColumn.Name = "alarmColumn";
-            alarmColumn.ReadOnly = true;
-            alarmColumn.SortMode = DataGridViewColumnSortMode.NotSortable;
-            alarmColumn.Width = 64;
             //
             // negativeLimitColumn
             //
-            negativeLimitColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
-            negativeLimitColumn.HeaderText = "负限位";
-            negativeLimitColumn.MinimumWidth = 74;
-            negativeLimitColumn.Name = "negativeLimitColumn";
-            negativeLimitColumn.ReadOnly = true;
-            negativeLimitColumn.SortMode = DataGridViewColumnSortMode.NotSortable;
-            negativeLimitColumn.Width = 74;
             //
             // positiveLimitColumn
             //
-            positiveLimitColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
-            positiveLimitColumn.HeaderText = "正限位";
-            positiveLimitColumn.MinimumWidth = 74;
-            positiveLimitColumn.Name = "positiveLimitColumn";
-            positiveLimitColumn.ReadOnly = true;
-            positiveLimitColumn.SortMode = DataGridViewColumnSortMode.NotSortable;
-            positiveLimitColumn.Width = 74;
             //
             // originColumn
             //
-            originColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
-            originColumn.HeaderText = "原点";
-            originColumn.MinimumWidth = 64;
-            originColumn.Name = "originColumn";
-            originColumn.ReadOnly = true;
-            originColumn.SortMode = DataGridViewColumnSortMode.NotSortable;
-            originColumn.Width = 64;
             //
             // pagePanel
             //
@@ -660,11 +552,20 @@
             progressGroup.Location = new Point(0, 0);
             progressGroup.Margin = new Padding(0, 0, 12, 0);
             progressGroup.Name = "progressGroup";
-            progressGroup.Padding = new Padding(14, 18, 14, 12);
+            progressGroup.Padding = new Padding(14, 32, 14, 12);
             progressGroup.Size = new Size(531, 697);
             progressGroup.TabIndex = 0;
-            progressGroup.TabStop = false;
-            progressGroup.Text = "造波进度";
+            // AntdUI 面板用独立标题标签保留原分组标题，布局仍可在 Designer 编辑。
+            progressGroupCaption.Text = "造波进度";
+            progressGroupCaption.AutoSize = true;
+            progressGroupCaption.Name = "progressGroupCaption";
+            progressGroupCaption.Location = new Point(10, 2);
+            progressGroupCaption.ForeColor = Color.FromArgb(15, 23, 42);
+            progressGroup.BorderWidth = 1F;
+            progressGroup.BorderColor = Color.FromArgb(203, 213, 225);
+            progressGroup.Radius = 6;
+            progressGroup.Controls.Add(progressGroupCaption);
+            progressGroupCaption.BringToFront();
             //
             // progressPlaceholderLabel
             //
@@ -690,7 +591,7 @@
             rightLayout.Margin = new Padding(0);
             rightLayout.Name = "rightLayout";
             rightLayout.RowCount = 3;
-            rightLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 190F));
+            rightLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 240F));
             rightLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             rightLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 296F));
             rightLayout.Size = new Size(680, 697);
@@ -706,11 +607,20 @@
             axisGroup.Location = new Point(0, 0);
             axisGroup.Margin = new Padding(0);
             axisGroup.Name = "axisGroup";
-            axisGroup.Padding = new Padding(14, 18, 14, 12);
+            axisGroup.Padding = new Padding(14, 32, 14, 12);
             axisGroup.Size = new Size(680, 190);
             axisGroup.TabIndex = 3;
-            axisGroup.TabStop = false;
-            axisGroup.Text = "四轴反馈";
+            // AntdUI 面板用独立标题标签保留原分组标题，布局仍可在 Designer 编辑。
+            axisGroupCaption.Text = "四轴反馈";
+            axisGroupCaption.AutoSize = true;
+            axisGroupCaption.Name = "axisGroupCaption";
+            axisGroupCaption.Location = new Point(10, 2);
+            axisGroupCaption.ForeColor = Color.FromArgb(15, 23, 42);
+            axisGroup.BorderWidth = 1F;
+            axisGroup.BorderColor = Color.FromArgb(203, 213, 225);
+            axisGroup.Radius = 6;
+            axisGroup.Controls.Add(axisGroupCaption);
+            axisGroupCaption.BringToFront();
             //
             // logGroup
             //
@@ -722,11 +632,20 @@
             logGroup.Location = new Point(0, 401);
             logGroup.Margin = new Padding(0);
             logGroup.Name = "logGroup";
-            logGroup.Padding = new Padding(14, 18, 14, 12);
+            logGroup.Padding = new Padding(14, 32, 14, 12);
             logGroup.Size = new Size(680, 296);
             logGroup.TabIndex = 4;
-            logGroup.TabStop = false;
-            logGroup.Text = "运行消息";
+            // AntdUI 面板用独立标题标签保留原分组标题，布局仍可在 Designer 编辑。
+            logGroupCaption.Text = "运行消息";
+            logGroupCaption.AutoSize = true;
+            logGroupCaption.Name = "logGroupCaption";
+            logGroupCaption.Location = new Point(10, 2);
+            logGroupCaption.ForeColor = Color.FromArgb(15, 23, 42);
+            logGroup.BorderWidth = 1F;
+            logGroup.BorderColor = Color.FromArgb(203, 213, 225);
+            logGroup.Radius = 6;
+            logGroup.Controls.Add(logGroupCaption);
+            logGroupCaption.BringToFront();
             //
             // logLayout
             //
@@ -792,12 +711,8 @@
             // _logList
             //
             _logList.BackColor = Color.White;
-            _logList.BorderStyle = BorderStyle.None;
             _logList.Dock = DockStyle.Fill;
             _logList.Font = new Font("Microsoft YaHei UI", 9F);
-            _logList.HorizontalScrollbar = true;
-            _logList.IntegralHeight = false;
-            _logList.ItemHeight = 17;
             _logList.Location = new Point(3, 35);
             _logList.Name = "_logList";
             _logList.Size = new Size(646, 174);
@@ -834,7 +749,6 @@
             ForeColor = Color.FromArgb(15, 23, 42);
             Name = "Auto";
             Size = new Size(1019, 655);
-            ((System.ComponentModel.ISupportInitialize)axisGrid).EndInit();
             pagePanel.ResumeLayout(false);
             rootLayout.ResumeLayout(false);
             headerPanel.ResumeLayout(false);

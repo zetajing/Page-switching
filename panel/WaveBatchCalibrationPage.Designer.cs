@@ -1,48 +1,91 @@
-﻿namespace Page_switching.panel
+namespace Page_switching.panel
 {
 
     partial class WaveBatchCalibrationPage
     {
         private Panel pagePanel;
         private FlowLayoutPanel header;
-        private Label title;
-        private Button backButton;
+        private AntdUI.Label title;
+        private AntdUI.Button backButton;
 
         private TableLayoutPanel root;
         private FlowLayoutPanel tools;
-        private CheckedListBox channels;
-        private Button addButton;
-        private Button readButton;
-        private Button removeButton;
-        private Button saveButton;
-        private DataGridView points;
-        private Label status;
+        private FlowLayoutPanel channels;
+        private AntdUI.Checkbox channel1Check;
+        private AntdUI.Checkbox channel2Check;
+        private AntdUI.Checkbox channel3Check;
+        private AntdUI.Checkbox channel4Check;
+        private AntdUI.Checkbox channel5Check;
+        private AntdUI.Checkbox channel6Check;
+        private AntdUI.Button addButton;
+        private AntdUI.Button readButton;
+        private AntdUI.Button removeButton;
+        private AntdUI.Button saveButton;
+        private AntdUI.Table points;
+        private AntdUI.Label status;
 
         private void InitializeComponent()
         {
             pagePanel = new Panel();
             header = new FlowLayoutPanel();
-            title = new Label();
-            backButton = new Button();
+            title = new AntdUI.Label();
+            backButton = new AntdUI.Button();
+            backButton.Radius = 6;
+            backButton.BorderWidth = 1F;
             root = new TableLayoutPanel();
             tools = new FlowLayoutPanel();
-            channels = new CheckedListBox();
-            addButton = new Button();
-            readButton = new Button();
-            removeButton = new Button();
-            saveButton = new Button();
-            points = new DataGridView();
-            status = new Label();
-            dataGridViewTextBoxColumn1 = new DataGridViewTextBoxColumn();
-            dataGridViewTextBoxColumn2 = new DataGridViewTextBoxColumn();
-            dataGridViewTextBoxColumn3 = new DataGridViewTextBoxColumn();
-            dataGridViewTextBoxColumn4 = new DataGridViewTextBoxColumn();
-            dataGridViewTextBoxColumn5 = new DataGridViewTextBoxColumn();
-            dataGridViewTextBoxColumn6 = new DataGridViewTextBoxColumn();
-            dataGridViewTextBoxColumn7 = new DataGridViewTextBoxColumn();
+            channels = new FlowLayoutPanel();
+            channel1Check = new AntdUI.Checkbox();
+            channel2Check = new AntdUI.Checkbox();
+            channel3Check = new AntdUI.Checkbox();
+            channel4Check = new AntdUI.Checkbox();
+            channel5Check = new AntdUI.Checkbox();
+            channel6Check = new AntdUI.Checkbox();
+            channel1Check.Name = "channel1Check";
+            channel1Check.Text = "CH1";
+            channel1Check.Size = new Size(130, 25);
+            channels.Controls.Add(channel1Check);
+            channel2Check.Name = "channel2Check";
+            channel2Check.Text = "CH2(待验证)";
+            channel2Check.Size = new Size(130, 25);
+            channels.Controls.Add(channel2Check);
+            channel3Check.Name = "channel3Check";
+            channel3Check.Text = "CH3(待验证)";
+            channel3Check.Size = new Size(130, 25);
+            channels.Controls.Add(channel3Check);
+            channel4Check.Name = "channel4Check";
+            channel4Check.Text = "CH4(待验证)";
+            channel4Check.Size = new Size(130, 25);
+            channels.Controls.Add(channel4Check);
+            channel5Check.Name = "channel5Check";
+            channel5Check.Text = "CH5(待验证)";
+            channel5Check.Size = new Size(130, 25);
+            channels.Controls.Add(channel5Check);
+            channel6Check.Name = "channel6Check";
+            channel6Check.Text = "CH6(待验证)";
+            channel6Check.Size = new Size(130, 25);
+            channels.Controls.Add(channel6Check);
+            channel1Check.Checked = true;
+            addButton = new AntdUI.Button();
+            addButton.Radius = 6;
+            addButton.BorderWidth = 1F;
+            readButton = new AntdUI.Button();
+            readButton.Radius = 6;
+            readButton.BorderWidth = 1F;
+            removeButton = new AntdUI.Button();
+            removeButton.Radius = 6;
+            removeButton.BorderWidth = 1F;
+            saveButton = new AntdUI.Button();
+            saveButton.Radius = 6;
+            saveButton.BorderWidth = 1F;
+            points = new AntdUI.Table();
+            points.EmptyHeader = true;
+            points.Bordered = true;
+            points.Radius = 6;
+            points.BackColor = Color.White;
+            status = new AntdUI.Label();
             root.SuspendLayout();
             tools.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)points).BeginInit();
             SuspendLayout();
             //
             // root
@@ -82,9 +125,9 @@
             backButton.Name = "backButton";
             backButton.Text = "返回单通道标定";
             backButton.Size = new Size(165, 36);
-            backButton.FlatStyle = FlatStyle.Flat;
-            backButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
+            backButton.DefaultBorderColor = Color.FromArgb(203, 213, 225);
             backButton.BackColor = Color.FromArgb(248, 250, 252);
+            backButton.DefaultBack = Color.FromArgb(248, 250, 252);
             backButton.ForeColor = Color.FromArgb(15, 23, 42);
             backButton.Click += BackButton_Click;
             tools.Controls.Add(channels);
@@ -100,11 +143,7 @@
             //
             // channels
             //
-            channels.CheckOnClick = true;
-            channels.ColumnWidth = 130;
-            channels.Items.AddRange(new object[] { "CH1", "CH2(待验证)", "CH3(待验证)", "CH4(待验证)", "CH5(待验证)", "CH6(待验证)" });
             channels.Location = new Point(3, 3);
-            channels.MultiColumn = true;
             channels.Name = "channels";
             channels.Size = new Size(280, 94);
             channels.TabIndex = 0;
@@ -136,20 +175,17 @@
             // saveButton
             //
             saveButton.BackColor = Color.FromArgb(29, 78, 216);
-            saveButton.FlatStyle = FlatStyle.Flat;
+            saveButton.DefaultBack = Color.FromArgb(29, 78, 216);
             saveButton.ForeColor = Color.White;
             saveButton.Location = new Point(657, 3);
             saveButton.Name = "saveButton";
             saveButton.Size = new Size(130, 32);
             saveButton.TabIndex = 4;
             saveButton.Text = "计算并批量保存";
-            saveButton.UseVisualStyleBackColor = false;
             //
             // points
             //
-            points.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-            points.BackgroundColor = Color.White;
-            points.Columns.AddRange(new DataGridViewColumn[] { dataGridViewTextBoxColumn1, dataGridViewTextBoxColumn2, dataGridViewTextBoxColumn3, dataGridViewTextBoxColumn4, dataGridViewTextBoxColumn5, dataGridViewTextBoxColumn6, dataGridViewTextBoxColumn7 });
+
             points.Dock = DockStyle.Fill;
             points.Location = new Point(19, 129);
             points.Name = "points";
@@ -168,38 +204,24 @@
             //
             // dataGridViewTextBoxColumn1
             //
-            dataGridViewTextBoxColumn1.HeaderText = "共同水位(mm)";
-            dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
             //
             // dataGridViewTextBoxColumn2
             //
-            dataGridViewTextBoxColumn2.HeaderText = "CH1原始值";
-            dataGridViewTextBoxColumn2.Name = "dataGridViewTextBoxColumn2";
             //
             // dataGridViewTextBoxColumn3
             //
-            dataGridViewTextBoxColumn3.HeaderText = "CH2原始值";
-            dataGridViewTextBoxColumn3.Name = "dataGridViewTextBoxColumn3";
             //
             // dataGridViewTextBoxColumn4
             //
-            dataGridViewTextBoxColumn4.HeaderText = "CH3原始值";
-            dataGridViewTextBoxColumn4.Name = "dataGridViewTextBoxColumn4";
             //
             // dataGridViewTextBoxColumn5
             //
-            dataGridViewTextBoxColumn5.HeaderText = "CH4原始值";
-            dataGridViewTextBoxColumn5.Name = "dataGridViewTextBoxColumn5";
             //
             // dataGridViewTextBoxColumn6
             //
-            dataGridViewTextBoxColumn6.HeaderText = "CH5原始值";
-            dataGridViewTextBoxColumn6.Name = "dataGridViewTextBoxColumn6";
             //
             // dataGridViewTextBoxColumn7
             //
-            dataGridViewTextBoxColumn7.HeaderText = "CH6原始值";
-            dataGridViewTextBoxColumn7.Name = "dataGridViewTextBoxColumn7";
             //
             // WaveBatchCalibrationPage
             //
@@ -218,15 +240,7 @@
             Text = "多传感器批量标定";
             root.ResumeLayout(false);
             tools.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)points).EndInit();
             ResumeLayout(false);
         }
-        private DataGridViewTextBoxColumn dataGridViewTextBoxColumn1;
-        private DataGridViewTextBoxColumn dataGridViewTextBoxColumn2;
-        private DataGridViewTextBoxColumn dataGridViewTextBoxColumn3;
-        private DataGridViewTextBoxColumn dataGridViewTextBoxColumn4;
-        private DataGridViewTextBoxColumn dataGridViewTextBoxColumn5;
-        private DataGridViewTextBoxColumn dataGridViewTextBoxColumn6;
-        private DataGridViewTextBoxColumn dataGridViewTextBoxColumn7;
     }
 }

@@ -6,9 +6,8 @@ namespace Page_switching
     public partial class Auto : UserControl
     {
         private string? _lastMonitorStateKey;
-        private (DataGridViewColumn Column, int Width, int MinimumWidth)[]? _axisColumnMetrics;
-        private int _axisHeaderHeight;
-        private int _axisRowHeight;
+        private readonly List<string> _messages = new();
+
         private float _minimumPageHeight;
 
         // 设计器也会触发布局事件；编辑位置和行高时不执行运行时滚动逻辑。
@@ -21,15 +20,7 @@ namespace Page_switching
             // InitializeComponent 已应用当前 DPI，先还原为逻辑基线，避免再次放大。
             var scale = DeviceDpi / 96F;
             _minimumPageHeight = pagePanel.MinimumSize.Height / scale;
-            // 保存 Designer 的逻辑尺寸，每次 DPI 改变都从基线计算，避免重复放大。
-            _axisColumnMetrics = axisGrid.Columns.Cast<DataGridViewColumn>()
-                .Select(column => (column, column.Width, column.MinimumWidth)).ToArray();
-            _axisHeaderHeight = axisGrid.ColumnHeadersHeight;
-            _axisRowHeight = axisGrid.RowTemplate.Height;
-            // 表格初始化时已创建四条占位行，运行时只更新反馈值。
             axisGrid.InitializeRows();
-            axisGrid.ClearSelection();
-            UpdateAxisGridDpi();
             if (LicenseManager.UsageMode != LicenseUsageMode.Designtime)
                 AddLog("自动运行页面已就绪");
         }
@@ -45,47 +36,7 @@ namespace Page_switching
             // Dock.Fill 子项不会自动扩展滚动范围，使用已随 DPI 缩放的最小画布。
             if (pagePanel != null && AutoScrollMinSize != pagePanel.MinimumSize)
                 AutoScrollMinSize = pagePanel.MinimumSize;
-            UpdateAxisGridDpi();
             base.OnLayout(e);
-        }
-
-        private void UpdateAxisGridDpi()
-        {
-            if (_axisColumnMetrics is null) return;
-            var scale = DeviceDpi / 96.0;
-            foreach (var metric in _axisColumnMetrics)
-            {
-                var minimum = (int)Math.Round(metric.MinimumWidth * scale);
-                if (metric.Column.MinimumWidth != minimum) metric.Column.MinimumWidth = minimum;
-                if (metric.Column != positionColumn && metric.Column != speedColumn)
-                {
-                    var width = (int)Math.Round(metric.Width * scale);
-                    if (metric.Column.Width != width) metric.Column.Width = width;
-                }
-            }
-            var headerHeight = (int)Math.Round(_axisHeaderHeight * scale);
-            if (axisGrid.ColumnHeadersHeight != headerHeight) axisGrid.ColumnHeadersHeight = headerHeight;
-            var rowHeight = (int)Math.Round(_axisRowHeight * scale);
-            axisGrid.RowTemplate.Height = rowHeight;
-            foreach (DataGridViewRow row in axisGrid.Rows)
-                if (row.Height != rowHeight) row.Height = rowHeight;
-            FitAxisGridColumns();
-        }
-
-        private void AxisGrid_SizeChanged(object? sender, EventArgs e) => FitAxisGridColumns();
-
-        private void FitAxisGridColumns()
-        {
-            if (IsDesignSurface || _axisColumnMetrics is null) return;
-            // 数值列按实际空间均分，避免缩放后自动 Fill 沿用旧宽度而挤出右侧信号列。
-            var available = Math.Max(0, axisGrid.ClientSize.Width
-                - axisGrid.Columns.Cast<DataGridViewColumn>()
-                    .Where(column => column != positionColumn && column != speedColumn)
-                    .Sum(column => column.Width));
-            var positionWidth = Math.Max(positionColumn.MinimumWidth, (available + 1) / 2);
-            var speedWidth = Math.Max(speedColumn.MinimumWidth, available / 2);
-            if (positionColumn.Width != positionWidth) positionColumn.Width = positionWidth;
-            if (speedColumn.Width != speedWidth) speedColumn.Width = speedWidth;
         }
 
         public void AddLog(string message)
@@ -98,11 +49,13 @@ namespace Page_switching
                 return;
             }
 
-            _logList.Items.Add($"{DateTime.Now:HH:mm:ss}  {message}");
+            _messages.Add($"{DateTime.Now:HH:mm:ss}  {message}");
             // 同一条结果只写入统一操作日志，主窗体订阅后同步显示。
             OperationJournal.Record("自动运行", message);
-            if (_logList.Items.Count > 500) _logList.Items.RemoveAt(0);
-            _logList.TopIndex = Math.Max(0, _logList.Items.Count - 1);
+            if (_messages.Count > 500) _messages.RemoveAt(0);
+            _logList.Text = string.Join(Environment.NewLine, _messages);
+            _logList.ClearUndo();
+            _logList.ScrollToEnd();
             UpdateMessageSummary();
         }
 
@@ -173,22 +126,24 @@ namespace Page_switching
             heartbeatLabel.AccessibleDescription = snapshot.Heartbeat.ErrorMessage;
         }
 
-        // 固定四行只更新单元格；列、布局和样式继续由 Designer 编辑。
+        // 固定四行只更新单元格；表格布局在 Designer，列定义在 AxisFeedbackGrid。
         private void UpdateAxisRows(MachineMonitorSnapshot snapshot)
         {
             for (var index = 0; index < 4; index++)
             {
                 var axis = snapshot.Axes.FirstOrDefault(value => value.AxisNumber == index + 1)
                     ?? new MachineAxisSnapshot { AxisNumber = index + 1 };
-                var row = axisGrid.Rows[index];
-                ApplyNumberCell(row.Cells[1], axis.ActualPosition);
-                ApplyNumberCell(row.Cells[2], axis.Speed);
-                ApplyBoolCell(row.Cells[3], axis.IsHomed, "已回零", "未回零", UiPalette.Success, UiPalette.Warning);
-                ApplyBoolCell(row.Cells[4], axis.HasAlarm, "报警", "正常", UiPalette.Danger, UiPalette.Text);
-                ApplyBoolCell(row.Cells[5], axis.NegativeLimit, "触发", "未触发", UiPalette.Warning, UiPalette.Text);
-                ApplyBoolCell(row.Cells[6], axis.PositiveLimit, "触发", "未触发", UiPalette.Warning, UiPalette.Text);
-                ApplyBoolCell(row.Cells[7], axis.OriginSignal, "触发", "未触发", UiPalette.Primary, UiPalette.Text);
+                var row = axisGrid.FeedbackRows.Rows[index];
+                row[1] = NumberCell(axis.ActualPosition);
+                row[2] = NumberCell(axis.Speed);
+                row[3] = BoolCell(axis.IsHomed, "已回零", "未回零", UiPalette.Success, UiPalette.Warning);
+                row[4] = BoolCell(axis.HasAlarm, "报警", "正常", UiPalette.Danger, UiPalette.Text);
+                row[5] = BoolCell(axis.NegativeLimit, "触发", "未触发", UiPalette.Warning, UiPalette.Text);
+                row[6] = BoolCell(axis.PositiveLimit, "触发", "未触发", UiPalette.Warning, UiPalette.Text);
+                row[7] = BoolCell(axis.OriginSignal, "触发", "未触发", UiPalette.Primary, UiPalette.Text);
             }
+
+            axisGrid.Refresh();
         }
 
         private void LogMonitorStateChange(MachineMonitorSnapshot snapshot)
@@ -273,7 +228,7 @@ namespace Page_switching
         private static bool HasValue<T>(FeedbackField<T> field) where T : struct =>
             field.IsAvailable && field.Value.HasValue;
 
-        private static void ApplyEnumField(FeedbackField<ushort> field, Label valueLabel, Label detailLabel,
+        private static void ApplyEnumField(FeedbackField<ushort> field, AntdUI.Label valueLabel, AntdUI.Label detailLabel,
             Func<ushort, string> format, Func<ushort, bool> isKnown, Func<ushort, Color> color)
         {
             valueLabel.Text = FormatMonitorField(field, format);
@@ -307,29 +262,24 @@ namespace Page_switching
             };
         }
 
-        private static void ApplyNumberCell(DataGridViewCell cell, FeedbackField<double> field)
-        {
-            cell.Value = field.ToDisplayText(value => value.ToString("0.###", CultureInfo.CurrentCulture));
-            cell.Style.ForeColor = HasValue(field) ? UiPalette.Text
-                : UnavailableColor(FormatUnavailableFeedback(field.ErrorMessage));
-            cell.Style.SelectionForeColor = cell.Style.ForeColor;
-            cell.ToolTipText = field.ErrorMessage ?? "";
-        }
+        // 单元格保留无效状态及原始原因；超长文字由 AntdUI ShowTip 展示。
+        private static AntdUI.CellText NumberCell(FeedbackField<double> field) => new(
+            HasValue(field) ? field.ToDisplayText(value => value.ToString("0.###", CultureInfo.CurrentCulture))
+                : "--：" + (field.ErrorMessage ?? "等待反馈"))
+        { Fore = HasValue(field) ? UiPalette.Text : UnavailableColor(FormatUnavailableFeedback(field.ErrorMessage)) };
 
-        private static void ApplyBoolCell(DataGridViewCell cell, FeedbackField<bool> field,
-            string trueText, string falseText, Color trueColor, Color falseColor)
-        {
-            cell.Value = field.ToDisplayText(value => value ? trueText : falseText);
-            cell.Style.ForeColor = !HasValue(field) ? UnavailableColor(FormatUnavailableFeedback(field.ErrorMessage))
-                : field.Value == true ? trueColor : falseColor;
-            cell.Style.SelectionForeColor = cell.Style.ForeColor;
-            cell.ToolTipText = field.ErrorMessage ?? "";
-        }
+        private static AntdUI.CellText BoolCell(FeedbackField<bool> field,
+            string trueText, string falseText, Color trueColor, Color falseColor) => new(
+            HasValue(field) ? (field.Value == true ? trueText : falseText) : "--：" + (field.ErrorMessage ?? "等待反馈"))
+            {
+                Fore = !HasValue(field) ? UnavailableColor(FormatUnavailableFeedback(field.ErrorMessage))
+            : field.Value == true ? trueColor : falseColor
+            };
 
         private void UpdateMessageSummary()
         {
-            messageCountLabel.Text = $"消息：{_logList.Items.Count} 条";
-            var latest = _logList.Items.Count == 0 ? null : _logList.Items[^1]?.ToString();
+            messageCountLabel.Text = $"消息：{_messages.Count} 条";
+            var latest = _messages.Count == 0 ? null : _messages[^1]?.ToString();
             // 摘要只占一行，完整消息仍保留在列表和文件日志中。
             messageSummaryLabel.Text = latest is null ? "暂无运行消息"
                 : "最新：" + latest.Replace("\r", " ").Replace("\n", " ").Replace("\t", " ");
@@ -354,9 +304,10 @@ namespace Page_switching
 
         private void ClearLogButton_Click(object? sender, EventArgs e)
         {
-            _logList.Items.Clear();
+            _messages.Clear();
+            _logList.Clear();
             UpdateMessageSummary();
-            // 第三方按钮不依赖主窗体对原生 Button 的监听，操作仍记录一次。
+            // 第三方按钮不依赖主窗体对原生 AntdUI.Button 的监听，操作仍记录一次。
             OperationJournal.Record("自动运行", "点击 清空本页消息");
         }
     }

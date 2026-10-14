@@ -2,6 +2,13 @@ namespace Page_switching.panel
 {
     public partial class CustomSpectrumPage : UserControl
     {
+        // Designer 重载可能重复释放页面，先解除事件，取消和释放只执行一次。
+        private void DisposeLifetime(object? sender, EventArgs e)
+        {
+            Disposed -= DisposeLifetime;
+            _lifetime.Cancel();
+            _lifetime.Dispose();
+        }
         private readonly CancellationTokenSource _lifetime = new();
         private bool _busy;
 
@@ -17,7 +24,7 @@ namespace Page_switching.panel
             outputBrowse.Click += (_, _) => Browse(true);
             previewButton.Click += (_, _) => Preview();
             runButton.Click += async (_, _) => await RunAsync();
-            Disposed += (_, _) => { _lifetime.Cancel(); _lifetime.Dispose(); };
+            Disposed += DisposeLifetime;
         }
 
         private void Browse(bool save)

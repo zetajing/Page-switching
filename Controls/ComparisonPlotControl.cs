@@ -1,85 +1,87 @@
-using System.Drawing.Drawing2D;
-using System.Globalization;
+using System.ComponentModel;
 
 namespace Page_switching;
 
-public sealed class ComparisonPlotControl : Control
+// 对比曲线沿用原始 X/Y 数据和单位，只统一显示控件，不进行物理换算。
+public sealed partial class ComparisonPlotControl : UserControl
 {
-    private double[] _x = [];
-    private double[] _first = [];
-    private double[] _second = [];
-    public string HorizontalCaption { get; set; } = "Frequency (Hz)";
-    public string VerticalCaption { get; set; } = "S(f) (m²·s)";
-    public string FirstCaption { get; set; } = "理论谱";
-    public string SecondCaption { get; set; } = "实测谱";
+    private string _horizontalCaption = "Frequency (Hz)";
+    private string _verticalCaption = "S(f) (m²·s)";
+    private string _firstCaption = "理论谱";
+    private string _secondCaption = "实测谱";
+    private ScottPlot.Plottables.Scatter? _firstCurve;
+    private ScottPlot.Plottables.Scatter? _secondCurve;
 
     public ComparisonPlotControl()
     {
-        DoubleBuffered = true;
-        BackColor = Color.White;
-        MinimumSize = new Size(300, 180);
-        SetStyle(ControlStyles.ResizeRedraw, true);
+        InitializeComponent();
+        plotView.Plot.Font.Set("Microsoft YaHei UI");
+        ApplyCaptions();
+        plotView.Plot.Axes.SetLimits(0, 1, -1, 1);
+    }
+
+    [DefaultValue("Frequency (Hz)")]
+    public string HorizontalCaption { get => _horizontalCaption; set { _horizontalCaption = value ?? ""; ApplyCaptions(); } }
+    [DefaultValue("S(f) (m²·s)")]
+    public string VerticalCaption { get => _verticalCaption; set { _verticalCaption = value ?? ""; ApplyCaptions(); } }
+    [DefaultValue("理论谱")]
+    public string FirstCaption { get => _firstCaption; set { _firstCaption = value ?? ""; ApplyCaptions(); } }
+    [DefaultValue("实测谱")]
+    public string SecondCaption { get => _secondCaption; set { _secondCaption = value ?? ""; ApplyCaptions(); } }
+
+    private void ApplyCaptions()
+    {
+        if (plotView is null || IsDisposed || Disposing) return;
+        plotView.Plot.XLabel(_horizontalCaption);
+        plotView.Plot.YLabel(_verticalCaption);
+        if (_firstCurve is not null) _firstCurve.LegendText = _firstCaption;
+        if (_secondCurve is not null) _secondCurve.LegendText = _secondCaption;
+        plotView.Refresh();
     }
 
     internal void SetSeries(double[] x, double[] first, double[] second)
     {
         if (x.Length != first.Length || (second.Length != 0 && x.Length != second.Length))
             throw new ArgumentException("曲线坐标数量不一致。");
-        _x = x; _first = first; _second = second;
-        Invalidate();
+        if (IsDisposed || Disposing) return;
+        plotView.Plot.Clear();
+        _firstCurve = _secondCurve = null;
+        emptyLabel.Visible = x.Length == 0;
+        // 保存数据副本，避免调用方后续修改数组影响已显示的曲线。
+        if (x.Length > 0)
+        {
+            _firstCurve = plotView.Plot.Add.Scatter(x.ToArray(), first.ToArray());
+            _firstCurve.Color = ScottPlot.Color.FromColor(UiPalette.Primary);
+            _firstCurve.MarkerSize = x.Length == 1 ? 6 : 0;
+            if (second.Length > 0)
+            {
+                _secondCurve = plotView.Plot.Add.Scatter(x.ToArray(), second.ToArray());
+                _secondCurve.Color = ScottPlot.Color.FromColor(UiPalette.Danger);
+                _secondCurve.MarkerSize = x.Length == 1 ? 6 : 0;
+            }
+            plotView.Plot.ShowLegend();
+            FitSeries();
+        }
+        else
+        {
+            plotView.Plot.HideLegend();
+            plotView.Plot.Axes.SetLimits(0, 1, -1, 1);
+        }
+        ApplyCaptions();
     }
 
-    protected override void OnPaint(PaintEventArgs e)
+    // 保留原对比图包含零基准的纵轴范围，缩放不改变原始数据或单位。
+    private void FitSeries()
     {
-        base.OnPaint(e);
-        e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-        var plot = new RectangleF(70, 38, Math.Max(1, Width - 95), Math.Max(1, Height - 90));
-        using var grid = new Pen(UiPalette.Border);
-        using var text = new SolidBrush(UiPalette.SecondaryText);
-        using var blue = new Pen(UiPalette.Primary, 1.6f);
-        using var red = new Pen(UiPalette.Danger, 1.6f);
-        e.Graphics.DrawString(VerticalCaption, Font, text, 8, 7);
-        e.Graphics.DrawString(HorizontalCaption, Font, text, plot.Left + plot.Width / 2 - 35, plot.Bottom + 29);
-        if (_x.Length < 2) { e.Graphics.DrawString("暂无分析数据", Font, text, plot.Left + 30, plot.Top + 40); return; }
-        var min = Math.Min(0, _first.Concat(_second).Min());
-        var max = Math.Max(0, _first.Concat(_second).Max());
-        if (max - min < 1e-12) max = min + 1;
-        var spanX = Math.Max(1e-12, _x[^1] - _x[0]);
-        for (var i = 0; i <= 4; i++)
-        {
-            var y = plot.Top + plot.Height * i / 4;
-            var x = plot.Left + plot.Width * i / 4;
-            e.Graphics.DrawLine(grid, plot.Left, y, plot.Right, y);
-            e.Graphics.DrawLine(grid, x, plot.Top, x, plot.Bottom);
-            e.Graphics.DrawString((max - (max - min) * i / 4).ToString("0.###", CultureInfo.InvariantCulture), Font, text, 6, y - 8);
-            e.Graphics.DrawString((_x[0] + spanX * i / 4).ToString("0.##", CultureInfo.InvariantCulture), Font, text, x - 12, plot.Bottom + 5);
-        }
-        void Draw(double[] values, Pen pen)
-        {
-            if (values.Length < 2) return;
-            // 每像素保留区间最小/最大值，长记录不会因抽样跳过尖峰。
-            var pixels = Math.Max(1, (int)plot.Width);
-            for (var pixel = 0; pixel < pixels; pixel++)
-            {
-                var start = pixel * values.Length / pixels;
-                var end = Math.Max(start + 1, (pixel + 1) * values.Length / pixels);
-                if (start >= values.Length) break;
-                double low = values[start], high = low;
-                for (var j = start + 1; j < Math.Min(end, values.Length); j++) { low = Math.Min(low, values[j]); high = Math.Max(high, values[j]); }
-                var x = plot.Left + (float)((_x[start] - _x[0]) / spanX) * plot.Width;
-                float Y(double value) => plot.Bottom - (float)((value - min) / (max - min)) * plot.Height;
-                e.Graphics.DrawLine(pen, x, Y(low), x, Y(high));
-                if (end < values.Length) e.Graphics.DrawLine(pen, x, Y(values[end - 1]),
-                    plot.Left + (float)((_x[end] - _x[0]) / spanX) * plot.Width, Y(values[end]));
-            }
-        }
-        Draw(_first, blue); Draw(_second, red);
-        e.Graphics.DrawLine(blue, plot.Left, 23, plot.Left + 20, 23);
-        e.Graphics.DrawString(FirstCaption, Font, text, plot.Left + 25, 15);
-        if (_second.Length > 0)
-        {
-            e.Graphics.DrawLine(red, plot.Left + 130, 23, plot.Left + 150, 23);
-            e.Graphics.DrawString(SecondCaption, Font, text, plot.Left + 155, 15);
-        }
+        plotView.Plot.Axes.AutoScale();
+        var limits = plotView.Plot.Axes.GetLimits();
+        plotView.Plot.Axes.SetLimitsY(Math.Min(0, limits.Bottom), Math.Max(0, limits.Top));
+    }
+    private void ResetViewButton_Click(object? sender, EventArgs e)
+    {
+        if (plotView.Plot.GetPlottables().Any()) FitSeries();
+        plotView.Refresh();
+        if (LicenseManager.UsageMode != LicenseUsageMode.Designtime && !DesignMode && Site?.DesignMode != true)
+            OperationJournal.Record("对比曲线", "已复位曲线视图");
     }
 }

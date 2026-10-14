@@ -1,6 +1,8 @@
-# AntdUI 与 ScottPlot 试用
+# AntdUI 与 ScottPlot 试用记录
 
-这版沿用 .NET 8 WinForms、Designer 页面布局和统一页面切换。新增依赖为 AntdUI 2.4.12、ScottPlot.WinForms 5.1.59，使用 Windows 10 2004（19041）及以上的平台目标，以匹配现代 SkiaSharp WinForms 依赖。
+当前全面迁移与验证见 [AntdUI 全页面迁移](AntdUiMigration.md)。以下保留初期试用记录。
+
+初期版本沿用 .NET 8 WinForms、Designer 页面布局和统一页面切换。新增依赖为 AntdUI 2.4.12、ScottPlot.WinForms 5.1.59，使用 Windows 10 2004（19041）及以上的平台目标，以匹配现代 SkiaSharp WinForms 依赖。
 
 静态控件的创建、布局、外观属性与本次新增按钮事件绑定位于 `.Designer.cs`；普通 `.cs` 保留数据更新、曲线配置和业务订阅。工程对 `Forms`、`panel`、`Controls` 中的每个 Designer 和资源文件明确填写同名父 `.cs`，不通过文件名表达式推算关联，也不重复 Remove / Include 页面。
 

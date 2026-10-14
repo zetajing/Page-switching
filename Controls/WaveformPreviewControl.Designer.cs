@@ -3,7 +3,7 @@ namespace Page_switching;
 partial class WaveformPreviewControl
 {
     private ScottPlot.WinForms.FormsPlot plotView = null!;
-    private Label emptyLabel = null!;
+    private AntdUI.Label emptyLabel = null!;
     private Panel toolbar = null!;
     private AntdUI.Checkbox autoScaleCheckBox = null!;
     private AntdUI.Button resetViewButton = null!;
@@ -12,10 +12,11 @@ partial class WaveformPreviewControl
     private void InitializeComponent()
     {
         plotView = new ScottPlot.WinForms.FormsPlot();
-        emptyLabel = new Label();
+        emptyLabel = new AntdUI.Label();
         toolbar = new Panel();
         autoScaleCheckBox = new AntdUI.Checkbox();
         resetViewButton = new AntdUI.Button();
+            resetViewButton.Radius = 6;
         toolbar.SuspendLayout();
         SuspendLayout();
         toolbar.BackColor = Color.White;

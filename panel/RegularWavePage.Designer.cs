@@ -1,38 +1,40 @@
-﻿namespace Page_switching.panel
+namespace Page_switching.panel
 {
     partial class RegularWavePage
     {
         private System.ComponentModel.IContainer components = null;
         private Panel pagePanel;
         private TableLayoutPanel regularLayout;
-        private GroupBox regularParameterGroup;
+        private AntdUI.Panel regularParameterGroup;
+        private AntdUI.Label regularParameterGroupCaption;
         private TableLayoutPanel regularParameterLayout;
-        private Label regularSegmentLabel;
-        internal ComboBox regularSegmentComboBox;
-        private Label regularTheoryLabel;
-        internal ComboBox regularTheoryComboBox;
-        private Label regularDepthLabel;
-        internal TextBox regularDepthTextBox;
-        private Label regularPeriodLabel;
-        internal TextBox regularPeriodTextBox;
-        private Label regularHeightLabel;
-        internal TextBox regularHeightTextBox;
-        private Label regularDirectionLabel;
-        internal TextBox regularDirectionTextBox;
-        private Label regularTimeStepLabel;
-        internal TextBox regularTimeStepTextBox;
-        private Label regularSampleCountLabel;
-        internal TextBox regularSampleCountTextBox;
-        private Label regularFrequencyLabel;
-        internal TextBox regularCharacteristicFrequencyTextBox;
-        private Label regularCharacteristicPeriodLabel;
-        internal TextBox regularCharacteristicPeriodTextBox;
-        private Label regularOutputLabel;
-        internal TextBox regularOutputTextBox;
-        internal Button regularBrowseOutputButton;
-        internal Button regularGenerateButton;
-        internal Label regularStatusLabel;
-        private GroupBox regularPreviewGroup;
+        private AntdUI.Label regularSegmentLabel;
+        internal AntdUI.Select regularSegmentComboBox;
+        private AntdUI.Label regularTheoryLabel;
+        internal AntdUI.Select regularTheoryComboBox;
+        private AntdUI.Label regularDepthLabel;
+        internal AntdUI.Input regularDepthTextBox;
+        private AntdUI.Label regularPeriodLabel;
+        internal AntdUI.Input regularPeriodTextBox;
+        private AntdUI.Label regularHeightLabel;
+        internal AntdUI.Input regularHeightTextBox;
+        private AntdUI.Label regularDirectionLabel;
+        internal AntdUI.Input regularDirectionTextBox;
+        private AntdUI.Label regularTimeStepLabel;
+        internal AntdUI.Input regularTimeStepTextBox;
+        private AntdUI.Label regularSampleCountLabel;
+        internal AntdUI.Input regularSampleCountTextBox;
+        private AntdUI.Label regularFrequencyLabel;
+        internal AntdUI.Input regularCharacteristicFrequencyTextBox;
+        private AntdUI.Label regularCharacteristicPeriodLabel;
+        internal AntdUI.Input regularCharacteristicPeriodTextBox;
+        private AntdUI.Label regularOutputLabel;
+        internal AntdUI.Input regularOutputTextBox;
+        internal AntdUI.Button regularBrowseOutputButton;
+        internal AntdUI.Button regularGenerateButton;
+        internal AntdUI.Label regularStatusLabel;
+        private AntdUI.Panel regularPreviewGroup;
+        private AntdUI.Label regularPreviewGroupCaption;
         internal global::Page_switching.WaveformPreviewControl regularPreview;
 
         protected override void Dispose(bool disposing)
@@ -46,34 +48,63 @@
             regularPreview = new WaveformPreviewControl();
             pagePanel = new Panel();
             regularLayout = new TableLayoutPanel();
-            regularParameterGroup = new GroupBox();
+            regularParameterGroup = new AntdUI.Panel();
+            regularParameterGroupCaption = new AntdUI.Label();
             regularParameterLayout = new TableLayoutPanel();
-            regularSegmentLabel = new Label();
-            regularSegmentComboBox = new ComboBox();
-            regularTheoryLabel = new Label();
-            regularTheoryComboBox = new ComboBox();
-            regularDepthLabel = new Label();
-            regularDepthTextBox = new TextBox();
-            regularPeriodLabel = new Label();
-            regularPeriodTextBox = new TextBox();
-            regularHeightLabel = new Label();
-            regularHeightTextBox = new TextBox();
-            regularDirectionLabel = new Label();
-            regularDirectionTextBox = new TextBox();
-            regularTimeStepLabel = new Label();
-            regularTimeStepTextBox = new TextBox();
-            regularSampleCountLabel = new Label();
-            regularSampleCountTextBox = new TextBox();
-            regularFrequencyLabel = new Label();
-            regularCharacteristicFrequencyTextBox = new TextBox();
-            regularCharacteristicPeriodLabel = new Label();
-            regularCharacteristicPeriodTextBox = new TextBox();
-            regularOutputLabel = new Label();
-            regularOutputTextBox = new TextBox();
-            regularBrowseOutputButton = new Button();
-            regularGenerateButton = new Button();
-            regularStatusLabel = new Label();
-            regularPreviewGroup = new GroupBox();
+            regularSegmentLabel = new AntdUI.Label();
+            regularSegmentComboBox = new AntdUI.Select();
+            regularSegmentComboBox.WaveSize = 0;
+            regularSegmentComboBox.Radius = 6;
+            regularSegmentComboBox.List = true;
+            regularTheoryLabel = new AntdUI.Label();
+            regularTheoryComboBox = new AntdUI.Select();
+            regularTheoryComboBox.WaveSize = 0;
+            regularTheoryComboBox.Radius = 6;
+            regularTheoryComboBox.List = true;
+            regularDepthLabel = new AntdUI.Label();
+            regularDepthTextBox = new AntdUI.Input();
+            regularDepthTextBox.WaveSize = 0;
+            regularDepthTextBox.Radius = 6;
+            regularPeriodLabel = new AntdUI.Label();
+            regularPeriodTextBox = new AntdUI.Input();
+            regularPeriodTextBox.WaveSize = 0;
+            regularPeriodTextBox.Radius = 6;
+            regularHeightLabel = new AntdUI.Label();
+            regularHeightTextBox = new AntdUI.Input();
+            regularHeightTextBox.WaveSize = 0;
+            regularHeightTextBox.Radius = 6;
+            regularDirectionLabel = new AntdUI.Label();
+            regularDirectionTextBox = new AntdUI.Input();
+            regularDirectionTextBox.WaveSize = 0;
+            regularDirectionTextBox.Radius = 6;
+            regularTimeStepLabel = new AntdUI.Label();
+            regularTimeStepTextBox = new AntdUI.Input();
+            regularTimeStepTextBox.WaveSize = 0;
+            regularTimeStepTextBox.Radius = 6;
+            regularSampleCountLabel = new AntdUI.Label();
+            regularSampleCountTextBox = new AntdUI.Input();
+            regularSampleCountTextBox.WaveSize = 0;
+            regularSampleCountTextBox.Radius = 6;
+            regularFrequencyLabel = new AntdUI.Label();
+            regularCharacteristicFrequencyTextBox = new AntdUI.Input();
+            regularCharacteristicFrequencyTextBox.WaveSize = 0;
+            regularCharacteristicFrequencyTextBox.Radius = 6;
+            regularCharacteristicPeriodLabel = new AntdUI.Label();
+            regularCharacteristicPeriodTextBox = new AntdUI.Input();
+            regularCharacteristicPeriodTextBox.WaveSize = 0;
+            regularCharacteristicPeriodTextBox.Radius = 6;
+            regularOutputLabel = new AntdUI.Label();
+            regularOutputTextBox = new AntdUI.Input();
+            regularOutputTextBox.WaveSize = 0;
+            regularOutputTextBox.Radius = 6;
+            regularBrowseOutputButton = new AntdUI.Button();
+            regularBrowseOutputButton.Radius = 6;
+            regularBrowseOutputButton.BorderWidth = 1F;
+            regularGenerateButton = new AntdUI.Button();
+            regularGenerateButton.Radius = 6;
+            regularStatusLabel = new AntdUI.Label();
+            regularPreviewGroup = new AntdUI.Panel();
+            regularPreviewGroupCaption = new AntdUI.Label();
             pagePanel.SuspendLayout();
             regularLayout.SuspendLayout();
             regularParameterGroup.SuspendLayout();
@@ -126,11 +157,20 @@
             regularParameterGroup.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
             regularParameterGroup.Location = new Point(3, 3);
             regularParameterGroup.Name = "regularParameterGroup";
-            regularParameterGroup.Padding = new Padding(10, 16, 10, 10);
+            regularParameterGroup.Padding = new Padding(10, 32, 10, 10);
             regularParameterGroup.Size = new Size(439, 584);
             regularParameterGroup.TabIndex = 0;
-            regularParameterGroup.TabStop = false;
-            regularParameterGroup.Text = "规则波参数";
+            // AntdUI 面板用独立标题标签保留原分组标题，布局仍可在 Designer 编辑。
+            regularParameterGroupCaption.Text = "规则波参数";
+            regularParameterGroupCaption.AutoSize = true;
+            regularParameterGroupCaption.Name = "regularParameterGroupCaption";
+            regularParameterGroupCaption.Location = new Point(10, 2);
+            regularParameterGroupCaption.ForeColor = Color.FromArgb(15, 23, 42);
+            regularParameterGroup.BorderWidth = 1F;
+            regularParameterGroup.BorderColor = Color.FromArgb(203, 213, 225);
+            regularParameterGroup.Radius = 6;
+            regularParameterGroup.Controls.Add(regularParameterGroupCaption);
+            regularParameterGroupCaption.BringToFront();
             //
             // regularParameterLayout
             //
@@ -196,7 +236,6 @@
             //
             regularSegmentComboBox.BackColor = Color.White;
             regularSegmentComboBox.Dock = DockStyle.Fill;
-            regularSegmentComboBox.FlatStyle = FlatStyle.Flat;
             regularSegmentComboBox.Font = new Font("Microsoft YaHei UI", 9F);
             regularSegmentComboBox.ForeColor = Color.FromArgb(15, 23, 42);
             regularSegmentComboBox.Items.AddRange(new object[] { "X轴+Y轴", "X轴", "Y轴" });
@@ -222,7 +261,6 @@
             //
             regularTheoryComboBox.BackColor = Color.White;
             regularTheoryComboBox.Dock = DockStyle.Fill;
-            regularTheoryComboBox.FlatStyle = FlatStyle.Flat;
             regularTheoryComboBox.Font = new Font("Microsoft YaHei UI", 9F);
             regularTheoryComboBox.ForeColor = Color.FromArgb(15, 23, 42);
             regularTheoryComboBox.Items.AddRange(new object[] { "线性理论", "二阶Stokes（内置）", "孤立波", "流函数波（旧程序）", "椭圆余弦波（旧程序）" });
@@ -247,7 +285,6 @@
             // regularDepthTextBox
             //
             regularDepthTextBox.BackColor = Color.White;
-            regularDepthTextBox.BorderStyle = BorderStyle.FixedSingle;
             regularDepthTextBox.Dock = DockStyle.Fill;
             regularDepthTextBox.Font = new Font("Microsoft YaHei UI", 9F);
             regularDepthTextBox.ForeColor = Color.FromArgb(15, 23, 42);
@@ -273,7 +310,6 @@
             // regularPeriodTextBox
             //
             regularPeriodTextBox.BackColor = Color.White;
-            regularPeriodTextBox.BorderStyle = BorderStyle.FixedSingle;
             regularPeriodTextBox.Dock = DockStyle.Fill;
             regularPeriodTextBox.Font = new Font("Microsoft YaHei UI", 9F);
             regularPeriodTextBox.ForeColor = Color.FromArgb(15, 23, 42);
@@ -299,7 +335,6 @@
             // regularHeightTextBox
             //
             regularHeightTextBox.BackColor = Color.White;
-            regularHeightTextBox.BorderStyle = BorderStyle.FixedSingle;
             regularHeightTextBox.Dock = DockStyle.Fill;
             regularHeightTextBox.Font = new Font("Microsoft YaHei UI", 9F);
             regularHeightTextBox.ForeColor = Color.FromArgb(15, 23, 42);
@@ -325,7 +360,6 @@
             // regularDirectionTextBox
             //
             regularDirectionTextBox.BackColor = Color.White;
-            regularDirectionTextBox.BorderStyle = BorderStyle.FixedSingle;
             regularDirectionTextBox.Dock = DockStyle.Fill;
             regularDirectionTextBox.Font = new Font("Microsoft YaHei UI", 9F);
             regularDirectionTextBox.ForeColor = Color.FromArgb(15, 23, 42);
@@ -351,7 +385,6 @@
             // regularTimeStepTextBox
             //
             regularTimeStepTextBox.BackColor = Color.White;
-            regularTimeStepTextBox.BorderStyle = BorderStyle.FixedSingle;
             regularTimeStepTextBox.Dock = DockStyle.Fill;
             regularTimeStepTextBox.Font = new Font("Microsoft YaHei UI", 9F);
             regularTimeStepTextBox.ForeColor = Color.FromArgb(15, 23, 42);
@@ -377,7 +410,6 @@
             // regularSampleCountTextBox
             //
             regularSampleCountTextBox.BackColor = Color.White;
-            regularSampleCountTextBox.BorderStyle = BorderStyle.FixedSingle;
             regularSampleCountTextBox.Dock = DockStyle.Fill;
             regularSampleCountTextBox.Font = new Font("Microsoft YaHei UI", 9F);
             regularSampleCountTextBox.ForeColor = Color.FromArgb(15, 23, 42);
@@ -403,7 +435,6 @@
             // regularCharacteristicFrequencyTextBox
             //
             regularCharacteristicFrequencyTextBox.BackColor = Color.White;
-            regularCharacteristicFrequencyTextBox.BorderStyle = BorderStyle.FixedSingle;
             regularCharacteristicFrequencyTextBox.Dock = DockStyle.Fill;
             regularCharacteristicFrequencyTextBox.Font = new Font("Microsoft YaHei UI", 9F);
             regularCharacteristicFrequencyTextBox.ForeColor = Color.FromArgb(15, 23, 42);
@@ -429,7 +460,6 @@
             // regularCharacteristicPeriodTextBox
             //
             regularCharacteristicPeriodTextBox.BackColor = Color.White;
-            regularCharacteristicPeriodTextBox.BorderStyle = BorderStyle.FixedSingle;
             regularCharacteristicPeriodTextBox.Dock = DockStyle.Fill;
             regularCharacteristicPeriodTextBox.Font = new Font("Microsoft YaHei UI", 9F);
             regularCharacteristicPeriodTextBox.ForeColor = Color.FromArgb(15, 23, 42);
@@ -455,7 +485,6 @@
             // regularOutputTextBox
             //
             regularOutputTextBox.BackColor = Color.White;
-            regularOutputTextBox.BorderStyle = BorderStyle.FixedSingle;
             regularParameterLayout.SetColumnSpan(regularOutputTextBox, 2);
             regularOutputTextBox.Dock = DockStyle.Fill;
             regularOutputTextBox.Font = new Font("Microsoft YaHei UI", 9F);
@@ -469,11 +498,11 @@
             // regularBrowseOutputButton
             //
             regularBrowseOutputButton.BackColor = Color.FromArgb(248, 250, 252);
+            regularBrowseOutputButton.DefaultBack = Color.FromArgb(248, 250, 252);
             regularBrowseOutputButton.Cursor = Cursors.Hand;
             regularBrowseOutputButton.Dock = DockStyle.Fill;
-            regularBrowseOutputButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
-            regularBrowseOutputButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(226, 232, 240);
-            regularBrowseOutputButton.FlatStyle = FlatStyle.Flat;
+            regularBrowseOutputButton.DefaultBorderColor = Color.FromArgb(203, 213, 225);
+            regularBrowseOutputButton.BackHover = Color.FromArgb(226, 232, 240);
             regularBrowseOutputButton.ForeColor = Color.FromArgb(15, 23, 42);
             regularBrowseOutputButton.Location = new Point(293, 204);
             regularBrowseOutputButton.Margin = new Padding(3, 4, 3, 4);
@@ -481,17 +510,16 @@
             regularBrowseOutputButton.Size = new Size(123, 32);
             regularBrowseOutputButton.TabIndex = 22;
             regularBrowseOutputButton.Text = "浏览";
-            regularBrowseOutputButton.UseVisualStyleBackColor = false;
             regularBrowseOutputButton.Click += BrowseRegularOutputButton_Click;
             //
             // regularGenerateButton
             //
             regularGenerateButton.BackColor = Color.FromArgb(29, 78, 216);
+            regularGenerateButton.DefaultBack = Color.FromArgb(29, 78, 216);
             regularParameterLayout.SetColumnSpan(regularGenerateButton, 2);
             regularGenerateButton.Cursor = Cursors.Hand;
-            regularGenerateButton.FlatAppearance.BorderSize = 0;
-            regularGenerateButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(30, 64, 175);
-            regularGenerateButton.FlatStyle = FlatStyle.Flat;
+            regularGenerateButton.BorderWidth = 0;
+            regularGenerateButton.BackHover = Color.FromArgb(30, 64, 175);
             regularGenerateButton.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
             regularGenerateButton.ForeColor = Color.White;
             regularGenerateButton.Location = new Point(3, 243);
@@ -499,7 +527,6 @@
             regularGenerateButton.Size = new Size(160, 34);
             regularGenerateButton.TabIndex = 23;
             regularGenerateButton.Text = "计算并保存";
-            regularGenerateButton.UseVisualStyleBackColor = false;
             regularGenerateButton.Click += GenerateRegularButton_Click;
             //
             // regularStatusLabel
@@ -524,11 +551,20 @@
             regularPreviewGroup.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
             regularPreviewGroup.Location = new Point(448, 3);
             regularPreviewGroup.Name = "regularPreviewGroup";
-            regularPreviewGroup.Padding = new Padding(10, 18, 10, 10);
+            regularPreviewGroup.Padding = new Padding(10, 32, 10, 10);
             regularPreviewGroup.Size = new Size(637, 584);
             regularPreviewGroup.TabIndex = 1;
-            regularPreviewGroup.TabStop = false;
-            regularPreviewGroup.Text = "波形预览";
+            // AntdUI 面板用独立标题标签保留原分组标题，布局仍可在 Designer 编辑。
+            regularPreviewGroupCaption.Text = "波形预览";
+            regularPreviewGroupCaption.AutoSize = true;
+            regularPreviewGroupCaption.Name = "regularPreviewGroupCaption";
+            regularPreviewGroupCaption.Location = new Point(10, 2);
+            regularPreviewGroupCaption.ForeColor = Color.FromArgb(15, 23, 42);
+            regularPreviewGroup.BorderWidth = 1F;
+            regularPreviewGroup.BorderColor = Color.FromArgb(203, 213, 225);
+            regularPreviewGroup.Radius = 6;
+            regularPreviewGroup.Controls.Add(regularPreviewGroupCaption);
+            regularPreviewGroupCaption.BringToFront();
             //
             // RegularWavePage
             //

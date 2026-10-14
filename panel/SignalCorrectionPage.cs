@@ -2,6 +2,13 @@ namespace Page_switching.panel
 {
     public partial class SignalCorrectionPage : UserControl
     {
+        // Designer 重载可能重复释放页面，先解除事件，取消和释放只执行一次。
+        private void DisposeLifetime(object? sender, EventArgs e)
+        {
+            Disposed -= DisposeLifetime;
+            _lifetime.Cancel();
+            _lifetime.Dispose();
+        }
         private readonly CancellationTokenSource _lifetime = new();
         private bool _busy;
 
@@ -16,7 +23,7 @@ namespace Page_switching.panel
             outputBrowse.Click += (_, _) => Select(outputPath, true);
             runButton.Click += async (_, _) => await RunAsync();
             previewButton.Click += (_, _) => Preview();
-            Disposed += (_, _) => { _lifetime.Cancel(); _lifetime.Dispose(); };
+            Disposed += DisposeLifetime;
         }
 
         protected override void OnLayout(LayoutEventArgs e)
@@ -27,7 +34,7 @@ namespace Page_switching.panel
             base.OnLayout(e);
         }
 
-        private void Select(TextBox target, bool save)
+        private void Select(AntdUI.Input target, bool save)
         {
             using FileDialog dialog = save
                 ? new SaveFileDialog { Filter = "造波信号 (*.csv)|*.csv", DefaultExt = "csv", AddExtension = true }

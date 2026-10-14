@@ -4,14 +4,33 @@ namespace Page_switching.panel
 {
     public partial class WaveAnalysisPage : UserControl
     {
+        private readonly System.Data.DataTable elementsRows = new();
+        private void InitializeTables()
+        {
+            // 直接绑定原始表格数据；列定义不依赖 AntdUI 的隐藏 Designer Columns 属性。
+            elementsRows.Columns.Add("C0", typeof(object));
+            elements.Columns.Add(new AntdUI.Column("C0", "要素") { Editable = false, ReadOnly = true });
+            elementsRows.Columns.Add("C1", typeof(object));
+            elements.Columns.Add(new AntdUI.Column("C1", "值") { Editable = false, ReadOnly = true });
+            elements.DataSource = elementsRows;
+        }
+
         private WaveAnalysisResult? _result;
         private bool _busy;
+        // Designer 重载可能重复释放页面，先解除事件，取消和释放只执行一次。
+        private void DisposeLifetime(object? sender, EventArgs e)
+        {
+            Disposed -= DisposeLifetime;
+            _lifetime.Cancel();
+            _lifetime.Dispose();
+        }
         private readonly CancellationTokenSource _lifetime = new();
         private string _metadata = "{}";
 
         public WaveAnalysisPage()
         {
             InitializeComponent();
+            InitializeTables();
             // 设计器只创建控件，文件读取和分析事件留给运行时。
             if (System.ComponentModel.LicenseManager.UsageMode == System.ComponentModel.LicenseUsageMode.Designtime) return;
             browseButton.Click += (_, _) => Browse();
@@ -19,7 +38,7 @@ namespace Page_switching.panel
             exportSpectrumButton.Click += (_, _) => Export(false);
             exportElementsButton.Click += (_, _) => Export(true);
             importResultsButton.Click += (_, _) => ImportLegacyResults();
-            Disposed += (_, _) => { _lifetime.Cancel(); _lifetime.Dispose(); };
+            Disposed += DisposeLifetime;
             inputPath.TextChanged += (_, _) => ClearResult();
             foreach (var number in new[] { channelInput, rateInput, heightInput, periodInput, gammaInput, passesInput, pointsInput, depthInput })
                 number.ValueChanged += (_, _) => ClearResult();
@@ -37,7 +56,8 @@ namespace Page_switching.panel
         {
             if (_busy) return;
             _result = null;
-            elements.Rows.Clear();
+            elementsRows.Rows.Clear();
+            elements.Refresh();
             plot.SetSeries([], [], []);
             _busy = true;
             analyzeButton.Enabled = false;
@@ -58,10 +78,21 @@ namespace Page_switching.panel
                 var rate = (double)rateInput.Value;
                 var depth = (double)depthInput.Value;
                 var legacy = methodInput.SelectedIndex == 1;
-                var metadata = System.Text.Json.JsonSerializer.Serialize(new { Source = path, Channel = channel,
-                    LegacyUnit = unitInput.Text, CsvSampleRate = rate, Height = hs, Period = period, Depth = depth,
-                    Gamma = gamma, Spectrum = spectrumInput.Text, Passes = passes, Points = points,
-                    Method = legacy ? "Legacy-WaveTJU-6m-11" : "MeanRemoved-Hann-OneSidedFFT-UpCrossing" });
+                var metadata = System.Text.Json.JsonSerializer.Serialize(new
+                {
+                    Source = path,
+                    Channel = channel,
+                    LegacyUnit = unitInput.Text,
+                    CsvSampleRate = rate,
+                    Height = hs,
+                    Period = period,
+                    Depth = depth,
+                    Gamma = gamma,
+                    Spectrum = spectrumInput.Text,
+                    Passes = passes,
+                    Points = points,
+                    Method = legacy ? "Legacy-WaveTJU-6m-11" : "MeanRemoved-Hann-OneSidedFFT-UpCrossing"
+                });
                 if (!legacy && code == 0) throw new InvalidOperationException("内置分析支持JONSWAP、P-M、B谱、ITTC；其他谱请选择旧分析程序，并提供对应EXE。");
                 status.Text = "正在读取和计算……";
                 var series = await Task.Run(() => WaveSeriesFile.Read(path, channel, mm, rate));
@@ -77,7 +108,8 @@ namespace Page_switching.panel
                 information["WaveCount"] = result.WaveCount;
                 _metadata = information.ToJsonString();
                 foreach (var item in result.Statistics)
-                    elements.Rows.Add(item.Key, double.IsFinite(item.Value) ? item.Value.ToString("0.######") : "无完整波");
+                    elementsRows.Rows.Add(item.Key, double.IsFinite(item.Value) ? item.Value.ToString("0.######") : "无完整波");
+                elements.Refresh();
                 plot.SetSeries(result.Frequencies, result.Theoretical, result.Measured);
                 plot.VerticalCaption = legacy ? "S(f)（旧文件单位）" : "S(f) (m²·s)";
                 status.Text = legacy ? "旧程序结果已读取；波高保留旧程序单位，须用实测样例确认。"
@@ -94,7 +126,9 @@ namespace Page_switching.panel
             if (_result is null) return;
             using var dialog = new SaveFileDialog
             {
-                Filter = "分析文件 (*.dat)|*.dat|CSV文件 (*.csv)|*.csv", DefaultExt = "dat", AddExtension = true,
+                Filter = "分析文件 (*.dat)|*.dat|CSV文件 (*.csv)|*.csv",
+                DefaultExt = "dat",
+                AddExtension = true,
                 FileName = statistics ? "WaveParameters.dat" : "Spectra.dat"
             };
             if (dialog.ShowDialog(this) != DialogResult.OK) return;
@@ -154,8 +188,9 @@ namespace Page_switching.panel
                 var result = LegacyWaveAnalysis.Read(spectrum.FileName, elementsFile.FileName);
                 _result = result;
                 _metadata = System.Text.Json.JsonSerializer.Serialize(new { Method = "ImportedLegacyResult", Spectrum = spectrum.FileName, Elements = elementsFile.FileName });
-                elements.Rows.Clear();
-                foreach (var item in result.Statistics) elements.Rows.Add(item.Key, item.Value.ToString("0.######"));
+                elementsRows.Rows.Clear();
+                foreach (var item in result.Statistics) elementsRows.Rows.Add(item.Key, item.Value.ToString("0.######"));
+                elements.Refresh();
                 plot.SetSeries(result.Frequencies, result.Theoretical, result.Measured);
                 plot.VerticalCaption = "S(f)（旧文件单位）";
                 exportSpectrumButton.Enabled = exportElementsButton.Enabled = true;
@@ -177,7 +212,8 @@ namespace Page_switching.panel
         {
             if (_busy) return;
             _result = null;
-            elements.Rows.Clear();
+            elementsRows.Rows.Clear();
+            elements.Refresh();
             plot.SetSeries([], [], []);
             exportSpectrumButton.Enabled = exportElementsButton.Enabled = false;
         }
