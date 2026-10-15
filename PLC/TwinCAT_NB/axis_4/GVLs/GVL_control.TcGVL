@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <GVL Name="GVL_control" Id="{77D2CFF4-88AE-4C20-BC1C-12AABEE26C56}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+VAR_GLOBAL
+    // 新三站协议编码：1 造波控制室，2 拖车本地，3 远程操作室；数字小优先级高。
+    aStation : ARRAY[1..3] OF ST_ControlStation;
+    // 仅由现场选择开关/授权逻辑提供，默认 FALSE，不能由申请动作自行置位。
+    xCenterMaster : BOOL;
+    xLocalMaster : BOOL;
+    xAllowLocal : BOOL;
+    xAllowRemote : BOOL;
+    // 以下由仲裁块写，任何上位机都不能直接写 Owner 来取得权限。
+    nOwner : UINT;
+    xLocked : BOOL; // 运行/运动命令尚未退出，禁止申请接管和释放。
+    xCanCommand : BOOL;
+    xOwnerChanged : BOOL;
+    xStopOwner : BOOL; // 失联后撤销命令并停车，保持旧 Owner 直到停稳。
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

@@ -4,8 +4,8 @@
     <Declaration><![CDATA[{attribute 'qualified_only'}
 VAR_GLOBAL
     // switch 的只读监控契约：前四项 UINT，心跳 UDINT，不能按变量名前缀猜类型。
-    // 控制权/模式来自 GVL_pc 的现场控制逻辑，不根据页面或 ADS 连接状态伪造授权。
-    nControlOwner : UINT; // 0 未分配；1 上位机；2 现场台；3 其它端。
+    // 控制权/模式来自 PLC 仲裁程序，不根据页面或 ADS 连接状态伪造授权。
+    nControlOwner : UINT; // 0 未分配；1 造波控制室；2 拖车本地；3 远程操作室。
     nControlMode : UINT; // 0 未选择；1 手动；2 自动。
     nWaveState : UINT; // 0 待机；1 准备；2 运行；4 停止中；6 完成；7 故障。
     udiWaveFaultCode : UINT; // 兼容 switch 的 UInt16 读取；65535 表示完整码超出 UINT。

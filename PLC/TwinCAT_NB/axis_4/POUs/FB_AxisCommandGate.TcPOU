@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_AxisCommandGate" Id="{74EBD80F-42FB-4987-91E5-23C1EF9A499B}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_AxisCommandGate
+// 每扫描在基础轴块之前调用；只从已授权站点邮箱复制命令，反馈字段不受影响。
+VAR_INPUT
+    Command : ST_AxisCommand;
+    xPermit : BOOL;
+    xStop : BOOL;
+END_VAR
+VAR_IN_OUT
+    Data : ST_AxisAds;
+END_VAR]]></Declaration>
+    <Implementation><ST><![CDATA[Data.xStart := xPermit AND Command.xStart;
+Data.xStop := xStop OR (xPermit AND Command.xStop);
+Data.jogz := xPermit AND Command.jogz;
+Data.jogf := xPermit AND Command.jogf;
+Data.gohome := xPermit AND Command.gohome;
+Data.reset := xPermit AND Command.reset;
+Data.lrJogSpeed := 0;
+IF xPermit THEN Data.lrJogSpeed := Command.lrJogSpeed; END_IF
+]]></ST></Implementation>
+  </POU>
+</TcPlcObject>

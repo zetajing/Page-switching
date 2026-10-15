@@ -164,9 +164,9 @@ namespace Page_switching
         internal static string FormatControlOwner(ushort value) => value switch
         {
             0 => "未分配",
-            1 => "上位机",
-            2 => "现场操作台",
-            3 => "其他控制端",
+            1 => "造波控制室",
+            2 => "拖车本地",
+            3 => "远程操作室",
             _ => $"未知({value})"
         };
 

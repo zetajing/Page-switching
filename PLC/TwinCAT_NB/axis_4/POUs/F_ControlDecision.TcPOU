@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="F_ControlDecision" Id="{21D9CA08-245A-44FC-B2E8-A91FE26405D0}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION F_ControlDecision : UINT
+// 纯仲裁判定，方便针对真实 ST 条件进行离线边界测试。
+VAR_INPUT
+    nOwner : UINT;
+    nStation : UINT;
+    nAction : UINT;
+    xLocked : BOOL;
+    xAllowed : BOOL;
+    xOnline : BOOL;
+END_VAR]]></Declaration>
+    <Implementation><ST><![CDATA[// 成功应答不总表示交接：本持有者重复申请只是确认已有权限。
+IF (nStation < 1) OR (nStation > 3) OR ((nAction <> 1) AND (nAction <> 2)) THEN
+    F_ControlDecision := 7;
+ELSIF NOT xOnline THEN
+    F_ControlDecision := 4;
+ELSIF (nAction = 1) AND (nOwner = nStation) THEN
+    F_ControlDecision := 1;
+ELSIF xLocked THEN
+    // 用户规则：运行中包括高优先级站在内，不能申请接管，也不能主动释放。
+    F_ControlDecision := 2;
+ELSIF nAction = 2 THEN
+    IF nOwner = nStation THEN F_ControlDecision := 1;
+    ELSE F_ControlDecision := 5;
+    END_IF
+ELSIF NOT xAllowed THEN
+    F_ControlDecision := 3;
+ELSIF (nOwner <> 0) AND (nStation > nOwner) THEN
+    F_ControlDecision := 6;
+ELSE
+    F_ControlDecision := 1;
+END_IF
+]]></ST></Implementation>
+  </POU>
+</TcPlcObject>

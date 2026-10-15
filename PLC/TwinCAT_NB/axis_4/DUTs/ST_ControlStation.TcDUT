@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="ST_ControlStation" Id="{8F448536-A713-4A61-B0D2-EC6F881BDA87}">
+    <Declaration><![CDATA[TYPE ST_ControlStation :
+STRUCT
+    // 站点写：先写 nAction，再提交新的非零序号；心跳独立持续更新。
+    udiHeartbeat : UDINT;
+    nAction : UINT; // 1 申请，2 释放。
+    udiRequestSequence : UDINT;
+    aAxis : ARRAY[1..4] OF ST_AxisCommand;
+    // PLC 写，站点只读：请求是否成功必须看同序号应答，不能以写成功代替授权。
+    udiAckSequence : UDINT;
+    nResult : UINT; // 1 成功；2 运行锁定；3 未授权；4 离线；5 非持有者；6 优先级；7 无效操作。
+    xOnline : BOOL;
+    xGranted : BOOL;
+END_STRUCT
+END_TYPE]]></Declaration>
+  </DUT>
+</TcPlcObject>

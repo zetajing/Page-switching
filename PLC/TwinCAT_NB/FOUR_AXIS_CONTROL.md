@@ -146,8 +146,16 @@ ST_AxisAds 末尾增加了反馈字段。上位机按符号分别访问；如整
 
 ## switch 配套接口
 
-本工程补充 `GVL_HMI` 与 `FB_HmiFeedback`，MAIN 在四个基础轴块之后发布五项机器状态和扩展轨迹诊断。`udiWaveFaultCode` 为 UINT，心跳为 UDINT；Owner/Mode 取自现场 `GVL_pc` 输入，未接入时保持 0，不伪造授权。
+本工程补充 `GVL_HMI` 与 `FB_HmiFeedback`，MAIN 在四个基础轴块之后发布五项机器状态和扩展轨迹诊断。`udiWaveFaultCode` 为 UINT，心跳为 UDINT；Owner/Mode 由 `FB_ControlAuthority` 仲裁后经 `GVL_pc` 发布，运行中拒绝控制权交接。
 
 上位机使用 `GVL_axis.Axis1..4`，使能反馈读 `xEnabled`，正向点动写 `jogz`，负向点动写 `jogf`。本次只对接现有手动控制和只读监控，自动造波页面保持原行为。
 
 独立 PLC 编辑目录没有 Git 仓库；可审查源码副本同步到 `switch/PLC/TwinCAT_NB`，与上位机配置一同版本管理。后续外部目录的修改需同步副本。详见 switch 仓库的 `docs/TwinCAT_NB_Integration.md`。
+
+## 三站控制权与命令入口
+
+三站编码 1 造波控制室、2 拖车本地、3 远程操作室。`GVL_control` 中现场选择/授权默认 FALSE，需接入实际开关。运行锁涵盖轨迹、点动、回原、减速、运动块 Busy 和尚未消费的运动命令；运行中拒绝高优先级接管和当前端释放，被拒绝请求不排队。
+
+本说明前文 `GVL_axis.Axis1..4` 的命令字段现在为内部执行值。上位机实际写入 `GVL_control.aStation[本站号].aAxis[轴号]`，反馈仍读取 GVL_axis。PLC 每扫描只接纳授权站邮箱，交接清空旧命令，新站重新发动作。轨迹接口保留，轨迹启动同样需要有效控制权，自动页面未新增运行入口。
+
+失联时撤命令并停车，停稳前不交接；停稳后清除旧 Owner，恢复连接不自动重放动作。细节见 switch 的 `docs/ControlAuthorityRules.md`。

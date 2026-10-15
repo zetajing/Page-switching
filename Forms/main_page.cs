@@ -62,7 +62,7 @@ namespace Page_switching
                 if (!_closing) _autoPage.AddLog(message);
             });
             _manualPage = new Manual(_axisService);
-            _controlAuthorityPage = new ControlAuthority();
+            _controlAuthorityPage = new ControlAuthority(_axisService);
             _controlAuthorityPage.RefreshRequested += async (_, _) => await RefreshMonitorAsync();
             _config = new Config();
             _waveformPage = new WaveformPage();
@@ -224,6 +224,7 @@ namespace Page_switching
             _headerStatusTimer.Stop();
             // 等待后台任务期间先停止手动页刷新和按钮请求，轴客户端仍留到最后释放。
             if (!IsDisposed && !Disposing) Enabled = false;
+            _controlAuthorityPage?.CancelRequests();
             _manualPage?.Dispose();
             _shutdownTask = CleanupServicesAsync();
             return _shutdownTask;

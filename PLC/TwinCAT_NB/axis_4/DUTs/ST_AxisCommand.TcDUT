@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="ST_AxisCommand" Id="{FAC0DCC2-F752-446A-9577-A3D38B864CEA}">
+    <Declaration><![CDATA[TYPE ST_AxisCommand :
+STRUCT
+    // 单个站点的命令邮箱；不含反馈，只能由本站写入。
+    xStart : BOOL;
+    xStop : BOOL;
+    jogz : BOOL;
+    jogf : BOOL;
+    gohome : BOOL;
+    reset : BOOL;
+    lrJogSpeed : LREAL;
+END_STRUCT
+END_TYPE]]></Declaration>
+  </DUT>
+</TcPlcObject>

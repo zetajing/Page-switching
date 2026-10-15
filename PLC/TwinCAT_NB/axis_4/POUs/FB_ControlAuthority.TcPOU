@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_ControlAuthority" Id="{9270AB05-B370-44A3-9D02-4FCF92386078}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_ControlAuthority
+VAR_INPUT
+    xMotionBusy : BOOL; // 含实际运动、轨迹占用、轴块 Busy、无效反馈，不仅看造波运行位。
+END_VAR
+VAR
+    nOwner : UINT; // 私有持有者，启动 0；GVL_control.nOwner 只是只读发布副本。
+    nOldOwner : UINT;
+    xOwnerLost : BOOL;
+    xResetCommands : BOOL; // 撤权后同扫描重新授予原站，也必须清旧命令。
+    xLocked : BOOL;
+    axAllowed : ARRAY[1..3] OF BOOL;
+    axSeenHeartbeat : ARRAY[1..3] OF BOOL;
+    aLastHeartbeat : ARRAY[1..3] OF UDINT;
+    aTimeout : ARRAY[1..3] OF TON;
+    aEmpty : ARRAY[1..4] OF ST_AxisCommand;
+    i, j : INT;
+    nReply : UINT;
+END_VAR]]></Declaration>
+    <Implementation><ST><![CDATA[nOldOwner := nOwner;
+xResetCommands := FALSE;
+FOR i := 1 TO 3 DO
+    IF GVL_control.aStation[i].udiHeartbeat <> aLastHeartbeat[i] THEN axSeenHeartbeat[i] := TRUE; END_IF
+    aTimeout[i](IN := GVL_control.aStation[i].udiHeartbeat = aLastHeartbeat[i], PT := T#3S);
+    aLastHeartbeat[i] := GVL_control.aStation[i].udiHeartbeat;
+    GVL_control.aStation[i].xOnline := axSeenHeartbeat[i] AND NOT aTimeout[i].Q;
+END_FOR
+axAllowed[1] := GVL_control.xCenterMaster;
+axAllowed[2] := NOT GVL_control.xCenterMaster AND GVL_control.xAllowLocal;
+axAllowed[3] := NOT GVL_control.xCenterMaster AND NOT GVL_control.xLocalMaster AND GVL_control.xAllowRemote;
+
+xLocked := xMotionBusy;
+IF nOwner <> 0 THEN
+    IF NOT GVL_control.aStation[nOwner].xOnline THEN xOwnerLost := TRUE; END_IF
+    // 已接收但尚未进入 NC 运动的命令也锁住交接，覆盖“申请与启动同一扫描”的窗口。
+    // 失联后忽略旧邮箱中的保持命令，让实际停车完成后可以退出，不会永远卡住 Owner。
+    IF NOT xOwnerLost THEN
+        FOR j := 1 TO 4 DO
+            xLocked := xLocked OR GVL_control.aStation[nOwner].aAxis[j].jogz
+                OR GVL_control.aStation[nOwner].aAxis[j].jogf
+                OR GVL_control.aStation[nOwner].aAxis[j].gohome;
+        END_FOR
+        xLocked := xLocked OR GVL_motion.xStart;
+    END_IF
+    // 运行期间冻结 Owner 和选择开关导致的交接；高优先级申请不迫使设备停车让权。
+    // 失联则仅撤命令并停车，停稳前仍保留原 Owner，不授予别的站点。
+    IF NOT xLocked AND (xOwnerLost OR NOT axAllowed[nOwner]) THEN
+        nOwner := 0;
+        xOwnerLost := FALSE;
+        xResetCommands := TRUE;
+    END_IF
+END_IF
+
+// 同一扫描先处理释放，再按 1/2/3 的优先级处理申请；被拒绝的请求立即应答，不排队自动接管。
+FOR i := 1 TO 3 DO
+    IF (GVL_control.aStation[i].udiRequestSequence <> 0)
+        AND (GVL_control.aStation[i].udiRequestSequence <> GVL_control.aStation[i].udiAckSequence)
+        AND (GVL_control.aStation[i].nAction = 2) THEN
+        nReply := F_ControlDecision(nOwner := nOwner, nStation := INT_TO_UINT(i), nAction := 2,
+            xLocked := xLocked, xAllowed := axAllowed[i], xOnline := GVL_control.aStation[i].xOnline);
+        IF nReply = 1 THEN nOwner := 0; xResetCommands := TRUE; END_IF
+        GVL_control.aStation[i].nResult := nReply;
+        GVL_control.aStation[i].udiAckSequence := GVL_control.aStation[i].udiRequestSequence;
+    END_IF
+END_FOR
+FOR i := 1 TO 3 DO
+    IF (GVL_control.aStation[i].udiRequestSequence <> 0)
+        AND (GVL_control.aStation[i].udiRequestSequence <> GVL_control.aStation[i].udiAckSequence) THEN
+        nReply := F_ControlDecision(nOwner := nOwner, nStation := INT_TO_UINT(i),
+            nAction := GVL_control.aStation[i].nAction, xLocked := xLocked,
+            xAllowed := axAllowed[i], xOnline := GVL_control.aStation[i].xOnline);
+        IF (nReply = 1) AND (GVL_control.aStation[i].nAction = 1) THEN
+            IF nOwner <> i THEN xResetCommands := TRUE; END_IF
+            nOwner := INT_TO_UINT(i);
+        END_IF
+        GVL_control.aStation[i].nResult := nReply;
+        GVL_control.aStation[i].udiAckSequence := GVL_control.aStation[i].udiRequestSequence;
+    END_IF
+END_FOR
+GVL_control.xOwnerChanged := (nOwner <> nOldOwner) OR xResetCommands;
+IF GVL_control.xOwnerChanged THEN
+    // 清所有站点的旧运动命令，新持有者必须重新下发，不能继承旧按钮或排队动作。
+    FOR i := 1 TO 3 DO GVL_control.aStation[i].aAxis := aEmpty; END_FOR
+END_IF
+IF nOwner = 0 THEN xOwnerLost := FALSE; END_IF
+GVL_control.xCanCommand := FALSE;
+FOR i := 1 TO 3 DO
+    GVL_control.aStation[i].xGranted := (nOwner = i) AND NOT xOwnerLost AND GVL_control.aStation[i].xOnline;
+    GVL_control.xCanCommand := GVL_control.xCanCommand OR GVL_control.aStation[i].xGranted;
+END_FOR
+GVL_control.nOwner := nOwner;
+GVL_control.xLocked := xLocked;
+GVL_control.xStopOwner := xOwnerLost;
+GVL_pc.nControlOwner := nOwner;
+// 模式反映已授权控制的实际执行路径：无持有者 0，基础控制 1，轨迹占用 2。
+IF nOwner = 0 THEN GVL_pc.nControlMode := 0;
+ELSIF GVL_motion.xBusy THEN GVL_pc.nControlMode := 2;
+ELSE GVL_pc.nControlMode := 1;
+END_IF
+]]></ST></Implementation>
+  </POU>
+</TcPlcObject>

@@ -20,8 +20,7 @@ IF tmHeartbeat.Q THEN
     END_IF
 END_IF
 
-// 2. 现场控制权和模式选择尚无仲裁程序，默认保持 0，绝不因连接成功就赋成 1。
-// 现场接入时由实际仲裁/模式选择程序写 GVL_pc 的这两个输入，HMI 原样反馈。
+// 2. 控制权和模式由 FB_ControlAuthority 发布，运行中不交接；HMI 只读反馈。
 GVL_HMI.nControlOwner := GVL_pc.nControlOwner;
 GVL_HMI.nControlMode := GVL_pc.nControlMode;
 

@@ -1,8 +1,8 @@
 # 自动页面 PLC 只读监控接口
 
-本接口由上位机定义，PLC 发布对应反馈变量；读取类型已按现场在线变量表修正。上位机只读取反馈，不申请或释放控制权，不启动、暂停或停止自动造波，也不写心跳。
+本接口由上位机定义，PLC 发布对应反馈变量；读取类型已按现场在线变量表修正。机器监控客户端只读取反馈，不写控制请求或心跳；控制权申请和本站心跳由独立的 AxisService 控制协议处理，自动造波页面未新增运行操作。
 
-控制权申请页面复用本接口的只读反馈，三站优先级和待确认接口见 [三站控制权规则](ControlAuthorityRules.md)。本表的 Owner 编码尚未映射到三站，申请、释放按钮保持待接入状态。
+控制权申请页面复用本接口的只读反馈，三站优先级和待确认接口见 [三站控制权规则](ControlAuthorityRules.md)。三站 Owner 编码及申请、释放已按新配套 PLC 接入，具体规则见控制权文档；机器监控客户端本身仍只读。
 
 ## 五个全局反馈变量
 
@@ -20,7 +20,7 @@ END_VAR
 
 | 完整 ADS 符号 | 类型 / 上位机读取类型 | 取值含义 |
 |---|---|---|
-| `GVL_HMI.nControlOwner` | UINT / UInt16 | 0 未分配；1 上位机；2 现场操作台；3 其他控制端 |
+| `GVL_HMI.nControlOwner` | UINT / UInt16 | 0 未分配；1 造波控制室；2 拖车本地；3 远程操作室 |
 | `GVL_HMI.nControlMode` | UINT / UInt16 | 0 未选择；1 手动；2 自动 |
 | `GVL_HMI.nWaveState` | UINT / UInt16 | 0 待机；1 准备中；2 造波中；3 已暂停；4 停止中；5 已停止；6 已完成；7 故障 |
 | `GVL_HMI.udiWaveFaultCode` | UINT / UInt16 | 0 无当前故障；非零为当前有效故障码，上位机显示数值，不推测故障文字 |
@@ -125,7 +125,7 @@ END_IF;
 
 配套 PLC 新增 `GVL_HMI` 与 `FB_HmiFeedback`，在 MAIN 四个基础轴块调用之后发布本扫描反馈。手动控制默认使用 `GVL_axis.Axis1..Axis4`；使能反馈为 `xEnabled=MC_Power.Status`，运动反馈 `xMotorRun` 不再被当作使能。NC 正向点动为 `jogz`，负向为 `jogf`。详细对照和部署步骤见 [TwinCAT_NB 对接说明](TwinCAT_NB_Integration.md)。
 
-PLC 心跳由约 500 ms 的自复位 TON 事件递增，不依赖上位机写入。`nControlOwner`、`nControlMode` 来自 `GVL_pc` 中的现场仲裁/模式选择结果；未接入时保持 0，不以页面或 ADS 连接推断授权。
+PLC 心跳由约 500 ms 的自复位 TON 事件递增，不依赖上位机写入。`nControlOwner`、`nControlMode` 来自 `FB_ControlAuthority` 经 `GVL_pc` 发布的真实结果；运行中不交接，不以页面或 ADS 连接推断授权。
 
 本实现不发布暂停状态 3，也不虚构已停止状态 5。轨迹内部 40/50/60/70 显示停止中 4，退出后若仍有组错误则显示故障 7。组状态 30 显示运行 2，5/10/15/20 显示准备 1，正常完成显示 6，其余无错误时待机 0。只读状态适配不会启动自动造波。
 

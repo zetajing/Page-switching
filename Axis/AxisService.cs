@@ -55,6 +55,7 @@ public sealed class AxisServiceOptions
     public int ConnectTimeoutMilliseconds { get; init; } = 10000;
     public int OperationTimeoutMilliseconds { get; init; } = 5000;
     public int RefreshIntervalMilliseconds { get; init; } = 100;
+    public ushort ControlStationCode { get; init; } // 0 未配置；1 中心；2 本地；3 远程。
     public string Unit { get; init; } = "°";
     public double MinimumPosition { get; init; } = -20;
     public double MaximumPosition { get; init; } = 20;
@@ -64,6 +65,10 @@ public sealed class AxisServiceOptions
     public static AxisServiceOptions FromConfiguration(NameValueCollection? settings = null)
     {
         settings ??= AdsConnectionSettings.GetSettings();
+        var stationCode = ControlStationIdentity.GetPlcCode(ControlStationIdentity.Parse(settings["ControlStationIdentity"]));
+        // 反馈始终读取公共轴状态；命令必须进入本站邮箱，未配置身份时禁止写命令。
+        string Command(string key) => stationCode == 0 ? "" : (settings[key] ?? "")
+            .Replace("{station}", stationCode.ToString(System.Globalization.CultureInfo.InvariantCulture));
         var symbols = new AxisSymbolMap[4];
         for (var axisNumber = 1; axisNumber <= 4; axisNumber++)
         {
@@ -77,18 +82,19 @@ public sealed class AxisServiceOptions
                 PositiveLimit = settings[$"AdsAxis{axisNumber}PositiveLimit"] ?? "",
                 NegativeLimit = settings[$"AdsAxis{axisNumber}NegativeLimit"] ?? "",
                 OriginSignal = settings[$"AdsAxis{axisNumber}OriginSignal"] ?? "",
-                EnableCommand = settings[$"AdsAxis{axisNumber}EnableCommand"] ?? "",
-                ResetAlarmCommand = settings[$"AdsAxis{axisNumber}ResetAlarmCommand"] ?? "",
-                HomeCommand = settings[$"AdsAxis{axisNumber}HomeCommand"] ?? "",
-                StopCommand = settings[$"AdsAxis{axisNumber}StopCommand"] ?? "",
-                JogSpeedCommand = settings[$"AdsAxis{axisNumber}JogSpeedCommand"] ?? "",
-                JogPositiveCommand = settings[$"AdsAxis{axisNumber}JogPositiveCommand"] ?? "",
-                JogNegativeCommand = settings[$"AdsAxis{axisNumber}JogNegativeCommand"] ?? ""
+                EnableCommand = Command($"AdsAxis{axisNumber}EnableCommand"),
+                ResetAlarmCommand = Command($"AdsAxis{axisNumber}ResetAlarmCommand"),
+                HomeCommand = Command($"AdsAxis{axisNumber}HomeCommand"),
+                StopCommand = Command($"AdsAxis{axisNumber}StopCommand"),
+                JogSpeedCommand = Command($"AdsAxis{axisNumber}JogSpeedCommand"),
+                JogPositiveCommand = Command($"AdsAxis{axisNumber}JogPositiveCommand"),
+                JogNegativeCommand = Command($"AdsAxis{axisNumber}JogNegativeCommand")
             };
         }
 
         return new AxisServiceOptions
         {
+            ControlStationCode = stationCode,
             AmsNetId = settings["AdsAmsNetId"] ?? "",
             AdsPort = Convert.ToInt32(settings["AdsPort"] ?? "851"),
             ConnectTimeoutMilliseconds = Convert.ToInt32(settings["AdsConnectTimeoutMs"] ?? "10000"),
@@ -104,7 +110,7 @@ public sealed class AxisServiceOptions
     }
 }
 
-public sealed class AxisService : IDisposable
+public sealed partial class AxisService : IDisposable
 {
     private readonly AxisServiceOptions _options;
     private readonly SemaphoreSlim _operationGate = new(1, 1);
@@ -131,7 +137,7 @@ public sealed class AxisService : IDisposable
     public double MaximumPosition => _options.MaximumPosition;
     public string? LastError => _lastError;
 
-    public bool CanControlAll => IsConnected && _options.AxisSymbols.All(map =>
+    public bool CanControlAll => IsConnected && HasControlAuthority && _options.AxisSymbols.All(map =>
             !string.IsNullOrWhiteSpace(map.EnableCommand) &&
             !string.IsNullOrWhiteSpace(map.ResetAlarmCommand) &&
             !string.IsNullOrWhiteSpace(map.HomeCommand) &&
@@ -142,7 +148,7 @@ public sealed class AxisService : IDisposable
     {
         ValidateAxisNumber(axisNumber);
         var map = _options.AxisSymbols[axisNumber - 1];
-        return IsConnected &&
+        return IsConnected && HasControlAuthority &&
             !string.IsNullOrWhiteSpace(map.HomeCommand) &&
             !string.IsNullOrWhiteSpace(map.StopCommand) &&
             !string.IsNullOrWhiteSpace(map.JogSpeedCommand) &&
@@ -167,7 +173,8 @@ public sealed class AxisService : IDisposable
         {
             if (IsConnected)
             {
-                return "ADS 已连接";
+                if (ControlStationCode == 0) return "ADS 已连接，未配置本站身份";
+                return HasControlAuthority ? "ADS 已连接，本站已授权" : "ADS 已连接，本站未授权";
             }
 
             return string.IsNullOrWhiteSpace(_lastError) ? "ADS 未连接" : "ADS 连接失败";
@@ -207,6 +214,7 @@ public sealed class AxisService : IDisposable
                     _connected = true;
                     _lastError = null;
                 }
+                StartAuthorityLoop();
             }
             catch (Exception ex)
             {
@@ -234,6 +242,7 @@ public sealed class AxisService : IDisposable
             return;
         }
 
+        await StopAuthorityLoopAsync().ConfigureAwait(false);
         await _operationGate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
@@ -318,6 +327,7 @@ public sealed class AxisService : IDisposable
         try
         {
             var client = GetConnectedClient() ?? throw new InvalidOperationException("ADS 尚未连接。");
+            RequireControlAuthority();
             await client.WriteManyAsync(CreateWriteRequests(client, symbols, value), cancellationToken)
                 .ConfigureAwait(false);
         }
@@ -380,6 +390,7 @@ public sealed class AxisService : IDisposable
             var client = GetConnectedClient() ?? throw new InvalidOperationException("ADS 尚未连接。");
             if (start)
             {
+                RequireControlAuthority();
                 await client.WriteAsync(
                     new WriteRequest(client.DeviceId, map.JogSpeedCommand, DataType.Double, Math.Abs(speed)),
                     cancellationToken).ConfigureAwait(false);
@@ -405,6 +416,7 @@ public sealed class AxisService : IDisposable
         try
         {
             var client = GetConnectedClient() ?? throw new InvalidOperationException("ADS 尚未连接。");
+            RequireControlAuthority();
             var setRequests = CreateWriteRequests(client, symbols, true);
             var resetRequests = CreateWriteRequests(client, symbols, false);
             try
@@ -441,6 +453,7 @@ public sealed class AxisService : IDisposable
                 throw new InvalidOperationException($"轴 {axisNumber} 尚未配置 ADS 控制符号。");
             }
 
+            RequireControlAuthority();
             try
             {
                 await client.WriteAsync(

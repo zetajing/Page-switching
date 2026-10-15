@@ -9,6 +9,12 @@ VAR
     fbAxis2 : FB_AxisControl;
     fbAxis3 : FB_AxisControl;
     fbAxis4 : FB_AxisControl;
+    fbAuthority : FB_ControlAuthority;
+    aCommandGate : ARRAY[1..4] OF FB_AxisCommandGate;
+    aCommands : ARRAY[1..4] OF ST_AxisCommand;
+    aEmptyCommands : ARRAY[1..4] OF ST_AxisCommand;
+    xControlBusy : BOOL;
+    xCommandPermit : BOOL;
     fbTrajectory : FB_FourAxisTrajectory;
     fbHmiFeedback : FB_HmiFeedback; // 四轴执行结果发布到 switch 只读监控接口。
     xAxesReady : BOOL;
@@ -22,13 +28,33 @@ END_VAR
 FOR i := 1 TO 4 DO
  GVL_sy.axis[i].ReadStatus();
  END_FOR
+// 运行锁：点动、回原、轨迹、停止/退出及未消费的运动命令都阻止交接。
+// 使用 NC 状态、实际速度和轴块 Busy，不仅依赖造波 Running 位。
+xControlBusy := GVL_motion.xBusy OR GVL_axis.Axis1.xBusy OR GVL_axis.Axis2.xBusy
+    OR GVL_axis.Axis3.xBusy OR GVL_axis.Axis4.xBusy;
+FOR i := 1 TO 4 DO
+    xControlBusy := xControlBusy OR GVL_sy.axis[i].Status.Moving
+        OR GVL_sy.axis[i].Status.Homing OR GVL_sy.axis[i].Status.Stopping
+        OR GVL_sy.axis[i].Status.ExtSetPointGenEnabled OR GVL_sy.axis[i].Status.IoDataInvalid
+        OR (ABS(GVL_sy.axis[i].NcToPlc.ActVelo) > 0.000001);
+END_FOR
+fbAuthority(xMotionBusy := xControlBusy);
+aCommands := aEmptyCommands;
+IF GVL_control.xCanCommand THEN aCommands := GVL_control.aStation[GVL_control.nOwner].aAxis; END_IF
+// 交接扫描清除命令；新持有者必须在获授权应答后重新发动作，不能继承旧命令。
+xCommandPermit := GVL_control.xCanCommand AND NOT GVL_control.xOwnerChanged;
+aCommandGate[1](Data := GVL_axis.Axis1, Command := aCommands[1], xPermit := xCommandPermit, xStop := GVL_control.xStopOwner);
+aCommandGate[2](Data := GVL_axis.Axis2, Command := aCommands[2], xPermit := xCommandPermit, xStop := GVL_control.xStopOwner);
+aCommandGate[3](Data := GVL_axis.Axis3, Command := aCommands[3], xPermit := xCommandPermit, xStop := GVL_control.xStopOwner);
+aCommandGate[4](Data := GVL_axis.Axis4, Command := aCommands[4], xPermit := xCommandPermit, xStop := GVL_control.xStopOwner);
+
 // 这里先汇总基础块上一扫描的使能反馈。
 // 下方 xAbort 在追加 Homed/StandStill 前使用此值，防止把正常运动的“非静止”误判为联停。
 xAxesReady := GVL_axis.Axis1.xEnabled AND GVL_axis.Axis2.xEnabled AND GVL_axis.Axis3.xEnabled AND GVL_axis.Axis4.xEnabled;
 xAxisFault := GVL_axis.Axis1.xError OR GVL_axis.Axis2.xError  OR GVL_axis.Axis3.xError OR GVL_axis.Axis4.xError;
 // 任一轴停止、撤使能、手动命令冲突或许可丢失均触发整组联停。
 // 先退出轨迹再接受手动，不能在轨迹中途插入点动或回原。
-xAbort := NOT GVL_motion.xMotionPermit
+xAbort := NOT GVL_motion.xMotionPermit OR NOT GVL_control.xCanCommand
     OR (GVL_motion.xBusy AND NOT xAxesReady)
     OR NOT GVL_axis.Axis1.xStart OR NOT GVL_axis.Axis2.xStart
     OR NOT GVL_axis.Axis3.xStart OR NOT GVL_axis.Axis4.xStart
@@ -53,19 +79,19 @@ fbTrajectory(Axes := GVL_sy.axis, xAxesReady := xAxesReady, xAbort := xAbort, xA
 // 四个基础实例每扫描都调用，持续更新异步 MC 块 Busy/Done/Error。
 // Axis1..4 固定对应 NC 引用 [1]..[4]，不通过选中轴号复用一个实例。
 fbAxis1(Axis := GVL_sy.axis[1], Data := GVL_axis.Axis1, Config := GVL_motion.aConfig[1],
-    xPermit := GVL_motion.xMotionPermit, xPositiveLimit := GVL_motion.axPositiveLimit[1],
+    xPermit := GVL_motion.xMotionPermit AND GVL_control.xCanCommand, xPositiveLimit := GVL_motion.axPositiveLimit[1],
     xNegativeLimit := GVL_motion.axNegativeLimit[1], xHomeSensor := GVL_motion.axHomeSensor[1],
     xGroupBusy := GVL_motion.xBusy);
 fbAxis2(Axis := GVL_sy.axis[2], Data := GVL_axis.Axis2, Config := GVL_motion.aConfig[2],
-    xPermit := GVL_motion.xMotionPermit, xPositiveLimit := GVL_motion.axPositiveLimit[2],
+    xPermit := GVL_motion.xMotionPermit AND GVL_control.xCanCommand, xPositiveLimit := GVL_motion.axPositiveLimit[2],
     xNegativeLimit := GVL_motion.axNegativeLimit[2], xHomeSensor := GVL_motion.axHomeSensor[2],
     xGroupBusy := GVL_motion.xBusy);
 fbAxis3(Axis := GVL_sy.axis[3], Data := GVL_axis.Axis3, Config := GVL_motion.aConfig[3],
-    xPermit := GVL_motion.xMotionPermit, xPositiveLimit := GVL_motion.axPositiveLimit[3],
+    xPermit := GVL_motion.xMotionPermit AND GVL_control.xCanCommand, xPositiveLimit := GVL_motion.axPositiveLimit[3],
     xNegativeLimit := GVL_motion.axNegativeLimit[3], xHomeSensor := GVL_motion.axHomeSensor[3],
     xGroupBusy := GVL_motion.xBusy);
 fbAxis4(Axis := GVL_sy.axis[4], Data := GVL_axis.Axis4, Config := GVL_motion.aConfig[4],
-    xPermit := GVL_motion.xMotionPermit, xPositiveLimit := GVL_motion.axPositiveLimit[4],
+    xPermit := GVL_motion.xMotionPermit AND GVL_control.xCanCommand, xPositiveLimit := GVL_motion.axPositiveLimit[4],
     xNegativeLimit := GVL_motion.axNegativeLimit[4], xHomeSensor := GVL_motion.axHomeSensor[4],
     xGroupBusy := GVL_motion.xBusy);
 // 所有基础块本周期输出更新后，再发布 HMI 状态；避免把请求位误当成执行反馈。

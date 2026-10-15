@@ -11,7 +11,7 @@
 
 ## 手动 ADS 契约
 
-`N` 为 1..4，所有基础轴地址统一使用 `GVL_axis.AxisN`。
+`N` 为 1..4，反馈使用 `GVL_axis.AxisN`；命令使用 `GVL_control.aStation[{station}].aAxis[N]`，站号由启动时的本站身份解析为 1/2/3，未配置时禁止命令写入。
 
 | 上位机配置项后缀 | PLC 成员 | 类型 | 含义 |
 | --- | --- | --- | --- |
@@ -42,13 +42,13 @@
 
 | ADS 地址 | PLC 类型 | 来源 |
 | --- | --- | --- |
-| GVL_HMI.nControlOwner | UINT | GVL_pc.nControlOwner，实际现场仲裁输入 |
-| GVL_HMI.nControlMode | UINT | GVL_pc.nControlMode，实际模式选择输入 |
+| GVL_HMI.nControlOwner | UINT | FB_ControlAuthority 的实际仲裁结果 |
+| GVL_HMI.nControlMode | UINT | 无控制端 0、已授权基础控制 1、轨迹占用 2 |
 | GVL_HMI.nWaveState | UINT | 从实际轨迹流程和轴错误适配到页面状态编码 |
 | GVL_HMI.udiWaveFaultCode | UINT | 当前组/轴错误，供上位机 UInt16 读取 |
 | GVL_HMI.udiHeartbeat | UDINT | PLC 约每 500 ms 递增，待机和故障时仍更新 |
 
-Owner/Mode 当前没有现场仲裁/模式选择程序，保持默认 0，页面显示未分配/未选择。不要为消除提示而写死 1，也不要把本站身份设置、ADS 已连接或打开手动页面当作 PLC 授权。本次没有新增控制权申请或释放写协议，现有运动许可和设备联锁仍需现场接入。
+控制权由 `FB_ControlAuthority` 仲裁并发布，默认无持有者。运行中禁止申请接管和释放，包含高优先级站；停机后重新申请。各站命令分邮箱，PLC 只复制授权站命令到内部轴数据。现场选择/授权输入默认 FALSE，需要接入实际开关逻辑；本站身份和 ADS 已连接都不能代替授权。完整协议、失联处理和结果码见 [控制权规则](ControlAuthorityRules.md)。
 
 扩展只读字段：`udiDetailedFaultCode`、`nFaultAxis`、`nTrajectoryState`、`nCurrentPoint`、`nLoadedCount`、`nPointCount`、`xDataReady`、`xTrajectoryBusy`。源错误超过 65535 时，兼容 UINT 显示 65535，完整 UDINT 保存在详细字段中。
 
@@ -65,4 +65,4 @@ Owner/Mode 当前没有现场仲裁/模式选择程序，保持默认 0，页面
 
 离线检查：在配套 PLC 目录运行 `tests/verify_trajectory.py`、`tests/verify_switch_contract.py`。外部目录可用环境变量 `SWITCH_PROJECT` 指定本仓库。契约检查覆盖实际 App.config 中的 60 个轴地址和 5 个全局地址、PLC 类型、反馈调用顺序及只读边界；它不执行完整 PLC 状态机或验证实际 ADS 通信。
 
-上位机 Release 编译通过不等于实机对接完成；本次没有下载 PLC、写现场轴命令或验证 2 ms 实时性能。
+上位机 Release 编译通过不等于实机对接完成；本次没有下载 PLC、写现场轴命令或验证 2 ms 实时性能。控制权规则检查脚本为 `tests/verify_control_authority.py`。

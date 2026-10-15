@@ -411,7 +411,7 @@ namespace Page_switching
             centralRuleLabel.Name = "centralRuleLabel";
             centralRuleLabel.Size = new Size(1120, 102);
             centralRuleLabel.TabIndex = 2;
-            centralRuleLabel.Text = "中心控制室处于主控模式时，仅中心控制室指令有效；PLC 自动锁定、屏蔽拖车本地及远程操作室全部操作权限。";
+            centralRuleLabel.Text = "停稳后按主控选择受理中心申请；运行中锁定当前控制端，即使中心优先级最高也不能接管。";
             // 
             // localCaptionLabel
             // 
@@ -430,7 +430,7 @@ namespace Page_switching
             localRuleLabel.Name = "localRuleLabel";
             localRuleLabel.Size = new Size(1120, 102);
             localRuleLabel.TabIndex = 4;
-            localRuleLabel.Text = "中心控制室解除主控并开放本地授权后，本地操作方可生效，用于检修、调试及局部试验；此时远程操作仍锁定。";
+            localRuleLabel.Text = "中心解除主控并开放本地授权后，本地可在停稳时申请；用于检修、调试及局部试验，运行中不交接。";
             // 
             // remoteCaptionLabel
             // 
@@ -449,7 +449,7 @@ namespace Page_switching
             remoteRuleLabel.Name = "remoteRuleLabel";
             remoteRuleLabel.Size = new Size(1120, 102);
             remoteRuleLabel.TabIndex = 6;
-            remoteRuleLabel.Text = "中心控制室与拖车本地均解除主控，并开启远程授权后，远程方可操作；任意高优先级站点介入主控，PLC 立即使远程权限失效并锁定。";
+            remoteRuleLabel.Text = "中心控制室与拖车本地均解除主控，并开启远程授权后，远程方可操作；运行中不交接；停稳后新申请按优先级及授权处理。";
             // 
             // plcResponsibilityLabel
             // 
@@ -460,7 +460,7 @@ namespace Page_switching
             plcResponsibilityLabel.Name = "plcResponsibilityLabel";
             plcResponsibilityLabel.Size = new Size(1290, 36);
             plcResponsibilityLabel.TabIndex = 7;
-            plcResponsibilityLabel.Text = "优先级仲裁、授权、锁定与接管均由 PLC 执行，上位机依据 PLC 反馈显示状态。";
+            plcResponsibilityLabel.Text = "PLC 执行优先级仲裁；运行中拒绝申请接管和释放，停稳后须重新申请。";
             // 
             // rulesGroupCaption
             // 
@@ -516,7 +516,8 @@ namespace Page_switching
             _releaseButton.Name = "_releaseButton";
             _releaseButton.Size = new Size(210, 42);
             _releaseButton.TabIndex = 1;
-            _releaseButton.Text = "释放控制权（待接入）";
+            _releaseButton.Text = "释放控制权";
+            _releaseButton.Click += ReleaseButton_Click;
             // 
             // _requestButton
             // 
@@ -533,7 +534,8 @@ namespace Page_switching
             _requestButton.Name = "_requestButton";
             _requestButton.Size = new Size(210, 42);
             _requestButton.TabIndex = 0;
-            _requestButton.Text = "申请控制权（待接入）";
+            _requestButton.Text = "申请控制权";
+            _requestButton.Click += RequestButton_Click;
             // 
             // actionLayout
             // 

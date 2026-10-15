@@ -32,6 +32,7 @@ class SwitchContractChecks(unittest.TestCase):
 
     def test_all_four_axis_symbols_and_types(self):
         fields = declared_fields(ROOT / "axis_4/DUTs/ST_AxisAds.TcDUT")
+        commands = declared_fields(ROOT / "axis_4/DUTs/ST_AxisCommand.TcDUT")
         globals_ = declared_fields(ROOT / "axis_4/GVLs/GVL_axis.TcGVL")
         # 四轴 60 个配置地址逐一检查，避免“使能=运动”或正反方向映射错误。
         expected = {
@@ -47,8 +48,13 @@ class SwitchContractChecks(unittest.TestCase):
         for axis in range(1, 5):
             self.assertEqual(globals_[f"Axis{axis}"], "ST_AxisAds")
             for key, (member, plc_type) in expected.items():
-                self.assertEqual(self.settings[f"AdsAxis{axis}{key}"], f"GVL_axis.Axis{axis}.{member}")
-                self.assertEqual(fields[member], plc_type)
+                if key.endswith("Command"):
+                    self.assertEqual(self.settings[f"AdsAxis{axis}{key}"],
+                                     f"GVL_control.aStation[{{station}}].aAxis[{axis}].{member}")
+                    self.assertEqual(commands[member], plc_type)
+                else:
+                    self.assertEqual(self.settings[f"AdsAxis{axis}{key}"], f"GVL_axis.Axis{axis}.{member}")
+                    self.assertEqual(fields[member], plc_type)
         # xEnabled 必须来自 Power 状态，不能用运动位代替。
         axis_source = ET.parse(ROOT / "axis_4/POUs/FB_AxisControl.TcPOU").findtext(".//ST")
         self.assertIn("Data.xEnabled := fbPower.Status;", axis_source)

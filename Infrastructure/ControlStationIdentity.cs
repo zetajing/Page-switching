@@ -1,6 +1,6 @@
 namespace Page_switching;
 
-// 这些值只表示软件本站身份，不是尚未定义的 PLC Owner 编码或授权状态。
+// 软件本站身份由 GetPlcCode 显式映射到新 PLC 三站协议；身份本身不是授权状态。
 internal enum ControlStation
 {
     Unconfigured,
@@ -30,6 +30,15 @@ internal static class ControlStationIdentity
         ControlStation.TowingLocal => "TowingLocal",
         ControlStation.RemoteControlRoom => "RemoteControlRoom",
         _ => throw new ArgumentOutOfRangeException(nameof(station))
+    };
+
+    // 与新 PLC GVL_control.aStation[1..3] 的独立站点邮箱一致。
+    internal static ushort GetPlcCode(ControlStation station) => station switch
+    {
+        ControlStation.WaveControlRoom => 1,
+        ControlStation.TowingLocal => 2,
+        ControlStation.RemoteControlRoom => 3,
+        _ => 0
     };
 
     internal static string Format(ControlStation station) => station switch
