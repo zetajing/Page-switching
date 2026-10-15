@@ -12,14 +12,26 @@ class WaveCommandChecks(unittest.TestCase):
         self.assertIn("fbStop.Done", stopped)
 
     def test_unowned_request_edges_are_consumed(self):
-        guard = SOURCE[SOURCE.index("IF NOT xCommandAllowed THEN"):SOURCE.index("IF GVL_control.xOwnerChanged")]
-        for allowed in (False, True):
+        guard = SOURCE[SOURCE.index("xUploadRequest :="):SOURCE.index("IF GVL_control.xOwnerChanged")]
+        names = ("Upload", "Assemble", "Clear", "Start", "Reset")
+        # 模拟原始 CLK 跨扫描：未授权沿、授权时仍保持、释放、再次触发。
+        previous = False
+        for clock, allowed, expected in ((True, False, False), (True, True, False),
+                                          (False, True, False), (True, True, True)):
+            edge = clock and not previous
+            previous = clock
             values = dict(xCommandAllowed=allowed)
-            for name in ("Upload", "Assemble", "Clear", "Start", "Reset"):
-                values["rt" + name] = NS(Q=True)
+            for name in names: values["rt" + name] = NS(Q=edge)
             StBranch(guard).run(values)
-            for name in ("Upload", "Assemble", "Clear", "Start", "Reset"):
-                self.assertEqual(values["rt" + name].Q, allowed)
+            for name in names:
+                self.assertEqual(values["x" + name + "Request"], expected)
+                self.assertEqual(values["rt" + name].Q, edge, "禁止修改 R_TRIG 输出")
+
+    def test_rising_edge_outputs_are_never_written(self):
+        import re
+        for path in (ROOT / "axis_4/POUs").glob("*.TcPOU"):
+            source = path.read_text(encoding="utf-8")
+            self.assertFalse(re.search(r"\brt\w+\.Q\s*:=", source), str(path))
 
     def test_owner_change_invalidates_idle_or_assembling_table(self):
         end = SOURCE.index("tmHeartbeat(")

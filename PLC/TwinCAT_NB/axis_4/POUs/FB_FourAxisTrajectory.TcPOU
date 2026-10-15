@@ -37,6 +37,7 @@ VAR
     xAllEnabled, xAllDisabled, xAllStopped, xAllInitDone, xMovesIdle : BOOL; // 四轴汇总：外部给定开/关、反馈静止、首点 Done、定位块空闲。
     xEnablePending, xFeed, xValid : BOOL; // 有开启请求未结束；本周期需要送点；本次检查结果。
     xCommandAllowed, xStopCommand : BOOL; // 命令必须来自当前授权站。
+    xUploadRequest, xAssembleRequest, xClearRequest, xStartRequest, xResetRequest : BOOL; // 本扫描获准的请求。
     xNormalStop : BOOL; // 正常人工停止，不作为 1007 故障。
     Point : ST_TrajectoryPoint; // 校验时的临时点，不推进运行点号。
     lrNewVelocity, lrStopPosition : LREAL; // 下一拍减速速度；当前点的停车边界估算。
@@ -61,10 +62,12 @@ rtAssemble(CLK := GVL_motion.xAssemble);
 rtClear(CLK := GVL_motion.xClear);
 rtStart(CLK := GVL_motion.xStart);
 rtReset(CLK := GVL_motion.xReset);
-IF NOT xCommandAllowed THEN
-    rtUpload.Q := FALSE; rtAssemble.Q := FALSE; rtClear.Q := FALSE;
-    rtStart.Q := FALSE; rtReset.Q := FALSE;
-END_IF
+// Q 是 R_TRIG 的输出，只读取；权限过滤使用独立请求位。
+xUploadRequest := rtUpload.Q AND xCommandAllowed;
+xAssembleRequest := rtAssemble.Q AND xCommandAllowed;
+xClearRequest := rtClear.Q AND xCommandAllowed;
+xStartRequest := rtStart.Q AND xCommandAllowed;
+xResetRequest := rtReset.Q AND xCommandAllowed;
 // 交接或失联使旧表失去启动资格；正在运行时仍走原有联停和退出流程。
 IF GVL_control.xOwnerChanged OR NOT GVL_control.xCanCommand THEN
     GVL_motion.xDataReady := FALSE;
@@ -107,7 +110,7 @@ END_FOR
 // 组复位只清本块故障；各 NC 轴故障仍需通过 Axis1..4.reset 复位。
 // 必须已静止、外部给定关闭且相关命令释放，才允许重新进入空闲。
 // 未消费序号的上传/校验故障可按已确认进度重试；已消费序号需清表并换新序号。
-IF rtReset.Q AND ((nState = 0) OR (nState = 90))
+IF xResetRequest AND ((nState = 0) OR (nState = 90))
     AND xAllStopped AND xAllDisabled AND xMovesIdle THEN
     GVL_motion.xError := FALSE;
     GVL_motion.udiErrorId := 0;
@@ -154,7 +157,7 @@ CASE nState OF
     // 同扫描多个请求的优先级为 Clear -> Upload -> Assemble -> Start。
     IF xStopCommand THEN
         // 停止保持期间不接受同扫描上传/拼接/启动请求。
-    ELSIF rtClear.Q AND xAllDisabled AND xMovesIdle THEN
+    ELSIF xClearRequest AND xAllDisabled AND xMovesIdle THEN
         xNormalStop := FALSE;
         GVL_motion.xStopped := FALSE;
         GVL_motion.nUploadStation := GVL_control.nOwner;
@@ -164,7 +167,7 @@ CASE nState OF
         udiSequence := 0;
         GVL_motion.xDataReady := FALSE;
         GVL_motion.xDone := FALSE;
-    ELSIF rtUpload.Q AND NOT GVL_motion.xError THEN
+    ELSIF xUploadRequest AND NOT GVL_motion.xError THEN
         // 只登记写完的独立段，此处不复制任何位置点。
         // 连续偏移及固定段长共同避免漏段、重复段和错段；先检查范围再做 UDINT 减法。
         IF (GVL_motion.nPointCount < 4) OR (GVL_motion.nPointCount > cMaxPoints)
@@ -194,7 +197,7 @@ CASE nState OF
             GVL_motion.xError := TRUE;
             nState := 90;
         END_IF
-    ELSIF rtAssemble.Q AND NOT GVL_motion.xError THEN
+    ELSIF xAssembleRequest AND NOT GVL_motion.xError THEN
         // 必须收到全部段的确认和独立的完成请求，不能因最后一段到齐就自动拼表或启动。
         IF (nCount < 4) OR (nReceived <> nCount) OR (udiSequence = 0)
             OR (udiSequence = GVL_motion.udiAcceptedSequence)
@@ -209,7 +212,7 @@ CASE nState OF
             GVL_motion.xDone := FALSE;
             nState := 5;
         END_IF
-    ELSIF rtStart.Q AND NOT GVL_motion.xError THEN
+    ELSIF xStartRequest AND NOT GVL_motion.xError THEN
         GVL_motion.xDone := FALSE;
         GVL_motion.nCurrentPoint := 0;
         // 上传完整只代表表已收齐，不代表数值校验已通过或轴已到首点。
@@ -237,7 +240,7 @@ CASE nState OF
 
 5: // 全部段下发后才进入这里，按段号拼入四轴连续表，PC 不得再改接收区。
     IF (GVL_motion.nPointCount <> nCount) OR (GVL_motion.udiUploadSequence <> udiSequence)
-        OR (GVL_motion.nSampleTimeUs <> 2000) OR rtUpload.Q OR rtClear.Q OR rtAssemble.Q THEN
+        OR (GVL_motion.nSampleTimeUs <> 2000) OR xUploadRequest OR xClearRequest OR xAssembleRequest THEN
         // 元数据或请求冲突使本次拼接失效；复位后重新 xAssemble，从第 0 点重拼。
         GVL_motion.xError := TRUE;
         GVL_motion.udiErrorId := 1001;
@@ -482,10 +485,10 @@ FOR i := 1 TO 4 DO
                 Position := aPosition[i, MAX(nCount, 1) - 1],
                 PositionType := POSITIONTYPE_ABSOLUTE);
     // E. 关闭外部给定：状态 60 请求，先等所有开启请求 Busy 结束。
-    // rtReset.Q 暂时撤销 Execute，下一拍恢复形成新上升沿，供关闭失败后重试。
+    // xResetRequest 暂时撤销 Execute，下一拍恢复形成新上升沿，供关闭失败后重试。
     // 确认关闭后还需经过状态 70，才把轴交回基础手动控制。
     aDisable[i](Axis := Axes[i],
-                Execute := (nState = 60) AND NOT xEnablePending AND NOT rtReset.Q);
+                Execute := (nState = 60) AND NOT xEnablePending AND NOT xResetRequest);
 
     // 保留 MC 原始 ErrorID，四轴循环结束后再切换公共状态，避免同一扫描四轴执行不同阶段。
     IF (aMoveInit[i].Error AND (nState = 15)) THEN udiBlockError := aMoveInit[i].ErrorID; END_IF

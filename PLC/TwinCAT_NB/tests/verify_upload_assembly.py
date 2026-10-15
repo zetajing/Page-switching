@@ -150,6 +150,7 @@ class AssemblyFixture:
     def scan(self, request=None):
         for name in ("Upload", "Assemble", "Clear", "Start"):
             self.values["rt" + name] = SimpleNamespace(Q=request == name)
+            self.values["x" + name + "Request"] = request == name
         self.branches[self.values["nState"]].run(self.values)
         self.feedback.run(self.values)
 
