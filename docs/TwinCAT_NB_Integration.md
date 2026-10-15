@@ -1,0 +1,68 @@
+# switch 与 TwinCAT_NB 手动控制、监控对接
+
+本次范围是四轴手动控制和机器只读监控。已有轨迹上传/执行接口继续保留，未接入自动造波页面，也未改变造波计算和机械点位转换。
+
+## 配套源码与版本
+
+- PLC 编辑目录：`C:\Users\75881\Desktop\宁波材料所\PLC\TwinCAT_NB`。
+- 本仓库内可审查的配套 PLC 源码：`PLC/TwinCAT_NB`，包括解决方案、系统工程、PLC 源码、说明和离线检查。
+- 同步副本不含 `.vs`、`_Boot`、`_CompileInfo`、`_Libraries`、TMC 等生成内容。XAE 需要安装对应 TwinCAT 版本及 Tc2_MC2 库。
+- 本次工作目录与仓库交付副本逐文件核对源码内容一致，交付副本仅规范缩进、换行和行尾空白。后续在外部目录编辑 PLC 后，需要同步源码再提交，避免用旧副本联调。
+
+## 手动 ADS 契约
+
+`N` 为 1..4，所有基础轴地址统一使用 `GVL_axis.AxisN`。
+
+| 上位机配置项后缀 | PLC 成员 | 类型 | 含义 |
+| --- | --- | --- | --- |
+| ActualPosition | lrActualPosition | LREAL / Double | NC 实际位置 |
+| Speed | lrSpeed | LREAL / Double | NC 实际速度 |
+| Enabled | xEnabled | BOOL | MC_Power.Status，使能成功 |
+| Homed | xHomed | BOOL | NC 回原完成 |
+| Alarm | xError | BOOL | 轴或 MC 功能块错误 |
+| PositiveLimit / NegativeLimit | xPositiveLimit / xNegativeLimit | BOOL | 正负限位反馈 |
+| OriginSignal | xOriginSignal | BOOL | 原点开关反馈 |
+| EnableCommand | xStart | BOOL | 保持型使能请求 |
+| ResetAlarmCommand | reset | BOOL | 上升沿复位 |
+| HomeCommand | gohome | BOOL | 上升沿标准回原 |
+| StopCommand | xStop | BOOL | 停止；现有上位机置位 50 ms 后复位 |
+| JogSpeedCommand | lrJogSpeed | LREAL / Double | 点动速度，须为正且不超过最大速度 |
+| JogPositiveCommand | jogz | BOOL | NC 正向保持点动 |
+| JogNegativeCommand | jogf | BOOL | NC 负向保持点动 |
+
+原默认 `IN1.AxisN` 与本 PLC 源码不一致，现已改为 `GVL_axis.AxisN`。`xMotorRun` 表示正在运动，不能用于“使能完成”，否则静止的已使能轴会被错误显示成未使能。旧配置中正反点动地址也已与当前 PLC 定义统一。
+
+当前 App.config 的 `AxisUnit=°` 和 ±20 显示范围保留既有设置，这不证明 PLC 的实际轴单位就是板角度。现场必须确认 NC 单位、机械传动、轴顺序和正负方向，不能直接把水面高程、板角度或丝杆位移互相代用。
+
+基础轴块没有通过收到停止请求来伪造停止反馈。MC_Stop 继续执行减速，即使上位机的 50 ms 脉冲已撤销；点动互锁会等待功能块释放。轨迹占用时，任何轴停止请求会触发组停车流程。
+
+## 机器监控
+
+新增 `GVL_HMI` 和 `FB_HmiFeedback`。MAIN 在所有基础轴块执行后调用反馈块，发布本扫描的结果。该块不修改轴命令，不启动轨迹。
+
+| ADS 地址 | PLC 类型 | 来源 |
+| --- | --- | --- |
+| GVL_HMI.nControlOwner | UINT | GVL_pc.nControlOwner，实际现场仲裁输入 |
+| GVL_HMI.nControlMode | UINT | GVL_pc.nControlMode，实际模式选择输入 |
+| GVL_HMI.nWaveState | UINT | 从实际轨迹流程和轴错误适配到页面状态编码 |
+| GVL_HMI.udiWaveFaultCode | UINT | 当前组/轴错误，供上位机 UInt16 读取 |
+| GVL_HMI.udiHeartbeat | UDINT | PLC 约每 500 ms 递增，待机和故障时仍更新 |
+
+Owner/Mode 当前没有现场仲裁/模式选择程序，保持默认 0，页面显示未分配/未选择。不要为消除提示而写死 1，也不要把本站身份设置、ADS 已连接或打开手动页面当作 PLC 授权。本次没有新增控制权申请或释放写协议，现有运动许可和设备联锁仍需现场接入。
+
+扩展只读字段：`udiDetailedFaultCode`、`nFaultAxis`、`nTrajectoryState`、`nCurrentPoint`、`nLoadedCount`、`nPointCount`、`xDataReady`、`xTrajectoryBusy`。源错误超过 65535 时，兼容 UINT 显示 65535，完整 UDINT 保存在详细字段中。
+
+内部轨迹状态 30 对应页面运行 2；5/10/15/20 对应准备 1；40/50/60/70 对应停止中 4；退出后有错误为故障 7；正常完成为 6；其余为待机 0。未实现的暂停 3、已停止 5 不使用常量模拟。
+
+## 部署前后验证
+
+1. 在 XAE 编译配套 PLC 源码。确认四轴 PLC↔NC 映射、传感器、急停/STO 和运行联锁。
+2. 配置 GVL_motion.aConfig 的真实行程、动态参数及回原方式。默认许可 FALSE、零参数不会自动使能运动。
+3. 核对上位机目标 AMS Net ID、端口和回程路由。App.config 地址变化不代表已向现场 PLC 部署；用户保存的连接/Router 配置仍优先使用。
+4. 先只读核对符号、类型和五项全局反馈，观察心跳持续变化。四项 UINT、心跳 UDINT 不可按变量名前缀猜测。
+5. 使能后不点动，确认 Enabled 仍为 TRUE、位置和速度正常；再逐轴低速验证正负方向、松键停车、停止、回原和复位。
+6. 验证轨迹占用时手动命令互锁、故障码发布和解除后的清零。自动造波界面保持本次之前的行为。
+
+离线检查：在配套 PLC 目录运行 `tests/verify_trajectory.py`、`tests/verify_switch_contract.py`。外部目录可用环境变量 `SWITCH_PROJECT` 指定本仓库。契约检查覆盖实际 App.config 中的 60 个轴地址和 5 个全局地址、PLC 类型、反馈调用顺序及只读边界；它不执行完整 PLC 状态机或验证实际 ADS 通信。
+
+上位机 Release 编译通过不等于实机对接完成；本次没有下载 PLC、写现场轴命令或验证 2 ms 实时性能。

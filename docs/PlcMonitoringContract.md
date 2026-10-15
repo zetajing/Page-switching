@@ -52,7 +52,7 @@ END_IF;
 
 ## 四轴反馈
 
-自动页复用 `App.config` 中四轴已有地址，每轴读取以下七项。`N` 为 1–4；当前默认前缀为 `IN1.AxisN`。
+自动页复用 `App.config` 中四轴已有地址，每轴读取以下七项。`N` 为 1–4；当前默认前缀为 `GVL_axis.AxisN`（TwinCAT_NB 工程）。
 
 | 当前默认成员 | PLC 读取类型 | 页面用途 |
 |---|---|---|
@@ -64,7 +64,7 @@ END_IF;
 | `xPositiveLimit` | BOOL / Bool | 正限位 |
 | `xOriginSignal` | BOOL / Bool | 原点信号 |
 
-四轴映射和物理单位仍需现场确认。页面显示配置反馈，不进行板角度、丝杆点位或机械单位换算；`lrSpeed` 的实际/设定速度语义尚未确认，因此只标注速度反馈。自动页不读取 `xMotorRun`，也不以轴速度、使能、点动命令或停止命令发送成功推断造波状态。
+当前 PLC 源码中 `lrActualPosition`、`lrSpeed` 分别来自 `NcToPlc.ActPos`、`ActVelo`；物理轴顺序、方向和单位仍需现场确认。页面不进行板角度、丝杆点位或机械单位换算。自动页不读取 `xMotorRun`，也不以轴速度、使能、点动命令或停止命令发送成功推断造波状态。
 
 ## 上位机配置与显示
 
@@ -120,3 +120,13 @@ END_IF;
 - Debug 编译关闭优化，并生成 portable PDB；已核对 DLL/PDB 标识、当前源码校验值和 PLC 读取行的断点映射。调试应从 Visual Studio 启动最新 Debug 构建。
 - 窗体页面统一释放一次，保留超时、心跳检查、失败重连、单字段错误隔离和关闭取消。现场 33 项连续读取正常，验证时造波状态为 `2`，心跳递增；关闭期间无需 UI 回调也能完成清理。
 - 离线、现场读取、页面显示和三种页面的关闭检查共 28 条断言通过。Debug 与 Release 编译均为 0 警告、0 错误；读取行的 DLL/PDB/源码一致性检查通过。
+
+## TwinCAT_NB 配套实现
+
+配套 PLC 新增 `GVL_HMI` 与 `FB_HmiFeedback`，在 MAIN 四个基础轴块调用之后发布本扫描反馈。手动控制默认使用 `GVL_axis.Axis1..Axis4`；使能反馈为 `xEnabled=MC_Power.Status`，运动反馈 `xMotorRun` 不再被当作使能。NC 正向点动为 `jogz`，负向为 `jogf`。详细对照和部署步骤见 [TwinCAT_NB 对接说明](TwinCAT_NB_Integration.md)。
+
+PLC 心跳由约 500 ms 的自复位 TON 事件递增，不依赖上位机写入。`nControlOwner`、`nControlMode` 来自 `GVL_pc` 中的现场仲裁/模式选择结果；未接入时保持 0，不以页面或 ADS 连接推断授权。
+
+本实现不发布暂停状态 3，也不虚构已停止状态 5。轨迹内部 40/50/60/70 显示停止中 4，退出后若仍有组错误则显示故障 7。组状态 30 显示运行 2，5/10/15/20 显示准备 1，正常完成显示 6，其余无错误时待机 0。只读状态适配不会启动自动造波。
+
+`udiWaveFaultCode` 仍为 UINT。源错误码大于 65535 时，兼容字段显示 65535，完整值保存在新增 UDINT `GVL_HMI.udiDetailedFaultCode`；`nFaultAxis` 表示首个故障轴。已生成同名新源码并不表示现场 PLC 已部署或通过在线验证。

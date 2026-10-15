@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_AxisControl" Id="{9B2140E4-2674-461A-AEA8-E3B7301EB2D3}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_AxisControl
+// 单轴基础控制：使能、复位、手动点动、标准回原、停止及反馈。
+// 四轴分别使用独立实例；本块不读取位置表，轨迹块通过 xGroupBusy 占用轴控制。
+VAR_INPUT
+    xPermit : BOOL; // 普通运行许可，FALSE 触发停车；不代替安全停机。
+    xPositiveLimit : BOOL; // 正向硬限位，TRUE 表示触发。
+    xNegativeLimit : BOOL; // 负向硬限位，TRUE 表示触发。
+    xHomeSensor : BOOL; // 实际原点开关，作为标准回原校准凸轮信号。
+    xGroupBusy : BOOL; // 轨迹占用时禁止手动点动、回原和复位抢占。
+    Config : ST_AxisConfig; // 本轴行程及动态参数，单位跟随 NC。
+END_VAR
+VAR_IN_OUT
+    Axis : AXIS_REF; // 对应 NC 轴引用，直接操作原轴接口。
+    Data : ST_AxisAds; // 上位机命令及 PLC 反馈，本块只回写反馈字段。
+END_VAR
+VAR
+    fbPower : MC_Power;
+    fbJog : MC_Jog;
+    fbHome : MC_Home;
+    fbStop : MC_Stop;
+    fbReset : MC_Reset;
+    rtHome : R_TRIG;
+    rtReset : R_TRIG;
+    xConfigValid : BOOL; // 本块所用行程/速度/加减速度参数的校验结果。
+    xManual : BOOL; // 允许手动运动的公共条件。
+    xStopRequest : BOOL; // 停止、撤使能、许可丢失、参数无效或限位产生的停车条件。
+    xHoldPower : BOOL; // 运动/停车未完成或组仍占用时，临时保持已有使能。
+    xJogArmed : BOOL; // 联停或轨迹占用后，须先释放按钮才重新允许点动。
+    xJogSpeedValid : BOOL; // 点动速度为正且不超过最大速度。
+    lrJogVelocity : LREAL; // 合法点动速度，无效输入先置零。
+END_VAR]]></Declaration>
+    <Implementation><ST><![CDATA[// ReadStatus 在 MAIN 开头统一执行，所有轴使用本周期反馈。
+// 1. 回原/复位取上升沿；输入保持 TRUE 不会每扫描重复发起。
+rtHome(CLK := Data.gohome);
+rtReset(CLK := Data.reset);
+// 2. 检查基础控制所需参数，默认零值不允许运动。
+xConfigValid := (Config.lrMinPosition >= -1.0E12) AND (Config.lrMaxPosition <= 1.0E12)
+    AND (Config.lrMinPosition < Config.lrMaxPosition)
+    AND (Config.lrMaxVelocity > 0) AND (Config.lrMaxVelocity < 1.0E12)
+    AND (Config.lrMaxAcceleration > 0) AND (Config.lrMaxAcceleration < 1.0E12)
+    AND (Config.lrStopDeceleration > 0)
+    AND (Config.lrStopDeceleration <= Config.lrMaxAcceleration);
+
+// 撤销使能先停车，静止且组控制释放后再撤销 MC_Power。
+xHoldPower := fbPower.Status AND (Axis.Status.Moving OR xGroupBusy
+    OR (fbStop.Busy AND NOT fbStop.Done AND NOT fbStop.Error));
+// 3. Data.xStart 是保持型使能请求，不是轨迹启动位。
+// xHoldPower 只维持已有使能以完成减速；Stop.Done/Error 后不再因 Busy 单独保持使能。
+// 正负方向分别受硬限位和位置边界约束，Override=100 表示 100%。
+fbPower(Axis := Axis, Enable := (Data.xStart AND xPermit AND xConfigValid) OR xHoldPower,
+    Enable_Positive := NOT xPositiveLimit AND (Axis.NcToPlc.ActPos < Config.lrMaxPosition),
+    Enable_Negative := NOT xNegativeLimit AND (Axis.NcToPlc.ActPos > Config.lrMinPosition), Override := 100);
+xStopRequest := Data.xStop OR NOT Data.xStart OR NOT xPermit
+    OR NOT xConfigValid OR xPositiveLimit OR xNegativeLimit;
+// 外部轨迹先由组控制减速和退出，再交给 MC_Stop 锁轴。
+// 4. MC_Stop 在 Execute=TRUE 时维持停止锁定；条件解除后还需等 Busy=FALSE。
+// 轨迹占用时先由组控制减速并退出外部给定，本块不同时抢发停止。
+fbStop(Axis := Axis, Execute := xStopRequest AND fbPower.Status
+    AND NOT xGroupBusy AND NOT Axis.Status.ExtSetPointGenEnabled,
+    Deceleration := Config.lrStopDeceleration);
+// 5. 使能成功、反馈有效、没有停止/复位/轨迹占用，才允许手动运动。
+// Data.reset 同时阻断手动，避免同一扫描复位和点动并发。
+xManual := xPermit AND xConfigValid AND fbPower.Status AND NOT xStopRequest
+    AND NOT xGroupBusy AND NOT Axis.Status.ExtSetPointGenEnabled
+    AND NOT fbStop.Busy AND NOT Axis.Status.Error AND NOT Axis.Status.IoDataInvalid
+    AND NOT fbReset.Busy AND NOT Data.reset;
+// 6. 上位机主动复位；本块不自动反复复位故障轴。
+fbReset(Axis := Axis, Execute := rtReset.Q AND NOT xGroupBusy
+    AND NOT Axis.Status.Moving AND NOT Data.xStop);
+// 7. MC_DefaultHoming 使用 NC 配置的回原方式、速度和参考位置。
+// 原点输入接实际传感器；点动按钮释放且点动块不忙时才允许启动回原。
+fbHome(Axis := Axis, Execute := rtHome.Q AND xManual
+    AND NOT fbJog.Busy AND NOT Data.jogz AND NOT Data.jogf,
+    HomingMode := MC_DefaultHoming, bCalibrationCam := xHomeSensor);
+// 正反同时按下不点动；释放按钮由 MC_Jog 按 NC 参数减速。
+// 联停或轨迹占用后，必须先释放点动按钮，防止旧命令自动恢复运动。
+IF NOT xManual OR fbHome.Busy THEN xJogArmed := FALSE;
+ELSIF NOT Data.jogz AND NOT Data.jogf THEN xJogArmed := TRUE;
+END_IF
+xJogSpeedValid := (Data.lrJogSpeed > 0) AND (Data.lrJogSpeed <= Config.lrMaxVelocity);
+lrJogVelocity := 0;
+IF xJogSpeedValid THEN lrJogVelocity := Data.lrJogSpeed; END_IF
+// 8. jogz 正向、jogf 负向，保持运行、释放减速；正反同时按下不运行。
+// CONTINOUS 是 Tc2_MC2 的实际枚举名称，采用这里传入的速度和动态参数。
+fbJog(Axis := Axis, JogForward := Data.jogz AND NOT Data.jogf
+    AND xManual AND xJogArmed AND xJogSpeedValid AND NOT fbHome.Busy AND NOT Data.gohome,
+    JogBackwards := Data.jogf AND NOT Data.jogz
+    AND xManual AND xJogArmed AND xJogSpeedValid AND NOT fbHome.Busy AND NOT Data.gohome,
+    Mode := MC_JOGMODE_CONTINOUS, // Tc2_MC2 的枚举名称使用 CONTINOUS 拼写。
+    Velocity := lrJogVelocity,
+    Acceleration := Config.lrMaxAcceleration, Deceleration := Config.lrStopDeceleration);
+
+// 9. 反馈来源为 NC 实际状态和 MC 输出，不用上位机请求位代替执行结果。
+// xEnabled=Power.Status，xHomed=NC.Homed；ErrorID 依 NC/Power/Stop/Home/Jog/Reset 顺序取首项。
+Data.lrActualPosition := Axis.NcToPlc.ActPos;
+Data.lrSpeed := Axis.NcToPlc.ActVelo;
+Data.xMotorRun := Axis.Status.Moving;
+Data.xEnabled := fbPower.Status;
+Data.xHomed := Axis.Status.Homed;
+Data.xPositiveLimit := xPositiveLimit OR Axis.Status.SoftLimitMaxExceeded;
+Data.xNegativeLimit := xNegativeLimit OR Axis.Status.SoftLimitMinExceeded;
+Data.xOriginSignal := xHomeSensor;
+Data.xBusy := xGroupBusy OR fbJog.Busy OR fbHome.Busy OR fbStop.Busy OR fbReset.Busy;
+Data.udiErrorId := 0;
+IF Axis.Status.Error THEN Data.udiErrorId := Axis.Status.ErrorId;
+ELSIF fbPower.Error THEN Data.udiErrorId := fbPower.ErrorID;
+ELSIF fbStop.Error THEN Data.udiErrorId := fbStop.ErrorID;
+ELSIF fbHome.Error THEN Data.udiErrorId := fbHome.ErrorID;
+ELSIF fbJog.Error THEN Data.udiErrorId := fbJog.ErrorID;
+ELSIF fbReset.Error THEN Data.udiErrorId := fbReset.ErrorID;
+END_IF
+Data.xError := Axis.Status.Error OR fbPower.Error OR fbStop.Error
+    OR fbHome.Error OR fbJog.Error OR fbReset.Error;
+]]></ST></Implementation>
+  </POU>
+</TcPlcObject>

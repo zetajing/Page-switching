@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="MAIN" Id="{df6a7805-2d1f-401a-b50b-7126627d78b7}" SpecialFunc="None">
+    <Declaration><![CDATA[// PlcTask 每 2 ms 调用；先刷新反馈，再判组条件，再轨迹，最后基础轴块。
+// 每轴的 NC 引用、ADS 数据、参数及传感器索引必须一一对应。
+PROGRAM MAIN
+VAR
+    fbAxis1 : FB_AxisControl;
+    fbAxis2 : FB_AxisControl;
+    fbAxis3 : FB_AxisControl;
+    fbAxis4 : FB_AxisControl;
+    fbTrajectory : FB_FourAxisTrajectory;
+    fbHmiFeedback : FB_HmiFeedback; // 四轴执行结果发布到 switch 只读监控接口。
+    xAxesReady : BOOL;
+    xAbort : BOOL;
+    xAxisFault : BOOL;
+    i : INT;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// 先统一刷新轴状态，再决定四轴本周期的共同轨迹帧。
+FOR i := 1 TO 4 DO
+ GVL_sy.axis[i].ReadStatus();
+ END_FOR
+// 这里先汇总基础块上一扫描的使能反馈。
+// 下方 xAbort 在追加 Homed/StandStill 前使用此值，防止把正常运动的“非静止”误判为联停。
+xAxesReady := GVL_axis.Axis1.xEnabled AND GVL_axis.Axis2.xEnabled AND GVL_axis.Axis3.xEnabled AND GVL_axis.Axis4.xEnabled;
+xAxisFault := GVL_axis.Axis1.xError OR GVL_axis.Axis2.xError  OR GVL_axis.Axis3.xError OR GVL_axis.Axis4.xError;
+// 任一轴停止、撤使能、手动命令冲突或许可丢失均触发整组联停。
+// 先退出轨迹再接受手动，不能在轨迹中途插入点动或回原。
+xAbort := NOT GVL_motion.xMotionPermit
+    OR (GVL_motion.xBusy AND NOT xAxesReady)
+    OR NOT GVL_axis.Axis1.xStart OR NOT GVL_axis.Axis2.xStart
+    OR NOT GVL_axis.Axis3.xStart OR NOT GVL_axis.Axis4.xStart
+    OR GVL_axis.Axis1.xStop OR GVL_axis.Axis2.xStop
+    OR GVL_axis.Axis3.xStop OR GVL_axis.Axis4.xStop
+    OR GVL_axis.Axis1.jogz OR GVL_axis.Axis1.jogf OR GVL_axis.Axis1.gohome OR GVL_axis.Axis1.reset
+    OR GVL_axis.Axis2.jogz OR GVL_axis.Axis2.jogf OR GVL_axis.Axis2.gohome OR GVL_axis.Axis2.reset
+    OR GVL_axis.Axis3.jogz OR GVL_axis.Axis3.jogf OR GVL_axis.Axis3.gohome OR GVL_axis.Axis3.reset
+    OR GVL_axis.Axis4.jogz OR GVL_axis.Axis4.jogf OR GVL_axis.Axis4.gohome OR GVL_axis.Axis4.reset;
+// 启动就绪还需四轴已回原、静止、未停止；正常运动中 xAxesReady=FALSE 是预期状态。
+// 汇总本扫描 NC 错误、I/O 无效及软硬限位，供轨迹块在取点前检查。
+FOR i := 1 TO 4 DO
+    xAxesReady := xAxesReady AND GVL_sy.axis[i].Status.Homed AND GVL_sy.axis[i].Status.StandStill AND NOT GVL_sy.axis[i].Status.Stopping;
+    xAxisFault := xAxisFault OR GVL_sy.axis[i].Status.Error OR GVL_sy.axis[i].Status.IoDataInvalid;
+    xAbort := xAbort OR GVL_motion.axPositiveLimit[i] OR GVL_motion.axNegativeLimit[i] OR GVL_sy.axis[i].Status.SoftLimitMinExceeded OR GVL_sy.axis[i].Status.SoftLimitMaxExceeded;
+END_FOR
+// 轨迹块先更新组状态和 xBusy，后面的基础块在本扫描就能据此禁止手动抢占。
+// 单纯上传状态 5 不置 xBusy，不占用基础轴控制。
+fbTrajectory(Axes := GVL_sy.axis, xAxesReady := xAxesReady, xAbort := xAbort, xAxisFault := xAxisFault);
+
+// 四个实例各自保存 Power/Jog/Home/Stop/Reset 的状态，便于逐轴打断点。
+// 四个基础实例每扫描都调用，持续更新异步 MC 块 Busy/Done/Error。
+// Axis1..4 固定对应 NC 引用 [1]..[4]，不通过选中轴号复用一个实例。
+fbAxis1(Axis := GVL_sy.axis[1], Data := GVL_axis.Axis1, Config := GVL_motion.aConfig[1],
+    xPermit := GVL_motion.xMotionPermit, xPositiveLimit := GVL_motion.axPositiveLimit[1],
+    xNegativeLimit := GVL_motion.axNegativeLimit[1], xHomeSensor := GVL_motion.axHomeSensor[1],
+    xGroupBusy := GVL_motion.xBusy);
+fbAxis2(Axis := GVL_sy.axis[2], Data := GVL_axis.Axis2, Config := GVL_motion.aConfig[2],
+    xPermit := GVL_motion.xMotionPermit, xPositiveLimit := GVL_motion.axPositiveLimit[2],
+    xNegativeLimit := GVL_motion.axNegativeLimit[2], xHomeSensor := GVL_motion.axHomeSensor[2],
+    xGroupBusy := GVL_motion.xBusy);
+fbAxis3(Axis := GVL_sy.axis[3], Data := GVL_axis.Axis3, Config := GVL_motion.aConfig[3],
+    xPermit := GVL_motion.xMotionPermit, xPositiveLimit := GVL_motion.axPositiveLimit[3],
+    xNegativeLimit := GVL_motion.axNegativeLimit[3], xHomeSensor := GVL_motion.axHomeSensor[3],
+    xGroupBusy := GVL_motion.xBusy);
+fbAxis4(Axis := GVL_sy.axis[4], Data := GVL_axis.Axis4, Config := GVL_motion.aConfig[4],
+    xPermit := GVL_motion.xMotionPermit, xPositiveLimit := GVL_motion.axPositiveLimit[4],
+    xNegativeLimit := GVL_motion.axNegativeLimit[4], xHomeSensor := GVL_motion.axHomeSensor[4],
+    xGroupBusy := GVL_motion.xBusy);
+// 所有基础块本周期输出更新后，再发布 HMI 状态；避免把请求位误当成执行反馈。
+fbHmiFeedback();
+]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

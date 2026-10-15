@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="ST_AxisAds" Id="{f7cc73c3-765b-4489-9402-266d1df3b381}">
+    <Declaration><![CDATA[TYPE ST_AxisAds :
+STRUCT
+    // PLC → 上位机：反馈量
+    lrActualPosition : LREAL;
+    lrSpeed          : LREAL;
+    xMotorRun        : BOOL;
+    xHomed           : BOOL;
+    xError           : BOOL;
+    xPositiveLimit   : BOOL;
+    xNegativeLimit   : BOOL;
+    xOriginSignal    : BOOL;
+
+    // 上位机 → PLC：命令量
+    xStart     : BOOL;
+    xStop      : BOOL;
+    jogz       : BOOL;
+    jogf       : BOOL;
+    gohome     : BOOL;
+    reset      : BOOL;
+    lrJogSpeed : LREAL;
+    // 新字段放在末尾；上位机应按 ADS 符号访问，整结构读写须同步更新布局。
+    xEnabled : BOOL; // MC_Power.Status，使能反馈；xStart 为保持型使能请求。
+    xBusy : BOOL;
+    udiErrorId : UDINT;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

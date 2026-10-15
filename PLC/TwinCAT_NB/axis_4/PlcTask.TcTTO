@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <Task Name="PlcTask" Id="{b4090023-3eba-4479-88b8-b91a2f3cc1db}">
+    <!--CycleTime in micro seconds.-->
+    <!-- 外部给定周期与 NC SAF 一致；优先级高于 NC SVB 的 8。 -->
+    <CycleTime>2000</CycleTime>
+    <Priority>7</Priority>
+    <PouCall>
+      <Name>MAIN</Name>
+    </PouCall>
+    <TaskFBGuid>{b4ed6ef1-3038-4156-bbd2-b60e3c78669a}</TaskFBGuid>
+    <Fb_init>{e79f0d2c-7419-48da-a1a7-ca74909c93a6}</Fb_init>
+    <Fb_exit>{1c190874-6733-4560-aafc-6e1004dd3382}</Fb_exit>
+    <CycleUpdate>{05a93b5e-1484-41f6-857c-09a314701a31}</CycleUpdate>
+    <PostCycleUpdate>{0efb6c1e-981d-4ae2-aafb-b5c6c7e1afa6}</PostCycleUpdate>
+    <ObjectProperties />
+  </Task>
+</TcPlcObject>

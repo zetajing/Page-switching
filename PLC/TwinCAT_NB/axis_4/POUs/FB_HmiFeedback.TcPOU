@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_HmiFeedback" Id="{163C991F-F4DB-48D4-8E9A-70F780C7DC8D}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_HmiFeedback
+// 在 MAIN 的四个基础轴块之后每扫描调用，只发布状态，不写任何轴命令。
+// switch 的机器监控和手动轴反馈使用同一批实际 NC/功能块结果。
+VAR
+    tmHeartbeat : TON;
+    udiFault : UDINT;
+    nFaultAxis : UINT;
+END_VAR]]></Declaration>
+    <Implementation><ST><![CDATA[// 1. 自复位 TON 每约 500 ms 产生一个扫描周期的 Q，不依赖上位机写入。
+// 心跳始终更新，不能因待机/故障而停住，否则 switch 会认为反馈已过期。
+tmHeartbeat(IN := NOT tmHeartbeat.Q, PT := T#500MS);
+IF tmHeartbeat.Q THEN
+    IF GVL_HMI.udiHeartbeat = UDINT#4294967295 THEN
+        GVL_HMI.udiHeartbeat := 0;
+    ELSE
+        GVL_HMI.udiHeartbeat := GVL_HMI.udiHeartbeat + 1;
+    END_IF
+END_IF
+
+// 2. 现场控制权和模式选择尚无仲裁程序，默认保持 0，绝不因连接成功就赋成 1。
+// 现场接入时由实际仲裁/模式选择程序写 GVL_pc 的这两个输入，HMI 原样反馈。
+GVL_HMI.nControlOwner := GVL_pc.nControlOwner;
+GVL_HMI.nControlMode := GVL_pc.nControlMode;
+
+// 3. 组故障优先，其次取 Axis1..4 的第一个轴故障。每扫描重算，故障消失就清零。
+udiFault := 0;
+nFaultAxis := 0;
+IF GVL_motion.xError THEN
+    udiFault := GVL_motion.udiErrorId;
+ELSIF GVL_axis.Axis1.xError THEN
+    udiFault := GVL_axis.Axis1.udiErrorId; nFaultAxis := 1;
+ELSIF GVL_axis.Axis2.xError THEN
+    udiFault := GVL_axis.Axis2.udiErrorId; nFaultAxis := 2;
+ELSIF GVL_axis.Axis3.xError THEN
+    udiFault := GVL_axis.Axis3.udiErrorId; nFaultAxis := 3;
+ELSIF GVL_axis.Axis4.xError THEN
+    udiFault := GVL_axis.Axis4.udiErrorId; nFaultAxis := 4;
+END_IF
+// 有错误标志但源块尚无错误码时，用 1010 表示轴/控制错误，避免“故障且码为零”。
+IF (GVL_motion.xError OR (nFaultAxis <> 0)) AND (udiFault = 0) THEN udiFault := 1010; END_IF
+GVL_HMI.udiDetailedFaultCode := udiFault;
+GVL_HMI.nFaultAxis := nFaultAxis;
+IF udiFault > UDINT#65535 THEN
+    GVL_HMI.udiWaveFaultCode := UINT#65535;
+ELSE
+    GVL_HMI.udiWaveFaultCode := UDINT_TO_UINT(udiFault);
+END_IF
+
+// 4. 内部轨迹状态不直接当作页面状态：例如内部 30 对应页面“2 造波中”。
+// 停车时先显示“停止中”，实际退出后有故障则显示故障，不把停止请求发送成功当作完成。
+IF (GVL_motion.nState = 40) OR (GVL_motion.nState = 50)
+    OR (GVL_motion.nState = 60) OR (GVL_motion.nState = 70) THEN
+    GVL_HMI.nWaveState := 4;
+ELSIF udiFault <> 0 THEN
+    GVL_HMI.nWaveState := 7;
+ELSIF GVL_motion.nState = 30 THEN
+    GVL_HMI.nWaveState := 2;
+ELSIF (GVL_motion.nState = 5) OR (GVL_motion.nState = 10)
+    OR (GVL_motion.nState = 15) OR (GVL_motion.nState = 20) THEN
+    GVL_HMI.nWaveState := 1;
+ELSIF GVL_motion.xDone THEN
+    GVL_HMI.nWaveState := 6;
+ELSE
+    GVL_HMI.nWaveState := 0;
+END_IF
+
+// 5. 保留原始轨迹诊断；本次只接手动和监控，不新增上位机自动造波写入入口。
+GVL_HMI.nTrajectoryState := GVL_motion.nState;
+GVL_HMI.nCurrentPoint := GVL_motion.nCurrentPoint;
+GVL_HMI.nLoadedCount := GVL_motion.nLoadedCount;
+GVL_HMI.nPointCount := GVL_motion.nPointCount;
+GVL_HMI.xDataReady := GVL_motion.xDataReady;
+GVL_HMI.xTrajectoryBusy := GVL_motion.xBusy;
+
+// 兼容工程原有 GVL_pc 的三项反馈；Owner/Mode 为现场输入，不在这里回写。
+GVL_pc.nWaveState := GVL_HMI.nWaveState;
+GVL_pc.udiWaveFaultCode := GVL_HMI.udiWaveFaultCode;
+GVL_pc.udiHeartbeat := GVL_HMI.udiHeartbeat;
+]]></ST></Implementation>
+  </POU>
+</TcPlcObject>

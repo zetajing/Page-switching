@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <GVL Name="GVL_pc" Id="{bbf58fae-d997-4bcd-9461-038129a3b111}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+VAR_GLOBAL
+
+
+	// 由现场控制权仲裁/模式选择逻辑写入；默认 0，不能由 HMI 连接成功推断授权。
+	nControlOwner: UINT;
+	nControlMode: UINT;
+	// 以下兼容反馈由 FB_HmiFeedback 更新；switch 读取 GVL_HMI 中的同类型字段。
+	nWaveState: UINT;
+	udiWaveFaultCode: UINT;
+	udiHeartbeat: UDINT;
+
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

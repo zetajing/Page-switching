@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="F_TrajectoryPoint" Id="{2AC080BD-46AE-48E6-9326-C977DE86915B}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION F_TrajectoryPoint : ST_TrajectoryPoint
+// 无状态位置差分函数：整表校验和实际送点共用，不修改位置表或推进点号。
+VAR_INPUT
+    lrPrevious : LREAL; // 前一点 p[k-1]；边界索引由调用方夹紧。
+    lrCurrent : LREAL; // 当前点 p[k]，直接作为绝对位置。
+    lrNext : LREAL; // 后一点 p[k+1]。
+    xEndpoint : BOOL; // 首点或末点标志，按静止端点处理。
+END_VAR
+VAR CONSTANT
+    cDt : LREAL := 0.002; // 与 PLC/NC SAF 任务一致，位置单位跟随 NC。
+END_VAR]]></Declaration>
+    <Implementation><ST><![CDATA[F_TrajectoryPoint.lrPosition := lrCurrent;
+// 首尾静止；调用方校验首两点、末两点分别相等。
+IF xEndpoint THEN
+    F_TrajectoryPoint.lrVelocity := 0;
+    F_TrajectoryPoint.lrAcceleration := 0;
+ELSE
+    // 中心差分：速度=(后点-前点)/(2*dt)，加速度=(后点-2*当前点+前点)/dt²。
+    // 位置若用 mm，则导数分别为 mm/s、mm/s²；角度轴同理。
+    // 二阶差分会放大位置量化噪声，因此上位机位置表需平滑并通过最大加速度检查。
+    F_TrajectoryPoint.lrVelocity := (lrNext - lrPrevious) / (2 * cDt);
+    F_TrajectoryPoint.lrAcceleration := (lrNext - 2 * lrCurrent + lrPrevious) / (cDt * cDt);
+END_IF
+]]></ST></Implementation>
+  </POU>
+</TcPlcObject>

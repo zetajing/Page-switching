@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="ST_AxisConfig" Id="{BA72AFEC-638C-4743-A9EC-E801706BB126}">
+    <Declaration><![CDATA[TYPE ST_AxisConfig :
+STRUCT
+    // 单位跟随 NC：位置、位置/秒、位置/秒²。必须按设备行程填写。
+    lrMinPosition : LREAL;
+    lrMaxPosition : LREAL;
+    lrMaxVelocity : LREAL;
+    lrMaxAcceleration : LREAL;
+    lrStopDeceleration : LREAL;
+    lrStartTolerance : LREAL;
+    lrInitVelocity : LREAL; // 轨迹启动前，四轴各自移动到首点的速度。
+END_STRUCT
+END_TYPE]]></Declaration>
+  </DUT>
+</TcPlcObject>

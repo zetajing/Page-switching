@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <GVL Name="GVL_axis" Id="{26300288-3096-43e2-833c-dddff8221f5e}">
+    <Declaration><![CDATA[VAR_GLOBAL
+
+    Axis1 : ST_AxisAds;
+    Axis2 : ST_AxisAds;
+    Axis3 : ST_AxisAds;
+    Axis4 : ST_AxisAds;
+
+
+	ARRAY_POINT: ARRAY[0..1000] OF REAL;
+	BOOL1:BOOL;
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

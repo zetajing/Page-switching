@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <GVL Name="GVL_motion" Id="{ACEE1007-EA71-4EA2-9D01-583F37467912}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+// ADS 协议：上位机写命令/数据，PLC 写反馈；状态字段只供上位机读取。
+// 按 nLoadedCount 连续提交各段，完整到齐后 xStart 启动。
+// xUpload/xClear/xStart/xReset 都需回 FALSE 后再产生下一次上升沿。
+VAR_GLOBAL
+    // 接实际联锁和传感器；许可默认 FALSE。轴块只处理基础控制。
+    xMotionPermit : BOOL; // 普通运行联锁，调试前保持 FALSE，不代替急停/STO。
+    axPositiveLimit : ARRAY[1..4] OF BOOL;
+    axNegativeLimit : ARRAY[1..4] OF BOOL;
+    axHomeSensor : ARRAY[1..4] OF BOOL;
+    aConfig : ARRAY[1..4] OF ST_AxisConfig; // 仅在轨迹空闲、轴静止时修改的设备实际参数。
+
+    // 参考旧工程：每次最多下发 100000 个 LREAL 位置点/轴，再拼成完整位置表。
+    // 第一维为轴，第二维为点；四轴使用相同的段偏移和点数。
+    // 提交后等 nLoadedCount=本段偏移+本段长度 且 xUploadBusy=FALSE，再覆盖上传区。
+    // 只看到 Busy=FALSE 不够，因为提交沿可能尚未被 PLC 扫描接收。
+    aUpload : ARRAY[1..4, 0..99999] OF LREAL;
+    nPointCount : UDINT; // 整条轨迹总点数，4..2100000。
+    nSampleTimeUs : UINT := 2000; // 单位微秒，目前仅接受 2000。
+    udiUploadSequence : UDINT; // 整条轨迹使用同一个非零序号。
+    nUploadOffset : UDINT; // 本段起始点号，必须等于 nLoadedCount。
+    nUploadCount : UDINT; // 本段点数，1..100000。
+    xUpload : BOOL; // 上升沿提交本段，xUploadBusy 期间不得改上传区及元数据。
+    xClear : BOOL; // 空闲时上升沿清除整条位置表的就绪状态，开始新一轮上传。
+    xStart : BOOL; // 完整位置表到齐后，上升沿启动。
+    xStop : BOOL; // 保持型组停止，启动前必须释放。
+    xReset : BOOL; // 清组故障；各轴故障用 Axis1..4.reset。
+    udiHeartbeat : UDINT; // 校验/运动期间 1 秒不变化则联停。
+
+    // 以下字段由 PLC 写，上位机只读。
+    xUploadBusy : BOOL; // 本段正在复制，上传区和元数据必须保持。
+    nLoadedCount : UDINT; // 已完整确认的点数，也是下一段允许的起始偏移。
+    xDataReady : BOOL; // 仅表示整表到齐，不表示已校验或已定位到首点。
+    xBusy : BOOL; // 校验、首点定位、执行和退出期间占用轴控制。
+    xRunning : BOOL; // 状态 30，首点定位及减速不算正常取点运行。
+    xDone : BOOL; // 正常完成后保持，清表/复位/新启动时清除。
+    xError : BOOL; // 组故障保持位，需确认退出和静止后复位。
+    udiErrorId : UDINT; // 本程序诊断码或 MC 原始 ErrorID，详见说明文档。
+    nState : UINT; // 对应轨迹块 CASE 的 0/5/10/15/20/30/40/50/60/70/90。
+    nCurrentPoint : UDINT; // 最近送出的点号，0 起始。
+    udiAcceptedSequence : UDINT; // 已进入首点定位的轨迹序号，不能重复执行。
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

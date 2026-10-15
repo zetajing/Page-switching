@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="ST_TrajectoryPoint" Id="{3DA7BCF1-63C1-4620-92D4-F4AA276DA74D}">
+    <Declaration><![CDATA[TYPE ST_TrajectoryPoint :
+STRUCT
+    // PLC 内部送点使用；上位机只下发 LREAL 位置表，速度/加速度由相邻点计算。
+    lrPosition : LREAL;
+    lrVelocity : LREAL;
+    lrAcceleration : LREAL;
+END_STRUCT
+END_TYPE]]></Declaration>
+  </DUT>
+</TcPlcObject>
