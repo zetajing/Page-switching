@@ -4,6 +4,36 @@ from types import SimpleNamespace as NS
 from verify_upload_assembly import ROOT, SOURCE, StBranch, AssemblyFixture
 
 class WaveCommandChecks(unittest.TestCase):
+    def test_idle_accepts_disabled_axes_but_requires_valid_stopped_feedback(self):
+        import re
+        source = (ROOT / "axis_4/POUs/FB_HmiFeedback.TcPOU").read_text(encoding="utf-8")
+        assignments = re.findall(r"GVL_HMI\.stMonitor\.xAxesIdle :=.*?;", source, re.S)
+        self.assertEqual(len(assignments), 2)
+
+        def idle(**changes):
+            monitor = NS(xAxesStopped=changes.get("stopped", True))
+            statuses = {i: NS(Status=NS(StandStill=False, Disabled=True, Homing=False, Stopping=False,
+                                       ExtSetPointGenEnabled=False, IoDataInvalid=False)) for i in range(1, 5)}
+            axis_data = NS(**{f"Axis{i}": NS(xBusy=False) for i in range(1, 5)})
+            # 每次只改变其中一轴，确保四轴都参与检查。
+            for field, value in changes.items():
+                if field == "busy": axis_data.Axis4.xBusy = value
+                elif field != "stopped": setattr(statuses[4].Status, field, value)
+            values = {"GVL_HMI": NS(stMonitor=monitor), "GVL_HMI.stMonitor": monitor,
+                      "GVL_axis": axis_data, "GVL_sy": NS(axis=statuses)}
+            StBranch(assignments[0]).run(values)
+            for i in range(1, 5):
+                values["i"] = i
+                StBranch(assignments[1]).run(values)
+            return monitor.xAxesIdle
+
+        self.assertTrue(idle(), "未使能但已停稳时允许上传及自动准备")
+        self.assertTrue(idle(Disabled=False, StandStill=True), "混合使能状态仍允许空闲")
+        for changes in ({"stopped": False}, {"busy": True}, {"Disabled": False},
+                        {"Homing": True}, {"Stopping": True},
+                        {"ExtSetPointGenEnabled": True}, {"IoDataInvalid": True}):
+            with self.subTest(changes=changes): self.assertFalse(idle(**changes))
+
     def test_stop_confirmation_requires_valid_nc_feedback(self):
         source = (ROOT / "axis_4/POUs/FB_AxisControl.TcPOU").read_text(encoding="utf-8")
         stopped = source[source.index("Data.xStopped :="):source.index("Data.xBusy :=")]

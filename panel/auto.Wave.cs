@@ -80,9 +80,15 @@ public partial class Auto
         if (IsDisposed || _waveService is null) return;
         bool active = _waveService.WaveOperationActive || _waveStopping;
         bool authorized = _waveService.IsConnected && _waveService.HasControlAuthority;
+        // 上传只要求有效控制权和空闲轴；使能、回原及运动许可在开始阶段检查。
+        string? sendBlockReason = !authorized ? "本站未取得有效控制权。"
+            : _waveFrame is not { } ? "等待有效 PLC 反馈。"
+            : _waveFrame.Value.UploadBusy ? "PLC 正在拼接轨迹。"
+            : _waveFrame.Value.TrajectoryBusy ? "PLC 轨迹任务尚未退出。"
+            : !_waveFrame.Value.AxesIdle ? "PLC 未确认四轴空闲，请检查轴忙状态和 NC 反馈。"
+            : null;
         importWaveButton.Enabled = !active && !_waveImporting && _waveFrame is not { TrajectoryBusy: true };
-        sendWaveButton.Enabled = authorized && !active && !_waveImporting && _waveSignal is not null
-            && _waveFrame is { AxesIdle: true, UploadBusy: false, TrajectoryBusy: false };
+        sendWaveButton.Enabled = sendBlockReason is null && !active && !_waveImporting && _waveSignal is not null;
         startWaveButton.Enabled = authorized && !active && !_waveImporting && _waveService.WaveStatus.Ready
             && _waveFrame is { DataReady: true, MotionPermit: true, ConfigValid: true, AxisFault: false, AxesIdle: true } frame
             && frame.UploadStation == _waveService.ControlStationCode;
@@ -96,7 +102,8 @@ public partial class Auto
                 + $"PLC 拼接：{feedback.LoadedCount:N0} / {feedback.PointCount:N0}\r\n"
                 + $"执行点号：{feedback.CurrentPoint:N0}　轨迹状态：{feedback.TrajectoryState}\r\n"
                 + (feedback.Error ? $"轨迹故障码：{feedback.TrajectoryErrorId}" : "发送完成不会自动开始运动。")
-                + (authorized ? "" : "\r\n本站未取得有效控制权。") ;
+                + (!active && _waveSignal is not null && sendBlockReason is not null
+                    ? "\r\n暂不能发送：" + sendBlockReason : "");
         else waveDetailLabel.Text = "等待有效 PLC 反馈；请确认配套结构体版本已部署。";
     }
 }

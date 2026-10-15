@@ -140,7 +140,9 @@ GVL_HMI.stMonitor.xAxesStopped := GVL_axis.Axis1.xStopped AND GVL_axis.Axis2.xSt
     AND GVL_axis.Axis3.xStopped AND GVL_axis.Axis4.xStopped;
 GVL_HMI.stMonitor.xMotionPermit := GVL_motion.xMotionPermit;
 GVL_HMI.stMonitor.xConfigValid := TRUE;
-GVL_HMI.stMonitor.xAxesIdle := NOT GVL_axis.Axis1.xBusy AND NOT GVL_axis.Axis2.xBusy
+// 未使能轴的 NC 状态为 Disabled；上传和自动使能前也应允许已停稳的空闲轴。
+GVL_HMI.stMonitor.xAxesIdle := GVL_HMI.stMonitor.xAxesStopped
+    AND NOT GVL_axis.Axis1.xBusy AND NOT GVL_axis.Axis2.xBusy
     AND NOT GVL_axis.Axis3.xBusy AND NOT GVL_axis.Axis4.xBusy;
 GVL_HMI.stMonitor.xAxisFault := GVL_axis.Axis1.xError OR GVL_axis.Axis2.xError
     OR GVL_axis.Axis3.xError OR GVL_axis.Axis4.xError;
@@ -155,7 +157,8 @@ FOR i := 1 TO 4 DO
         AND (Config.lrInitVelocity > 0) AND (Config.lrInitVelocity <= Config.lrMaxVelocity)
         AND (Config.lrStartTolerance >= 0) AND (Config.lrStartTolerance < 1.0E12);
     GVL_HMI.stMonitor.xAxesIdle := GVL_HMI.stMonitor.xAxesIdle
-        AND GVL_sy.axis[i].Status.StandStill AND NOT GVL_sy.axis[i].Status.Homing
+        AND (GVL_sy.axis[i].Status.StandStill OR GVL_sy.axis[i].Status.Disabled)
+        AND NOT GVL_sy.axis[i].Status.Homing
         AND NOT GVL_sy.axis[i].Status.Stopping AND NOT GVL_sy.axis[i].Status.ExtSetPointGenEnabled
         AND NOT GVL_sy.axis[i].Status.IoDataInvalid;
     GVL_HMI.stMonitor.xAxisFault := GVL_HMI.stMonitor.xAxisFault

@@ -16,7 +16,8 @@ class StBranch:
     """仅支持本次分支使用的 IF、FOR 和赋值；不支持的语法直接使测试失败。"""
 
     def __init__(self, source):
-        self.tokens = re.findall(r"\w+(?:\.\w+)*|:=|<>|<=|>=|[();,\[\]<>=+*/\-]", source)
+        # 数组下标后的成员访问也保留点号，例如 axis[i].Status.Disabled。
+        self.tokens = re.findall(r"\w+(?:\.\w+)*|:=|<>|<=|>=|[.();,\[\]<>=+*/\-]", source)
         self.index = 0
         self.statements = self.block(set())
 
