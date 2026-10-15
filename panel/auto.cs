@@ -312,5 +312,12 @@ namespace Page_switching
             // 第三方按钮不依赖主窗体对原生 AntdUI.Button 的监听，操作仍记录一次。
             OperationJournal.Record("自动运行", "点击 清空本页消息");
         }
+
+        // 发送事件保留在设计器对应的代码文件中，只维护这一份实现。
+        private async void SendWaveButton_Click(object? sender, EventArgs e)
+        {
+            if (_waveSignal is null || _waveService is null) return;
+            await RunWaveUiAsync("发送造波信号", () => _waveService.UploadWaveAsync(_waveSignal));
+        }
     }
 }

@@ -142,12 +142,12 @@ namespace Page_switching
             axisGrid.Font = new Font("Microsoft YaHei UI", 9F);
             axisGrid.Gap = 4;
             axisGrid.Gaps = new Size(4, 4);
-            axisGrid.Location = new Point(15, 33);
-            axisGrid.Margin = new Padding(4);
+            axisGrid.Location = new Point(20, 42);
+            axisGrid.Margin = new Padding(5, 5, 5, 5);
             axisGrid.Name = "axisGrid";
             axisGrid.RowHeight = 28;
             axisGrid.RowHeightHeader = 28;
-            axisGrid.Size = new Size(650, 194);
+            axisGrid.Size = new Size(810, 241);
             axisGrid.TabIndex = 0;
             // 
             // pagePanel
@@ -155,9 +155,10 @@ namespace Page_switching
             pagePanel.Controls.Add(rootLayout);
             pagePanel.Dock = DockStyle.Fill;
             pagePanel.Location = new Point(0, 0);
-            pagePanel.MinimumSize = new Size(1004, 724);
+            pagePanel.Margin = new Padding(4, 4, 4, 4);
+            pagePanel.MinimumSize = new Size(1255, 905);
             pagePanel.Name = "pagePanel";
-            pagePanel.Size = new Size(1255, 905);
+            pagePanel.Size = new Size(1359, 905);
             pagePanel.TabIndex = 0;
             // 
             // rootLayout
@@ -173,23 +174,23 @@ namespace Page_switching
             rootLayout.Location = new Point(0, 0);
             rootLayout.Margin = new Padding(0);
             rootLayout.Name = "rootLayout";
-            rootLayout.Padding = new Padding(16);
+            rootLayout.Padding = new Padding(20, 20, 20, 20);
             rootLayout.RowCount = 4;
-            rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 56F));
-            rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 88F));
-            rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
+            rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 70F));
+            rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 110F));
+            rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
             rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            rootLayout.Size = new Size(1255, 905);
+            rootLayout.Size = new Size(1359, 905);
             rootLayout.TabIndex = 0;
             // 
             // headerPanel
             // 
             headerPanel.Controls.Add(titleLabel);
             headerPanel.Dock = DockStyle.Fill;
-            headerPanel.Location = new Point(16, 16);
+            headerPanel.Location = new Point(20, 20);
             headerPanel.Margin = new Padding(0);
             headerPanel.Name = "headerPanel";
-            headerPanel.Size = new Size(1223, 56);
+            headerPanel.Size = new Size(1319, 70);
             headerPanel.TabIndex = 0;
             // 
             // titleLabel
@@ -198,8 +199,9 @@ namespace Page_switching
             titleLabel.Font = new Font("Microsoft YaHei UI", 16F, FontStyle.Bold);
             titleLabel.ForeColor = Color.FromArgb(15, 23, 42);
             titleLabel.Location = new Point(0, 0);
+            titleLabel.Margin = new Padding(4, 4, 4, 4);
             titleLabel.Name = "titleLabel";
-            titleLabel.Size = new Size(1223, 34);
+            titleLabel.Size = new Size(1319, 42);
             titleLabel.TabIndex = 1;
             titleLabel.Text = "自动运行";
             // 
@@ -213,12 +215,12 @@ namespace Page_switching
             cardsLayout.Controls.Add(modeCard, 1, 0);
             cardsLayout.Controls.Add(waveCard, 2, 0);
             cardsLayout.Dock = DockStyle.Fill;
-            cardsLayout.Location = new Point(16, 72);
+            cardsLayout.Location = new Point(20, 90);
             cardsLayout.Margin = new Padding(0);
             cardsLayout.Name = "cardsLayout";
             cardsLayout.RowCount = 1;
             cardsLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            cardsLayout.Size = new Size(1223, 88);
+            cardsLayout.Size = new Size(1319, 110);
             cardsLayout.TabIndex = 1;
             // 
             // controlCard
@@ -228,12 +230,12 @@ namespace Page_switching
             controlCard.BorderWidth = 1F;
             controlCard.Controls.Add(controlCardLayout);
             controlCard.Dock = DockStyle.Fill;
-            controlCard.Location = new Point(4, 0);
-            controlCard.Margin = new Padding(4, 0, 4, 8);
+            controlCard.Location = new Point(5, 0);
+            controlCard.Margin = new Padding(5, 0, 5, 10);
             controlCard.Name = "controlCard";
-            controlCard.Padding = new Padding(12, 5, 12, 5);
+            controlCard.Padding = new Padding(15, 6, 15, 6);
             controlCard.Radius = 10;
-            controlCard.Size = new Size(399, 80);
+            controlCard.Size = new Size(429, 100);
             controlCard.TabIndex = 0;
             // 
             // controlCardLayout
@@ -245,14 +247,14 @@ namespace Page_switching
             controlCardLayout.Controls.Add(controlValueLabel, 0, 1);
             controlCardLayout.Controls.Add(controlDetailLabel, 0, 2);
             controlCardLayout.Dock = DockStyle.Fill;
-            controlCardLayout.Location = new Point(13, 6);
+            controlCardLayout.Location = new Point(17, 8);
             controlCardLayout.Margin = new Padding(0);
             controlCardLayout.Name = "controlCardLayout";
             controlCardLayout.RowCount = 3;
-            controlCardLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-            controlCardLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 28F));
+            controlCardLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 25F));
+            controlCardLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 35F));
             controlCardLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            controlCardLayout.Size = new Size(373, 68);
+            controlCardLayout.Size = new Size(395, 84);
             controlCardLayout.TabIndex = 0;
             // 
             // controlCaptionLabel
@@ -264,7 +266,7 @@ namespace Page_switching
             controlCaptionLabel.Location = new Point(0, 0);
             controlCaptionLabel.Margin = new Padding(0);
             controlCaptionLabel.Name = "controlCaptionLabel";
-            controlCaptionLabel.Size = new Size(373, 20);
+            controlCaptionLabel.Size = new Size(395, 25);
             controlCaptionLabel.TabIndex = 0;
             controlCaptionLabel.Text = "当前控制端";
             // 
@@ -274,10 +276,10 @@ namespace Page_switching
             controlValueLabel.Dock = DockStyle.Fill;
             controlValueLabel.Font = new Font("Microsoft YaHei UI", 14F, FontStyle.Bold);
             controlValueLabel.ForeColor = Color.FromArgb(100, 116, 139);
-            controlValueLabel.Location = new Point(0, 20);
+            controlValueLabel.Location = new Point(0, 25);
             controlValueLabel.Margin = new Padding(0);
             controlValueLabel.Name = "controlValueLabel";
-            controlValueLabel.Size = new Size(373, 28);
+            controlValueLabel.Size = new Size(395, 35);
             controlValueLabel.TabIndex = 1;
             controlValueLabel.Text = "等待反馈";
             // 
@@ -287,10 +289,10 @@ namespace Page_switching
             controlDetailLabel.Dock = DockStyle.Fill;
             controlDetailLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
             controlDetailLabel.ForeColor = Color.FromArgb(100, 116, 139);
-            controlDetailLabel.Location = new Point(0, 48);
+            controlDetailLabel.Location = new Point(0, 60);
             controlDetailLabel.Margin = new Padding(0);
             controlDetailLabel.Name = "controlDetailLabel";
-            controlDetailLabel.Size = new Size(373, 20);
+            controlDetailLabel.Size = new Size(395, 24);
             controlDetailLabel.TabIndex = 2;
             controlDetailLabel.Text = "等待有效反馈";
             // 
@@ -301,12 +303,12 @@ namespace Page_switching
             modeCard.BorderWidth = 1F;
             modeCard.Controls.Add(modeCardLayout);
             modeCard.Dock = DockStyle.Fill;
-            modeCard.Location = new Point(411, 0);
-            modeCard.Margin = new Padding(4, 0, 4, 8);
+            modeCard.Location = new Point(444, 0);
+            modeCard.Margin = new Padding(5, 0, 5, 10);
             modeCard.Name = "modeCard";
-            modeCard.Padding = new Padding(12, 5, 12, 5);
+            modeCard.Padding = new Padding(15, 6, 15, 6);
             modeCard.Radius = 10;
-            modeCard.Size = new Size(399, 80);
+            modeCard.Size = new Size(429, 100);
             modeCard.TabIndex = 1;
             // 
             // modeCardLayout
@@ -318,14 +320,14 @@ namespace Page_switching
             modeCardLayout.Controls.Add(modeValueLabel, 0, 1);
             modeCardLayout.Controls.Add(modeDetailLabel, 0, 2);
             modeCardLayout.Dock = DockStyle.Fill;
-            modeCardLayout.Location = new Point(13, 6);
+            modeCardLayout.Location = new Point(17, 8);
             modeCardLayout.Margin = new Padding(0);
             modeCardLayout.Name = "modeCardLayout";
             modeCardLayout.RowCount = 3;
-            modeCardLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-            modeCardLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 28F));
+            modeCardLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 25F));
+            modeCardLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 35F));
             modeCardLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            modeCardLayout.Size = new Size(373, 68);
+            modeCardLayout.Size = new Size(395, 84);
             modeCardLayout.TabIndex = 0;
             // 
             // modeCaptionLabel
@@ -337,7 +339,7 @@ namespace Page_switching
             modeCaptionLabel.Location = new Point(0, 0);
             modeCaptionLabel.Margin = new Padding(0);
             modeCaptionLabel.Name = "modeCaptionLabel";
-            modeCaptionLabel.Size = new Size(373, 20);
+            modeCaptionLabel.Size = new Size(395, 25);
             modeCaptionLabel.TabIndex = 0;
             modeCaptionLabel.Text = "运行模式";
             // 
@@ -347,10 +349,10 @@ namespace Page_switching
             modeValueLabel.Dock = DockStyle.Fill;
             modeValueLabel.Font = new Font("Microsoft YaHei UI", 14F, FontStyle.Bold);
             modeValueLabel.ForeColor = Color.FromArgb(100, 116, 139);
-            modeValueLabel.Location = new Point(0, 20);
+            modeValueLabel.Location = new Point(0, 25);
             modeValueLabel.Margin = new Padding(0);
             modeValueLabel.Name = "modeValueLabel";
-            modeValueLabel.Size = new Size(373, 28);
+            modeValueLabel.Size = new Size(395, 35);
             modeValueLabel.TabIndex = 1;
             modeValueLabel.Text = "等待反馈";
             // 
@@ -360,10 +362,10 @@ namespace Page_switching
             modeDetailLabel.Dock = DockStyle.Fill;
             modeDetailLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
             modeDetailLabel.ForeColor = Color.FromArgb(100, 116, 139);
-            modeDetailLabel.Location = new Point(0, 48);
+            modeDetailLabel.Location = new Point(0, 60);
             modeDetailLabel.Margin = new Padding(0);
             modeDetailLabel.Name = "modeDetailLabel";
-            modeDetailLabel.Size = new Size(373, 20);
+            modeDetailLabel.Size = new Size(395, 24);
             modeDetailLabel.TabIndex = 2;
             modeDetailLabel.Text = "等待有效反馈";
             // 
@@ -374,12 +376,12 @@ namespace Page_switching
             waveCard.BorderWidth = 1F;
             waveCard.Controls.Add(waveCardLayout);
             waveCard.Dock = DockStyle.Fill;
-            waveCard.Location = new Point(818, 0);
-            waveCard.Margin = new Padding(4, 0, 4, 8);
+            waveCard.Location = new Point(883, 0);
+            waveCard.Margin = new Padding(5, 0, 5, 10);
             waveCard.Name = "waveCard";
-            waveCard.Padding = new Padding(12, 5, 12, 5);
+            waveCard.Padding = new Padding(15, 6, 15, 6);
             waveCard.Radius = 10;
-            waveCard.Size = new Size(401, 80);
+            waveCard.Size = new Size(431, 100);
             waveCard.TabIndex = 2;
             // 
             // waveCardLayout
@@ -391,14 +393,14 @@ namespace Page_switching
             waveCardLayout.Controls.Add(_runStateLabel, 0, 1);
             waveCardLayout.Controls.Add(faultCodeLabel, 0, 2);
             waveCardLayout.Dock = DockStyle.Fill;
-            waveCardLayout.Location = new Point(13, 6);
+            waveCardLayout.Location = new Point(17, 8);
             waveCardLayout.Margin = new Padding(0);
             waveCardLayout.Name = "waveCardLayout";
             waveCardLayout.RowCount = 3;
-            waveCardLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-            waveCardLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 28F));
+            waveCardLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 25F));
+            waveCardLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 35F));
             waveCardLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            waveCardLayout.Size = new Size(375, 68);
+            waveCardLayout.Size = new Size(397, 84);
             waveCardLayout.TabIndex = 0;
             // 
             // waveCaptionLabel
@@ -410,7 +412,7 @@ namespace Page_switching
             waveCaptionLabel.Location = new Point(0, 0);
             waveCaptionLabel.Margin = new Padding(0);
             waveCaptionLabel.Name = "waveCaptionLabel";
-            waveCaptionLabel.Size = new Size(375, 20);
+            waveCaptionLabel.Size = new Size(397, 25);
             waveCaptionLabel.TabIndex = 0;
             waveCaptionLabel.Text = "造波状态";
             // 
@@ -420,10 +422,10 @@ namespace Page_switching
             _runStateLabel.Dock = DockStyle.Fill;
             _runStateLabel.Font = new Font("Microsoft YaHei UI", 14F, FontStyle.Bold);
             _runStateLabel.ForeColor = Color.FromArgb(100, 116, 139);
-            _runStateLabel.Location = new Point(0, 20);
+            _runStateLabel.Location = new Point(0, 25);
             _runStateLabel.Margin = new Padding(0);
             _runStateLabel.Name = "_runStateLabel";
-            _runStateLabel.Size = new Size(375, 28);
+            _runStateLabel.Size = new Size(397, 35);
             _runStateLabel.TabIndex = 1;
             _runStateLabel.Text = "等待反馈";
             // 
@@ -433,10 +435,10 @@ namespace Page_switching
             faultCodeLabel.Dock = DockStyle.Fill;
             faultCodeLabel.Font = new Font("Microsoft YaHei UI", 8.5F);
             faultCodeLabel.ForeColor = Color.FromArgb(100, 116, 139);
-            faultCodeLabel.Location = new Point(0, 48);
+            faultCodeLabel.Location = new Point(0, 60);
             faultCodeLabel.Margin = new Padding(0);
             faultCodeLabel.Name = "faultCodeLabel";
-            faultCodeLabel.Size = new Size(375, 20);
+            faultCodeLabel.Size = new Size(397, 24);
             faultCodeLabel.TabIndex = 2;
             faultCodeLabel.Text = "故障码：--";
             // 
@@ -450,12 +452,12 @@ namespace Page_switching
             monitorInfoLayout.Controls.Add(feedbackLabel, 1, 0);
             monitorInfoLayout.Controls.Add(heartbeatLabel, 2, 0);
             monitorInfoLayout.Dock = DockStyle.Fill;
-            monitorInfoLayout.Location = new Point(16, 160);
+            monitorInfoLayout.Location = new Point(20, 200);
             monitorInfoLayout.Margin = new Padding(0);
             monitorInfoLayout.Name = "monitorInfoLayout";
             monitorInfoLayout.RowCount = 1;
             monitorInfoLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            monitorInfoLayout.Size = new Size(1223, 32);
+            monitorInfoLayout.Size = new Size(1319, 40);
             monitorInfoLayout.TabIndex = 2;
             // 
             // connectionLabel
@@ -466,7 +468,7 @@ namespace Page_switching
             connectionLabel.Location = new Point(0, 0);
             connectionLabel.Margin = new Padding(0);
             connectionLabel.Name = "connectionLabel";
-            connectionLabel.Size = new Size(440, 32);
+            connectionLabel.Size = new Size(474, 40);
             connectionLabel.TabIndex = 0;
             connectionLabel.Text = "● ADS 未连接";
             // 
@@ -475,10 +477,10 @@ namespace Page_switching
             feedbackLabel.AutoEllipsis = true;
             feedbackLabel.Dock = DockStyle.Fill;
             feedbackLabel.ForeColor = Color.FromArgb(100, 116, 139);
-            feedbackLabel.Location = new Point(440, 0);
+            feedbackLabel.Location = new Point(474, 0);
             feedbackLabel.Margin = new Padding(0);
             feedbackLabel.Name = "feedbackLabel";
-            feedbackLabel.Size = new Size(428, 32);
+            feedbackLabel.Size = new Size(461, 40);
             feedbackLabel.TabIndex = 1;
             feedbackLabel.Text = "反馈时间：--";
             // 
@@ -487,10 +489,10 @@ namespace Page_switching
             heartbeatLabel.AutoEllipsis = true;
             heartbeatLabel.Dock = DockStyle.Fill;
             heartbeatLabel.ForeColor = Color.FromArgb(100, 116, 139);
-            heartbeatLabel.Location = new Point(868, 0);
+            heartbeatLabel.Location = new Point(935, 0);
             heartbeatLabel.Margin = new Padding(0);
             heartbeatLabel.Name = "heartbeatLabel";
-            heartbeatLabel.Size = new Size(355, 32);
+            heartbeatLabel.Size = new Size(384, 40);
             heartbeatLabel.TabIndex = 2;
             heartbeatLabel.Text = "心跳：--";
             // 
@@ -498,16 +500,16 @@ namespace Page_switching
             // 
             bodyLayout.ColumnCount = 2;
             bodyLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            bodyLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 680F));
+            bodyLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 850F));
             bodyLayout.Controls.Add(progressGroup, 0, 0);
             bodyLayout.Controls.Add(rightLayout, 1, 0);
             bodyLayout.Dock = DockStyle.Fill;
-            bodyLayout.Location = new Point(16, 192);
+            bodyLayout.Location = new Point(20, 240);
             bodyLayout.Margin = new Padding(0);
             bodyLayout.Name = "bodyLayout";
             bodyLayout.RowCount = 1;
             bodyLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            bodyLayout.Size = new Size(1223, 697);
+            bodyLayout.Size = new Size(1319, 645);
             bodyLayout.TabIndex = 3;
             // 
             // progressGroup
@@ -521,10 +523,10 @@ namespace Page_switching
             progressGroup.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
             progressGroup.ForeColor = Color.FromArgb(15, 23, 42);
             progressGroup.Location = new Point(0, 0);
-            progressGroup.Margin = new Padding(0, 0, 12, 0);
+            progressGroup.Margin = new Padding(0, 0, 15, 0);
             progressGroup.Name = "progressGroup";
-            progressGroup.Padding = new Padding(14, 32, 14, 12);
-            progressGroup.Size = new Size(531, 697);
+            progressGroup.Padding = new Padding(18, 40, 18, 15);
+            progressGroup.Size = new Size(454, 645);
             progressGroup.TabIndex = 0;
             // 
             // waveLayout
@@ -537,15 +539,16 @@ namespace Page_switching
             waveLayout.Controls.Add(waveProgressBar, 0, 3);
             waveLayout.Controls.Add(waveDetailLabel, 0, 4);
             waveLayout.Dock = DockStyle.Fill;
-            waveLayout.Location = new Point(15, 33);
+            waveLayout.Location = new Point(20, 42);
+            waveLayout.Margin = new Padding(4, 4, 4, 4);
             waveLayout.Name = "waveLayout";
             waveLayout.RowCount = 5;
-            waveLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 96F));
-            waveLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 112F));
-            waveLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
-            waveLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 28F));
+            waveLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 120F));
+            waveLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 140F));
+            waveLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 50F));
+            waveLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 35F));
             waveLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            waveLayout.Size = new Size(501, 651);
+            waveLayout.Size = new Size(414, 586);
             waveLayout.TabIndex = 0;
             // 
             // waveButtonsLayout
@@ -558,22 +561,23 @@ namespace Page_switching
             waveButtonsLayout.Controls.Add(startWaveButton, 0, 1);
             waveButtonsLayout.Controls.Add(stopWaveButton, 1, 1);
             waveButtonsLayout.Dock = DockStyle.Fill;
-            waveButtonsLayout.Location = new Point(3, 3);
+            waveButtonsLayout.Location = new Point(4, 4);
+            waveButtonsLayout.Margin = new Padding(4, 4, 4, 4);
             waveButtonsLayout.Name = "waveButtonsLayout";
             waveButtonsLayout.RowCount = 2;
             waveButtonsLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
             waveButtonsLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            waveButtonsLayout.Size = new Size(495, 90);
+            waveButtonsLayout.Size = new Size(406, 112);
             waveButtonsLayout.TabIndex = 0;
             // 
             // importWaveButton
             // 
             importWaveButton.Dock = DockStyle.Fill;
             importWaveButton.Enabled = false;
-            importWaveButton.Location = new Point(4, 4);
-            importWaveButton.Margin = new Padding(4);
+            importWaveButton.Location = new Point(5, 5);
+            importWaveButton.Margin = new Padding(5, 5, 5, 5);
             importWaveButton.Name = "importWaveButton";
-            importWaveButton.Size = new Size(239, 37);
+            importWaveButton.Size = new Size(193, 46);
             importWaveButton.TabIndex = 0;
             importWaveButton.Text = "导入造波信号";
             importWaveButton.Type = AntdUI.TTypeMini.Primary;
@@ -583,10 +587,10 @@ namespace Page_switching
             // 
             sendWaveButton.Dock = DockStyle.Fill;
             sendWaveButton.Enabled = false;
-            sendWaveButton.Location = new Point(251, 4);
-            sendWaveButton.Margin = new Padding(4);
+            sendWaveButton.Location = new Point(208, 5);
+            sendWaveButton.Margin = new Padding(5, 5, 5, 5);
             sendWaveButton.Name = "sendWaveButton";
-            sendWaveButton.Size = new Size(240, 37);
+            sendWaveButton.Size = new Size(193, 46);
             sendWaveButton.TabIndex = 1;
             sendWaveButton.Text = "发送造波信号";
             sendWaveButton.Type = AntdUI.TTypeMini.Primary;
@@ -596,10 +600,10 @@ namespace Page_switching
             // 
             startWaveButton.Dock = DockStyle.Fill;
             startWaveButton.Enabled = false;
-            startWaveButton.Location = new Point(4, 49);
-            startWaveButton.Margin = new Padding(4);
+            startWaveButton.Location = new Point(5, 61);
+            startWaveButton.Margin = new Padding(5, 5, 5, 5);
             startWaveButton.Name = "startWaveButton";
-            startWaveButton.Size = new Size(239, 37);
+            startWaveButton.Size = new Size(193, 46);
             startWaveButton.TabIndex = 2;
             startWaveButton.Text = "开始造波";
             startWaveButton.Type = AntdUI.TTypeMini.Success;
@@ -609,10 +613,10 @@ namespace Page_switching
             // 
             stopWaveButton.Dock = DockStyle.Fill;
             stopWaveButton.Enabled = false;
-            stopWaveButton.Location = new Point(251, 49);
-            stopWaveButton.Margin = new Padding(4);
+            stopWaveButton.Location = new Point(208, 61);
+            stopWaveButton.Margin = new Padding(5, 5, 5, 5);
             stopWaveButton.Name = "stopWaveButton";
-            stopWaveButton.Size = new Size(240, 37);
+            stopWaveButton.Size = new Size(193, 46);
             stopWaveButton.TabIndex = 3;
             stopWaveButton.Text = "停止造波";
             stopWaveButton.Type = AntdUI.TTypeMini.Error;
@@ -623,10 +627,10 @@ namespace Page_switching
             waveFileLabel.Dock = DockStyle.Fill;
             waveFileLabel.Font = new Font("Microsoft YaHei UI", 9F);
             waveFileLabel.ForeColor = Color.FromArgb(71, 85, 105);
-            waveFileLabel.Location = new Point(4, 100);
-            waveFileLabel.Margin = new Padding(4);
+            waveFileLabel.Location = new Point(5, 125);
+            waveFileLabel.Margin = new Padding(5, 5, 5, 5);
             waveFileLabel.Name = "waveFileLabel";
-            waveFileLabel.Size = new Size(493, 104);
+            waveFileLabel.Size = new Size(404, 130);
             waveFileLabel.TabIndex = 1;
             waveFileLabel.Text = "尚未导入造波信号。\r\n仅支持旧格式最终 PLC 点位，四轴共用，周期 2 ms。";
             waveFileLabel.TextAlign = ContentAlignment.MiddleLeft;
@@ -636,10 +640,10 @@ namespace Page_switching
             waveStageLabel.Dock = DockStyle.Fill;
             waveStageLabel.Font = new Font("Microsoft YaHei UI", 9F);
             waveStageLabel.ForeColor = Color.FromArgb(71, 85, 105);
-            waveStageLabel.Location = new Point(4, 212);
-            waveStageLabel.Margin = new Padding(4);
+            waveStageLabel.Location = new Point(5, 265);
+            waveStageLabel.Margin = new Padding(5, 5, 5, 5);
             waveStageLabel.Name = "waveStageLabel";
-            waveStageLabel.Size = new Size(493, 32);
+            waveStageLabel.Size = new Size(404, 40);
             waveStageLabel.TabIndex = 2;
             waveStageLabel.Text = "未导入";
             waveStageLabel.TextAlign = ContentAlignment.MiddleLeft;
@@ -647,11 +651,11 @@ namespace Page_switching
             // waveProgressBar
             // 
             waveProgressBar.Dock = DockStyle.Fill;
-            waveProgressBar.Location = new Point(4, 252);
-            waveProgressBar.Margin = new Padding(4);
+            waveProgressBar.Location = new Point(5, 315);
+            waveProgressBar.Margin = new Padding(5, 5, 5, 5);
             waveProgressBar.Maximum = 1000;
             waveProgressBar.Name = "waveProgressBar";
-            waveProgressBar.Size = new Size(493, 20);
+            waveProgressBar.Size = new Size(404, 25);
             waveProgressBar.Style = ProgressBarStyle.Continuous;
             waveProgressBar.TabIndex = 3;
             // 
@@ -660,10 +664,10 @@ namespace Page_switching
             waveDetailLabel.Dock = DockStyle.Fill;
             waveDetailLabel.Font = new Font("Microsoft YaHei UI", 9F);
             waveDetailLabel.ForeColor = Color.FromArgb(71, 85, 105);
-            waveDetailLabel.Location = new Point(4, 280);
-            waveDetailLabel.Margin = new Padding(4);
+            waveDetailLabel.Location = new Point(5, 350);
+            waveDetailLabel.Margin = new Padding(5, 5, 5, 5);
             waveDetailLabel.Name = "waveDetailLabel";
-            waveDetailLabel.Size = new Size(493, 367);
+            waveDetailLabel.Size = new Size(404, 231);
             waveDetailLabel.TabIndex = 4;
             waveDetailLabel.Text = "等待有效 PLC 反馈。";
             // 
@@ -671,9 +675,10 @@ namespace Page_switching
             // 
             progressGroupCaption.AutoSizeMode = AntdUI.TAutoSize.Auto;
             progressGroupCaption.ForeColor = Color.FromArgb(15, 23, 42);
-            progressGroupCaption.Location = new Point(10, 2);
+            progressGroupCaption.Location = new Point(12, 2);
+            progressGroupCaption.Margin = new Padding(4, 4, 4, 4);
             progressGroupCaption.Name = "progressGroupCaption";
-            progressGroupCaption.Size = new Size(48, 16);
+            progressGroupCaption.Size = new Size(60, 20);
             progressGroupCaption.TabIndex = 1;
             progressGroupCaption.Text = "造波进度";
             // 
@@ -684,14 +689,14 @@ namespace Page_switching
             rightLayout.Controls.Add(axisGroup, 0, 0);
             rightLayout.Controls.Add(logGroup, 0, 2);
             rightLayout.Dock = DockStyle.Fill;
-            rightLayout.Location = new Point(543, 0);
+            rightLayout.Location = new Point(469, 0);
             rightLayout.Margin = new Padding(0);
             rightLayout.Name = "rightLayout";
             rightLayout.RowCount = 3;
-            rightLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 240F));
+            rightLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 300F));
             rightLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            rightLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 296F));
-            rightLayout.Size = new Size(680, 697);
+            rightLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 370F));
+            rightLayout.Size = new Size(850, 645);
             rightLayout.TabIndex = 1;
             // 
             // axisGroup
@@ -707,17 +712,18 @@ namespace Page_switching
             axisGroup.Location = new Point(0, 0);
             axisGroup.Margin = new Padding(0);
             axisGroup.Name = "axisGroup";
-            axisGroup.Padding = new Padding(14, 32, 14, 12);
-            axisGroup.Size = new Size(680, 240);
+            axisGroup.Padding = new Padding(18, 40, 18, 15);
+            axisGroup.Size = new Size(850, 300);
             axisGroup.TabIndex = 3;
             // 
             // axisGroupCaption
             // 
             axisGroupCaption.AutoSizeMode = AntdUI.TAutoSize.Auto;
             axisGroupCaption.ForeColor = Color.FromArgb(15, 23, 42);
-            axisGroupCaption.Location = new Point(10, 2);
+            axisGroupCaption.Location = new Point(12, 2);
+            axisGroupCaption.Margin = new Padding(4, 4, 4, 4);
             axisGroupCaption.Name = "axisGroupCaption";
-            axisGroupCaption.Size = new Size(48, 16);
+            axisGroupCaption.Size = new Size(60, 20);
             axisGroupCaption.TabIndex = 1;
             axisGroupCaption.Text = "四轴反馈";
             // 
@@ -731,11 +737,11 @@ namespace Page_switching
             logGroup.Dock = DockStyle.Fill;
             logGroup.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
             logGroup.ForeColor = Color.FromArgb(15, 23, 42);
-            logGroup.Location = new Point(0, 401);
+            logGroup.Location = new Point(0, 275);
             logGroup.Margin = new Padding(0);
             logGroup.Name = "logGroup";
-            logGroup.Padding = new Padding(14, 32, 14, 12);
-            logGroup.Size = new Size(680, 296);
+            logGroup.Padding = new Padding(18, 40, 18, 15);
+            logGroup.Size = new Size(850, 370);
             logGroup.TabIndex = 4;
             // 
             // logLayout
@@ -746,20 +752,20 @@ namespace Page_switching
             logLayout.Controls.Add(_logList, 0, 1);
             logLayout.Controls.Add(clearLogButton, 0, 2);
             logLayout.Dock = DockStyle.Fill;
-            logLayout.Location = new Point(15, 33);
+            logLayout.Location = new Point(20, 42);
             logLayout.Margin = new Padding(0);
             logLayout.Name = "logLayout";
             logLayout.RowCount = 3;
-            logLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
+            logLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
             logLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            logLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 38F));
-            logLayout.Size = new Size(650, 250);
+            logLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 48F));
+            logLayout.Size = new Size(810, 311);
             logLayout.TabIndex = 0;
             // 
             // messageHeader
             // 
             messageHeader.ColumnCount = 2;
-            messageHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120F));
+            messageHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150F));
             messageHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
             messageHeader.Controls.Add(messageCountLabel, 0, 0);
             messageHeader.Controls.Add(messageSummaryLabel, 1, 0);
@@ -769,7 +775,7 @@ namespace Page_switching
             messageHeader.Name = "messageHeader";
             messageHeader.RowCount = 1;
             messageHeader.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            messageHeader.Size = new Size(650, 32);
+            messageHeader.Size = new Size(810, 40);
             messageHeader.TabIndex = 0;
             // 
             // messageCountLabel
@@ -780,7 +786,7 @@ namespace Page_switching
             messageCountLabel.Location = new Point(0, 0);
             messageCountLabel.Margin = new Padding(0);
             messageCountLabel.Name = "messageCountLabel";
-            messageCountLabel.Size = new Size(120, 32);
+            messageCountLabel.Size = new Size(150, 40);
             messageCountLabel.TabIndex = 0;
             messageCountLabel.Text = "消息：0 条";
             // 
@@ -790,10 +796,10 @@ namespace Page_switching
             messageSummaryLabel.Dock = DockStyle.Fill;
             messageSummaryLabel.Font = new Font("Microsoft YaHei UI", 9F);
             messageSummaryLabel.ForeColor = Color.FromArgb(71, 85, 105);
-            messageSummaryLabel.Location = new Point(120, 0);
-            messageSummaryLabel.Margin = new Padding(0, 0, 12, 0);
+            messageSummaryLabel.Location = new Point(150, 0);
+            messageSummaryLabel.Margin = new Padding(0, 0, 15, 0);
             messageSummaryLabel.Name = "messageSummaryLabel";
-            messageSummaryLabel.Size = new Size(518, 32);
+            messageSummaryLabel.Size = new Size(645, 40);
             messageSummaryLabel.TabIndex = 1;
             messageSummaryLabel.Text = "暂无运行消息";
             // 
@@ -802,11 +808,12 @@ namespace Page_switching
             _logList.BackColor = Color.White;
             _logList.Dock = DockStyle.Fill;
             _logList.Font = new Font("Microsoft YaHei UI", 9F);
-            _logList.Location = new Point(3, 35);
+            _logList.Location = new Point(4, 44);
+            _logList.Margin = new Padding(4, 4, 4, 4);
             _logList.Multiline = true;
             _logList.Name = "_logList";
             _logList.ReadOnly = true;
-            _logList.Size = new Size(644, 174);
+            _logList.Size = new Size(802, 215);
             _logList.TabIndex = 1;
             _logList.WaveSize = 0;
             _logList.WordWrap = false;
@@ -822,10 +829,11 @@ namespace Page_switching
             clearLogButton.DefaultBorderColor = Color.FromArgb(203, 213, 225);
             clearLogButton.Font = new Font("Microsoft YaHei UI", 9F);
             clearLogButton.ForeColor = Color.FromArgb(15, 23, 42);
-            clearLogButton.Location = new Point(3, 215);
-            clearLogButton.MinimumSize = new Size(114, 32);
+            clearLogButton.Location = new Point(4, 267);
+            clearLogButton.Margin = new Padding(4, 4, 4, 4);
+            clearLogButton.MinimumSize = new Size(142, 40);
             clearLogButton.Name = "clearLogButton";
-            clearLogButton.Size = new Size(114, 36);
+            clearLogButton.Size = new Size(142, 45);
             clearLogButton.TabIndex = 2;
             clearLogButton.Text = "清空本页消息";
             clearLogButton.Click += ClearLogButton_Click;
@@ -834,15 +842,16 @@ namespace Page_switching
             // 
             logGroupCaption.AutoSizeMode = AntdUI.TAutoSize.Auto;
             logGroupCaption.ForeColor = Color.FromArgb(15, 23, 42);
-            logGroupCaption.Location = new Point(10, 2);
+            logGroupCaption.Location = new Point(12, 2);
+            logGroupCaption.Margin = new Padding(4, 4, 4, 4);
             logGroupCaption.Name = "logGroupCaption";
-            logGroupCaption.Size = new Size(48, 16);
+            logGroupCaption.Size = new Size(60, 20);
             logGroupCaption.TabIndex = 1;
             logGroupCaption.Text = "运行消息";
             // 
             // Auto
             // 
-            AutoScaleDimensions = new SizeF(96F, 96F);
+            AutoScaleDimensions = new SizeF(120F, 120F);
             AutoScaleMode = AutoScaleMode.Dpi;
             AutoScroll = true;
             AutoScrollMinSize = new Size(1255, 905);
@@ -850,8 +859,9 @@ namespace Page_switching
             Controls.Add(pagePanel);
             Font = new Font("Microsoft YaHei UI", 9F);
             ForeColor = Color.FromArgb(15, 23, 42);
+            Margin = new Padding(4, 4, 4, 4);
             Name = "Auto";
-            Size = new Size(799, 435);
+            Size = new Size(1380, 758);
             pagePanel.ResumeLayout(false);
             rootLayout.ResumeLayout(false);
             headerPanel.ResumeLayout(false);
