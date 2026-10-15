@@ -103,6 +103,10 @@ Data.xHomed := Axis.Status.Homed;
 Data.xPositiveLimit := xPositiveLimit OR Axis.Status.SoftLimitMaxExceeded;
 Data.xNegativeLimit := xNegativeLimit OR Axis.Status.SoftLimitMinExceeded;
 Data.xOriginSignal := xHomeSensor;
+// MC_Stop Execute 保持时 Busy 可持续为 TRUE；停车确认与块释放分开反馈。
+Data.xStopped := NOT Axis.Status.Moving AND NOT Axis.Status.IoDataInvalid
+    AND (ABS(Axis.NcToPlc.ActVelo) <= 0.000001) AND NOT fbJog.Busy AND NOT fbHome.Busy
+    AND NOT fbReset.Busy AND (NOT fbStop.Busy OR fbStop.Done);
 Data.xBusy := xGroupBusy OR fbJog.Busy OR fbHome.Busy OR fbStop.Busy OR fbReset.Busy;
 Data.udiErrorId := 0;
 IF Axis.Status.Error THEN Data.udiErrorId := Axis.Status.ErrorId;

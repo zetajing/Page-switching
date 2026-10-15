@@ -1,0 +1,42 @@
+using Page_switching;
+using System.Reflection;
+using System.Drawing.Imaging;
+class Program
+{
+    [STAThread] static void Main()
+    {
+        Application.SetHighDpiMode(HighDpiMode.PerMonitorV2);
+        Application.EnableVisualStyles();
+        var path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
+        int checks = 0;
+        foreach (var (width, height, scale) in new[] { (900,650,1f), (1104,606,1f), (1600,900,1f), (1350,975,1.5f) })
+        {
+            using var service = new AxisService(AxisServiceOptions.FromConfiguration()); // 不连接 ADS。
+            using var form = new Form { ClientSize = new(width,height), StartPosition=FormStartPosition.Manual, Location=new(-20000,-20000) };
+            using var page = new Page_switching.Auto(service) { Dock = DockStyle.Fill };
+            form.Controls.Add(page);
+            form.Show();
+            if (scale != 1) page.Scale(new SizeF(scale,scale));
+            Application.DoEvents();
+            foreach (var name in new[] { "importWaveButton","sendWaveButton","startWaveButton","stopWaveButton" })
+            {
+                var button = page.Controls.Find(name,true).Single();
+                if (!button.Visible || button.Width < 90 || button.Height < 30) throw new Exception(name + " invisible/small " + button.Bounds);
+                var text = TextRenderer.MeasureText(button.Text,button.Font);
+                if (button.Width < text.Width + 12) throw new Exception(name + " text clipped " + button.Size + " / " + text);
+                checks++;
+            }
+            var buttons = page.Controls.Find("waveButtonsLayout",true).Single();
+            var file = page.Controls.Find("waveFileLabel",true).Single();
+            if (buttons.Bounds.IntersectsWith(file.Bounds)) throw new Exception("buttons overlap file");
+            checks++;
+            using var bitmap = new Bitmap(form.ClientSize.Width, form.ClientSize.Height);
+            form.DrawToBitmap(bitmap,new Rectangle(Point.Empty,form.ClientSize));
+            var output = Path.Combine(Environment.GetEnvironmentVariable("TEMP")!, $"WaveButtons_{width}x{height}_{scale:F1}.png");
+            bitmap.Save(output,ImageFormat.Png);
+            Console.WriteLine(output);
+            form.Hide();
+        }
+        Console.WriteLine($"Layout: {checks} checks passed; final case is 150% scaling simulation. No ADS connection.");
+    }
+}

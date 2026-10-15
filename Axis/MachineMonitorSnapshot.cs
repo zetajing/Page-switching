@@ -58,6 +58,7 @@ public sealed record MachineAxisSnapshot
 public sealed record MachineMonitorSnapshot
 {
     public bool IsConnected { get; init; }
+    public PlcMachineMonitor? Frame { get; init; } // 仅有效监控帧用于造波进度。
     public MachineMonitorQuality OverallQuality { get; init; } = MachineMonitorQuality.Disconnected;
     public bool IsLive => IsConnected && Heartbeat.IsAvailable &&
         OverallQuality is MachineMonitorQuality.Good or MachineMonitorQuality.Partial;
@@ -87,6 +88,7 @@ public sealed record MachineMonitorSnapshot
     internal MachineMonitorSnapshot WithoutMachineAvailability(MachineMonitorQuality quality, string reason) => this with
     {
         OverallQuality = quality,
+        Frame = null,
         ErrorMessage = reason,
         ControlOwner = ControlOwner.WithoutAvailability(reason),
         ControlMode = ControlMode.WithoutAvailability(reason),

@@ -4,7 +4,7 @@
     <Declaration><![CDATA[{attribute 'pack_mode' := '1'}
 TYPE ST_MachineMonitor :
 STRUCT
-    // 布局版本 2，总长 104 字节；修改字段时须同步上位机并升级版本。
+    // 布局版本 3，总长 148 字节；修改字段时须同步上位机并升级版本。
     nVersion : UINT;
     nByteSize : UINT;
     nControlOwner : UINT;
@@ -16,6 +16,28 @@ STRUCT
     Axis2 : ST_AxisMonitor;
     Axis3 : ST_AxisMonitor;
     Axis4 : ST_AxisMonitor;
+    // 轨迹及自动准备反馈，顺序对应 C#，继续 1 字节对齐。
+    nTrajectoryState : UINT;
+    nReceivedCount : UDINT;
+    nLoadedCount : UDINT;
+    nPointCount : UDINT;
+    nCurrentPoint : UDINT;
+    udiReceivedSequence : UDINT;
+    udiAcceptedSequence : UDINT;
+    udiErrorId : UDINT;
+    nUploadStation : UINT;
+    xUploadBusy : BOOL;
+    xDataReady : BOOL;
+    xTrajectoryBusy : BOOL;
+    xRunning : BOOL;
+    xDone : BOOL;
+    xError : BOOL;
+    xStopped : BOOL;
+    xMotionPermit : BOOL;
+    xConfigValid : BOOL;
+    xAxesIdle : BOOL;
+    xAxisFault : BOOL;
+    xAxesStopped : BOOL; // 实际停车完成；MC_Stop 可以尚未释放。
 END_STRUCT
 END_TYPE]]></Declaration>
   </DUT>

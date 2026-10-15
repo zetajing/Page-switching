@@ -50,12 +50,12 @@ public struct PlcAxisMonitor
         ? new(value, true) : FeedbackField<double>.Unavailable("反馈数值无效");
 }
 
-// 与 PLC ST_MachineMonitor 完全同序，固定 104 字节；嵌套轴也是 Pack=1。
+// 与 PLC ST_MachineMonitor 完全同序，固定 148 字节；嵌套轴也是 Pack=1。
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
 public struct PlcMachineMonitor
 {
-    public const ushort LayoutVersion = 2;
-    public const ushort ByteSize = 104;
+    public const ushort LayoutVersion = 3;
+    public const ushort ByteSize = 148;
     public ushort Version;
     public ushort Size;
     public ushort ControlOwner;
@@ -68,8 +68,30 @@ public struct PlcMachineMonitor
     public PlcAxisMonitor Axis3;
     public PlcAxisMonitor Axis4;
 
+    public ushort TrajectoryState;
+    public uint ReceivedCount;
+    public uint LoadedCount;
+    public uint PointCount;
+    public uint CurrentPoint;
+    public uint ReceivedSequence;
+    public uint AcceptedSequence;
+    public uint TrajectoryErrorId;
+    public ushort UploadStation;
+    [MarshalAs(UnmanagedType.I1)] public bool UploadBusy;
+    [MarshalAs(UnmanagedType.I1)] public bool DataReady;
+    [MarshalAs(UnmanagedType.I1)] public bool TrajectoryBusy;
+    [MarshalAs(UnmanagedType.I1)] public bool Running;
+    [MarshalAs(UnmanagedType.I1)] public bool Done;
+    [MarshalAs(UnmanagedType.I1)] public bool Error;
+    [MarshalAs(UnmanagedType.I1)] public bool Stopped;
+    [MarshalAs(UnmanagedType.I1)] public bool MotionPermit;
+    [MarshalAs(UnmanagedType.I1)] public bool ConfigValid;
+    [MarshalAs(UnmanagedType.I1)] public bool AxesIdle;
+    [MarshalAs(UnmanagedType.I1)] public bool AxisFault;
+    [MarshalAs(UnmanagedType.I1)] public bool AxesStopped;
+
     // 两个页面共用同一布局验证；旧版帧不能被解释成新版轴数据。
-    private readonly void ValidateLayout()
+    internal readonly void ValidateLayout()
     {
         if (Version != LayoutVersion || Size != ByteSize)
             throw new InvalidOperationException($"监控结构体布局不匹配：版本={Version}，字节数={Size}，要求 {LayoutVersion}/{ByteSize}；请更新配套 PLC。");
@@ -90,6 +112,7 @@ public struct PlcMachineMonitor
         return new MachineMonitorSnapshot
         {
             IsConnected = true,
+            Frame = this,
             ControlOwner = new(ControlOwner, true),
             ControlMode = new(ControlMode, true),
             WaveState = new(WaveState, true),

@@ -50,6 +50,12 @@
       <SubType>Code</SubType>
       <DependentUpon>auto.cs</DependentUpon>
     </Compile>
+    <!-- 功能分部文件不是独立控件；避免 VS 为它生成第二份 Auto 资源。 -->
+    <Compile Update="panel\auto.Wave.cs">
+      <SubType>Code</SubType>
+      <DependentUpon>auto.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Remove="panel\auto.Wave.resx" />
     <EmbeddedResource Update="panel\auto.resx">
       <DependentUpon>auto.cs</DependentUpon>
     </EmbeddedResource>

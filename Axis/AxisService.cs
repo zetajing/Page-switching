@@ -100,7 +100,7 @@ public sealed partial class AxisService : IDisposable
     public double MaximumPosition => _options.MaximumPosition;
     public string? LastError => _lastError;
 
-    public bool CanControlAll => IsConnected && HasControlAuthority && _options.AxisSymbols.All(map =>
+    public bool CanControlAll => !WaveOperationActive && IsConnected && HasControlAuthority && _options.AxisSymbols.All(map =>
             !string.IsNullOrWhiteSpace(map.EnableCommand) &&
             !string.IsNullOrWhiteSpace(map.ResetAlarmCommand) &&
             !string.IsNullOrWhiteSpace(map.HomeCommand) &&
@@ -111,7 +111,7 @@ public sealed partial class AxisService : IDisposable
     {
         ValidateAxisNumber(axisNumber);
         var map = _options.AxisSymbols[axisNumber - 1];
-        return IsConnected && HasControlAuthority &&
+        return !WaveOperationActive && IsConnected && HasControlAuthority &&
             !string.IsNullOrWhiteSpace(map.HomeCommand) &&
             !string.IsNullOrWhiteSpace(map.StopCommand) &&
             !string.IsNullOrWhiteSpace(map.JogSpeedCommand) &&
@@ -205,6 +205,7 @@ public sealed partial class AxisService : IDisposable
             return;
         }
 
+        await ShutdownWaveAsync().ConfigureAwait(false);
         await StopAuthorityLoopAsync().ConfigureAwait(false);
         await _operationGate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
@@ -291,6 +292,7 @@ public sealed partial class AxisService : IDisposable
         {
             var client = GetConnectedClient() ?? throw new InvalidOperationException("ADS 尚未连接。");
             RequireControlAuthority();
+            if (WaveOperationActive) throw new InvalidOperationException("造波会话进行中，请先停止造波再手动操作。");
             await client.WriteManyAsync(CreateWriteRequests(client, symbols, value), cancellationToken)
                 .ConfigureAwait(false);
         }
@@ -354,6 +356,7 @@ public sealed partial class AxisService : IDisposable
             if (start)
             {
                 RequireControlAuthority();
+                if (WaveOperationActive) throw new InvalidOperationException("造波会话进行中，禁止点动。");
                 await client.WriteAsync(
                     new WriteRequest(client.DeviceId, map.JogSpeedCommand, DataType.Double, Math.Abs(speed)),
                     cancellationToken).ConfigureAwait(false);
@@ -380,6 +383,7 @@ public sealed partial class AxisService : IDisposable
         {
             var client = GetConnectedClient() ?? throw new InvalidOperationException("ADS 尚未连接。");
             RequireControlAuthority();
+            if (WaveOperationActive) throw new InvalidOperationException("造波会话进行中，请先停止造波再手动操作。");
             var setRequests = CreateWriteRequests(client, symbols, true);
             var resetRequests = CreateWriteRequests(client, symbols, false);
             try
@@ -417,6 +421,7 @@ public sealed partial class AxisService : IDisposable
             }
 
             RequireControlAuthority();
+            if (WaveOperationActive) throw new InvalidOperationException("造波会话进行中，请先停止造波再手动操作。");
             try
             {
                 await client.WriteAsync(
@@ -524,6 +529,8 @@ public sealed partial class AxisService : IDisposable
         }
 
         _disposed = true;
+        _waveCancellation?.Dispose();
+        _waveStopGate.Dispose();
         _operationGate.Dispose();
     }
 

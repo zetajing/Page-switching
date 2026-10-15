@@ -121,7 +121,8 @@ class AssemblyFixture:
                                     POU.findtext(".//Declaration")))
         self.values = dict(nCount=0, nReceived=0, nLoaded=0, udiSequence=0, nState=0,
                            xAllDisabled=True, xMovesIdle=True, xAxesReady=True,
-                           xAbort=False, xAxisFault=False, tmHeartbeat=SimpleNamespace(Q=False),
+                           xAbort=False, xAxisFault=False, xStopCommand=False, xNormalStop=False,
+                           GVL_control=SimpleNamespace(nOwner=1), tmHeartbeat=SimpleNamespace(Q=False),
                            GVL_motion=self.motion, MIN=min, SIZEOF=lambda _: 8,
                            ADR=lambda name, indices: (name, indices), MEMCPY=self.copy,
                            aPosition={(1, 0): 0.0})

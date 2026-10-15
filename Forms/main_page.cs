@@ -56,7 +56,7 @@ namespace Page_switching
             var axisOptions = AxisServiceOptions.FromConfiguration(settings);
             _axisService = new AxisService(axisOptions);
             _monitorService = new MachineMonitorService(MachineMonitorOptions.FromConfiguration(axisOptions, settings));
-            _autoPage = new Auto();
+            _autoPage = new Auto(_axisService);
             _router = new AdsTcpRouterRuntime(settings, message =>
             {
                 if (!_closing) _autoPage.AddLog(message);
@@ -238,6 +238,7 @@ namespace Page_switching
             }
             try
             {
+                await _axisService.ShutdownWaveAsync().ConfigureAwait(false);
                 // WhenAll 等待所有任务退出；某个任务取消也不能提前释放 Router。
                 await Task.WhenAll(DisposeMonitorAsync(), _monitorRefreshTask, _startupTask).ConfigureAwait(false);
             }

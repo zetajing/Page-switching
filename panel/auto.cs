@@ -71,6 +71,8 @@ namespace Page_switching
                 return;
             }
 
+            _waveFrame = snapshot.IsLive ? snapshot.Frame : null;
+            UpdateWaveControls();
             UpdateStatusCards(snapshot);
             UpdateConnectionFeedback(snapshot);
             UpdateAxisRows(snapshot);

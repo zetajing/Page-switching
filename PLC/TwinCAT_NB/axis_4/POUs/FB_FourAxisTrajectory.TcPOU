@@ -36,6 +36,8 @@ VAR
     nDirection : DINT; // 送点方向，本实现使用 +1/-1，静止保持时也保持非零。
     xAllEnabled, xAllDisabled, xAllStopped, xAllInitDone, xMovesIdle : BOOL; // 四轴汇总：外部给定开/关、反馈静止、首点 Done、定位块空闲。
     xEnablePending, xFeed, xValid : BOOL; // 有开启请求未结束；本周期需要送点；本次检查结果。
+    xCommandAllowed, xStopCommand : BOOL; // 命令必须来自当前授权站。
+    xNormalStop : BOOL; // 正常人工停止，不作为 1007 故障。
     Point : ST_TrajectoryPoint; // 校验时的临时点，不推进运行点号。
     lrNewVelocity, lrStopPosition : LREAL; // 下一拍减速速度；当前点的停车边界估算。
     udiBlockError : UDINT; // 本扫描定位/开启块原始错误码，四轴循环后再统一切换状态。
@@ -50,11 +52,28 @@ END_VAR]]></Declaration>
     <Implementation>
       <ST><![CDATA[// 1. 上位机操作转为上升沿，防止保持 TRUE 时每扫描重复发起请求。
 // 接口顺序：写独立段 -> xUpload 登记 -> 全部段确认 -> xAssemble 统一拼表。
+// 原始沿先消费；未授权的保持位不能在以后取得权限时自动变成新请求。
+xCommandAllowed := GVL_control.xCanCommand AND NOT GVL_control.xOwnerChanged
+    AND (GVL_motion.nCommandStation = GVL_control.nOwner);
+xStopCommand := xCommandAllowed AND GVL_motion.xStop;
 rtUpload(CLK := GVL_motion.xUpload);
 rtAssemble(CLK := GVL_motion.xAssemble);
 rtClear(CLK := GVL_motion.xClear);
 rtStart(CLK := GVL_motion.xStart);
 rtReset(CLK := GVL_motion.xReset);
+IF NOT xCommandAllowed THEN
+    rtUpload.Q := FALSE; rtAssemble.Q := FALSE; rtClear.Q := FALSE;
+    rtStart.Q := FALSE; rtReset.Q := FALSE;
+END_IF
+// 交接或失联使旧表失去启动资格；正在运行时仍走原有联停和退出流程。
+IF GVL_control.xOwnerChanged OR NOT GVL_control.xCanCommand THEN
+    GVL_motion.xDataReady := FALSE;
+    GVL_motion.nUploadStation := 0;
+    IF (nState = 0) OR (nState = 5) THEN
+        nCount := 0; nReceived := 0; nLoaded := 0; udiSequence := 0; nState := 0;
+    END_IF
+END_IF
+
 // 心跳只要变化，TON.IN 就变 FALSE，超时计时复位；连续 1 秒不变则 Q=TRUE。
 // 状态 10..40 检查该超时；上传状态 5 不要求心跳，因此可以先上传后开始心跳。
 tmHeartbeat(IN := GVL_motion.udiHeartbeat = udiLastHeartbeat, PT := T#1S);
@@ -102,7 +121,7 @@ END_IF
 // 状态 10 尚未发运动命令，可直接进 90；其他阶段先进 50 减速退出。
 // 故障置位后不重复把状态 40 拉回 50，保证末点保持和退出可以完成。
 IF (nState >= 10) AND (nState <= 40) AND NOT GVL_motion.xError THEN
-    IF xAxisFault OR xAbort OR GVL_motion.xStop OR tmHeartbeat.Q
+    IF xAxisFault OR xAbort OR tmHeartbeat.Q
         OR ((nState >= 30) AND NOT xAllEnabled) THEN
         GVL_motion.xError := TRUE;
         IF tmHeartbeat.Q THEN GVL_motion.udiErrorId := 1006;
@@ -113,13 +132,32 @@ IF (nState >= 10) AND (nState <= 40) AND NOT GVL_motion.xError THEN
     END_IF
 END_IF
 
+// 人工停止：取消收段/拼表/校验，运动阶段从当前给定减速；不人为生成故障。
+IF xStopCommand AND NOT GVL_motion.xError THEN
+    xNormalStop := TRUE;
+    GVL_motion.xDataReady := FALSE;
+    GVL_motion.xDone := FALSE;
+    IF (nState = 0) OR (nState = 5) OR (nState = 10) THEN
+        nCount := 0; nReceived := 0; nLoaded := 0; udiSequence := 0; nState := 0;
+        GVL_motion.xStopped := xAllStopped AND xAllDisabled AND xMovesIdle;
+    ELSIF (nState = 15) OR (nState = 20) OR (nState = 30) THEN
+        nStopCycles := 0;
+        nState := 50;
+    END_IF
+END_IF
+
 // 4. 状态机准备本周期给定和阶段；实际 MC 功能块统一在末尾每扫描调用。
 CASE nState OF
 0: // 空闲：先接收所有独立段，再统一拼表；拼接完成后才允许启动。
     // 清表只清计数和就绪状态，不遍历清零约 134.4 MB 的接收区和执行表。
     // 新轨迹必须从偏移 0 连续覆盖所有有效点，旧数据不会在未收齐时被执行。
     // 同扫描多个请求的优先级为 Clear -> Upload -> Assemble -> Start。
-    IF rtClear.Q AND xAllDisabled AND xMovesIdle THEN
+    IF xStopCommand THEN
+        // 停止保持期间不接受同扫描上传/拼接/启动请求。
+    ELSIF rtClear.Q AND xAllDisabled AND xMovesIdle THEN
+        xNormalStop := FALSE;
+        GVL_motion.xStopped := FALSE;
+        GVL_motion.nUploadStation := GVL_control.nOwner;
         nCount := 0;
         nReceived := 0;
         nLoaded := 0;
@@ -144,6 +182,9 @@ CASE nState OF
             GVL_motion.udiErrorId := 1001;
         ELSE
             // 接收确认只表示 PC 已声明本段四轴写完；ADS 数据仍须由 PC 遵守只写一次的约定。
+            GVL_motion.nUploadStation := GVL_control.nOwner;
+            GVL_motion.xStopped := FALSE;
+            xNormalStop := FALSE;
             nCount := GVL_motion.nPointCount;
             udiSequence := GVL_motion.udiUploadSequence;
             nReceived := nReceived + GVL_motion.nUploadCount;
@@ -173,7 +214,7 @@ CASE nState OF
         GVL_motion.nCurrentPoint := 0;
         // 上传完整只代表表已收齐，不代表数值校验已通过或轴已到首点。
         // 禁止重放已消费序号，避免旧启动命令重复执行轨迹。
-        IF NOT GVL_motion.xDataReady OR (nLoaded <> nCount) OR (nCount < 4)
+        IF NOT GVL_motion.xDataReady OR (GVL_motion.nUploadStation <> GVL_control.nOwner) OR (nLoaded <> nCount) OR (nCount < 4)
             OR (udiSequence = GVL_motion.udiAcceptedSequence)
             OR (GVL_motion.nPointCount <> nCount) OR (GVL_motion.nSampleTimeUs <> 2000)
             OR (GVL_motion.udiUploadSequence <> udiSequence) THEN
@@ -392,6 +433,7 @@ CASE nState OF
 70:
     IF xAllStopped AND xAllDisabled AND xMovesIdle THEN
         IF GVL_motion.xError THEN nState := 90;
+        ELSIF xNormalStop THEN GVL_motion.xStopped := TRUE; nState := 0;
         ELSE GVL_motion.xDone := TRUE; nState := 0;
         END_IF
     END_IF

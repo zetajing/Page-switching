@@ -24,6 +24,7 @@ STRUCT
     // 新字段放在末尾；上位机应按 ADS 符号访问，整结构读写须同步更新布局。
     xEnabled : BOOL; // MC_Power.Status，使能反馈；xStart 为保持型使能请求。
     xBusy : BOOL;
+    xStopped : BOOL; // 实际停稳且回原/点动退出，允许 MC_Stop.Done 保持。
     udiErrorId : UDINT;
 END_STRUCT
 END_TYPE

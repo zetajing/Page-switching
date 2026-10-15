@@ -8,6 +8,8 @@ VAR
     tmHeartbeat : TON;
     udiFault : UDINT;
     nFaultAxis : UINT;
+    i : INT;
+    Config : ST_AxisConfig;
 END_VAR]]></Declaration>
     <Implementation><ST><![CDATA[// 1. 自复位 TON 每约 500 ms 产生一个扫描周期的 Q，不依赖上位机写入。
 // 心跳始终更新，不能因待机/故障而停住，否则 switch 会认为反馈已过期。
@@ -64,6 +66,8 @@ ELSIF GVL_motion.nState = 30 THEN
 ELSIF (GVL_motion.nState = 5) OR (GVL_motion.nState = 10)
     OR (GVL_motion.nState = 15) OR (GVL_motion.nState = 20) THEN
     GVL_HMI.stMonitor.nWaveState := 1;
+ELSIF GVL_motion.xStopped THEN
+    GVL_HMI.stMonitor.nWaveState := 5;
 ELSIF GVL_motion.xDone THEN
     GVL_HMI.stMonitor.nWaveState := 6;
 ELSE
@@ -80,7 +84,7 @@ GVL_HMI.xTrajectoryBusy := GVL_motion.xBusy;
 
 // 6. 整块接口固定布局，轴反馈从本扫描实际结果集中发布。
 // 普通 ADS 读取不声明为跨任务原子快照。
-GVL_HMI.stMonitor.nVersion := 2;
+GVL_HMI.stMonitor.nVersion := 3;
 GVL_HMI.stMonitor.nByteSize := SIZEOF(GVL_HMI.stMonitor);
 GVL_HMI.stMonitor.Axis1.lrActualPosition := GVL_axis.Axis1.lrActualPosition;
 GVL_HMI.stMonitor.Axis1.lrSpeed := GVL_axis.Axis1.lrSpeed;
@@ -114,6 +118,49 @@ GVL_HMI.stMonitor.Axis4.xPositiveLimit := GVL_axis.Axis4.xPositiveLimit;
 GVL_HMI.stMonitor.Axis4.xNegativeLimit := GVL_axis.Axis4.xNegativeLimit;
 GVL_HMI.stMonitor.Axis4.xOriginSignal := GVL_axis.Axis4.xOriginSignal;
 GVL_HMI.stMonitor.Axis4.xEnabled := GVL_axis.Axis4.xEnabled;
+
+// 自动页从同一帧读取确认进度和准备条件，不用写成功冒充就绪。
+GVL_HMI.stMonitor.nTrajectoryState := GVL_motion.nState;
+GVL_HMI.stMonitor.nReceivedCount := GVL_motion.nReceivedCount;
+GVL_HMI.stMonitor.nLoadedCount := GVL_motion.nLoadedCount;
+GVL_HMI.stMonitor.nPointCount := GVL_motion.nPointCount;
+GVL_HMI.stMonitor.nCurrentPoint := GVL_motion.nCurrentPoint;
+GVL_HMI.stMonitor.udiReceivedSequence := GVL_motion.udiReceivedSequence;
+GVL_HMI.stMonitor.udiAcceptedSequence := GVL_motion.udiAcceptedSequence;
+GVL_HMI.stMonitor.udiErrorId := GVL_motion.udiErrorId;
+GVL_HMI.stMonitor.nUploadStation := GVL_motion.nUploadStation;
+GVL_HMI.stMonitor.xUploadBusy := GVL_motion.xUploadBusy;
+GVL_HMI.stMonitor.xDataReady := GVL_motion.xDataReady;
+GVL_HMI.stMonitor.xTrajectoryBusy := GVL_motion.xBusy;
+GVL_HMI.stMonitor.xRunning := GVL_motion.xRunning;
+GVL_HMI.stMonitor.xDone := GVL_motion.xDone;
+GVL_HMI.stMonitor.xError := GVL_motion.xError;
+GVL_HMI.stMonitor.xStopped := GVL_motion.xStopped;
+GVL_HMI.stMonitor.xAxesStopped := GVL_axis.Axis1.xStopped AND GVL_axis.Axis2.xStopped
+    AND GVL_axis.Axis3.xStopped AND GVL_axis.Axis4.xStopped;
+GVL_HMI.stMonitor.xMotionPermit := GVL_motion.xMotionPermit;
+GVL_HMI.stMonitor.xConfigValid := TRUE;
+GVL_HMI.stMonitor.xAxesIdle := NOT GVL_axis.Axis1.xBusy AND NOT GVL_axis.Axis2.xBusy
+    AND NOT GVL_axis.Axis3.xBusy AND NOT GVL_axis.Axis4.xBusy;
+GVL_HMI.stMonitor.xAxisFault := GVL_axis.Axis1.xError OR GVL_axis.Axis2.xError
+    OR GVL_axis.Axis3.xError OR GVL_axis.Axis4.xError;
+FOR i := 1 TO 4 DO
+    Config := GVL_motion.aConfig[i];
+    GVL_HMI.stMonitor.xConfigValid := GVL_HMI.stMonitor.xConfigValid
+        AND (Config.lrMinPosition >= -1.0E12) AND (Config.lrMaxPosition <= 1.0E12)
+        AND (Config.lrMinPosition < Config.lrMaxPosition)
+        AND (Config.lrMaxVelocity > 0) AND (Config.lrMaxVelocity < 1.0E12)
+        AND (Config.lrMaxAcceleration > 0) AND (Config.lrMaxAcceleration < 1.0E12)
+        AND (Config.lrStopDeceleration > 0) AND (Config.lrStopDeceleration <= Config.lrMaxAcceleration)
+        AND (Config.lrInitVelocity > 0) AND (Config.lrInitVelocity <= Config.lrMaxVelocity)
+        AND (Config.lrStartTolerance >= 0) AND (Config.lrStartTolerance < 1.0E12);
+    GVL_HMI.stMonitor.xAxesIdle := GVL_HMI.stMonitor.xAxesIdle
+        AND GVL_sy.axis[i].Status.StandStill AND NOT GVL_sy.axis[i].Status.Homing
+        AND NOT GVL_sy.axis[i].Status.Stopping AND NOT GVL_sy.axis[i].Status.ExtSetPointGenEnabled
+        AND NOT GVL_sy.axis[i].Status.IoDataInvalid;
+    GVL_HMI.stMonitor.xAxisFault := GVL_HMI.stMonitor.xAxisFault
+        OR GVL_sy.axis[i].Status.Error OR GVL_sy.axis[i].Status.IoDataInvalid;
+END_FOR
 ]]></ST></Implementation>
   </POU>
 </TcPlcObject>

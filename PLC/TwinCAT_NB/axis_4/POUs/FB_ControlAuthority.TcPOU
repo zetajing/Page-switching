@@ -39,7 +39,8 @@ IF nOwner <> 0 THEN
                 OR GVL_control.aStation[nOwner].aAxis[j].jogf
                 OR GVL_control.aStation[nOwner].aAxis[j].gohome;
         END_FOR
-        xLocked := xLocked OR GVL_motion.xStart;
+        xLocked := xLocked OR GVL_control.aStation[nOwner].xWaveSession
+            OR ((GVL_motion.nCommandStation = nOwner) AND GVL_motion.xStart);
     END_IF
     // 运行期间冻结 Owner；高优先级申请不迫使设备停车让权。
     // 失联则仅撤命令并停车，停稳前仍保留原 Owner，不授予别的站点。
@@ -79,7 +80,17 @@ END_FOR
 GVL_control.xOwnerChanged := (nOwner <> nOldOwner) OR xResetCommands;
 IF GVL_control.xOwnerChanged THEN
     // 清所有站点的旧运动命令，新持有者必须重新下发，不能继承旧按钮或排队动作。
-    FOR i := 1 TO 3 DO GVL_control.aStation[i].aAxis := aEmpty; END_FOR
+    FOR i := 1 TO 3 DO
+        GVL_control.aStation[i].aAxis := aEmpty;
+        GVL_control.aStation[i].xWaveSession := FALSE;
+    END_FOR
+    // 新控制端不得继承上一个站的轨迹触发位。
+    GVL_motion.xStart := FALSE;
+    GVL_motion.xUpload := FALSE;
+    GVL_motion.xAssemble := FALSE;
+    GVL_motion.xClear := FALSE;
+    GVL_motion.xReset := FALSE;
+    GVL_motion.xStop := FALSE;
 END_IF
 IF nOwner = 0 THEN xOwnerLost := FALSE; END_IF
 GVL_control.xCanCommand := FALSE;

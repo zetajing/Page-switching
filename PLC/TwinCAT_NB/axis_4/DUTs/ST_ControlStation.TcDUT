@@ -7,6 +7,7 @@ STRUCT
     udiHeartbeat : UDINT;
     nAction : UINT; // 1 申请，2 释放。
     udiRequestSequence : UDINT;
+    xWaveSession : BOOL; // 本站发送/自动准备/执行会话，锁住交接；失联后不再保留锁。
     aAxis : ARRAY[1..4] OF ST_AxisCommand;
     // PLC 写，站点只读：请求是否成功必须看同序号应答，不能以写成功代替授权。
     udiAckSequence : UDINT;

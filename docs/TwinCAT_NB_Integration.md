@@ -79,4 +79,8 @@ PC 写完一段四轴数据后，用 nUploadOffset、nUploadCount 和 xUpload �
 
 ## 整块监控读取（2026-10-15）
 
-只读监控每轮从 `GVL_HMI.stMonitor` 读取一次，Config 键为 `AdsMonitorSnapshot`；版本 2 / 104 字节，PLC 和 C# 均按 1 字节对齐。旧独立监控变量及 GVL_pc 兼容层已删除；手动页统一读取该结构体；32 项旧轴反馈地址已删除，控制命令地址保留。必须先部署新增 DUT、GVL 和反馈发布逻辑，完整布局及验收见 [监控契约](PlcMonitoringContract.md)。
+只读监控每轮从 `GVL_HMI.stMonitor` 读取一次，Config 键为 `AdsMonitorSnapshot`；版本 3 / 148 字节，PLC 和 C# 均按 1 字节对齐。旧独立监控变量及 GVL_pc 兼容层已删除；手动页统一读取该结构体；32 项旧轴反馈地址已删除，控制命令地址保留。必须先部署新增 DUT、GVL 和反馈发布逻辑，完整布局及验收见 [监控契约](PlcMonitoringContract.md)。
+
+## 造波操作接入
+
+四按钮、自动准备、会话锁和正常停止已接入，使用最终 PLC 点位、不做算法换算。所有新增协议和验证边界见 [造波操作](WaveOperation.md)。需配套部署版本 3 / 148 字节监控结构体。

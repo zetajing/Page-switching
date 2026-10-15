@@ -22,7 +22,7 @@ public sealed partial class AxisService
 
     public ushort ControlStationCode => _options.ControlStationCode;
     public ControlAuthorityStatus AuthorityStatus => _authorityStatus;
-    public bool HasControlAuthority => ControlStationCode is >= 1 and <= 3
+    public bool HasControlAuthority => !_waveFailSafe && ControlStationCode is >= 1 and <= 3
         && AuthorityStatus.IsFresh && AuthorityStatus.Granted && AuthorityStatus.Owner == ControlStationCode;
     private string StationPrefix => $"GVL_control.aStation[{ControlStationCode}]";
 
@@ -53,6 +53,11 @@ public sealed partial class AxisService
             try
             {
                 await Task.Delay(250, token).ConfigureAwait(false);
+                if (_waveFailSafe)
+                {
+                    _authorityStatus = ControlAuthorityStatus.Unavailable("停止未确认，本站心跳已暂停，等待 PLC 停车；确认停稳后重启上位机。");
+                    continue;
+                }
                 await _operationGate.WaitAsync(token).ConfigureAwait(false);
                 try
                 {
@@ -60,6 +65,12 @@ public sealed partial class AxisService
                     _authorityHeartbeat = unchecked(_authorityHeartbeat + 1);
                     await client.WriteAsync(new WriteRequest(client.DeviceId, StationPrefix + ".udiHeartbeat",
                         DataType.UInt32, _authorityHeartbeat), token).ConfigureAwait(false);
+                    if (_waveActive && HasControlAuthority)
+                    {
+                        _waveHeartbeat = unchecked(_waveHeartbeat + 1);
+                        await client.WriteAsync(new WriteRequest(client.DeviceId, "GVL_motion.udiHeartbeat",
+                            DataType.UInt32, _waveHeartbeat), token).ConfigureAwait(false);
+                    }
                     var result = await client.ReadManyAsync(
                     [
                         new ReadRequest(client.DeviceId, "GVL_control.nOwner", DataType.UInt16),

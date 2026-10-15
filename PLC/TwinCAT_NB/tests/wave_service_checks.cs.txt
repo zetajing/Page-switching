@@ -1,0 +1,269 @@
+using Page_switching;
+using InduLink.Protocols.Ads;
+using System.Collections.Specialized;
+
+internal static class Program
+{
+    static int assertions;
+    static void Check(bool value, string message) { assertions++; if (!value) throw new Exception(message); }
+    static async Task Reject(Func<Task> action, string name)
+    {
+        try { await action(); throw new Exception("未拒绝：" + name); }
+        catch (Exception ex) when (ex is InvalidOperationException or InvalidDataException or OperationCanceledException or TimeoutException) { assertions++; }
+    }
+    static async Task Until(Func<bool> ready)
+    {
+        using var limit = new CancellationTokenSource(5000);
+        while (!ready()) await Task.Delay(20, limit.Token);
+    }
+    static AxisServiceOptions Options() => new()
+    {
+        ControlStationCode = 1,
+        AxisSymbols = Enumerable.Range(1, 4).Select(i => new AxisSymbolMap
+        {
+            EnableCommand = $"GVL_control.aStation[1].aAxis[{i}].xStart",
+            HomeCommand = $"GVL_control.aStation[1].aAxis[{i}].gohome",
+            StopCommand = $"GVL_control.aStation[1].aAxis[{i}].xStop",
+            ResetAlarmCommand = $"GVL_control.aStation[1].aAxis[{i}].reset",
+            JogPositiveCommand = $"GVL_control.aStation[1].aAxis[{i}].jogz",
+            JogNegativeCommand = $"GVL_control.aStation[1].aAxis[{i}].jogf",
+            JogSpeedCommand = $"GVL_control.aStation[1].aAxis[{i}].lrJogSpeed"
+        }).ToArray()
+    };
+    static async Task Main()
+    {
+        var temp = Path.GetTempFileName();
+        try
+        {
+            string FileText(int count = 4, string dt = "0.002", string header = "OldSignal", string? data = null)
+                => header + "\n" + count + "\n" + dt + "\n1\n1\n1\n0\n0\n0\n" + (data ?? "1,999\n1,999\n2,999\n2,999\n");
+            File.WriteAllText(temp, FileText());
+            var signal = WaveTrajectoryFile.Read(temp);
+            Check(signal.Positions.SequenceEqual(new[] { 1d, 1, 2, 2 }), "只使用第一列，不缩放");
+            Check(signal.DurationSeconds == 0.006, "duration");
+            foreach (var text in new[] { FileText(dt: "0.01"), FileText(count: 3), FileText(count: 2100001),
+                FileText(header: "TimeSeconds,ElevationMetres"), FileText(data: "1\nNaN\n2\n2\n"),
+                FileText(data: "1\nInfinity\n2\n2\n"), FileText(data: ",999\n1\n2\n2\n"), FileText(data: "1\n1\n2\n"), FileText(data: "1\n1\n2\n2\n3\n") })
+            {
+                File.WriteAllText(temp, text);
+                await Reject(() => Task.FromResult(WaveTrajectoryFile.Read(temp)), "invalid file");
+            }
+            foreach (int count in new[] { 4, 99999, 100000, 100001, 2100000 })
+            {
+                var chunks = WaveTransferChunks.Create(count).ToArray();
+                Check(chunks.Sum(c => (long)c.Count) == count * 4L, "four-axis count");
+                Check(chunks.Count(c => c.EndOfSegment) == (count + 99999) / 100000, "one commit per segment");
+                foreach (var chunk in chunks)
+                {
+                    if (chunk.Count <= 0 || chunk.Count > 1024 || chunk.Point + chunk.Count > chunk.SegmentCount
+                        || chunk.Offset != chunk.Segment * 100000 + chunk.Point || chunk.Axis is < 1 or > 4)
+                        throw new Exception("chunk range");
+                }
+                assertions++;
+            }
+            AdsClient.Model = new FakePlc();
+            using (var service = new AxisService(Options()))
+            {
+                await Reject(() => service.UploadWaveAsync(signal), "no authority");
+                await service.ConnectAsync(CancellationToken.None);
+                await Until(() => service.HasControlAuthority);
+                await service.UploadWaveAsync(signal);
+                var model = AdsClient.Model;
+                Check(service.WaveStatus.Ready && model.Frame.DataReady, "upload waits for ready");
+                Check(model.ArrayWrites == 16 && model.StartWrites == 0, "upload cannot start");
+                Check(model.ValuesByAxis.Values.All(v => v.SequenceEqual(signal.Positions)), "same points to four axes");
+                await service.StartWaveAsync();
+                Check(model.HomedAxes.SequenceEqual(new[] { 2 }), "only unhomed axis homed");
+                Check(model.StartWrites == 1 && !service.WaveStatus.Ready, "single execution consumed");
+                Check(model.WaveHeartbeatWrites > 0, "trajectory heartbeat independent of page");
+                await Reject(() => service.StartWaveAsync(), "no replay");
+                await service.UploadWaveAsync(signal);
+                model.HoldHoming = true;
+                model.Frame.Axis2.Homed = false;
+                var pending = service.StartWaveAsync();
+                await Until(() => service.WaveStatus.Stage.Contains("回原"));
+                await Reject(() => service.UploadWaveAsync(signal), "duplicate operation");
+                await Reject(() => service.JogAsync(1, true, true, 1, CancellationToken.None), "manual during preparation");
+                await service.StopWaveAsync();
+                try { await pending; } catch (OperationCanceledException) { }
+                Check(model.StartWrites == 1, "cancelled home never writes start");
+                Check(service.WaveStatus.Stage.StartsWith("已停止"), "stop confirmed after release");
+                Check(!model.Session && !model.Frame.TrajectoryBusy, "stop releases session");
+                Check(model.StopReleaseWrites > 0, "stop latch released before idle confirmation");
+            }
+            AdsClient.Model = new FakePlc { FailArrayWrite = true };
+            using (var service = new AxisService(Options()))
+            {
+                await service.ConnectAsync(CancellationToken.None);
+                await Until(() => service.HasControlAuthority);
+                await Reject(() => service.UploadWaveAsync(signal), "write failure");
+                Check(!service.WaveStatus.Ready && AdsClient.Model.StartWrites == 0, "failed transfer not ready");
+            }
+            AdsClient.Model = new FakePlc { HoldHoming = true };
+            using (var service = new AxisService(Options()))
+            {
+                await service.ConnectAsync(CancellationToken.None);
+                await Until(() => service.HasControlAuthority);
+                await service.UploadWaveAsync(signal);
+                var pending = service.StartWaveAsync();
+                await Until(() => service.WaveStatus.Stage.Contains("回原"));
+                AdsClient.Model.Frame.ControlOwner = 2;
+                await Reject(() => pending, "owner changed during preparation");
+                Check(AdsClient.Model.StartWrites == 0 && !service.HasControlAuthority, "owner loss cannot start");
+                AdsClient.Model.Frame.ControlOwner = 1;
+                await Task.Delay(300);
+                Check(!service.HasControlAuthority, "failed stop cannot auto restore control");
+            }
+            AdsClient.Model = new FakePlc { HoldAcknowledgement = true };
+            using (var service = new AxisService(Options()))
+            {
+                await service.ConnectAsync(CancellationToken.None);
+                await Until(() => service.HasControlAuthority);
+                await Reject(() => service.UploadWaveAsync(signal), "ack timeout");
+                Check(!service.WaveStatus.Ready && AdsClient.Model.StartWrites == 0, "unconfirmed segment never ready");
+            }
+            AdsClient.Model = new FakePlc { FreezeAfterArray = true, HoldAcknowledgement = true };
+            using (var service = new AxisService(Options()))
+            {
+                await service.ConnectAsync(CancellationToken.None);
+                await Until(() => service.HasControlAuthority);
+                await Reject(() => service.UploadWaveAsync(signal), "stalled heartbeat");
+                Check(!service.HasControlAuthority && AdsClient.Model.StartWrites == 0, "uncertain stop suspends authorization");
+            }
+            Console.WriteLine($"Wave service: {assertions} assertions passed (fake ADS only).");
+        }
+        finally { File.Delete(temp); }
+    }
+}
+
+// 替身只供离线测试；实际服务源码直接链接，不连接 Router 或 PLC。
+namespace InduLink.Abstractions
+{
+    public enum DataType { Bool, Double, UInt16, UInt32 }
+    public enum QualityStatus { Good }
+    public record WriteRequest(string DeviceId, string Address, DataType DataType, object Value);
+    public record ReadRequest(string DeviceId, string Address, DataType DataType);
+    public record ReadValue(object Value, QualityStatus Quality = QualityStatus.Good);
+    public record ReadResult(IReadOnlyList<ReadValue> Values);
+}
+namespace Page_switching
+{
+    internal static class OperationJournal { public static void Record(string category, string message) { } }
+    internal static class AdsDiagnostics { public static string DescribeException(Exception ex) => ex.Message; }
+    internal static class AdsConnectionSettings { public static NameValueCollection GetSettings() => new(); }
+    internal static class ControlStationIdentity
+    {
+        public static string? Parse(string? value) => value;
+        public static ushort GetPlcCode(string? value) => 1;
+    }
+}
+namespace InduLink.Protocols.Ads
+{
+    using InduLink.Abstractions;
+    public class AdsClientOptions
+    {
+        public string DeviceId { get; set; } = "";
+        public string AmsNetId { get; set; } = "";
+        public int Port { get; set; }
+        public int ConnectTimeoutMilliseconds { get; set; }
+        public int OperationTimeoutMilliseconds { get; set; }
+        public bool ValidateTargetStateOnConnect { get; set; }
+        public bool EnableSumCommands { get; set; }
+    }
+    public sealed class AdsClient(AdsClientOptions options) : IDisposable
+    {
+        public static FakePlc Model = new();
+        public string DeviceId => options.DeviceId;
+        public bool IsConnected { get; private set; }
+        public Task ConnectAsync(CancellationToken token) { IsConnected = true; return Task.CompletedTask; }
+        public Task DisconnectAsync(CancellationToken token) { IsConnected = false; return Task.CompletedTask; }
+        public Task WriteAsync(WriteRequest request, CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
+            lock (Model) Model.Write(request);
+            return Task.CompletedTask;
+        }
+        public async Task WriteManyAsync(IReadOnlyCollection<WriteRequest> requests, CancellationToken token)
+        { foreach (var request in requests) await WriteAsync(request, token); }
+        public Task<ReadResult> ReadManyAsync(IReadOnlyCollection<ReadRequest> requests, CancellationToken token)
+        {
+            lock (Model) return Task.FromResult(new ReadResult(new[] { new ReadValue((ushort)1),
+                new ReadValue(Model.Session), new ReadValue(true), new ReadValue((uint)0), new ReadValue((ushort)1) }));
+        }
+        public Task<T> ReadAnyAsync<T>(string symbol, int[]? args = null, CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            lock (Model) return Task.FromResult((T)(object)Model.Read());
+        }
+        public void Dispose() { IsConnected = false; }
+    }
+    public sealed class FakePlc
+    {
+        public PlcMachineMonitor Frame = new()
+        {
+            Version = PlcMachineMonitor.LayoutVersion, Size = PlcMachineMonitor.ByteSize, ControlOwner = 1,
+            MotionPermit = true, ConfigValid = true, AxesIdle = true, AxesStopped = true,
+            Axis1 = new() { Homed = true }, Axis3 = new() { Homed = true }, Axis4 = new() { Homed = true }
+        };
+        public bool Session, HoldHoming, FailArrayWrite, HoldAcknowledgement, FrozenHeartbeat, FreezeAfterArray;
+        public int ArrayWrites, StartWrites, StopReleaseWrites, WaveHeartbeatWrites;
+        public Dictionary<int, List<double>> ValuesByAxis = new();
+        public List<int> HomedAxes = new();
+        private uint sequence, offset, size;
+        private int runReads;
+        public void Write(WriteRequest request)
+        {
+            string address = request.Address;
+            if (address.EndsWith("xWaveSession")) Session = (bool)request.Value;
+            if (address == "GVL_motion.udiHeartbeat") WaveHeartbeatWrites++;
+            if (address == "GVL_motion.nPointCount") Frame.PointCount = (uint)request.Value;
+            if (address == "GVL_motion.udiUploadSequence") sequence = (uint)request.Value;
+            if (address == "GVL_motion.nUploadOffset") offset = (uint)request.Value;
+            if (address == "GVL_motion.nUploadCount") size = (uint)request.Value;
+            if (address == "GVL_motion.xClear" && (bool)request.Value)
+            {
+                Frame.ReceivedCount = Frame.LoadedCount = 0; Frame.DataReady = false; Frame.UploadStation = 1;
+                Frame.Error = false; Frame.Stopped = Frame.Done = false; ValuesByAxis.Clear();
+            }
+            if (address.StartsWith("GVL_motion.aUpload["))
+            {
+                if (FailArrayWrite) throw new InvalidOperationException("模拟 ADS 写入失败");
+                int axis = int.Parse(address.Split(',')[1]);
+                if (!ValuesByAxis.ContainsKey(axis)) ValuesByAxis[axis] = new();
+                ValuesByAxis[axis].Add((double)request.Value); ArrayWrites++;
+                FrozenHeartbeat |= FreezeAfterArray;
+            }
+            if (address == "GVL_motion.xUpload" && (bool)request.Value && !HoldAcknowledgement)
+            { Frame.ReceivedCount = offset + size; Frame.ReceivedSequence = sequence; }
+            if (address == "GVL_motion.xAssemble" && (bool)request.Value)
+            { Frame.LoadedCount = Frame.ReceivedCount; Frame.DataReady = true; }
+            if (address == "GVL_motion.xStart" && (bool)request.Value)
+            {
+                StartWrites++; Frame.AcceptedSequence = sequence; Frame.TrajectoryBusy = true;
+                Frame.Done = false; Frame.AxesIdle = false; runReads = 0;
+            }
+            if (address.Contains(".aAxis[") && address.EndsWith(".xStart") && (bool)request.Value)
+                Frame.Axis1.Enabled = Frame.Axis2.Enabled = Frame.Axis3.Enabled = Frame.Axis4.Enabled = true;
+            if (address.Contains(".aAxis[") && address.EndsWith(".gohome") && (bool)request.Value)
+            {
+                int axis = int.Parse(address.Split(".aAxis[")[1].Split(']')[0]);
+                HomedAxes.Add(axis); Frame.AxesIdle = false;
+                if (!HoldHoming) { Frame.Axis2.Homed = true; Frame.AxesIdle = true; }
+            }
+            if (address == "GVL_motion.xStop" && (bool)request.Value)
+            {
+                Frame.TrajectoryBusy = false; Frame.UploadBusy = false; Frame.DataReady = false;
+                Frame.Stopped = true; Frame.AxesStopped = true; Frame.AxesIdle = false;
+            }
+            if (address.Contains(".aAxis[") && address.EndsWith(".xStop") && !(bool)request.Value)
+            { StopReleaseWrites++; Frame.AxesIdle = true; }
+        }
+        public PlcMachineMonitor Read()
+        {
+            if (!FrozenHeartbeat) Frame.Heartbeat++;
+            if (Frame.TrajectoryBusy && ++runReads > 2)
+            { Frame.TrajectoryBusy = false; Frame.Done = true; Frame.AxesIdle = true; }
+            return Frame;
+        }
+    }
+}

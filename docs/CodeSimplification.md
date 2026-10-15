@@ -1,6 +1,6 @@
 # 监控读取和调试入口
 
-自动页的 MachineMonitorService 使用独立只读 TwinCAT ADS 客户端，手动页的 AxisService 使用现有 InduLink DLL。两条路径均按 AdsMonitorSnapshot 配置，每轮一次读取 PlcMachineMonitor，校验版本 2 / 104 字节后转换成页面快照。
+自动页的 MachineMonitorService 使用独立只读 TwinCAT ADS 客户端，手动页的 AxisService 使用现有 InduLink DLL。两条路径均按 AdsMonitorSnapshot 配置，每轮一次读取 PlcMachineMonitor，校验版本 3 / 148 字节后转换成页面快照。
 
 - MachineMonitorService.ReadFrameAsync：创建并复用唯一的 _monitorHandle，调用 ReadAnyAsync<PlcMachineMonitor>；重连和退出释放句柄。
 - AxisService.ReadAdsSnapshotsAsync：调用 DLL ReadAnyAsync<PlcMachineMonitor>，DLL 维护句柄；ToAxisSnapshots 转换四轴反馈。

@@ -157,3 +157,7 @@ Q(f) = EtaTarget(f) / G(f)
 
 - [Linear theory for single and double flap wavemakers](https://arxiv.org/pdf/1703.09445)：色散关系、摆板波高与行程关系、线性频率分量叠加。
 - [Wavemaker research, Twenty-First Symposium on Naval Hydrodynamics](https://www.wamit.com/Publications/wavemakers.pdf)：造波机传递关系及其适用范围。
+
+## 2026-10-15 执行接口确认
+
+用户明确授权接入造波页的导入、发送、开始、停止；旧格式第一列已经是最终 PLC 轴点位，四轴共用，周期 2 ms。本次不修改高程生成、机械转换和主动吸收算法。详见 WaveOperation.md。

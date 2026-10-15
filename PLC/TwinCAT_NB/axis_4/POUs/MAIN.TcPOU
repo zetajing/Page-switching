@@ -58,8 +58,9 @@ xAbort := NOT GVL_motion.xMotionPermit OR NOT GVL_control.xCanCommand
     OR (GVL_motion.xBusy AND NOT xAxesReady)
     OR NOT GVL_axis.Axis1.xStart OR NOT GVL_axis.Axis2.xStart
     OR NOT GVL_axis.Axis3.xStart OR NOT GVL_axis.Axis4.xStart
-    OR GVL_axis.Axis1.xStop OR GVL_axis.Axis2.xStop
-    OR GVL_axis.Axis3.xStop OR GVL_axis.Axis4.xStop
+    OR ((GVL_axis.Axis1.xStop OR GVL_axis.Axis2.xStop
+        OR GVL_axis.Axis3.xStop OR GVL_axis.Axis4.xStop)
+        AND NOT ((GVL_motion.nCommandStation = GVL_control.nOwner) AND GVL_motion.xStop))
     OR GVL_axis.Axis1.jogz OR GVL_axis.Axis1.jogf OR GVL_axis.Axis1.gohome OR GVL_axis.Axis1.reset
     OR GVL_axis.Axis2.jogz OR GVL_axis.Axis2.jogf OR GVL_axis.Axis2.gohome OR GVL_axis.Axis2.reset
     OR GVL_axis.Axis3.jogz OR GVL_axis.Axis3.jogf OR GVL_axis.Axis3.gohome OR GVL_axis.Axis3.reset
