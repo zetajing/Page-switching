@@ -5,15 +5,7 @@
 VAR_GLOBAL
     // 整块只读监控接口；由 FB_HmiFeedback 在轴块执行后发布。
     stMonitor : ST_MachineMonitor;
-    // switch 的只读监控契约：前四项 UINT，心跳 UDINT，不能按变量名前缀猜类型。
-    // 控制权/模式来自 PLC 仲裁程序，不根据页面或 ADS 连接状态伪造授权。
-    nControlOwner : UINT; // 0 未分配；1 造波控制室；2 拖车本地；3 远程操作室。
-    nControlMode : UINT; // 0 未选择；1 手动；2 自动。
-    nWaveState : UINT; // 0 待机；1 准备；2 运行；4 停止中；6 完成；7 故障。
-    udiWaveFaultCode : UINT; // 兼容 switch 的 UInt16 读取；65535 表示完整码超出 UINT。
-    udiHeartbeat : UDINT; // PLC 每约 500 ms 递增，待机和故障期间仍更新。
-
-    // 扩展诊断，暂不改变 switch 自动页的操作流程；全部由 PLC 发布，上位机只读。
+    // 保留完整故障码及轨迹诊断；全部由 PLC 发布，上位机只读。
     udiDetailedFaultCode : UDINT; // 完整错误码，不丢失高 16 位。
     nFaultAxis : UINT; // 0 为组故障或无错误；1..4 为对应轴的首个错误。
     nTrajectoryState : UINT; // 轨迹块内部 nState，区别于上述页面状态编码。

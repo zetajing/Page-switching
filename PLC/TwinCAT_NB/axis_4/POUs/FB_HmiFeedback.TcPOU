@@ -13,16 +13,20 @@ END_VAR]]></Declaration>
 // 心跳始终更新，不能因待机/故障而停住，否则 switch 会认为反馈已过期。
 tmHeartbeat(IN := NOT tmHeartbeat.Q, PT := T#500MS);
 IF tmHeartbeat.Q THEN
-    IF GVL_HMI.udiHeartbeat = UDINT#4294967295 THEN
-        GVL_HMI.udiHeartbeat := 0;
+    IF GVL_HMI.stMonitor.udiHeartbeat = UDINT#4294967295 THEN
+        GVL_HMI.stMonitor.udiHeartbeat := 0;
     ELSE
-        GVL_HMI.udiHeartbeat := GVL_HMI.udiHeartbeat + 1;
+        GVL_HMI.stMonitor.udiHeartbeat := GVL_HMI.stMonitor.udiHeartbeat + 1;
     END_IF
 END_IF
 
-// 2. 控制权和模式由 FB_ControlAuthority 发布，运行中不交接；HMI 只读反馈。
-GVL_HMI.nControlOwner := GVL_pc.nControlOwner;
-GVL_HMI.nControlMode := GVL_pc.nControlMode;
+// 2. 控制权取仲裁结果，模式按实际状态发布；HMI 只读反馈。
+GVL_HMI.stMonitor.nControlOwner := GVL_control.nOwner;
+// 模式由实际控制端和轨迹占用决定，不再通过 GVL_pc 中转。
+IF GVL_control.nOwner = 0 THEN GVL_HMI.stMonitor.nControlMode := 0;
+ELSIF GVL_motion.xBusy THEN GVL_HMI.stMonitor.nControlMode := 2;
+ELSE GVL_HMI.stMonitor.nControlMode := 1;
+END_IF
 
 // 3. 组故障优先，其次取 Axis1..4 的第一个轴故障。每扫描重算，故障消失就清零。
 udiFault := 0;
@@ -43,27 +47,27 @@ IF (GVL_motion.xError OR (nFaultAxis <> 0)) AND (udiFault = 0) THEN udiFault := 
 GVL_HMI.udiDetailedFaultCode := udiFault;
 GVL_HMI.nFaultAxis := nFaultAxis;
 IF udiFault > UDINT#65535 THEN
-    GVL_HMI.udiWaveFaultCode := UINT#65535;
+    GVL_HMI.stMonitor.uiWaveFaultCode := UINT#65535;
 ELSE
-    GVL_HMI.udiWaveFaultCode := UDINT_TO_UINT(udiFault);
+    GVL_HMI.stMonitor.uiWaveFaultCode := UDINT_TO_UINT(udiFault);
 END_IF
 
 // 4. 内部轨迹状态不直接当作页面状态：例如内部 30 对应页面“2 造波中”。
 // 停车时先显示“停止中”，实际退出后有故障则显示故障，不把停止请求发送成功当作完成。
 IF (GVL_motion.nState = 40) OR (GVL_motion.nState = 50)
     OR (GVL_motion.nState = 60) OR (GVL_motion.nState = 70) THEN
-    GVL_HMI.nWaveState := 4;
+    GVL_HMI.stMonitor.nWaveState := 4;
 ELSIF udiFault <> 0 THEN
-    GVL_HMI.nWaveState := 7;
+    GVL_HMI.stMonitor.nWaveState := 7;
 ELSIF GVL_motion.nState = 30 THEN
-    GVL_HMI.nWaveState := 2;
+    GVL_HMI.stMonitor.nWaveState := 2;
 ELSIF (GVL_motion.nState = 5) OR (GVL_motion.nState = 10)
     OR (GVL_motion.nState = 15) OR (GVL_motion.nState = 20) THEN
-    GVL_HMI.nWaveState := 1;
+    GVL_HMI.stMonitor.nWaveState := 1;
 ELSIF GVL_motion.xDone THEN
-    GVL_HMI.nWaveState := 6;
+    GVL_HMI.stMonitor.nWaveState := 6;
 ELSE
-    GVL_HMI.nWaveState := 0;
+    GVL_HMI.stMonitor.nWaveState := 0;
 END_IF
 
 // 5. 保留原始轨迹诊断；本次只接手动和监控，不新增上位机自动造波写入入口。
@@ -74,19 +78,10 @@ GVL_HMI.nPointCount := GVL_motion.nPointCount;
 GVL_HMI.xDataReady := GVL_motion.xDataReady;
 GVL_HMI.xTrajectoryBusy := GVL_motion.xBusy;
 
-// 兼容工程原有 GVL_pc 的三项反馈；Owner/Mode 由控制权仲裁块发布，不在这里回写。
-GVL_pc.nWaveState := GVL_HMI.nWaveState;
-GVL_pc.udiWaveFaultCode := GVL_HMI.udiWaveFaultCode;
-GVL_pc.udiHeartbeat := GVL_HMI.udiHeartbeat;
-// 6. 一次 ADS 读取的专用反馈块，保持单写入者，绝不包含轴控制命令。
-// 集中发布减少字段采样时间差；普通 ADS 整块读取不声明为跨任务原子快照。
+// 6. 整块接口固定布局，轴反馈从本扫描实际结果集中发布。
+// 普通 ADS 读取不声明为跨任务原子快照。
 GVL_HMI.stMonitor.nVersion := 1;
 GVL_HMI.stMonitor.nByteSize := SIZEOF(GVL_HMI.stMonitor);
-GVL_HMI.stMonitor.nControlOwner := GVL_HMI.nControlOwner;
-GVL_HMI.stMonitor.nControlMode := GVL_HMI.nControlMode;
-GVL_HMI.stMonitor.nWaveState := GVL_HMI.nWaveState;
-GVL_HMI.stMonitor.uiWaveFaultCode := GVL_HMI.udiWaveFaultCode;
-GVL_HMI.stMonitor.udiHeartbeat := GVL_HMI.udiHeartbeat;
 GVL_HMI.stMonitor.Axis1.lrActualPosition := GVL_axis.Axis1.lrActualPosition;
 GVL_HMI.stMonitor.Axis1.lrSpeed := GVL_axis.Axis1.lrSpeed;
 GVL_HMI.stMonitor.Axis1.xHomed := GVL_axis.Axis1.xHomed;

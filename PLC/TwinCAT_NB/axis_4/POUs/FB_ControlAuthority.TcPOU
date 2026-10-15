@@ -90,12 +90,6 @@ END_FOR
 GVL_control.nOwner := nOwner;
 GVL_control.xLocked := xLocked;
 GVL_control.xStopOwner := xOwnerLost;
-GVL_pc.nControlOwner := nOwner;
-// 模式反映已授权控制的实际执行路径：无持有者 0，基础控制 1，轨迹占用 2。
-IF nOwner = 0 THEN GVL_pc.nControlMode := 0;
-ELSIF GVL_motion.xBusy THEN GVL_pc.nControlMode := 2;
-ELSE GVL_pc.nControlMode := 1;
-END_IF
 ]]></ST></Implementation>
   </POU>
 </TcPlcObject>

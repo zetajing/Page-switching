@@ -62,13 +62,12 @@ class SwitchContractChecks(unittest.TestCase):
 
     def test_monitor_symbols_and_types(self):
         fields = declared_fields(ROOT / "axis_4/GVLs/GVL_HMI.TcGVL")
-        for key, member, plc_type in (
-            ("ControlOwner", "nControlOwner", "UINT"), ("ControlMode", "nControlMode", "UINT"),
-            ("WaveState", "nWaveState", "UINT"), ("WaveFaultCode", "udiWaveFaultCode", "UINT"),
-            ("Heartbeat", "udiHeartbeat", "UDINT"),
-        ):
-            # 旧符号保留用于在线诊断；实际监控统一从 stMonitor 读取。
-            self.assertEqual(fields[member], plc_type)
+        self.assertNotIn("nControlOwner", fields)
+        self.assertNotIn("nControlMode", fields)
+        self.assertNotIn("nWaveState", fields)
+        self.assertNotIn("udiWaveFaultCode", fields)
+        self.assertNotIn("udiHeartbeat", fields)
+        self.assertFalse((ROOT / "axis_4/GVLs/GVL_pc.TcGVL").exists())
         self.assertEqual(fields["udiDetailedFaultCode"], "UDINT")
         self.assertEqual(self.settings["AdsMonitorSnapshot"], "GVL_HMI.stMonitor")
         self.assertEqual(fields["stMonitor"], "ST_MachineMonitor")
@@ -86,11 +85,12 @@ class SwitchContractChecks(unittest.TestCase):
         source = ET.parse(ROOT / "axis_4/POUs/FB_HmiFeedback.TcPOU").findtext(".//ST")
         source = re.sub(r"//[^\n]*", "", source)
         self.assertFalse(re.search(r"GVL_(axis|motion)\.\w+(?:\.\w+)*\s*:=", source))
-        self.assertIn("GVL_HMI.nControlOwner := GVL_pc.nControlOwner;", source)
-        self.assertIn("GVL_HMI.nControlMode := GVL_pc.nControlMode;", source)
+        self.assertNotIn("GVL_pc.", source)
+        self.assertIn("GVL_HMI.stMonitor.nControlOwner := GVL_control.nOwner;", source)
+        self.assertIn("GVL_HMI.stMonitor.nControlMode := 2;", source)
         self.assertIn("PT := T#500MS", source)
-        self.assertIn("GVL_HMI.udiHeartbeat := 0;", source)
-        self.assertIn("GVL_HMI.udiWaveFaultCode := UINT#65535;", source)
+        self.assertIn("GVL_HMI.stMonitor.udiHeartbeat := 0;", source)
+        self.assertIn("GVL_HMI.stMonitor.uiWaveFaultCode := UINT#65535;", source)
 
 
 if __name__ == "__main__":

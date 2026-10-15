@@ -10,7 +10,7 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
     private readonly CancellationTokenSource _lifetime = new();
     private readonly object _stateSync = new();
     // 句柄只属于当前客户端；刷新与清理都受 _refreshGate 保护，不并发访问。
-    private readonly Dictionary<string, uint> _handles = new(StringComparer.Ordinal);
+    private uint? _monitorHandle;
     private AdsClient? _client;
     private MachineMonitorSnapshot _snapshot = new();
     private long? _lastSuccessTick;
@@ -140,7 +140,7 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
     // 句柄缓存后，每轮只有一次数据读取；失败使整帧无效，不显示默认零值。
     private async Task<MachineMonitorSnapshot> ReadSnapshotAsync(bool includeAxes, List<string> errors, CancellationToken token)
     {
-        var frame = await ReadPlcAsync<PlcMachineMonitor>(_options.SnapshotSymbol, errors, token).ConfigureAwait(false);
+        var frame = await ReadFrameAsync(errors, token).ConfigureAwait(false);
         if (!frame.IsAvailable || !frame.Value.HasValue)
         {
             var message = $"读取 {_options.SnapshotSymbol} 失败：{frame.ErrorMessage}；请核对配套 PLC 结构体是否已部署。";
@@ -150,9 +150,10 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
         return frame.Value.Value.ToSnapshot(includeAxes);
     }
 
-    // PLC 实际读取就在这里：断点查看 symbol、typeof(T)、result.Value 和 result.ErrorCode。
-    private async Task<FeedbackField<T>> ReadPlcAsync<T>(string symbol, List<string> errors, CancellationToken token) where T : struct
+    // PLC 实际读取就在这里：断点查看 symbol、result.Value 和 result.ErrorCode。
+    private async Task<FeedbackField<PlcMachineMonitor>> ReadFrameAsync(List<string> errors, CancellationToken token)
     {
+        var symbol = _options.SnapshotSymbol;
         var error = "未配置符号";
         if (!string.IsNullOrWhiteSpace(symbol))
         {
@@ -160,7 +161,7 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
             try
             {
                 // 首次使用才获取句柄，后续刷新只发送读取请求。
-                if (!_handles.TryGetValue(symbol, out var handle))
+                if (!_monitorHandle.HasValue)
                 {
                     _readOperation = $"获取句柄 {symbol}";
                     var created = await _client!.CreateVariableHandleAsync(symbol, token).ConfigureAwait(false);
@@ -168,17 +169,15 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
                     {
                         error = $"ADS error {created.ErrorCode} (0x{(int)created.ErrorCode:X8})";
                         errors.Add($"{symbol}：{error}");
-                        return FeedbackField<T>.Unavailable(error);
+                        return FeedbackField<PlcMachineMonitor>.Unavailable(error);
                     }
-                    _handles.Add(symbol, handle = created.Handle);
+                    _monitorHandle = created.Handle;
                 }
                 _readOperation = $"读取变量 {symbol}";
-                var result = await _client!.ReadAnyAsync<T>(handle, token).ConfigureAwait(false);
+                var result = await _client!.ReadAnyAsync<PlcMachineMonitor>(_monitorHandle.Value, token).ConfigureAwait(false);
                 if (result.Succeeded)
                 {
-                    if (result.Value is not double number || double.IsFinite(number))
-                        return new FeedbackField<T>(result.Value, true);
-                    error = "反馈数值无效";
+                    return new FeedbackField<PlcMachineMonitor>(result.Value, true);
                 }
                 else
                 {
@@ -186,9 +185,10 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
                     // PLC 下载或在线修改可能使句柄失效；当前字段报错，下轮重新获取。
                     if (IsInvalidHandle(result.ErrorCode))
                     {
-                        _handles.Remove(symbol);
+                        var invalidHandle = _monitorHandle.Value;
+                        _monitorHandle = null;
                         _readOperation = $"释放失效句柄 {symbol}";
-                        await _client.DeleteVariableHandleAsync(handle, token).ConfigureAwait(false);
+                        await _client.DeleteVariableHandleAsync(invalidHandle, token).ConfigureAwait(false);
                     }
                 }
             }
@@ -197,7 +197,7 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
         }
         // 整帧读取失败时返回无效，不能把失败值显示成零或 false。
         errors.Add($"{symbol}：{error}");
-        return FeedbackField<T>.Unavailable(error);
+        return FeedbackField<PlcMachineMonitor>.Unavailable(error);
     }
 
     private void SaveFrame(MachineMonitorSnapshot snapshot)
@@ -271,17 +271,14 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
         }
         try
         {
-            if (client?.IsConnected == true)
+            if (client?.IsConnected == true && _monitorHandle.HasValue)
             {
                 // 重连或退出时集中释放；整批清理最多等待一次请求超时，断网时不逐项等待。
                 using var cleanup = new CancellationTokenSource(_options.OperationTimeoutMilliseconds);
-                foreach (var handle in _handles.Values)
-                {
-                    var result = await client.DeleteVariableHandleAsync(handle, cleanup.Token).ConfigureAwait(false);
-                    cleanup.Token.ThrowIfCancellationRequested();
-                    if (!result.Succeeded && !IsInvalidHandle(result.ErrorCode))
-                        throw new InvalidOperationException("释放监控句柄失败：" + result.ErrorCode);
-                }
+                var result = await client.DeleteVariableHandleAsync(_monitorHandle.Value, cleanup.Token).ConfigureAwait(false);
+                cleanup.Token.ThrowIfCancellationRequested();
+                if (!result.Succeeded && !IsInvalidHandle(result.ErrorCode))
+                    throw new InvalidOperationException("释放监控句柄失败：" + result.ErrorCode);
             }
         }
         catch (Exception ex)
@@ -291,7 +288,7 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
         finally
         {
             // 句柄不能跨客户端复用，清理失败时也必须丢弃本地缓存。
-            _handles.Clear();
+            _monitorHandle = null;
             client?.Dispose();
         }
     }

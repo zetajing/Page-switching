@@ -42,11 +42,11 @@
 
 | ADS 地址 | PLC 类型 | 来源 |
 | --- | --- | --- |
-| GVL_HMI.nControlOwner | UINT | FB_ControlAuthority 的实际仲裁结果 |
-| GVL_HMI.nControlMode | UINT | 无控制端 0、已授权基础控制 1、轨迹占用 2 |
-| GVL_HMI.nWaveState | UINT | 从实际轨迹流程和轴错误适配到页面状态编码 |
-| GVL_HMI.udiWaveFaultCode | UINT | 当前组/轴错误，供上位机 UInt16 读取 |
-| GVL_HMI.udiHeartbeat | UDINT | PLC 约每 500 ms 递增，待机和故障时仍更新 |
+| GVL_HMI.stMonitor.nControlOwner | UINT | FB_ControlAuthority 的实际仲裁结果 |
+| GVL_HMI.stMonitor.nControlMode | UINT | 无控制端 0、已授权基础控制 1、轨迹占用 2 |
+| GVL_HMI.stMonitor.nWaveState | UINT | 从实际轨迹流程和轴错误适配到页面状态编码 |
+| GVL_HMI.stMonitor.uiWaveFaultCode | UINT | 当前组/轴错误，供上位机 UInt16 读取 |
+| GVL_HMI.stMonitor.udiHeartbeat | UDINT | PLC 约每 500 ms 递增，待机和故障时仍更新 |
 
 控制权由 `FB_ControlAuthority` 仲裁并发布，默认无持有者。运行中禁止申请接管和释放，包含高优先级站；停机后重新申请。各站命令分邮箱，PLC 只复制授权站命令到内部轴数据。采用纯软件申请，不依赖现场主控选择或授权开关；本站身份和 ADS 已连接都不能代替 PLC 的申请应答。完整协议、失联处理和结果码见 [控制权规则](ControlAuthorityRules.md)。
 
@@ -79,4 +79,4 @@ PC 写完一段四轴数据后，用 nUploadOffset、nUploadCount 和 xUpload �
 
 ## 整块监控读取（2026-10-15）
 
-只读监控每轮从 `GVL_HMI.stMonitor` 读取一次，Config 键为 `AdsMonitorSnapshot`；版本 1 / 100 字节，PLC 和 C# 均按 1 字节对齐。旧反馈符号保留，手动页及控制命令地址不变。必须先部署新增 DUT、GVL 和反馈发布逻辑，完整布局及验收见 [监控契约](PlcMonitoringContract.md)。
+只读监控每轮从 `GVL_HMI.stMonitor` 读取一次，Config 键为 `AdsMonitorSnapshot`；版本 1 / 100 字节，PLC 和 C# 均按 1 字节对齐。旧独立监控变量及 GVL_pc 兼容层已删除；手动页使用的 GVL_axis 反馈及控制命令地址不变。必须先部署新增 DUT、GVL 和反馈发布逻辑，完整布局及验收见 [监控契约](PlcMonitoringContract.md)。

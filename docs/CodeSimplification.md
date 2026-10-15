@@ -8,7 +8,7 @@
 - `AdsTcpRouterRuntime.StartAsync`：记录启动配置；关闭独立 Router 时使用系统 Router，启用时等待独立 Router 就绪。
 - `RefreshMonitorAsync`：等待一次读取完成，再将快照交给自动页。
 - `MachineMonitorService.ReadSnapshotAsync`：五项全局变量依次读取到局部变量，四轴反馈使用固定循环。
-- `ReadPlcAsync<T>`：首次获取并缓存变量句柄 → 后续直接 `ReadAnyAsync<T>`；重连和退出时统一释放。
+- `ReadFrameAsync`：首次获取并缓存变量句柄 → 后续直接 `ReadAnyAsync<T>`；重连和退出时统一释放。
 - 自动页 `ApplyMonitorSnapshot`：依次更新状态卡片、连接与心跳、四轴表格、状态变化日志。
 
 ## 断点位置
@@ -19,7 +19,7 @@
 | --- | --- |
 | `ReadSnapshotAsync` 的五项局部变量 | 控制端、模式、造波状态、故障码、心跳的 `Value` / `IsAvailable` / `ErrorMessage` |
 | 四轴循环 | `index`、当前 `axis` 的变量名，以及位置、速度和各个 BOOL 反馈 |
-| `ReadPlcAsync<T>` 的 `ReadAnyAsync<T>` 调用 | `symbol`、`typeof(T)`、`result.Value`、`result.ErrorCode` |
+| `ReadFrameAsync` 的 `ReadAnyAsync<T>` 调用 | `symbol`、`result.Value`、`result.ErrorCode` |
 | 自动页 `UpdateStatusCards` / `UpdateAxisRows` | 读取成功后是否已正确更新控件 |
 
 状态与故障码使用 `ushort`（PLC `UINT`），心跳使用 `uint`（`UDINT`），位置与速度使用 `double`（`LREAL`），状态信号使用 `bool`（`BOOL`）。按实际 PLC 变量表核对类型。
