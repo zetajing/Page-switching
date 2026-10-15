@@ -8,7 +8,6 @@ VAR_INPUT
     nStation : UINT;
     nAction : UINT;
     xLocked : BOOL;
-    xAllowed : BOOL;
     xOnline : BOOL;
 END_VAR]]></Declaration>
     <Implementation><ST><![CDATA[// 成功应答不总表示交接：本持有者重复申请只是确认已有权限。
@@ -25,8 +24,6 @@ ELSIF nAction = 2 THEN
     IF nOwner = nStation THEN F_ControlDecision := 1;
     ELSE F_ControlDecision := 5;
     END_IF
-ELSIF NOT xAllowed THEN
-    F_ControlDecision := 3;
 ELSIF (nOwner <> 0) AND (nStation > nOwner) THEN
     F_ControlDecision := 6;
 ELSE

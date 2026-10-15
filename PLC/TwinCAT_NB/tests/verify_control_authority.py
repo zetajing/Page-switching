@@ -63,9 +63,9 @@ class DecisionProgram:
         text = " ".join(operators.get(token, token) for token in tokens)
         return eval(text, {"__builtins__": {}}, values)
 
-    def execute(self, owner, station, action, locked=False, allowed=True, online=True):
+    def execute(self, owner, station, action, locked=False, online=True):
         values = dict(nOwner=owner, nStation=station, nAction=action,
-                      xLocked=locked, xAllowed=allowed, xOnline=online)
+                      xLocked=locked, xOnline=online)
 
         def run(statements):
             for kind, arg, body in statements:
@@ -99,13 +99,28 @@ class AuthorityChecks(unittest.TestCase):
             for station in (1, 2, 3):
                 self.assertEqual(self.decision.execute(owner, station, 2, locked=True), 2)
 
-    def test_stopped_uses_priority_and_explicit_authorization(self):
+    def test_stopped_uses_priority_without_field_switches(self):
         self.assertEqual(self.decision.execute(3, 1, 1), 1)
         self.assertEqual(self.decision.execute(2, 3, 1), 6)
-        self.assertEqual(self.decision.execute(0, 3, 1, allowed=False), 3)
+        # 无持有者时三个在线站均能申请；已有持有者时完整检查优先级矩阵。
+        for station in (1, 2, 3):
+            self.assertEqual(self.decision.execute(0, station, 1), 1)
+            for owner in (1, 2, 3):
+                self.assertEqual(self.decision.execute(owner, station, 1), 1 if station <= owner else 6)
         self.assertEqual(self.decision.execute(0, 3, 1, online=False), 4)
         self.assertEqual(self.decision.execute(2, 2, 2), 1)
         self.assertEqual(self.decision.execute(2, 1, 2), 5)
+
+    def test_offline_stations_cannot_request_or_release(self):
+        for owner in (0, 1, 2, 3):
+            for station in (1, 2, 3):
+                for action in (1, 2):
+                    self.assertEqual(self.decision.execute(owner, station, action, online=False), 4)
+
+    def test_no_field_authorization_dependency(self):
+        sources = "\n".join(path.read_text(encoding="utf-8") for path in (ROOT / "axis_4").rglob("*.Tc*"))
+        for removed in ("xCenterMaster", "xLocalMaster", "xAllowLocal", "xAllowRemote", "xAllowed", "axAllowed"):
+            self.assertNotIn(removed, sources)
 
     def test_invalid_actions_never_grant(self):
         for station in (0, 4):
@@ -121,14 +136,14 @@ class AuthorityChecks(unittest.TestCase):
         self.assertLess(main.index("fbAuthority("), main.index("aCommandGate[1]("))
         self.assertLess(main.index("aCommandGate[4]("), main.index("fbAxis1("))
         authority = ET.parse(ROOT / "axis_4/POUs/FB_ControlAuthority.TcPOU").findtext(".//ST")
-        self.assertIn("IF NOT xLocked AND (xOwnerLost OR NOT axAllowed[nOwner])", authority)
+        self.assertIn("IF NOT xLocked AND xOwnerLost", authority)
         self.assertIn("udiRequestSequence <> GVL_control.aStation[i].udiAckSequence", authority)
         self.assertIn("GVL_control.aStation[i].aAxis := aEmpty", authority)
         self.assertIn("OR GVL_control.aStation[nOwner].aAxis[j].gohome", authority)
 
     def test_idle_revocation_clears_loss_latch_before_new_requests(self):
         source = ET.parse(ROOT / "axis_4/POUs/FB_ControlAuthority.TcPOU").findtext(".//ST")
-        revoke = source.index("IF NOT xLocked AND (xOwnerLost OR NOT axAllowed[nOwner])")
+        revoke = source.index("IF NOT xLocked AND xOwnerLost")
         dispatch = source.index("// 同一扫描先处理释放")
         # 清失联锁存后才处理新请求，防止新持有者继承上一站的失联状态。
         self.assertIn("xOwnerLost := FALSE;", source[revoke:dispatch])

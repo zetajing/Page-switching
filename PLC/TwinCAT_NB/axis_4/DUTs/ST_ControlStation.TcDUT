@@ -10,7 +10,7 @@ STRUCT
     aAxis : ARRAY[1..4] OF ST_AxisCommand;
     // PLC 写，站点只读：请求是否成功必须看同序号应答，不能以写成功代替授权。
     udiAckSequence : UDINT;
-    nResult : UINT; // 1 成功；2 运行锁定；3 未授权；4 离线；5 非持有者；6 优先级；7 无效操作。
+    nResult : UINT; // 1 成功；2 运行锁定；3 保留（旧版现场授权拒绝）；4 离线；5 非持有者；6 优先级；7 无效操作。
     xOnline : BOOL;
     xGranted : BOOL;
 END_STRUCT

@@ -48,7 +48,7 @@
 | GVL_HMI.udiWaveFaultCode | UINT | 当前组/轴错误，供上位机 UInt16 读取 |
 | GVL_HMI.udiHeartbeat | UDINT | PLC 约每 500 ms 递增，待机和故障时仍更新 |
 
-控制权由 `FB_ControlAuthority` 仲裁并发布，默认无持有者。运行中禁止申请接管和释放，包含高优先级站；停机后重新申请。各站命令分邮箱，PLC 只复制授权站命令到内部轴数据。现场选择/授权输入默认 FALSE，需要接入实际开关逻辑；本站身份和 ADS 已连接都不能代替授权。完整协议、失联处理和结果码见 [控制权规则](ControlAuthorityRules.md)。
+控制权由 `FB_ControlAuthority` 仲裁并发布，默认无持有者。运行中禁止申请接管和释放，包含高优先级站；停机后重新申请。各站命令分邮箱，PLC 只复制授权站命令到内部轴数据。采用纯软件申请，不依赖现场主控选择或授权开关；本站身份和 ADS 已连接都不能代替 PLC 的申请应答。完整协议、失联处理和结果码见 [控制权规则](ControlAuthorityRules.md)。
 
 扩展只读字段：`udiDetailedFaultCode`、`nFaultAxis`、`nTrajectoryState`、`nCurrentPoint`、`nLoadedCount`、`nPointCount`、`xDataReady`、`xTrajectoryBusy`。源错误超过 65535 时，兼容 UINT 显示 65535，完整 UDINT 保存在详细字段中。
 
