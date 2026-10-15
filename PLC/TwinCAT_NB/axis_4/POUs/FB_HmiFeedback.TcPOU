@@ -74,10 +74,47 @@ GVL_HMI.nPointCount := GVL_motion.nPointCount;
 GVL_HMI.xDataReady := GVL_motion.xDataReady;
 GVL_HMI.xTrajectoryBusy := GVL_motion.xBusy;
 
-// 兼容工程原有 GVL_pc 的三项反馈；Owner/Mode 为现场输入，不在这里回写。
+// 兼容工程原有 GVL_pc 的三项反馈；Owner/Mode 由控制权仲裁块发布，不在这里回写。
 GVL_pc.nWaveState := GVL_HMI.nWaveState;
 GVL_pc.udiWaveFaultCode := GVL_HMI.udiWaveFaultCode;
 GVL_pc.udiHeartbeat := GVL_HMI.udiHeartbeat;
+// 6. 一次 ADS 读取的专用反馈块，保持单写入者，绝不包含轴控制命令。
+// 集中发布减少字段采样时间差；普通 ADS 整块读取不声明为跨任务原子快照。
+GVL_HMI.stMonitor.nVersion := 1;
+GVL_HMI.stMonitor.nByteSize := SIZEOF(GVL_HMI.stMonitor);
+GVL_HMI.stMonitor.nControlOwner := GVL_HMI.nControlOwner;
+GVL_HMI.stMonitor.nControlMode := GVL_HMI.nControlMode;
+GVL_HMI.stMonitor.nWaveState := GVL_HMI.nWaveState;
+GVL_HMI.stMonitor.uiWaveFaultCode := GVL_HMI.udiWaveFaultCode;
+GVL_HMI.stMonitor.udiHeartbeat := GVL_HMI.udiHeartbeat;
+GVL_HMI.stMonitor.Axis1.lrActualPosition := GVL_axis.Axis1.lrActualPosition;
+GVL_HMI.stMonitor.Axis1.lrSpeed := GVL_axis.Axis1.lrSpeed;
+GVL_HMI.stMonitor.Axis1.xHomed := GVL_axis.Axis1.xHomed;
+GVL_HMI.stMonitor.Axis1.xError := GVL_axis.Axis1.xError;
+GVL_HMI.stMonitor.Axis1.xPositiveLimit := GVL_axis.Axis1.xPositiveLimit;
+GVL_HMI.stMonitor.Axis1.xNegativeLimit := GVL_axis.Axis1.xNegativeLimit;
+GVL_HMI.stMonitor.Axis1.xOriginSignal := GVL_axis.Axis1.xOriginSignal;
+GVL_HMI.stMonitor.Axis2.lrActualPosition := GVL_axis.Axis2.lrActualPosition;
+GVL_HMI.stMonitor.Axis2.lrSpeed := GVL_axis.Axis2.lrSpeed;
+GVL_HMI.stMonitor.Axis2.xHomed := GVL_axis.Axis2.xHomed;
+GVL_HMI.stMonitor.Axis2.xError := GVL_axis.Axis2.xError;
+GVL_HMI.stMonitor.Axis2.xPositiveLimit := GVL_axis.Axis2.xPositiveLimit;
+GVL_HMI.stMonitor.Axis2.xNegativeLimit := GVL_axis.Axis2.xNegativeLimit;
+GVL_HMI.stMonitor.Axis2.xOriginSignal := GVL_axis.Axis2.xOriginSignal;
+GVL_HMI.stMonitor.Axis3.lrActualPosition := GVL_axis.Axis3.lrActualPosition;
+GVL_HMI.stMonitor.Axis3.lrSpeed := GVL_axis.Axis3.lrSpeed;
+GVL_HMI.stMonitor.Axis3.xHomed := GVL_axis.Axis3.xHomed;
+GVL_HMI.stMonitor.Axis3.xError := GVL_axis.Axis3.xError;
+GVL_HMI.stMonitor.Axis3.xPositiveLimit := GVL_axis.Axis3.xPositiveLimit;
+GVL_HMI.stMonitor.Axis3.xNegativeLimit := GVL_axis.Axis3.xNegativeLimit;
+GVL_HMI.stMonitor.Axis3.xOriginSignal := GVL_axis.Axis3.xOriginSignal;
+GVL_HMI.stMonitor.Axis4.lrActualPosition := GVL_axis.Axis4.lrActualPosition;
+GVL_HMI.stMonitor.Axis4.lrSpeed := GVL_axis.Axis4.lrSpeed;
+GVL_HMI.stMonitor.Axis4.xHomed := GVL_axis.Axis4.xHomed;
+GVL_HMI.stMonitor.Axis4.xError := GVL_axis.Axis4.xError;
+GVL_HMI.stMonitor.Axis4.xPositiveLimit := GVL_axis.Axis4.xPositiveLimit;
+GVL_HMI.stMonitor.Axis4.xNegativeLimit := GVL_axis.Axis4.xNegativeLimit;
+GVL_HMI.stMonitor.Axis4.xOriginSignal := GVL_axis.Axis4.xOriginSignal;
 ]]></ST></Implementation>
   </POU>
 </TcPlcObject>

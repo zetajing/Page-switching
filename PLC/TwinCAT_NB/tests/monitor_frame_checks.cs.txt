@@ -1,0 +1,64 @@
+using System.Runtime.InteropServices;
+using Page_switching;
+
+int checks = 0;
+void Check(bool condition, string name)
+{
+    checks++;
+    if (!condition) throw new Exception(name);
+}
+void Reject(PlcMachineMonitor value)
+{
+    try { value.ToSnapshot(true); throw new Exception("布局错误未拒绝"); }
+    catch (InvalidOperationException) { checks++; }
+}
+Check(Marshal.SizeOf<PlcAxisMonitor>() == 21, "axis size");
+Check(Marshal.SizeOf<PlcMachineMonitor>() == 100, "frame size");
+Check((int)Marshal.OffsetOf<PlcMachineMonitor>("Axis1") == 16, "axis1 offset");
+Check((int)Marshal.OffsetOf<PlcMachineMonitor>("Axis4") == 79, "axis4 offset");
+// 直接按协议字节组包，再由 CLR 封送，验证双精度、BOOL、轴顺序和 UINT 高位。
+var bytes = new byte[100];
+BitConverter.GetBytes((ushort)1).CopyTo(bytes, 0);
+BitConverter.GetBytes((ushort)100).CopyTo(bytes, 2);
+BitConverter.GetBytes((ushort)3).CopyTo(bytes, 4);
+BitConverter.GetBytes((ushort)1).CopyTo(bytes, 6);
+BitConverter.GetBytes((ushort)7).CopyTo(bytes, 8);
+BitConverter.GetBytes((ushort)65535).CopyTo(bytes, 10);
+BitConverter.GetBytes(uint.MaxValue).CopyTo(bytes, 12);
+for (int i = 0; i < 4; i++)
+{
+    int offset = 16 + i * 21;
+    BitConverter.GetBytes(100.25 + i).CopyTo(bytes, offset);
+    BitConverter.GetBytes(-10.5 - i).CopyTo(bytes, offset + 8);
+    for (int j = 0; j < 5; j++) bytes[offset + 16 + j] = (byte)((i + j) % 2);
+}
+var buffer = Marshal.AllocHGlobal(100);
+PlcMachineMonitor frame;
+try { Marshal.Copy(bytes, 0, buffer, 100); frame = Marshal.PtrToStructure<PlcMachineMonitor>(buffer); }
+finally { Marshal.FreeHGlobal(buffer); }
+var snapshot = frame.ToSnapshot(true);
+Check(snapshot.OverallQuality == MachineMonitorQuality.Good, "good");
+Check(snapshot.ControlOwner.Value == 3 && snapshot.WaveFaultCode.Value == 65535, "global uint16");
+Check(snapshot.Heartbeat.Value == uint.MaxValue, "heartbeat uint32");
+for (int i = 0; i < 4; i++)
+{
+    var axis = snapshot.Axes[i];
+    Check(axis.AxisNumber == i + 1 && axis.ActualPosition.Value == 100.25 + i, "axis order and position");
+    Check(axis.Speed.Value == -10.5 - i, "signed speed");
+    Check(axis.IsHomed.Value == (i % 2 == 1), "homed bool");
+    Check(axis.HasAlarm.Value == (i % 2 == 0), "alarm bool");
+    Check(axis.PositiveLimit.Value == (i % 2 == 1) && axis.NegativeLimit.Value == (i % 2 == 0), "limits");
+    Check(axis.OriginSignal.Value == (i % 2 == 1), "origin");
+}
+Check(frame.ToSnapshot(false).Axes.Count == 0, "hidden page");
+frame.Version = 2; Reject(frame);
+frame.Version = 1; frame.Size = 99; Reject(frame);
+frame.Size = 100; frame.Axis2.ActualPosition = double.NaN; frame.Axis3.Speed = double.PositiveInfinity;
+snapshot = frame.ToSnapshot(true);
+Check(snapshot.OverallQuality == MachineMonitorQuality.Partial, "invalid numbers partial");
+Check(!snapshot.Axes[1].ActualPosition.IsAvailable && !snapshot.Axes[2].Speed.IsAvailable, "invalid values unavailable");
+Check(snapshot.Axes[0].ActualPosition.IsAvailable && snapshot.Axes[1].HasAlarm.IsAvailable, "other fields survive");
+snapshot = snapshot.WithoutAvailability(MachineMonitorQuality.Unavailable, "断线");
+Check(!snapshot.ControlOwner.IsAvailable && !snapshot.Heartbeat.IsAvailable, "global failure");
+Check(snapshot.Axes.All(axis => !axis.ActualPosition.IsAvailable && !axis.HasAlarm.IsAvailable), "all axes fail");
+Console.WriteLine($"Monitor frame: {checks} assertions passed.");

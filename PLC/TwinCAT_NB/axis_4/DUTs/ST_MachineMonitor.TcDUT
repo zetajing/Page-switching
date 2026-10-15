@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="ST_MachineMonitor" Id="{B8617390-A753-4B39-8F51-1DB71DF32E02}">
+    <Declaration><![CDATA[{attribute 'pack_mode' := '1'}
+TYPE ST_MachineMonitor :
+STRUCT
+    // 布局版本 1，总长 100 字节；修改字段时须同步上位机并升级版本。
+    nVersion : UINT;
+    nByteSize : UINT;
+    nControlOwner : UINT;
+    nControlMode : UINT;
+    nWaveState : UINT;
+    uiWaveFaultCode : UINT;
+    udiHeartbeat : UDINT;
+    Axis1 : ST_AxisMonitor;
+    Axis2 : ST_AxisMonitor;
+    Axis3 : ST_AxisMonitor;
+    Axis4 : ST_AxisMonitor;
+END_STRUCT
+END_TYPE]]></Declaration>
+  </DUT>
+</TcPlcObject>

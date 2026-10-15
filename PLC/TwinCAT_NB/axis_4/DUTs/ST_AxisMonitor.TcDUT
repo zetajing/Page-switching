@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="ST_AxisMonitor" Id="{DDE98112-E31D-4E61-BBDB-EB53AC635973}">
+    <Declaration><![CDATA[{attribute 'pack_mode' := '1'}
+TYPE ST_AxisMonitor :
+STRUCT
+    // 仅反馈，固定 21 字节；顺序与 C# PlcAxisMonitor 完全一致。
+    lrActualPosition : LREAL;
+    lrSpeed : LREAL;
+    xHomed : BOOL;
+    xError : BOOL;
+    xPositiveLimit : BOOL;
+    xNegativeLimit : BOOL;
+    xOriginSignal : BOOL;
+END_STRUCT
+END_TYPE]]></Declaration>
+  </DUT>
+</TcPlcObject>

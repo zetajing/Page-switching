@@ -67,9 +67,11 @@ class SwitchContractChecks(unittest.TestCase):
             ("WaveState", "nWaveState", "UINT"), ("WaveFaultCode", "udiWaveFaultCode", "UINT"),
             ("Heartbeat", "udiHeartbeat", "UDINT"),
         ):
-            self.assertEqual(self.settings[f"AdsMonitor{key}"], f"GVL_HMI.{member}")
+            # 旧符号保留用于在线诊断；实际监控统一从 stMonitor 读取。
             self.assertEqual(fields[member], plc_type)
         self.assertEqual(fields["udiDetailedFaultCode"], "UDINT")
+        self.assertEqual(self.settings["AdsMonitorSnapshot"], "GVL_HMI.stMonitor")
+        self.assertEqual(fields["stMonitor"], "ST_MachineMonitor")
 
     def test_feedback_runs_after_axis_blocks(self):
         source = ET.parse(ROOT / "axis_4/POUs/MAIN.TcPOU").findtext(".//ST")

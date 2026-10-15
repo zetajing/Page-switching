@@ -7,19 +7,15 @@ public sealed class MachineMonitorOptions
     public string AmsNetId { get; init; } = string.Empty;
     public int AdsPort { get; init; } = 851;
     public int ConnectTimeoutMilliseconds { get; init; } = 10000;
-    // 单次 ADS 请求与整轮读取分开计时，四轴监控共有 33 个变量。
+    // 单次 ADS 请求与整轮读取分开计时，四轴监控每轮读取一个结构体。
     public int OperationTimeoutMilliseconds { get; init; } = 1000;
     public int RefreshTimeoutMilliseconds { get; init; } = 3000;
     public int StaleAfterMilliseconds { get; init; } = 3000;
     public int ReconnectIntervalMilliseconds { get; init; } = 3000;
-    public string ControlOwnerSymbol { get; init; } = "GVL_HMI.nControlOwner";
-    public string ControlModeSymbol { get; init; } = "GVL_HMI.nControlMode";
-    public string WaveStateSymbol { get; init; } = "GVL_HMI.nWaveState";
-    public string WaveFaultCodeSymbol { get; init; } = "GVL_HMI.udiWaveFaultCode";
-    public string HeartbeatSymbol { get; init; } = "GVL_HMI.udiHeartbeat";
-    public IReadOnlyList<AxisSymbolMap> AxisSymbols { get; init; } = Array.Empty<AxisSymbolMap>();
+    // 四轴与全局反馈共用一个只读结构体；命令地址仍由 AxisServiceOptions 管理。
+    public string SnapshotSymbol { get; init; } = "GVL_HMI.stMonitor";
 
-    // 只复用连接目标和既有轴反馈地址；监控超时独立于手动客户端。
+    // 只复用连接目标；监控超时独立于手动客户端。
     public static MachineMonitorOptions FromConfiguration(AxisServiceOptions axisOptions, NameValueCollection? settings = null)
     {
         ArgumentNullException.ThrowIfNull(axisOptions);
@@ -32,12 +28,7 @@ public sealed class MachineMonitorOptions
             AdsPort = axisOptions.AdsPort,
             ConnectTimeoutMilliseconds = axisOptions.ConnectTimeoutMilliseconds,
             RefreshTimeoutMilliseconds = refreshTimeout,
-            AxisSymbols = Array.AsReadOnly(axisOptions.AxisSymbols.ToArray()),
-            ControlOwnerSymbol = settings["AdsMonitorControlOwner"] ?? "GVL_HMI.nControlOwner",
-            ControlModeSymbol = settings["AdsMonitorControlMode"] ?? "GVL_HMI.nControlMode",
-            WaveStateSymbol = settings["AdsMonitorWaveState"] ?? "GVL_HMI.nWaveState",
-            WaveFaultCodeSymbol = settings["AdsMonitorWaveFaultCode"] ?? "GVL_HMI.udiWaveFaultCode",
-            HeartbeatSymbol = settings["AdsMonitorHeartbeat"] ?? "GVL_HMI.udiHeartbeat"
+            SnapshotSymbol = settings["AdsMonitorSnapshot"] ?? "GVL_HMI.stMonitor"
         };
     }
 }

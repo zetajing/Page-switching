@@ -1,101 +1,54 @@
-# 自动页面 PLC 只读监控接口
+# PLC 只读监控接口
 
-本接口由上位机定义，PLC 发布对应反馈变量；读取类型已按现场在线变量表修正。机器监控客户端只读取反馈，不写控制请求或心跳；控制权申请和本站心跳由独立的 AxisService 控制协议处理，自动造波页面未新增运行操作。
+2026-10-15 起，监控改为整块读取 `GVL_HMI.stMonitor`，替代原来的 33 次逐字段读取。该结构只包含反馈，不包含任何控制命令；三站命令、控制权与轨迹接口不受影响。手动页面仍使用原有批量轴反馈读取路径。
 
-控制权申请页面复用本接口的只读反馈，三站优先级和待确认接口见 [三站控制权规则](ControlAuthorityRules.md)。三站 Owner 编码及申请、释放已按新配套 PLC 接入，具体规则见控制权文档；机器监控客户端本身仍只读。
+## 通信布局
 
-## 五个全局反馈变量
+PLC `ST_MachineMonitor` 和 C# `PlcMachineMonitor` 均明确采用 1 字节对齐。版本 1 固定 100 字节，按以下顺序排列：
 
-在 PLC 工程中新建名称为 `GVL_HMI` 的全局变量表，声明如下：
+| 字段 | PLC 类型 | 字节偏移 |
+| --- | --- | --- |
+| nVersion | UINT，固定 1 | 0 |
+| nByteSize | UINT，SIZEOF(stMonitor)，固定 100 | 2 |
+| nControlOwner | UINT | 4 |
+| nControlMode | UINT | 6 |
+| nWaveState | UINT | 8 |
+| uiWaveFaultCode | UINT | 10 |
+| udiHeartbeat | UDINT | 12 |
+| Axis1 / Axis2 / Axis3 / Axis4 | ST_AxisMonitor，各 21 字节 | 16 / 37 / 58 / 79 |
 
-```iecst
-VAR_GLOBAL
-    nControlOwner : UINT := 0;
-    nControlMode : UINT := 0;
-    nWaveState : UINT := 0;
-    udiWaveFaultCode : UINT := 0;
-    udiHeartbeat : UDINT := 0;
-END_VAR
-```
+每轴依次为：`lrActualPosition`、`lrSpeed`（各 LREAL / double，8 字节），`xHomed`、`xError`、`xPositiveLimit`、`xNegativeLimit`、`xOriginSignal`（各 BOOL，1 字节）。C# BOOL 显式使用 `MarshalAs(UnmanagedType.I1)`，禁止依赖默认 BOOL 尺寸。修改结构必须同步两端并升级版本，不能直接复用轴内部的混合命令结构。
 
-| 完整 ADS 符号 | 类型 / 上位机读取类型 | 取值含义 |
-|---|---|---|
-| `GVL_HMI.nControlOwner` | UINT / UInt16 | 0 未分配；1 造波控制室；2 拖车本地；3 远程操作室 |
-| `GVL_HMI.nControlMode` | UINT / UInt16 | 0 未选择；1 手动；2 自动 |
-| `GVL_HMI.nWaveState` | UINT / UInt16 | 0 待机；1 准备中；2 造波中；3 已暂停；4 停止中；5 已停止；6 已完成；7 故障 |
-| `GVL_HMI.udiWaveFaultCode` | UINT / UInt16 | 0 无当前故障；非零为当前有效故障码，上位机显示数值，不推测故障文字 |
-| `GVL_HMI.udiHeartbeat` | UDINT / UInt32 | 运行循环每 500 ms 递增一次，最大值后回到零 |
+控制端编码 0 未分配、1 造波控制室、2 拖车本地、3 远程操作室；模式 0 未选择、1 手动、2 自动；轨迹显示状态 0 待机、1 准备、2 运行、4 停止中、6 完成、7 故障。未知值保留数值提示。故障码保持 UINT，完整源故障超出 UINT 时显示 65535，完整码仍保留在旧诊断符号。轴方向及机械单位需现场确认，不在监控中做角度或丝杆转换。
 
-声明中的零是启动初值。PLC 必须在运行时用真实控制权、模式和造波状态更新这些值，不能用常量代替实际反馈。控制权、运行模式和造波状态是三个独立概念；切换上位机页面或生成波形文件不改变它们。
+## 发布和读取
 
-PLC 类型必须按表原样声明。上位机按契约类型请求解码；同宽但语义不同的 PLC 类型可能无法仅靠返回数值识别，因此接口模拟的类型检查不代替现场 ADS 符号表核对。
+`FB_HmiFeedback` 在 MAIN 四个基础轴块之后，更新旧 GVL_HMI 状态及每约 500 ms 递增的心跳，再填充 stMonitor；待机和故障时心跳也持续运行。原有单字段反馈符号保留用于诊断及手动页面。
 
-故障码应表示当前故障；故障解除后清零。历史故障由日志保留。造波状态和故障码应保持一致，状态为故障时仍需提供有效故障码；无法提供时，上位机仍显示故障状态而不会把零当作运行正常。
+App.config 用 `AdsMonitorSnapshot=GVL_HMI.stMonitor` 指定整块地址，原有五个 AdsMonitor 字段地址配置已移除。四轴成员地址仍供手动页面使用。监控使用独立只读 TwinCAT ADS 客户端，连接目标来自现有配置，首次建立句柄后复用；后续每轮只执行一次结构体读取。页面隐藏时仍读取这个 100 字节结构，只不生成四轴显示快照。500 ms 调度周期保持现状，不排队积累刷新任务。
 
-## 心跳实现
+一块读取减少请求往返和字段采样间隔，不承诺跨任务原子性；如将来需要严格同一扫描快照，需另外实现发布缓冲/一致性协议。它不改变 PLC 2 ms 轨迹取点周期。
 
-心跳由 PLC 更新，即使设备待机、暂停、已停止或处于故障，也必须持续递增。把以下逻辑放在 PLC 的 500 ms 周期事件中执行一次：
+## 质量和异常
 
-```iecst
-IF GVL_HMI.udiHeartbeat = UDINT#4294967295 THEN
-    GVL_HMI.udiHeartbeat := 0;
-ELSE
-    GVL_HMI.udiHeartbeat := GVL_HMI.udiHeartbeat + 1;
-END_IF;
-```
+- 整块读取失败时，全部本轮反馈无效，页面显示 `--` 或不可用，不显示默认零/false；不自动回退到逐字段读。
+- 布局版本/字节数不符时明确提示更新配套 PLC，不连续重连。未部署符号、类型和 Marshalling 错误同样按协议错误显示。
+- 已下载/在线修改导致句柄失效时丢弃句柄，下轮重新获取；网络错误沿用重连退避，恢复后重新确认心跳。
+- 单个位置/速度为 NaN 或无穷时，该数值不可用，其余字段保留有效质量。
+- 首次有效读取需观察心跳变化后确认全局状态；3 秒不变化显示心跳停止，3 秒没有有效帧显示过期。历史数据不能视为当前有效状态。
+- 每次 ADS 请求超时默认 1000 ms，整轮默认 3000 ms，由 AdsMonitorRefreshTimeoutMs 配置；连接默认 10000 ms。超时日志保留具体读取步骤。
 
-如果主任务周期小于 500 ms，应使用该任务中的定时器产生 500 ms 事件，不能每个扫描周期都执行上述递增。PLC 重启后允许计数从零重新开始；上位机比较计数是否发生变化，接受回绕和重启。
+## 部署及验证
 
-上位机首次连接后需观察到心跳变化才认可全局反馈为实时数据。连续 3 秒没有有效读取或心跳变化时，页面显示反馈过期或 PLC 心跳停止。ADS 端口已连接不等于 PLC 循环正在更新反馈。
+先在设备停稳时用 XAE 编译、下载配套 PLC，再重启更新后的上位机。当前在线 PLC 未更新时会显示结构体符号不存在，不能将编译成功当作已部署。
 
-心跳缺失或停滞时，控制端、模式、造波状态和故障码不可用；四轴反馈仍按各字段读取质量显示。超过 3 秒没有有效读取时，全局与轴反馈一起过期。“最近有效反馈”指任一字段成功采样的时间，不代表全局状态已经通过心跳确认。
+离线运行 `python -m unittest discover -s PLC/TwinCAT_NB/tests -p "verify_*.py" -v`。新增检查验证 PLC 字段顺序、21/100 字节封送、四轴偏移、UINT 高位、BOOL、布局拒绝和数值失效。仍需现场确认 ADS SDK 对实际 PLC 的整块读取，以及断线、心跳停滞和恢复。
 
-## 四轴反馈
+性能验收在同一 PLC、网络和调度周期下进行：先预热句柄，再分别采集旧 33 字段和新结构体读取耗时，比较平均值、P95 和失败数。新结构体未部署前无法测得实际优化比例，不报告推测的倍数。
 
-自动页复用 `App.config` 中四轴已有地址，每轴读取以下七项。`N` 为 1–4；当前默认前缀为 `GVL_axis.AxisN`（TwinCAT_NB 工程）。
+2026-10-15 本次只读检查 `192.168.0.55.1.1:851`：新符号返回 DeviceSymbolNotFound，实际服务反馈为 Unavailable / IsLive=false，控制端和心跳均不可用。未写入 PLC、未下载，因此本次未测得新结构体的实际读取耗时。
 
-| 当前默认成员 | PLC 读取类型 | 页面用途 |
-|---|---|---|
-| `lrActualPosition` | LREAL / Double | 位置反馈 |
-| `lrSpeed` | LREAL / Double | 速度反馈 |
-| `xHomed` | BOOL / Bool | 回零完成 |
-| `xError` | BOOL / Bool | 报警 |
-| `xNegativeLimit` | BOOL / Bool | 负限位 |
-| `xPositiveLimit` | BOOL / Bool | 正限位 |
-| `xOriginSignal` | BOOL / Bool | 原点信号 |
-
-当前 PLC 源码中 `lrActualPosition`、`lrSpeed` 分别来自 `NcToPlc.ActPos`、`ActVelo`；物理轴顺序、方向和单位仍需现场确认。页面不进行板角度、丝杆点位或机械单位换算。自动页不读取 `xMotorRun`，也不以轴速度、使能、点动命令或停止命令发送成功推断造波状态。
-
-## 上位机配置与显示
-
-五个地址可通过以下 `App.config` 键调整，默认就是本接口完整符号名：
-
-| 配置键 | 默认地址 |
-|---|---|
-| `AdsMonitorControlOwner` | `GVL_HMI.nControlOwner` |
-| `AdsMonitorControlMode` | `GVL_HMI.nControlMode` |
-| `AdsMonitorWaveState` | `GVL_HMI.nWaveState` |
-| `AdsMonitorWaveFaultCode` | `GVL_HMI.udiWaveFaultCode` |
-| `AdsMonitorHeartbeat` | `GVL_HMI.udiHeartbeat` |
-
-监控直接使用独立的 TwinCAT ADS 客户端，目标 AMS Net ID、ADS 端口和 Router 复用现有配置。每 500 ms 调度一次；自动页显示时读取 33 项，其他页面只读五个全局反馈。每次只允许一个连接或读取任务，不积累刷新任务。每个符号依次获取句柄、按明确类型读取并释放句柄；单个字段未接入或类型错误时，其余有效字段仍可使用。
-
-73 电脑运行虚拟 PLC、113 电脑使用独立 Router 的配置及验证范围见 [两台电脑的 ADS 连接](AdsConnectionGuide.md)。连接时记录实际本机与目标 AMS 地址，超时日志保留具体变量和读取步骤。
-
-每轮读取共用 1000 ms 超时预算；首次连接沿用现有 `AdsConnectTimeoutMs` 配置，默认 10000 ms。通信持续失败 3 秒后重建监控客户端；未部署符号、类型错误（含 Marshalling 大小不匹配）和心跳停滞不会引发连续重连。监控与手动客户端的内部队列独立，仍共享网络和 PLC，因此不将此隔离解释为设备停止时延保证。
-
-未配置、未接入、读取失败、过期或未知枚举均有独立提示；无有效轴反馈显示 `--`，不把空值当作正常的 false。历史值只能带历史时间标记展示。状态变化同步记录到主窗体操作记录；周期读取和心跳计数变化本身不刷屏。
-
-## PLC 接入检查
-
-1. 添加 `GVL_HMI`，按实际控制逻辑更新五个变量，并在运行循环持续产生 500 ms 心跳。
-2. 编译下载 PLC 工程，确认 ADS 符号已发布且变量类型与本表一致。
-3. 若更改符号名，修改上位机 `App.config` 对应五个键并重启应用。
-4. 逐一改变控制端、手动/自动模式和造波状态，核对页面显示与 PLC 一致；注入故障码后应出现红色提示。
-5. 暂停心跳、断开通信、恢复通信，核对未知/过期提示及恢复行为。
-6. 核对四轴地址、各字段含义和物理单位；界面位置或速度变化不能代替 PLC 的造波状态反馈。
-
-本接口初次交付采用离线模拟和布局检查。五个全局变量和四轴配置符号已在下述只读联调中验证可读取，四轴字段的物理含义、机械单位和实际状态切换仍需完成以上现场检查。
+以下为旧接口历史验证记录，不能当作新结构体已在线验证的证据。
 
 ## 上位机交付验证（2026-10-05）
 

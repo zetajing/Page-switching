@@ -165,3 +165,7 @@ PC 使用 ADS 原始块写入时，先解析 aUpload 的实际 IndexGroup/IndexO
 本说明前文 `GVL_axis.Axis1..4` 的命令字段现在为内部执行值。上位机实际写入 `GVL_control.aStation[本站号].aAxis[轴号]`，反馈仍读取 GVL_axis。PLC 每扫描只接纳授权站邮箱，交接清空旧命令，新站重新发动作。轨迹接口保留，轨迹启动同样需要有效控制权，自动页面未新增运行入口。
 
 失联时撤命令并停车，停稳前不交接；停稳后清除旧 Owner，恢复连接不自动重放动作。细节见 switch 的 `docs/ControlAuthorityRules.md`。
+
+## 整块监控接口
+
+`GVL_HMI.stMonitor` 为 `ST_MachineMonitor`，版本 1 / 100 字节，按 1 字节对齐；嵌套四个 `ST_AxisMonitor`（每轴 21 字节）。FB_HmiFeedback 在四轴块执行后集中发布，全局心跳保持约 500 ms 递增。上位机通过 AdsMonitorSnapshot 配置一次读取，失败时整帧不可用，布局版本不符时提示更新 PLC。旧单字段诊断接口保留，控制命令仍进入授权站邮箱。整块读不保证跨任务原子快照，未部署前不能报告实测提速。

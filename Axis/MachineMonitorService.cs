@@ -26,7 +26,7 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
     public MachineMonitorService(MachineMonitorOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
-        if (options.AxisSymbols.Count != 4) throw new ArgumentException("监控需要四轴反馈映射。", nameof(options));
+        if (string.IsNullOrWhiteSpace(options.SnapshotSymbol)) throw new ArgumentException("监控结构体地址不能为空。", nameof(options));
         if (options.ConnectTimeoutMilliseconds <= 0 || options.OperationTimeoutMilliseconds <= 0 ||
             options.RefreshTimeoutMilliseconds <= 0 || options.StaleAfterMilliseconds <= 0 || options.ReconnectIntervalMilliseconds <= 0)
             throw new ArgumentException("监控超时必须大于零。", nameof(options));
@@ -58,7 +58,7 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
         }
     }
 
-    // 调试入口：连接 → 读取各变量 → 保存结果。忙时跳过本轮，不排队。
+    // 调试入口：连接 → 读取监控结构体 → 保存结果。忙时跳过本轮，不排队。
     public async Task<MachineMonitorSnapshot> RefreshAsync(bool includeAxes, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -102,7 +102,7 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
             timeout.Token.ThrowIfCancellationRequested();
 
             _client.Timeout = _options.OperationTimeoutMilliseconds;
-            // 逐项读取复用句柄；单次请求超时与整轮读取超时仍分开计算。
+            // 整块读取复用句柄；单次请求超时与整轮读取超时仍分开计算。
             timeoutMilliseconds = _options.RefreshTimeoutMilliseconds;
             timeout.CancelAfter(timeoutMilliseconds);
             var errors = new List<string>();
@@ -121,6 +121,11 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
         {
             RecordCommunicationFailure($"监控超时（上限 {timeoutMilliseconds} ms）：{_readOperation}", startedAt);
         }
+        catch (InvalidOperationException ex) when (ex.Message.Contains("监控结构体布局不匹配", StringComparison.Ordinal))
+        {
+            SaveFrame(new MachineMonitorSnapshot { IsConnected = true }
+                .WithoutAvailability(MachineMonitorQuality.Unavailable, ex.Message));
+        }
         catch (Exception ex)
         {
             RecordCommunicationFailure(AdsDiagnostics.DescribeException(ex), startedAt);
@@ -132,55 +137,17 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
         return LatestSnapshot;
     }
 
-    // 先逐项读取到局部变量，再组成快照；断点可直接查看每个变量的值和错误。
+    // 句柄缓存后，每轮只有一次数据读取；失败使整帧无效，不显示默认零值。
     private async Task<MachineMonitorSnapshot> ReadSnapshotAsync(bool includeAxes, List<string> errors, CancellationToken token)
     {
-        // PLC 状态和故障码为 UINT（ushort），心跳为 UDINT（uint）。
-        var controlOwner = await ReadPlcAsync<ushort>(_options.ControlOwnerSymbol, errors, token).ConfigureAwait(false);
-        var controlMode = await ReadPlcAsync<ushort>(_options.ControlModeSymbol, errors, token).ConfigureAwait(false);
-        var waveState = await ReadPlcAsync<ushort>(_options.WaveStateSymbol, errors, token).ConfigureAwait(false);
-        var waveFaultCode = await ReadPlcAsync<ushort>(_options.WaveFaultCodeSymbol, errors, token).ConfigureAwait(false);
-        var heartbeat = await ReadPlcAsync<uint>(_options.HeartbeatSymbol, errors, token).ConfigureAwait(false);
-        var axes = new List<MachineAxisSnapshot>();
-        if (includeAxes)
+        var frame = await ReadPlcAsync<PlcMachineMonitor>(_options.SnapshotSymbol, errors, token).ConfigureAwait(false);
+        if (!frame.IsAvailable || !frame.Value.HasValue)
         {
-            for (var index = 0; index < 4; index++)
-            {
-                var axis = _options.AxisSymbols[index];
-                // 位置和速度为 LREAL（double），状态信号为 BOOL（bool）。
-                var position = await ReadPlcAsync<double>(axis.ActualPosition, errors, token).ConfigureAwait(false);
-                var speed = await ReadPlcAsync<double>(axis.Speed, errors, token).ConfigureAwait(false);
-                var homed = await ReadPlcAsync<bool>(axis.Homed, errors, token).ConfigureAwait(false);
-                var alarm = await ReadPlcAsync<bool>(axis.Alarm, errors, token).ConfigureAwait(false);
-                var positiveLimit = await ReadPlcAsync<bool>(axis.PositiveLimit, errors, token).ConfigureAwait(false);
-                var negativeLimit = await ReadPlcAsync<bool>(axis.NegativeLimit, errors, token).ConfigureAwait(false);
-                var origin = await ReadPlcAsync<bool>(axis.OriginSignal, errors, token).ConfigureAwait(false);
-                axes.Add(new MachineAxisSnapshot
-                {
-                    AxisNumber = index + 1,
-                    ActualPosition = position,
-                    Speed = speed,
-                    IsHomed = homed,
-                    HasAlarm = alarm,
-                    PositiveLimit = positiveLimit,
-                    NegativeLimit = negativeLimit,
-                    OriginSignal = origin
-                });
-            }
+            var message = $"读取 {_options.SnapshotSymbol} 失败：{frame.ErrorMessage}；请核对配套 PLC 结构体是否已部署。";
+            return new MachineMonitorSnapshot { IsConnected = true }
+                .WithoutAvailability(MachineMonitorQuality.Unavailable, message);
         }
-        return new MachineMonitorSnapshot
-        {
-            IsConnected = true,
-            ControlOwner = controlOwner,
-            ControlMode = controlMode,
-            WaveState = waveState,
-            WaveFaultCode = waveFaultCode,
-            Heartbeat = heartbeat,
-            Axes = axes.AsReadOnly(),
-            OverallQuality = errors.Count == 0 ? MachineMonitorQuality.Good
-                : errors.Count == (includeAxes ? 33 : 5) ? MachineMonitorQuality.Unavailable : MachineMonitorQuality.Partial,
-            ErrorMessage = errors.Count == 0 ? null : string.Join("；", errors.Take(4))
-        };
+        return frame.Value.Value.ToSnapshot(includeAxes);
     }
 
     // PLC 实际读取就在这里：断点查看 symbol、typeof(T)、result.Value 和 result.ErrorCode。
@@ -228,7 +195,7 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
             catch (OperationCanceledException) when (token.IsCancellationRequested) { throw; }
             catch (Exception ex) { error = AdsDiagnostics.DescribeException(ex); }
         }
-        // 只让当前字段无效，其余字段继续读取；不能把失败值显示成零或 false。
+        // 整帧读取失败时返回无效，不能把失败值显示成零或 false。
         errors.Add($"{symbol}：{error}");
         return FeedbackField<T>.Unavailable(error);
     }
@@ -306,7 +273,7 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
         {
             if (client?.IsConnected == true)
             {
-                // 重连或退出时集中释放；整批清理最多等待一次请求超时，断网时不逐项等 33 秒。
+                // 重连或退出时集中释放；整批清理最多等待一次请求超时，断网时不逐项等待。
                 using var cleanup = new CancellationTokenSource(_options.OperationTimeoutMilliseconds);
                 foreach (var handle in _handles.Values)
                 {
