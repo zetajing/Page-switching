@@ -16,423 +16,567 @@ namespace Page_switching
         // 使用标准 WinForms Designer 结构：明确控件类型及 this 成员访问，便于设计器读取。
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
-            this.pagePanel = new System.Windows.Forms.Panel();
-            this.rootLayout = new System.Windows.Forms.TableLayoutPanel();
-            this.headerPanel = new System.Windows.Forms.Panel();
-            this.titleLabel = new AntdUI.Label();
-            this.subtitleLabel = new AntdUI.Label();
-            this.statusGroup = new AntdUI.Panel();
+            pagePanel = new Panel();
+            rootLayout = new TableLayoutPanel();
+            headerPanel = new Panel();
+            subtitleLabel = new AntdUI.Label();
+            titleLabel = new AntdUI.Label();
+            statusGroup = new AntdUI.Panel();
+            statusLayout = new TableLayoutPanel();
+            connectionCaptionLabel = new AntdUI.Label();
+            _connectionValue = new AntdUI.Label();
+            stationCaptionLabel = new AntdUI.Label();
+            _stationValue = new AntdUI.Label();
+            ownerCaptionLabel = new AntdUI.Label();
+            _ownerValue = new AntdUI.Label();
+            stateCaptionLabel = new AntdUI.Label();
+            _stateValue = new AntdUI.Label();
+            safetyCaptionLabel = new AntdUI.Label();
+            _safetyValue = new AntdUI.Label();
+            watchdogCaptionLabel = new AntdUI.Label();
+            _watchdogValue = new AntdUI.Label();
             statusGroupCaption = new AntdUI.Label();
-            this.statusLayout = new System.Windows.Forms.TableLayoutPanel();
-            this.connectionCaptionLabel = new AntdUI.Label();
-            this.stationCaptionLabel = new AntdUI.Label();
-            this.ownerCaptionLabel = new AntdUI.Label();
-            this.stateCaptionLabel = new AntdUI.Label();
-            this.safetyCaptionLabel = new AntdUI.Label();
-            this.watchdogCaptionLabel = new AntdUI.Label();
-            this._connectionValue = new AntdUI.Label();
-            this._stationValue = new AntdUI.Label();
-            this._ownerValue = new AntdUI.Label();
-            this._stateValue = new AntdUI.Label();
-            this._safetyValue = new AntdUI.Label();
-            this._watchdogValue = new AntdUI.Label();
-            this.actionGroup = new AntdUI.Panel();
+            actionGroup = new AntdUI.Panel();
             actionGroupCaption = new AntdUI.Label();
-            this.actionLayout = new System.Windows.Forms.TableLayoutPanel();
-            this.actionButtons = new System.Windows.Forms.FlowLayoutPanel();
-            this._requestButton = new AntdUI.Button();
-            _requestButton.Radius = 6;
-            _requestButton.BorderWidth = 1F;
-            this._releaseButton = new AntdUI.Button();
-            _releaseButton.Radius = 6;
-            _releaseButton.BorderWidth = 1F;
-            this.refreshButton = new AntdUI.Button();
-            refreshButton.Radius = 6;
-            this._hintLabel = new AntdUI.Label();
-            this.rulesGroup = new AntdUI.Panel();
+            rulesGroup = new AntdUI.Panel();
+            rulesLayout = new TableLayoutPanel();
+            priorityLabel = new AntdUI.Label();
+            centralCaptionLabel = new AntdUI.Label();
+            centralRuleLabel = new AntdUI.Label();
+            localCaptionLabel = new AntdUI.Label();
+            localRuleLabel = new AntdUI.Label();
+            remoteCaptionLabel = new AntdUI.Label();
+            remoteRuleLabel = new AntdUI.Label();
+            plcResponsibilityLabel = new AntdUI.Label();
             rulesGroupCaption = new AntdUI.Label();
-            this.rulesLayout = new System.Windows.Forms.TableLayoutPanel();
-            this.priorityLabel = new AntdUI.Label();
-            this.centralCaptionLabel = new AntdUI.Label();
-            this.centralRuleLabel = new AntdUI.Label();
-            this.localCaptionLabel = new AntdUI.Label();
-            this.localRuleLabel = new AntdUI.Label();
-            this.remoteCaptionLabel = new AntdUI.Label();
-            this.remoteRuleLabel = new AntdUI.Label();
-            this.plcResponsibilityLabel = new AntdUI.Label();
-            this.pagePanel.SuspendLayout();
-            this.rootLayout.SuspendLayout();
-            this.headerPanel.SuspendLayout();
-            this.statusGroup.SuspendLayout();
-            this.statusLayout.SuspendLayout();
-            this.actionGroup.SuspendLayout();
-            this.actionLayout.SuspendLayout();
-            this.actionButtons.SuspendLayout();
-            this.rulesGroup.SuspendLayout();
-            this.rulesLayout.SuspendLayout();
-            this.SuspendLayout();
-            //
+            actionButtons = new FlowLayoutPanel();
+            refreshButton = new AntdUI.Button();
+            _releaseButton = new AntdUI.Button();
+            _requestButton = new AntdUI.Button();
+            actionLayout = new TableLayoutPanel();
+            pagePanel.SuspendLayout();
+            rootLayout.SuspendLayout();
+            headerPanel.SuspendLayout();
+            statusGroup.SuspendLayout();
+            statusLayout.SuspendLayout();
+            actionGroup.SuspendLayout();
+            rulesGroup.SuspendLayout();
+            rulesLayout.SuspendLayout();
+            actionButtons.SuspendLayout();
+            actionLayout.SuspendLayout();
+            SuspendLayout();
+            // 
             // pagePanel
-            //
-            this.pagePanel.Controls.Add(rootLayout);
-            this.pagePanel.Dock = DockStyle.Fill;
-            this.pagePanel.Location = new Point(0, 0);
-            this.pagePanel.Margin = new Padding(0);
-            this.pagePanel.MinimumSize = new Size(1100, 850);
-            this.pagePanel.Name = "pagePanel";
-            this.pagePanel.Size = new Size(1380, 925);
-            this.pagePanel.TabIndex = 0;
-            //
-            // rootLayout / headerPanel
-            //
-            this.rootLayout.BackColor = Color.FromArgb(241, 245, 249);
-            this.rootLayout.ColumnCount = 1;
-            this.rootLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            this.rootLayout.Controls.Add(headerPanel, 0, 0);
-            this.rootLayout.Controls.Add(statusGroup, 0, 1);
-            this.rootLayout.Controls.Add(actionGroup, 0, 2);
-            this.rootLayout.Controls.Add(rulesGroup, 0, 3);
-            this.rootLayout.Dock = DockStyle.Fill;
-            this.rootLayout.Location = new Point(0, 0);
-            this.rootLayout.Margin = new Padding(0);
-            this.rootLayout.Name = "rootLayout";
-            this.rootLayout.Padding = new Padding(20);
-            this.rootLayout.RowCount = 4;
-            this.rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 70F));
-            this.rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 190F));
-            this.rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 160F));
-            this.rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            this.rootLayout.Size = new Size(1380, 925);
-            this.rootLayout.TabIndex = 0;
-            this.headerPanel.Controls.Add(subtitleLabel);
-            this.headerPanel.Controls.Add(titleLabel);
-            this.headerPanel.Dock = DockStyle.Fill;
-            this.headerPanel.Margin = new Padding(0);
-            this.headerPanel.Name = "headerPanel";
-            this.headerPanel.Size = new Size(1340, 70);
-            this.headerPanel.TabIndex = 0;
-            this.titleLabel.Dock = DockStyle.Top;
-            this.titleLabel.Font = new Font("Microsoft YaHei UI", 16F, FontStyle.Bold);
-            this.titleLabel.ForeColor = Color.FromArgb(15, 23, 42);
-            this.titleLabel.Name = "titleLabel";
-            this.titleLabel.Size = new Size(1340, 42);
-            this.titleLabel.Text = "控制权申请";
-            this.titleLabel.TextAlign = ContentAlignment.MiddleLeft;
-            this.subtitleLabel.Dock = DockStyle.Fill;
-            this.subtitleLabel.ForeColor = Color.FromArgb(71, 85, 105);
-            this.subtitleLabel.Name = "subtitleLabel";
-            this.subtitleLabel.Text = "控制权由 PLC 统一管理 · 上位机提交申请、释放请求并显示授权反馈";
-            this.subtitleLabel.TextAlign = ContentAlignment.MiddleLeft;
-            //
-            // statusGroup / statusLayout
-            //
-            this.statusGroup.BackColor = Color.White;
-            this.statusGroup.Controls.Add(statusLayout);
-            this.statusGroup.Dock = DockStyle.Fill;
-            this.statusGroup.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
-            this.statusGroup.Margin = new Padding(0, 0, 0, 12);
-            this.statusGroup.Name = "statusGroup";
-            this.statusGroup.Padding = new Padding(20, 32, 20, 15);
-            this.statusGroup.Size = new Size(1340, 178);
-            this.statusGroup.TabIndex = 1;
-            this.statusGroup.TabStop = false;
-            // AntdUI 面板用独立标题标签保留原分组标题，布局仍可在 Designer 编辑。
-            statusGroupCaption.Text = "控制权状态";
-            statusGroupCaption.AutoSize = true;
-            statusGroupCaption.Name = "statusGroupCaption";
-            statusGroupCaption.Location = new Point(10, 2);
-            statusGroupCaption.ForeColor = Color.FromArgb(15, 23, 42);
-            statusGroup.BorderWidth = 1F;
+            // 
+            pagePanel.Controls.Add(rootLayout);
+            pagePanel.Dock = DockStyle.Fill;
+            pagePanel.Location = new Point(0, 0);
+            pagePanel.Margin = new Padding(0);
+            pagePanel.MinimumSize = new Size(1100, 850);
+            pagePanel.Name = "pagePanel";
+            pagePanel.Size = new Size(1380, 925);
+            pagePanel.TabIndex = 0;
+            // 
+            // rootLayout
+            // 
+            rootLayout.BackColor = Color.FromArgb(241, 245, 249);
+            rootLayout.ColumnCount = 1;
+            rootLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            rootLayout.Controls.Add(headerPanel, 0, 0);
+            rootLayout.Controls.Add(statusGroup, 0, 1);
+            rootLayout.Controls.Add(actionGroup, 0, 2);
+            rootLayout.Controls.Add(rulesGroup, 0, 3);
+            rootLayout.Dock = DockStyle.Fill;
+            rootLayout.Location = new Point(0, 0);
+            rootLayout.Margin = new Padding(0);
+            rootLayout.Name = "rootLayout";
+            rootLayout.Padding = new Padding(20);
+            rootLayout.RowCount = 4;
+            rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 70F));
+            rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 190F));
+            rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 160F));
+            rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            rootLayout.Size = new Size(1380, 925);
+            rootLayout.TabIndex = 0;
+            // 
+            // headerPanel
+            // 
+            headerPanel.Controls.Add(subtitleLabel);
+            headerPanel.Controls.Add(titleLabel);
+            headerPanel.Dock = DockStyle.Fill;
+            headerPanel.Location = new Point(20, 20);
+            headerPanel.Margin = new Padding(0);
+            headerPanel.Name = "headerPanel";
+            headerPanel.Size = new Size(1340, 70);
+            headerPanel.TabIndex = 0;
+            // 
+            // subtitleLabel
+            // 
+            subtitleLabel.Dock = DockStyle.Fill;
+            subtitleLabel.ForeColor = Color.FromArgb(71, 85, 105);
+            subtitleLabel.Location = new Point(0, 42);
+            subtitleLabel.Name = "subtitleLabel";
+            subtitleLabel.Size = new Size(1340, 28);
+            subtitleLabel.TabIndex = 0;
+            subtitleLabel.Text = "控制权由 PLC 统一管理 · 上位机提交申请、释放请求并显示授权反馈";
+            // 
+            // titleLabel
+            // 
+            titleLabel.Dock = DockStyle.Top;
+            titleLabel.Font = new Font("Microsoft YaHei UI", 16F, FontStyle.Bold);
+            titleLabel.ForeColor = Color.FromArgb(15, 23, 42);
+            titleLabel.Location = new Point(0, 0);
+            titleLabel.Name = "titleLabel";
+            titleLabel.Size = new Size(1340, 42);
+            titleLabel.TabIndex = 1;
+            titleLabel.Text = "控制权申请";
+            // 
+            // statusGroup
+            // 
+            statusGroup.BackColor = Color.White;
             statusGroup.BorderColor = Color.FromArgb(203, 213, 225);
-            statusGroup.Radius = 6;
+            statusGroup.BorderWidth = 1F;
+            statusGroup.Controls.Add(statusLayout);
             statusGroup.Controls.Add(statusGroupCaption);
-            statusGroupCaption.BringToFront();
-            this.statusLayout.ColumnCount = 4;
-            this.statusLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 130F));
-            this.statusLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            this.statusLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 130F));
-            this.statusLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            this.statusLayout.Controls.Add(connectionCaptionLabel, 0, 0);
-            this.statusLayout.Controls.Add(_connectionValue, 1, 0);
-            this.statusLayout.Controls.Add(stationCaptionLabel, 2, 0);
-            this.statusLayout.Controls.Add(_stationValue, 3, 0);
-            this.statusLayout.Controls.Add(ownerCaptionLabel, 0, 1);
-            this.statusLayout.Controls.Add(_ownerValue, 1, 1);
-            this.statusLayout.Controls.Add(stateCaptionLabel, 2, 1);
-            this.statusLayout.Controls.Add(_stateValue, 3, 1);
-            this.statusLayout.Controls.Add(safetyCaptionLabel, 0, 2);
-            this.statusLayout.Controls.Add(_safetyValue, 1, 2);
-            this.statusLayout.Controls.Add(watchdogCaptionLabel, 2, 2);
-            this.statusLayout.Controls.Add(_watchdogValue, 3, 2);
-            this.statusLayout.Dock = DockStyle.Fill;
-            this.statusLayout.Font = new Font("Microsoft YaHei UI", 9F);
-            this.statusLayout.Margin = new Padding(0);
-            this.statusLayout.Name = "statusLayout";
-            this.statusLayout.Size = new Size(1300, 138);
-            this.statusLayout.RowCount = 3;
-            this.statusLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 33.33333F));
-            this.statusLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 33.33333F));
-            this.statusLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 33.33334F));
-            this.connectionCaptionLabel.Dock = DockStyle.Fill;
-            this.connectionCaptionLabel.ForeColor = Color.FromArgb(71, 85, 105);
-            this.connectionCaptionLabel.Name = "connectionCaptionLabel";
-            this.connectionCaptionLabel.Text = "ADS 连接";
-            this.connectionCaptionLabel.TextAlign = ContentAlignment.MiddleLeft;
-            this.stationCaptionLabel.Dock = DockStyle.Fill;
-            this.stationCaptionLabel.ForeColor = Color.FromArgb(71, 85, 105);
-            this.stationCaptionLabel.Name = "stationCaptionLabel";
-            this.stationCaptionLabel.Text = "本站点";
-            this.stationCaptionLabel.TextAlign = ContentAlignment.MiddleLeft;
-            this.ownerCaptionLabel.Dock = DockStyle.Fill;
-            this.ownerCaptionLabel.ForeColor = Color.FromArgb(71, 85, 105);
-            this.ownerCaptionLabel.Name = "ownerCaptionLabel";
-            this.ownerCaptionLabel.Text = "控制端反馈";
-            this.ownerCaptionLabel.TextAlign = ContentAlignment.MiddleLeft;
-            this.stateCaptionLabel.Dock = DockStyle.Fill;
-            this.stateCaptionLabel.ForeColor = Color.FromArgb(71, 85, 105);
-            this.stateCaptionLabel.Name = "stateCaptionLabel";
-            this.stateCaptionLabel.Text = "运行模式";
-            this.stateCaptionLabel.TextAlign = ContentAlignment.MiddleLeft;
-            this.safetyCaptionLabel.Dock = DockStyle.Fill;
-            this.safetyCaptionLabel.ForeColor = Color.FromArgb(71, 85, 105);
-            this.safetyCaptionLabel.Name = "safetyCaptionLabel";
-            this.safetyCaptionLabel.Text = "反馈质量";
-            this.safetyCaptionLabel.TextAlign = ContentAlignment.MiddleLeft;
-            this.watchdogCaptionLabel.Dock = DockStyle.Fill;
-            this.watchdogCaptionLabel.ForeColor = Color.FromArgb(71, 85, 105);
-            this.watchdogCaptionLabel.Name = "watchdogCaptionLabel";
-            this.watchdogCaptionLabel.Text = "PLC 心跳";
-            this.watchdogCaptionLabel.TextAlign = ContentAlignment.MiddleLeft;
-            this._connectionValue.Dock = DockStyle.Fill;
-            this._connectionValue.Font = new Font("Microsoft YaHei UI", 10.5F, FontStyle.Bold);
-            this._connectionValue.ForeColor = Color.FromArgb(154, 52, 18);
-            this._connectionValue.Name = "_connectionValue";
-            this._connectionValue.Text = "未连接";
-            this._connectionValue.TextAlign = ContentAlignment.MiddleLeft;
-            this._stationValue.Dock = DockStyle.Fill;
-            this._stationValue.Font = new Font("Microsoft YaHei UI", 10.5F, FontStyle.Bold);
-            this._stationValue.Name = "_stationValue";
-            this._stationValue.Text = "未配置本站身份";
-            this._stationValue.TextAlign = ContentAlignment.MiddleLeft;
-            this._ownerValue.Dock = DockStyle.Fill;
-            this._ownerValue.Font = new Font("Microsoft YaHei UI", 10.5F, FontStyle.Bold);
-            this._ownerValue.Name = "_ownerValue";
-            this._ownerValue.Text = "等待反馈";
-            this._ownerValue.TextAlign = ContentAlignment.MiddleLeft;
-            this._stateValue.Dock = DockStyle.Fill;
-            this._stateValue.Font = new Font("Microsoft YaHei UI", 10.5F, FontStyle.Bold);
-            this._stateValue.Name = "_stateValue";
-            this._stateValue.Text = "等待反馈";
-            this._stateValue.TextAlign = ContentAlignment.MiddleLeft;
-            this._safetyValue.Dock = DockStyle.Fill;
-            this._safetyValue.Font = new Font("Microsoft YaHei UI", 10.5F, FontStyle.Bold);
-            this._safetyValue.ForeColor = Color.FromArgb(154, 52, 18);
-            this._safetyValue.Name = "_safetyValue";
-            this._safetyValue.Text = "监控未连接";
-            this._safetyValue.TextAlign = ContentAlignment.MiddleLeft;
-            this._watchdogValue.Dock = DockStyle.Fill;
-            this._watchdogValue.Font = new Font("Microsoft YaHei UI", 10.5F, FontStyle.Bold);
-            this._watchdogValue.Name = "_watchdogValue";
-            this._watchdogValue.Text = "等待反馈";
-            this._watchdogValue.TextAlign = ContentAlignment.MiddleLeft;
-            //
-            // actionGroup / actionLayout / actionButtons
-            //
-            this.actionGroup.BackColor = Color.White;
-            this.actionGroup.Controls.Add(actionLayout);
-            this.actionGroup.Dock = DockStyle.Fill;
-            this.actionGroup.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
-            this.actionGroup.Margin = new Padding(0, 0, 0, 12);
-            this.actionGroup.Name = "actionGroup";
-            this.actionGroup.Padding = new Padding(20, 32, 20, 15);
-            this.actionGroup.Size = new Size(1340, 148);
-            this.actionGroup.TabIndex = 2;
-            this.actionGroup.TabStop = false;
-            // AntdUI 面板用独立标题标签保留原分组标题，布局仍可在 Designer 编辑。
-            actionGroupCaption.Text = "控制权操作";
-            actionGroupCaption.AutoSize = true;
-            actionGroupCaption.Name = "actionGroupCaption";
-            actionGroupCaption.Location = new Point(10, 2);
-            actionGroupCaption.ForeColor = Color.FromArgb(15, 23, 42);
-            actionGroup.BorderWidth = 1F;
+            statusGroup.Dock = DockStyle.Fill;
+            statusGroup.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
+            statusGroup.Location = new Point(20, 90);
+            statusGroup.Margin = new Padding(0, 0, 0, 12);
+            statusGroup.Name = "statusGroup";
+            statusGroup.Padding = new Padding(20, 32, 20, 15);
+            statusGroup.Size = new Size(1340, 178);
+            statusGroup.TabIndex = 1;
+            statusGroup.TabStop = false;
+            // 
+            // statusLayout
+            // 
+            statusLayout.ColumnCount = 4;
+            statusLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 130F));
+            statusLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            statusLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 130F));
+            statusLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            statusLayout.Controls.Add(connectionCaptionLabel, 0, 0);
+            statusLayout.Controls.Add(_connectionValue, 1, 0);
+            statusLayout.Controls.Add(stationCaptionLabel, 2, 0);
+            statusLayout.Controls.Add(_stationValue, 3, 0);
+            statusLayout.Controls.Add(ownerCaptionLabel, 0, 1);
+            statusLayout.Controls.Add(_ownerValue, 1, 1);
+            statusLayout.Controls.Add(stateCaptionLabel, 2, 1);
+            statusLayout.Controls.Add(_stateValue, 3, 1);
+            statusLayout.Controls.Add(safetyCaptionLabel, 0, 2);
+            statusLayout.Controls.Add(_safetyValue, 1, 2);
+            statusLayout.Controls.Add(watchdogCaptionLabel, 2, 2);
+            statusLayout.Controls.Add(_watchdogValue, 3, 2);
+            statusLayout.Dock = DockStyle.Fill;
+            statusLayout.Font = new Font("Microsoft YaHei UI", 9F);
+            statusLayout.Location = new Point(22, 34);
+            statusLayout.Margin = new Padding(0);
+            statusLayout.Name = "statusLayout";
+            statusLayout.RowCount = 3;
+            statusLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 33.33333F));
+            statusLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 33.33333F));
+            statusLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 33.33334F));
+            statusLayout.Size = new Size(1296, 127);
+            statusLayout.TabIndex = 0;
+            // 
+            // connectionCaptionLabel
+            // 
+            connectionCaptionLabel.Dock = DockStyle.Fill;
+            connectionCaptionLabel.ForeColor = Color.FromArgb(71, 85, 105);
+            connectionCaptionLabel.Location = new Point(3, 3);
+            connectionCaptionLabel.Name = "connectionCaptionLabel";
+            connectionCaptionLabel.Size = new Size(124, 36);
+            connectionCaptionLabel.TabIndex = 0;
+            connectionCaptionLabel.Text = "ADS 连接";
+            // 
+            // _connectionValue
+            // 
+            _connectionValue.Dock = DockStyle.Fill;
+            _connectionValue.Font = new Font("Microsoft YaHei UI", 10.5F, FontStyle.Bold);
+            _connectionValue.ForeColor = Color.FromArgb(154, 52, 18);
+            _connectionValue.Location = new Point(133, 3);
+            _connectionValue.Name = "_connectionValue";
+            _connectionValue.Size = new Size(512, 36);
+            _connectionValue.TabIndex = 1;
+            _connectionValue.Text = "未连接";
+            // 
+            // stationCaptionLabel
+            // 
+            stationCaptionLabel.Dock = DockStyle.Fill;
+            stationCaptionLabel.ForeColor = Color.FromArgb(71, 85, 105);
+            stationCaptionLabel.Location = new Point(651, 3);
+            stationCaptionLabel.Name = "stationCaptionLabel";
+            stationCaptionLabel.Size = new Size(124, 36);
+            stationCaptionLabel.TabIndex = 2;
+            stationCaptionLabel.Text = "本站点";
+            // 
+            // _stationValue
+            // 
+            _stationValue.Dock = DockStyle.Fill;
+            _stationValue.Font = new Font("Microsoft YaHei UI", 10.5F, FontStyle.Bold);
+            _stationValue.Location = new Point(781, 3);
+            _stationValue.Name = "_stationValue";
+            _stationValue.Size = new Size(512, 36);
+            _stationValue.TabIndex = 3;
+            _stationValue.Text = "未配置本站身份";
+            // 
+            // ownerCaptionLabel
+            // 
+            ownerCaptionLabel.Dock = DockStyle.Fill;
+            ownerCaptionLabel.ForeColor = Color.FromArgb(71, 85, 105);
+            ownerCaptionLabel.Location = new Point(3, 45);
+            ownerCaptionLabel.Name = "ownerCaptionLabel";
+            ownerCaptionLabel.Size = new Size(124, 36);
+            ownerCaptionLabel.TabIndex = 4;
+            ownerCaptionLabel.Text = "控制端反馈";
+            // 
+            // _ownerValue
+            // 
+            _ownerValue.Dock = DockStyle.Fill;
+            _ownerValue.Font = new Font("Microsoft YaHei UI", 10.5F, FontStyle.Bold);
+            _ownerValue.Location = new Point(133, 45);
+            _ownerValue.Name = "_ownerValue";
+            _ownerValue.Size = new Size(512, 36);
+            _ownerValue.TabIndex = 5;
+            _ownerValue.Text = "等待反馈";
+            // 
+            // stateCaptionLabel
+            // 
+            stateCaptionLabel.Dock = DockStyle.Fill;
+            stateCaptionLabel.ForeColor = Color.FromArgb(71, 85, 105);
+            stateCaptionLabel.Location = new Point(651, 45);
+            stateCaptionLabel.Name = "stateCaptionLabel";
+            stateCaptionLabel.Size = new Size(124, 36);
+            stateCaptionLabel.TabIndex = 6;
+            stateCaptionLabel.Text = "运行模式";
+            // 
+            // _stateValue
+            // 
+            _stateValue.Dock = DockStyle.Fill;
+            _stateValue.Font = new Font("Microsoft YaHei UI", 10.5F, FontStyle.Bold);
+            _stateValue.Location = new Point(781, 45);
+            _stateValue.Name = "_stateValue";
+            _stateValue.Size = new Size(512, 36);
+            _stateValue.TabIndex = 7;
+            _stateValue.Text = "等待反馈";
+            // 
+            // safetyCaptionLabel
+            // 
+            safetyCaptionLabel.Dock = DockStyle.Fill;
+            safetyCaptionLabel.ForeColor = Color.FromArgb(71, 85, 105);
+            safetyCaptionLabel.Location = new Point(3, 87);
+            safetyCaptionLabel.Name = "safetyCaptionLabel";
+            safetyCaptionLabel.Size = new Size(124, 37);
+            safetyCaptionLabel.TabIndex = 8;
+            safetyCaptionLabel.Text = "反馈质量";
+            // 
+            // _safetyValue
+            // 
+            _safetyValue.Dock = DockStyle.Fill;
+            _safetyValue.Font = new Font("Microsoft YaHei UI", 10.5F, FontStyle.Bold);
+            _safetyValue.ForeColor = Color.FromArgb(154, 52, 18);
+            _safetyValue.Location = new Point(133, 87);
+            _safetyValue.Name = "_safetyValue";
+            _safetyValue.Size = new Size(512, 37);
+            _safetyValue.TabIndex = 9;
+            _safetyValue.Text = "监控未连接";
+            // 
+            // watchdogCaptionLabel
+            // 
+            watchdogCaptionLabel.Dock = DockStyle.Fill;
+            watchdogCaptionLabel.ForeColor = Color.FromArgb(71, 85, 105);
+            watchdogCaptionLabel.Location = new Point(651, 87);
+            watchdogCaptionLabel.Name = "watchdogCaptionLabel";
+            watchdogCaptionLabel.Size = new Size(124, 37);
+            watchdogCaptionLabel.TabIndex = 10;
+            watchdogCaptionLabel.Text = "PLC 心跳";
+            // 
+            // _watchdogValue
+            // 
+            _watchdogValue.Dock = DockStyle.Fill;
+            _watchdogValue.Font = new Font("Microsoft YaHei UI", 10.5F, FontStyle.Bold);
+            _watchdogValue.Location = new Point(781, 87);
+            _watchdogValue.Name = "_watchdogValue";
+            _watchdogValue.Size = new Size(512, 37);
+            _watchdogValue.TabIndex = 11;
+            _watchdogValue.Text = "等待反馈";
+            // 
+            // statusGroupCaption
+            // 
+            statusGroupCaption.AutoSizeMode = AntdUI.TAutoSize.Auto;
+            statusGroupCaption.ForeColor = Color.FromArgb(15, 23, 42);
+            statusGroupCaption.Location = new Point(10, 2);
+            statusGroupCaption.Name = "statusGroupCaption";
+            statusGroupCaption.Size = new Size(80, 21);
+            statusGroupCaption.TabIndex = 1;
+            statusGroupCaption.Text = "控制权状态";
+            // 
+            // actionGroup
+            // 
+            actionGroup.BackColor = Color.White;
             actionGroup.BorderColor = Color.FromArgb(203, 213, 225);
-            actionGroup.Radius = 6;
+            actionGroup.BorderWidth = 1F;
+            actionGroup.Controls.Add(actionLayout);
             actionGroup.Controls.Add(actionGroupCaption);
-            actionGroupCaption.BringToFront();
-            this.actionLayout.ColumnCount = 1;
-            this.actionLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            this.actionLayout.Controls.Add(actionButtons, 0, 0);
-            this.actionLayout.Controls.Add(_hintLabel, 0, 1);
-            this.actionLayout.Dock = DockStyle.Fill;
-            this.actionLayout.Margin = new Padding(0);
-            this.actionLayout.Name = "actionLayout";
-            this.actionLayout.Size = new Size(1300, 108);
-            this.actionLayout.RowCount = 2;
-            this.actionLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 55F));
-            this.actionLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            this.actionButtons.Controls.Add(_requestButton);
-            this.actionButtons.Controls.Add(_releaseButton);
-            this.actionButtons.Controls.Add(refreshButton);
-            this.actionButtons.Dock = DockStyle.Fill;
-            this.actionButtons.Margin = new Padding(0);
-            this.actionButtons.Name = "actionButtons";
-            this.actionButtons.Size = new Size(1300, 55);
-            this.actionButtons.WrapContents = false;
-            this._requestButton.BackColor = Color.FromArgb(248, 250, 252);
-            _requestButton.DefaultBack = Color.FromArgb(248, 250, 252);
-            this._requestButton.Enabled = false;
-            this._requestButton.DefaultBorderColor = Color.FromArgb(203, 213, 225);
-            this._requestButton.Font = new Font("Microsoft YaHei UI", 9F);
-            this._requestButton.ForeColor = Color.FromArgb(100, 116, 139);
-            this._requestButton.Margin = new Padding(0, 0, 12, 0);
-            this._requestButton.Name = "_requestButton";
-            this._requestButton.Size = new Size(210, 42);
-            this._requestButton.TabIndex = 0;
-            this._requestButton.Text = "申请控制权（待接入）";
-            this._releaseButton.BackColor = Color.FromArgb(248, 250, 252);
-            _releaseButton.DefaultBack = Color.FromArgb(248, 250, 252);
-            this._releaseButton.Enabled = false;
-            this._releaseButton.DefaultBorderColor = Color.FromArgb(203, 213, 225);
-            this._releaseButton.Font = new Font("Microsoft YaHei UI", 9F);
-            this._releaseButton.ForeColor = Color.FromArgb(100, 116, 139);
-            this._releaseButton.Margin = new Padding(0, 0, 12, 0);
-            this._releaseButton.Name = "_releaseButton";
-            this._releaseButton.Size = new Size(210, 42);
-            this._releaseButton.TabIndex = 1;
-            this._releaseButton.Text = "释放控制权（待接入）";
-            this.refreshButton.BackColor = Color.FromArgb(29, 78, 216);
-            refreshButton.DefaultBack = Color.FromArgb(29, 78, 216);
-            this.refreshButton.Cursor = Cursors.Hand;
-            this.refreshButton.BorderWidth = 0;
-            this.refreshButton.BackActive = Color.FromArgb(30, 64, 175);
-            this.refreshButton.BackHover = Color.FromArgb(30, 64, 175);
-            this.refreshButton.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
-            this.refreshButton.ForeColor = Color.White;
-            this.refreshButton.Margin = new Padding(0);
-            this.refreshButton.Name = "refreshButton";
-            this.refreshButton.Size = new Size(150, 42);
-            this.refreshButton.TabIndex = 2;
-            this.refreshButton.Text = "刷新状态";
-            this.refreshButton.Click += RefreshButton_Click;
-            this._hintLabel.Dock = DockStyle.Fill;
-            this._hintLabel.Font = new Font("Microsoft YaHei UI", 9F);
-            this._hintLabel.ForeColor = Color.FromArgb(154, 52, 18);
-            this._hintLabel.Margin = new Padding(0);
-            this._hintLabel.Name = "_hintLabel";
-            this._hintLabel.Text = "本站身份在系统配置中设置；PLC 申请、释放接口尚未定义，暂不可操作。";
-            this._hintLabel.TextAlign = ContentAlignment.MiddleLeft;
-            //
-            // rulesGroup / rulesLayout
-            //
-            this.rulesGroup.BackColor = Color.White;
-            this.rulesGroup.Controls.Add(rulesLayout);
-            this.rulesGroup.Dock = DockStyle.Fill;
-            this.rulesGroup.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
-            this.rulesGroup.Margin = new Padding(0);
-            this.rulesGroup.Name = "rulesGroup";
-            this.rulesGroup.Padding = new Padding(20, 32, 20, 15);
-            this.rulesGroup.Size = new Size(1340, 465);
-            this.rulesGroup.TabIndex = 3;
-            this.rulesGroup.TabStop = false;
-            // AntdUI 面板用独立标题标签保留原分组标题，布局仍可在 Designer 编辑。
-            rulesGroupCaption.Text = "三站控制优先级与授权规则";
-            rulesGroupCaption.AutoSize = true;
-            rulesGroupCaption.Name = "rulesGroupCaption";
-            rulesGroupCaption.Location = new Point(10, 2);
-            rulesGroupCaption.ForeColor = Color.FromArgb(15, 23, 42);
-            rulesGroup.BorderWidth = 1F;
+            actionGroup.Dock = DockStyle.Fill;
+            actionGroup.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
+            actionGroup.Location = new Point(20, 280);
+            actionGroup.Margin = new Padding(0, 0, 0, 12);
+            actionGroup.Name = "actionGroup";
+            actionGroup.Padding = new Padding(20, 32, 20, 15);
+            actionGroup.Size = new Size(1340, 148);
+            actionGroup.TabIndex = 2;
+            actionGroup.TabStop = false;
+            // 
+            // actionGroupCaption
+            // 
+            actionGroupCaption.AutoSizeMode = AntdUI.TAutoSize.Auto;
+            actionGroupCaption.ForeColor = Color.FromArgb(15, 23, 42);
+            actionGroupCaption.Location = new Point(10, 2);
+            actionGroupCaption.Name = "actionGroupCaption";
+            actionGroupCaption.Size = new Size(80, 21);
+            actionGroupCaption.TabIndex = 1;
+            actionGroupCaption.Text = "控制权操作";
+            // 
+            // rulesGroup
+            // 
+            rulesGroup.BackColor = Color.White;
             rulesGroup.BorderColor = Color.FromArgb(203, 213, 225);
-            rulesGroup.Radius = 6;
+            rulesGroup.BorderWidth = 1F;
+            rulesGroup.Controls.Add(rulesLayout);
             rulesGroup.Controls.Add(rulesGroupCaption);
-            rulesGroupCaption.BringToFront();
-            this.rulesLayout.ColumnCount = 2;
-            this.rulesLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 170F));
-            this.rulesLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            this.rulesLayout.Controls.Add(priorityLabel, 0, 0);
-            this.rulesLayout.Controls.Add(centralCaptionLabel, 0, 1);
-            this.rulesLayout.Controls.Add(centralRuleLabel, 1, 1);
-            this.rulesLayout.Controls.Add(localCaptionLabel, 0, 2);
-            this.rulesLayout.Controls.Add(localRuleLabel, 1, 2);
-            this.rulesLayout.Controls.Add(remoteCaptionLabel, 0, 3);
-            this.rulesLayout.Controls.Add(remoteRuleLabel, 1, 3);
-            this.rulesLayout.Controls.Add(plcResponsibilityLabel, 0, 4);
-            this.rulesLayout.Dock = DockStyle.Fill;
-            this.rulesLayout.Font = new Font("Microsoft YaHei UI", 9F);
-            this.rulesLayout.Margin = new Padding(0);
-            this.rulesLayout.Name = "rulesLayout";
-            this.rulesLayout.Size = new Size(1300, 425);
-            this.rulesLayout.RowCount = 5;
-            this.rulesLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 48F));
-            this.rulesLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 33.33333F));
-            this.rulesLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 33.33333F));
-            this.rulesLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 33.33334F));
-            this.rulesLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
-            this.rulesLayout.SetColumnSpan(priorityLabel, 2);
-            this.priorityLabel.Dock = DockStyle.Fill;
-            this.priorityLabel.Font = new Font("Microsoft YaHei UI", 11F, FontStyle.Bold);
-            this.priorityLabel.ForeColor = Color.FromArgb(29, 78, 216);
-            this.priorityLabel.Name = "priorityLabel";
-            this.priorityLabel.Text = "造波控制室操作 ＞ 拖车本地操作 ＞ 远程操作室操作";
-            this.priorityLabel.TextAlign = ContentAlignment.MiddleLeft;
-            this.centralCaptionLabel.Dock = DockStyle.Fill;
-            this.centralCaptionLabel.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
-            this.centralCaptionLabel.Name = "centralCaptionLabel";
-            this.centralCaptionLabel.Text = "最高 · 造波控制室";
-            this.centralCaptionLabel.TextAlign = ContentAlignment.MiddleLeft;
-            this.centralRuleLabel.Dock = DockStyle.Fill;
-            this.centralRuleLabel.Name = "centralRuleLabel";
-            this.centralRuleLabel.Text = "中心控制室处于主控模式时，仅中心控制室指令有效；PLC 自动锁定、屏蔽拖车本地及远程操作室全部操作权限。";
-            this.centralRuleLabel.TextAlign = ContentAlignment.MiddleLeft;
-            this.localCaptionLabel.Dock = DockStyle.Fill;
-            this.localCaptionLabel.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
-            this.localCaptionLabel.Name = "localCaptionLabel";
-            this.localCaptionLabel.Text = "中间 · 拖车本地";
-            this.localCaptionLabel.TextAlign = ContentAlignment.MiddleLeft;
-            this.localRuleLabel.Dock = DockStyle.Fill;
-            this.localRuleLabel.Name = "localRuleLabel";
-            this.localRuleLabel.Text = "中心控制室解除主控并开放本地授权后，本地操作方可生效，用于检修、调试及局部试验；此时远程操作仍锁定。";
-            this.localRuleLabel.TextAlign = ContentAlignment.MiddleLeft;
-            this.remoteCaptionLabel.Dock = DockStyle.Fill;
-            this.remoteCaptionLabel.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
-            this.remoteCaptionLabel.Name = "remoteCaptionLabel";
-            this.remoteCaptionLabel.Text = "最低 · 远程操作室";
-            this.remoteCaptionLabel.TextAlign = ContentAlignment.MiddleLeft;
-            this.remoteRuleLabel.Dock = DockStyle.Fill;
-            this.remoteRuleLabel.Name = "remoteRuleLabel";
-            this.remoteRuleLabel.Text = "中心控制室与拖车本地均解除主控，并开启远程授权后，远程方可操作；任意高优先级站点介入主控，PLC 立即使远程权限失效并锁定。";
-            this.remoteRuleLabel.TextAlign = ContentAlignment.MiddleLeft;
-            this.rulesLayout.SetColumnSpan(plcResponsibilityLabel, 2);
-            this.plcResponsibilityLabel.Dock = DockStyle.Fill;
-            this.plcResponsibilityLabel.ForeColor = Color.FromArgb(100, 116, 139);
-            this.plcResponsibilityLabel.Name = "plcResponsibilityLabel";
-            this.plcResponsibilityLabel.Text = "优先级仲裁、授权、锁定与接管均由 PLC 执行，上位机依据 PLC 反馈显示状态。";
-            this.plcResponsibilityLabel.TextAlign = ContentAlignment.MiddleLeft;
-            //
+            rulesGroup.Dock = DockStyle.Fill;
+            rulesGroup.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
+            rulesGroup.Location = new Point(20, 440);
+            rulesGroup.Margin = new Padding(0);
+            rulesGroup.Name = "rulesGroup";
+            rulesGroup.Padding = new Padding(20, 32, 20, 15);
+            rulesGroup.Size = new Size(1340, 465);
+            rulesGroup.TabIndex = 3;
+            rulesGroup.TabStop = false;
+            // 
+            // rulesLayout
+            // 
+            rulesLayout.ColumnCount = 2;
+            rulesLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 170F));
+            rulesLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            rulesLayout.Controls.Add(priorityLabel, 0, 0);
+            rulesLayout.Controls.Add(centralCaptionLabel, 0, 1);
+            rulesLayout.Controls.Add(centralRuleLabel, 1, 1);
+            rulesLayout.Controls.Add(localCaptionLabel, 0, 2);
+            rulesLayout.Controls.Add(localRuleLabel, 1, 2);
+            rulesLayout.Controls.Add(remoteCaptionLabel, 0, 3);
+            rulesLayout.Controls.Add(remoteRuleLabel, 1, 3);
+            rulesLayout.Controls.Add(plcResponsibilityLabel, 0, 4);
+            rulesLayout.Dock = DockStyle.Fill;
+            rulesLayout.Font = new Font("Microsoft YaHei UI", 9F);
+            rulesLayout.Location = new Point(22, 34);
+            rulesLayout.Margin = new Padding(0);
+            rulesLayout.Name = "rulesLayout";
+            rulesLayout.RowCount = 5;
+            rulesLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 48F));
+            rulesLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 33.33333F));
+            rulesLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 33.33333F));
+            rulesLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 33.33334F));
+            rulesLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
+            rulesLayout.Size = new Size(1296, 414);
+            rulesLayout.TabIndex = 0;
+            // 
+            // priorityLabel
+            // 
+            rulesLayout.SetColumnSpan(priorityLabel, 2);
+            priorityLabel.Dock = DockStyle.Fill;
+            priorityLabel.Font = new Font("Microsoft YaHei UI", 11F, FontStyle.Bold);
+            priorityLabel.ForeColor = Color.FromArgb(29, 78, 216);
+            priorityLabel.Location = new Point(3, 3);
+            priorityLabel.Name = "priorityLabel";
+            priorityLabel.Size = new Size(1290, 42);
+            priorityLabel.TabIndex = 0;
+            priorityLabel.Text = "造波控制室操作 ＞ 拖车本地操作 ＞ 远程操作室操作";
+            // 
+            // centralCaptionLabel
+            // 
+            centralCaptionLabel.Dock = DockStyle.Fill;
+            centralCaptionLabel.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
+            centralCaptionLabel.Location = new Point(3, 51);
+            centralCaptionLabel.Name = "centralCaptionLabel";
+            centralCaptionLabel.Size = new Size(164, 102);
+            centralCaptionLabel.TabIndex = 1;
+            centralCaptionLabel.Text = "最高 · 造波控制室";
+            // 
+            // centralRuleLabel
+            // 
+            centralRuleLabel.Dock = DockStyle.Fill;
+            centralRuleLabel.Location = new Point(173, 51);
+            centralRuleLabel.Name = "centralRuleLabel";
+            centralRuleLabel.Size = new Size(1120, 102);
+            centralRuleLabel.TabIndex = 2;
+            centralRuleLabel.Text = "中心控制室处于主控模式时，仅中心控制室指令有效；PLC 自动锁定、屏蔽拖车本地及远程操作室全部操作权限。";
+            // 
+            // localCaptionLabel
+            // 
+            localCaptionLabel.Dock = DockStyle.Fill;
+            localCaptionLabel.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
+            localCaptionLabel.Location = new Point(3, 159);
+            localCaptionLabel.Name = "localCaptionLabel";
+            localCaptionLabel.Size = new Size(164, 102);
+            localCaptionLabel.TabIndex = 3;
+            localCaptionLabel.Text = "中间 · 拖车本地";
+            // 
+            // localRuleLabel
+            // 
+            localRuleLabel.Dock = DockStyle.Fill;
+            localRuleLabel.Location = new Point(173, 159);
+            localRuleLabel.Name = "localRuleLabel";
+            localRuleLabel.Size = new Size(1120, 102);
+            localRuleLabel.TabIndex = 4;
+            localRuleLabel.Text = "中心控制室解除主控并开放本地授权后，本地操作方可生效，用于检修、调试及局部试验；此时远程操作仍锁定。";
+            // 
+            // remoteCaptionLabel
+            // 
+            remoteCaptionLabel.Dock = DockStyle.Fill;
+            remoteCaptionLabel.Font = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold);
+            remoteCaptionLabel.Location = new Point(3, 267);
+            remoteCaptionLabel.Name = "remoteCaptionLabel";
+            remoteCaptionLabel.Size = new Size(164, 102);
+            remoteCaptionLabel.TabIndex = 5;
+            remoteCaptionLabel.Text = "最低 · 远程操作室";
+            // 
+            // remoteRuleLabel
+            // 
+            remoteRuleLabel.Dock = DockStyle.Fill;
+            remoteRuleLabel.Location = new Point(173, 267);
+            remoteRuleLabel.Name = "remoteRuleLabel";
+            remoteRuleLabel.Size = new Size(1120, 102);
+            remoteRuleLabel.TabIndex = 6;
+            remoteRuleLabel.Text = "中心控制室与拖车本地均解除主控，并开启远程授权后，远程方可操作；任意高优先级站点介入主控，PLC 立即使远程权限失效并锁定。";
+            // 
+            // plcResponsibilityLabel
+            // 
+            rulesLayout.SetColumnSpan(plcResponsibilityLabel, 2);
+            plcResponsibilityLabel.Dock = DockStyle.Fill;
+            plcResponsibilityLabel.ForeColor = Color.FromArgb(100, 116, 139);
+            plcResponsibilityLabel.Location = new Point(3, 375);
+            plcResponsibilityLabel.Name = "plcResponsibilityLabel";
+            plcResponsibilityLabel.Size = new Size(1290, 36);
+            plcResponsibilityLabel.TabIndex = 7;
+            plcResponsibilityLabel.Text = "优先级仲裁、授权、锁定与接管均由 PLC 执行，上位机依据 PLC 反馈显示状态。";
+            // 
+            // rulesGroupCaption
+            // 
+            rulesGroupCaption.AutoSizeMode = AntdUI.TAutoSize.Auto;
+            rulesGroupCaption.ForeColor = Color.FromArgb(15, 23, 42);
+            rulesGroupCaption.Location = new Point(10, 2);
+            rulesGroupCaption.Name = "rulesGroupCaption";
+            rulesGroupCaption.Size = new Size(190, 21);
+            rulesGroupCaption.TabIndex = 1;
+            rulesGroupCaption.Text = "三站控制优先级与授权规则";
+            // 
+            // actionButtons
+            // 
+            actionButtons.Controls.Add(_requestButton);
+            actionButtons.Controls.Add(_releaseButton);
+            actionButtons.Controls.Add(refreshButton);
+            actionButtons.Dock = DockStyle.Fill;
+            actionButtons.Location = new Point(0, 0);
+            actionButtons.Margin = new Padding(0);
+            actionButtons.Name = "actionButtons";
+            actionButtons.Size = new Size(1296, 97);
+            actionButtons.TabIndex = 0;
+            actionButtons.WrapContents = false;
+            // 
+            // refreshButton
+            // 
+            refreshButton.BackActive = Color.FromArgb(30, 64, 175);
+            refreshButton.BackColor = Color.FromArgb(29, 78, 216);
+            refreshButton.BackHover = Color.FromArgb(30, 64, 175);
+            refreshButton.Cursor = Cursors.Hand;
+            refreshButton.DefaultBack = Color.FromArgb(29, 78, 216);
+            refreshButton.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
+            refreshButton.ForeColor = Color.White;
+            refreshButton.Location = new Point(444, 0);
+            refreshButton.Margin = new Padding(0);
+            refreshButton.Name = "refreshButton";
+            refreshButton.Size = new Size(150, 42);
+            refreshButton.TabIndex = 2;
+            refreshButton.Text = "刷新状态";
+            refreshButton.Click += RefreshButton_Click;
+            // 
+            // _releaseButton
+            // 
+            _releaseButton.BackColor = Color.FromArgb(248, 250, 252);
+            _releaseButton.BorderWidth = 1F;
+            _releaseButton.DefaultBack = Color.FromArgb(248, 250, 252);
+            _releaseButton.DefaultBorderColor = Color.FromArgb(203, 213, 225);
+            _releaseButton.Enabled = false;
+            _releaseButton.Font = new Font("Microsoft YaHei UI", 9F);
+            _releaseButton.ForeColor = Color.FromArgb(100, 116, 139);
+            _releaseButton.Location = new Point(222, 0);
+            _releaseButton.Margin = new Padding(0, 0, 12, 0);
+            _releaseButton.Name = "_releaseButton";
+            _releaseButton.Size = new Size(210, 42);
+            _releaseButton.TabIndex = 1;
+            _releaseButton.Text = "释放控制权（待接入）";
+            // 
+            // _requestButton
+            // 
+            _requestButton.BackColor = Color.FromArgb(248, 250, 252);
+            _requestButton.BorderWidth = 1F;
+            _requestButton.DefaultBack = Color.FromArgb(248, 250, 252);
+            _requestButton.DefaultBorderColor = Color.FromArgb(203, 213, 225);
+            _requestButton.Dock = DockStyle.Fill;
+            _requestButton.Enabled = false;
+            _requestButton.Font = new Font("Microsoft YaHei UI", 9F);
+            _requestButton.ForeColor = Color.FromArgb(100, 116, 139);
+            _requestButton.Location = new Point(0, 0);
+            _requestButton.Margin = new Padding(0, 0, 12, 0);
+            _requestButton.Name = "_requestButton";
+            _requestButton.Size = new Size(210, 42);
+            _requestButton.TabIndex = 0;
+            _requestButton.Text = "申请控制权（待接入）";
+            // 
+            // actionLayout
+            // 
+            actionLayout.ColumnCount = 1;
+            actionLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            actionLayout.Controls.Add(actionButtons, 0, 0);
+            actionLayout.Dock = DockStyle.Fill;
+            actionLayout.Location = new Point(22, 34);
+            actionLayout.Margin = new Padding(0);
+            actionLayout.Name = "actionLayout";
+            actionLayout.RowCount = 1;
+            actionLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 55F));
+            actionLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            actionLayout.Size = new Size(1296, 97);
+            actionLayout.TabIndex = 0;
+            // 
             // ControlAuthority
-            //
-            this.AutoScaleDimensions = new SizeF(120F, 120F);
-            this.AutoScaleMode = AutoScaleMode.Dpi;
-            this.AutoScroll = true;
-            this.AutoScrollMinSize = new Size(1100, 850);
-            this.BackColor = Color.FromArgb(241, 245, 249);
-            this.Controls.Add(pagePanel);
-            this.Font = new Font("Microsoft YaHei UI", 9F);
-            this.ForeColor = Color.FromArgb(15, 23, 42);
-            this.Margin = new Padding(4);
-            this.Name = "ControlAuthority";
-            this.Size = new Size(1380, 925);
-            this.pagePanel.ResumeLayout(true);
-            this.rootLayout.ResumeLayout(true);
-            this.headerPanel.ResumeLayout(true);
-            this.statusGroup.ResumeLayout(true);
-            this.statusLayout.ResumeLayout(true);
-            this.actionGroup.ResumeLayout(true);
-            this.actionLayout.ResumeLayout(true);
-            this.actionButtons.ResumeLayout(true);
-            this.rulesGroup.ResumeLayout(true);
-            this.rulesLayout.ResumeLayout(true);
-            this.ResumeLayout(true);
+            // 
+            AutoScaleDimensions = new SizeF(120F, 120F);
+            AutoScaleMode = AutoScaleMode.Dpi;
+            AutoScroll = true;
+            AutoScrollMinSize = new Size(1100, 850);
+            BackColor = Color.FromArgb(241, 245, 249);
+            Controls.Add(pagePanel);
+            Font = new Font("Microsoft YaHei UI", 9F);
+            ForeColor = Color.FromArgb(15, 23, 42);
+            Margin = new Padding(4);
+            Name = "ControlAuthority";
+            Size = new Size(1380, 925);
+            pagePanel.ResumeLayout(false);
+            rootLayout.ResumeLayout(false);
+            headerPanel.ResumeLayout(false);
+            statusGroup.ResumeLayout(false);
+            statusGroup.PerformLayout();
+            statusLayout.ResumeLayout(false);
+            actionGroup.ResumeLayout(false);
+            actionGroup.PerformLayout();
+            rulesGroup.ResumeLayout(false);
+            rulesGroup.PerformLayout();
+            rulesLayout.ResumeLayout(false);
+            actionButtons.ResumeLayout(false);
+            actionLayout.ResumeLayout(false);
+            ResumeLayout(false);
         }
 
         #endregion
@@ -460,12 +604,6 @@ namespace Page_switching
         private AntdUI.Label _watchdogValue;
         private AntdUI.Panel actionGroup;
         private AntdUI.Label actionGroupCaption;
-        private TableLayoutPanel actionLayout;
-        private FlowLayoutPanel actionButtons;
-        private AntdUI.Button _requestButton;
-        private AntdUI.Button _releaseButton;
-        private AntdUI.Button refreshButton;
-        private AntdUI.Label _hintLabel;
         private AntdUI.Panel rulesGroup;
         private AntdUI.Label rulesGroupCaption;
         private TableLayoutPanel rulesLayout;
@@ -477,5 +615,10 @@ namespace Page_switching
         private AntdUI.Label remoteCaptionLabel;
         private AntdUI.Label remoteRuleLabel;
         private AntdUI.Label plcResponsibilityLabel;
+        private TableLayoutPanel actionLayout;
+        private FlowLayoutPanel actionButtons;
+        private AntdUI.Button _requestButton;
+        private AntdUI.Button _releaseButton;
+        private AntdUI.Button refreshButton;
     }
 }

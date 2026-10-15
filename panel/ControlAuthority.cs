@@ -53,9 +53,9 @@ namespace Page_switching
 
         private void RefreshButton_Click(object? sender, EventArgs e)
         {
-            _hintLabel.Text = "已请求刷新控制权反馈；PLC 申请、释放接口待定义，暂不可操作。";
+          
             if (LicenseManager.UsageMode != LicenseUsageMode.Designtime)
-                OperationJournal.Record("控制权申请", _hintLabel.Text);
+
             RefreshRequested?.Invoke(this, EventArgs.Empty);
         }
 
