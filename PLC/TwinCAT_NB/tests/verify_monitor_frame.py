@@ -18,7 +18,7 @@ class MonitorFrameChecks(unittest.TestCase):
             return re.findall(r"^\s*(\w+)\s*:\s*(\w+)\s*;", text, re.M)
         axis = fields("ST_AxisMonitor")
         self.assertEqual(axis, [("lrActualPosition", "LREAL"), ("lrSpeed", "LREAL"), ("xHomed", "BOOL"),
-                               ("xError", "BOOL"), ("xPositiveLimit", "BOOL"), ("xNegativeLimit", "BOOL"), ("xOriginSignal", "BOOL")])
+                               ("xError", "BOOL"), ("xPositiveLimit", "BOOL"), ("xNegativeLimit", "BOOL"), ("xOriginSignal", "BOOL"), ("xEnabled", "BOOL")])
         frame = fields("ST_MachineMonitor")
         self.assertEqual(frame, [("nVersion", "UINT"), ("nByteSize", "UINT"), ("nControlOwner", "UINT"),
             ("nControlMode", "UINT"), ("nWaveState", "UINT"), ("uiWaveFaultCode", "UINT"), ("udiHeartbeat", "UDINT")]
@@ -27,6 +27,7 @@ class MonitorFrameChecks(unittest.TestCase):
         for i in range(1, 5):
             for member, _ in axis:
                 self.assertIn(f"GVL_HMI.stMonitor.Axis{i}.{member} := GVL_axis.Axis{i}.{member};", source)
+        self.assertIn("GVL_HMI.stMonitor.nVersion := 2;", source)
         self.assertIn("nByteSize := SIZEOF(GVL_HMI.stMonitor)", source)
         project = ET.parse(ROOT / "axis_4/axis_4.plcproj")
         includes = [n.get("Include") for n in project.findall(".//{*}Compile")]
@@ -37,7 +38,7 @@ class MonitorFrameChecks(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix="TwinCAT_MonitorLayout_") as directory:
             folder = Path(directory)
             links = "".join(f'<Compile Include="{escape(str(SWITCH / "Axis" / name))}" />'
-                            for name in ("PlcMachineMonitor.cs", "MachineMonitorSnapshot.cs"))
+                            for name in ("PlcMachineMonitor.cs", "MachineMonitorSnapshot.cs", "AxisSnapshot.cs"))
             (folder / "Probe.csproj").write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup>'
                 '<OutputType>Exe</OutputType><TargetFramework>net8.0</TargetFramework>'
                 '<ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable>'

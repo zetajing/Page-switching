@@ -168,4 +168,4 @@ PC 使用 ADS 原始块写入时，先解析 aUpload 的实际 IndexGroup/IndexO
 
 ## 整块监控接口
 
-`GVL_HMI.stMonitor` 为 `ST_MachineMonitor`，版本 1 / 100 字节，按 1 字节对齐；嵌套四个 `ST_AxisMonitor`（每轴 21 字节）。FB_HmiFeedback 在四轴块执行后集中发布，全局心跳保持约 500 ms 递增。上位机通过 AdsMonitorSnapshot 配置一次读取，失败时整帧不可用，布局版本不符时提示更新 PLC。旧五项独立监控变量和 GVL_pc 兼容层已删除，保留完整故障码及轨迹诊断；控制命令仍进入授权站邮箱。整块读不保证跨任务原子快照，未部署前不能报告实测提速。
+`GVL_HMI.stMonitor` 为 `ST_MachineMonitor`，版本 2 / 104 字节，按 1 字节对齐；嵌套四个 `ST_AxisMonitor`（每轴 22 字节）。FB_HmiFeedback 在四轴块执行后集中发布，全局心跳保持约 500 ms 递增。上位机通过 AdsMonitorSnapshot 配置一次读取，失败时整帧不可用，布局版本不符时提示更新 PLC。旧五项独立监控变量和 GVL_pc 兼容层已删除，保留完整故障码及轨迹诊断；控制命令仍进入授权站邮箱。整块读不保证跨任务原子快照，未部署前不能报告实测提速。

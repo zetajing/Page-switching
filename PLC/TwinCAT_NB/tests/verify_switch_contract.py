@@ -34,7 +34,7 @@ class SwitchContractChecks(unittest.TestCase):
         fields = declared_fields(ROOT / "axis_4/DUTs/ST_AxisAds.TcDUT")
         commands = declared_fields(ROOT / "axis_4/DUTs/ST_AxisCommand.TcDUT")
         globals_ = declared_fields(ROOT / "axis_4/GVLs/GVL_axis.TcGVL")
-        # 四轴 60 个配置地址逐一检查，避免“使能=运动”或正反方向映射错误。
+        # 只保留四轴命令地址；所有旧反馈配置必须移除，反馈改读 stMonitor。
         expected = {
             "ActualPosition": ("lrActualPosition", "LREAL"), "Speed": ("lrSpeed", "LREAL"),
             "Enabled": ("xEnabled", "BOOL"), "Homed": ("xHomed", "BOOL"),
@@ -53,7 +53,7 @@ class SwitchContractChecks(unittest.TestCase):
                                      f"GVL_control.aStation[{{station}}].aAxis[{axis}].{member}")
                     self.assertEqual(commands[member], plc_type)
                 else:
-                    self.assertEqual(self.settings[f"AdsAxis{axis}{key}"], f"GVL_axis.Axis{axis}.{member}")
+                    self.assertNotIn(f"AdsAxis{axis}{key}", self.settings)
                     self.assertEqual(fields[member], plc_type)
         # xEnabled 必须来自 Power 状态，不能用运动位代替。
         axis_source = ET.parse(ROOT / "axis_4/POUs/FB_AxisControl.TcPOU").findtext(".//ST")

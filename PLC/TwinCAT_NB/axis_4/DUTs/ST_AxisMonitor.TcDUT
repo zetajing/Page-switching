@@ -4,7 +4,7 @@
     <Declaration><![CDATA[{attribute 'pack_mode' := '1'}
 TYPE ST_AxisMonitor :
 STRUCT
-    // 仅反馈，固定 21 字节；顺序与 C# PlcAxisMonitor 完全一致。
+    // 仅反馈，固定 22 字节；顺序与 C# PlcAxisMonitor 完全一致。
     lrActualPosition : LREAL;
     lrSpeed : LREAL;
     xHomed : BOOL;
@@ -12,6 +12,7 @@ STRUCT
     xPositiveLimit : BOOL;
     xNegativeLimit : BOOL;
     xOriginSignal : BOOL;
+    xEnabled : BOOL; // MC_Power.Status，使能反馈，不以运动位代替。
 END_STRUCT
 END_TYPE]]></Declaration>
   </DUT>

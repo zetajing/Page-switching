@@ -4,7 +4,7 @@
     <Declaration><![CDATA[{attribute 'pack_mode' := '1'}
 TYPE ST_MachineMonitor :
 STRUCT
-    // 布局版本 1，总长 100 字节；修改字段时须同步上位机并升级版本。
+    // 布局版本 2，总长 104 字节；修改字段时须同步上位机并升级版本。
     nVersion : UINT;
     nByteSize : UINT;
     nControlOwner : UINT;

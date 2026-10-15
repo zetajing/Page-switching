@@ -13,6 +13,7 @@ public struct PlcAxisMonitor
     [MarshalAs(UnmanagedType.I1)] public bool PositiveLimit;
     [MarshalAs(UnmanagedType.I1)] public bool NegativeLimit;
     [MarshalAs(UnmanagedType.I1)] public bool OriginSignal;
+    [MarshalAs(UnmanagedType.I1)] public bool Enabled;
 
     internal MachineAxisSnapshot ToSnapshot(int number) => new()
     {
@@ -26,17 +27,35 @@ public struct PlcAxisMonitor
         OriginSignal = new(OriginSignal, true)
     };
 
+    // 手动页保留现有状态显示语义，无效数值显示为空，不伪造零位置。
+    internal AxisSnapshot ToAxisSnapshot(int number) => new(number)
+    {
+        ActualPosition = double.IsFinite(ActualPosition) ? ActualPosition : null,
+        Speed = double.IsFinite(Speed) ? Speed : null,
+        IsEnabled = Enabled,
+        IsHomed = Homed,
+        HasAlarm = Alarm,
+        PositiveLimit = PositiveLimit,
+        NegativeLimit = NegativeLimit,
+        PositiveLimitAvailable = true,
+        NegativeLimitAvailable = true,
+        OriginSignal = OriginSignal,
+        StatusText = Alarm ? "报警" : PositiveLimit || NegativeLimit ? "限位"
+            : !double.IsFinite(ActualPosition) || !double.IsFinite(Speed) ? "反馈数值无效"
+            : !Enabled ? "未使能" : !Homed ? "未回零" : "就绪"
+    };
+
     // 单个非有限数值失效，其余有效反馈仍可显示。
     private static FeedbackField<double> Number(double value) => double.IsFinite(value)
         ? new(value, true) : FeedbackField<double>.Unavailable("反馈数值无效");
 }
 
-// 与 PLC ST_MachineMonitor 完全同序，固定 100 字节；嵌套轴也是 Pack=1。
+// 与 PLC ST_MachineMonitor 完全同序，固定 104 字节；嵌套轴也是 Pack=1。
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
 public struct PlcMachineMonitor
 {
-    public const ushort LayoutVersion = 1;
-    public const ushort ByteSize = 100;
+    public const ushort LayoutVersion = 2;
+    public const ushort ByteSize = 104;
     public ushort Version;
     public ushort Size;
     public ushort ControlOwner;
@@ -49,10 +68,22 @@ public struct PlcMachineMonitor
     public PlcAxisMonitor Axis3;
     public PlcAxisMonitor Axis4;
 
-    internal MachineMonitorSnapshot ToSnapshot(bool includeAxes)
+    // 两个页面共用同一布局验证；旧版帧不能被解释成新版轴数据。
+    private readonly void ValidateLayout()
     {
         if (Version != LayoutVersion || Size != ByteSize)
             throw new InvalidOperationException($"监控结构体布局不匹配：版本={Version}，字节数={Size}，要求 {LayoutVersion}/{ByteSize}；请更新配套 PLC。");
+    }
+
+    internal IReadOnlyList<AxisSnapshot> ToAxisSnapshots()
+    {
+        ValidateLayout();
+        return new[] { Axis1.ToAxisSnapshot(1), Axis2.ToAxisSnapshot(2), Axis3.ToAxisSnapshot(3), Axis4.ToAxisSnapshot(4) };
+    }
+
+    internal MachineMonitorSnapshot ToSnapshot(bool includeAxes)
+    {
+        ValidateLayout();
         var axes = includeAxes ? new[] { Axis1.ToSnapshot(1), Axis2.ToSnapshot(2), Axis3.ToSnapshot(3), Axis4.ToSnapshot(4) }
             : Array.Empty<MachineAxisSnapshot>();
         var invalidNumber = axes.Any(axis => !axis.ActualPosition.IsAvailable || !axis.Speed.IsAvailable);

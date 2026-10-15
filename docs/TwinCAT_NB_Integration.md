@@ -73,10 +73,10 @@ PC 写完一段四轴数据后，用 nUploadOffset、nUploadCount 和 xUpload �
 5. 使能后不点动，确认 Enabled 仍为 TRUE、位置和速度正常；再逐轴低速验证正负方向、松键停车、停止、回原和复位。
 6. 验证轨迹占用时手动命令互锁、故障码发布和解除后的清零。自动造波界面保持本次之前的行为。
 
-离线检查：在配套 PLC 目录运行 `python -m unittest discover -s tests -p 'verify_*.py' -v`。其中 `verify_upload_assembly.py` 直接解释实际 ST 状态 0/5，检查接收、统一拼接和异常恢复；内存复制使用范围受检的模拟器。外部目录可用环境变量 `SWITCH_PROJECT` 指定本仓库。契约检查覆盖实际 App.config 中的 60 个轴地址和 5 个全局地址、PLC 类型、反馈调用顺序及只读边界；它不执行完整 PLC/NC 状态机或验证实际 ADS 数据传输。
+离线检查：在配套 PLC 目录运行 `python -m unittest discover -s tests -p 'verify_*.py' -v`。其中 `verify_upload_assembly.py` 直接解释实际 ST 状态 0/5，检查接收、统一拼接和异常恢复；内存复制使用范围受检的模拟器。外部目录可用环境变量 `SWITCH_PROJECT` 指定本仓库。契约检查覆盖实际 App.config 中的 28 个轴命令地址和一个监控结构体地址、PLC 类型、反馈调用顺序及只读边界；它不执行完整 PLC/NC 状态机或验证实际 ADS 数据传输。
 
 上位机 Release 编译通过不等于实机对接完成；本次没有下载 PLC、写现场轴命令或验证 2 ms 实时性能。控制权规则检查脚本为 `tests/verify_control_authority.py`。
 
 ## 整块监控读取（2026-10-15）
 
-只读监控每轮从 `GVL_HMI.stMonitor` 读取一次，Config 键为 `AdsMonitorSnapshot`；版本 1 / 100 字节，PLC 和 C# 均按 1 字节对齐。旧独立监控变量及 GVL_pc 兼容层已删除；手动页使用的 GVL_axis 反馈及控制命令地址不变。必须先部署新增 DUT、GVL 和反馈发布逻辑，完整布局及验收见 [监控契约](PlcMonitoringContract.md)。
+只读监控每轮从 `GVL_HMI.stMonitor` 读取一次，Config 键为 `AdsMonitorSnapshot`；版本 2 / 104 字节，PLC 和 C# 均按 1 字节对齐。旧独立监控变量及 GVL_pc 兼容层已删除；手动页统一读取该结构体；32 项旧轴反馈地址已删除，控制命令地址保留。必须先部署新增 DUT、GVL 和反馈发布逻辑，完整布局及验收见 [监控契约](PlcMonitoringContract.md)。

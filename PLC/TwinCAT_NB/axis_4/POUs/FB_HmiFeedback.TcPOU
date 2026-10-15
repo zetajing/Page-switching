@@ -80,7 +80,7 @@ GVL_HMI.xTrajectoryBusy := GVL_motion.xBusy;
 
 // 6. 整块接口固定布局，轴反馈从本扫描实际结果集中发布。
 // 普通 ADS 读取不声明为跨任务原子快照。
-GVL_HMI.stMonitor.nVersion := 1;
+GVL_HMI.stMonitor.nVersion := 2;
 GVL_HMI.stMonitor.nByteSize := SIZEOF(GVL_HMI.stMonitor);
 GVL_HMI.stMonitor.Axis1.lrActualPosition := GVL_axis.Axis1.lrActualPosition;
 GVL_HMI.stMonitor.Axis1.lrSpeed := GVL_axis.Axis1.lrSpeed;
@@ -89,6 +89,7 @@ GVL_HMI.stMonitor.Axis1.xError := GVL_axis.Axis1.xError;
 GVL_HMI.stMonitor.Axis1.xPositiveLimit := GVL_axis.Axis1.xPositiveLimit;
 GVL_HMI.stMonitor.Axis1.xNegativeLimit := GVL_axis.Axis1.xNegativeLimit;
 GVL_HMI.stMonitor.Axis1.xOriginSignal := GVL_axis.Axis1.xOriginSignal;
+GVL_HMI.stMonitor.Axis1.xEnabled := GVL_axis.Axis1.xEnabled;
 GVL_HMI.stMonitor.Axis2.lrActualPosition := GVL_axis.Axis2.lrActualPosition;
 GVL_HMI.stMonitor.Axis2.lrSpeed := GVL_axis.Axis2.lrSpeed;
 GVL_HMI.stMonitor.Axis2.xHomed := GVL_axis.Axis2.xHomed;
@@ -96,6 +97,7 @@ GVL_HMI.stMonitor.Axis2.xError := GVL_axis.Axis2.xError;
 GVL_HMI.stMonitor.Axis2.xPositiveLimit := GVL_axis.Axis2.xPositiveLimit;
 GVL_HMI.stMonitor.Axis2.xNegativeLimit := GVL_axis.Axis2.xNegativeLimit;
 GVL_HMI.stMonitor.Axis2.xOriginSignal := GVL_axis.Axis2.xOriginSignal;
+GVL_HMI.stMonitor.Axis2.xEnabled := GVL_axis.Axis2.xEnabled;
 GVL_HMI.stMonitor.Axis3.lrActualPosition := GVL_axis.Axis3.lrActualPosition;
 GVL_HMI.stMonitor.Axis3.lrSpeed := GVL_axis.Axis3.lrSpeed;
 GVL_HMI.stMonitor.Axis3.xHomed := GVL_axis.Axis3.xHomed;
@@ -103,6 +105,7 @@ GVL_HMI.stMonitor.Axis3.xError := GVL_axis.Axis3.xError;
 GVL_HMI.stMonitor.Axis3.xPositiveLimit := GVL_axis.Axis3.xPositiveLimit;
 GVL_HMI.stMonitor.Axis3.xNegativeLimit := GVL_axis.Axis3.xNegativeLimit;
 GVL_HMI.stMonitor.Axis3.xOriginSignal := GVL_axis.Axis3.xOriginSignal;
+GVL_HMI.stMonitor.Axis3.xEnabled := GVL_axis.Axis3.xEnabled;
 GVL_HMI.stMonitor.Axis4.lrActualPosition := GVL_axis.Axis4.lrActualPosition;
 GVL_HMI.stMonitor.Axis4.lrSpeed := GVL_axis.Axis4.lrSpeed;
 GVL_HMI.stMonitor.Axis4.xHomed := GVL_axis.Axis4.xHomed;
@@ -110,6 +113,7 @@ GVL_HMI.stMonitor.Axis4.xError := GVL_axis.Axis4.xError;
 GVL_HMI.stMonitor.Axis4.xPositiveLimit := GVL_axis.Axis4.xPositiveLimit;
 GVL_HMI.stMonitor.Axis4.xNegativeLimit := GVL_axis.Axis4.xNegativeLimit;
 GVL_HMI.stMonitor.Axis4.xOriginSignal := GVL_axis.Axis4.xOriginSignal;
+GVL_HMI.stMonitor.Axis4.xEnabled := GVL_axis.Axis4.xEnabled;
 ]]></ST></Implementation>
   </POU>
 </TcPlcObject>

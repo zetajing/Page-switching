@@ -28,7 +28,7 @@ public sealed class MachineMonitorOptions
             AdsPort = axisOptions.AdsPort,
             ConnectTimeoutMilliseconds = axisOptions.ConnectTimeoutMilliseconds,
             RefreshTimeoutMilliseconds = refreshTimeout,
-            SnapshotSymbol = settings["AdsMonitorSnapshot"] ?? "GVL_HMI.stMonitor"
+            SnapshotSymbol = axisOptions.SnapshotSymbol
         };
     }
 }
