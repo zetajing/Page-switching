@@ -12,7 +12,6 @@ namespace Page_switching
         private readonly AxisService? _axisService;
         private readonly CancellationTokenSource _requestsCancellation = new();
         private bool _requestPending;
-        private string? _lastOperation;
 
         public ControlAuthority() : this(null) { }
 
@@ -59,23 +58,45 @@ namespace Page_switching
                 ? snapshot.Heartbeat.ToDisplayText()
                 : "--（" + snapshot.QualityText + "）";
 
+            ApplyAuthorityStatus();
+        }
+
+        // 提示与按钮始终使用同一份当前授权反馈，历史操作结果只写入日志。
+        private void ApplyAuthorityStatus()
+        {
             var authority = _axisService?.AuthorityStatus;
             var available = _axisService?.IsConnected == true && _axisService.ControlStationCode != 0
                 && authority?.IsFresh == true;
             var locked = authority?.Locked != false;
-            _requestButton.Enabled = available && !locked && !_requestPending && authority?.Granted != true;
-            _releaseButton.Enabled = available && !locked && !_requestPending && authority?.Granted == true;
+            var granted = authority?.Granted == true && authority.Owner == _axisService?.ControlStationCode;
+            _requestButton.Enabled = available && !locked && !_requestPending && !granted;
+            _releaseButton.Enabled = available && !locked && !_requestPending && granted;
             if (available)
             {
                 _ownerValue.Text = Auto.FormatControlOwner(authority!.Owner);
-                _safetyValue.Text = locked ? "运行中锁定控制权，禁止交接"
-                    : _lastOperation ?? "设备已退出运动，可提交申请或释放";
-                _safetyValue.ForeColor = locked ? UiPalette.Warning : UiPalette.Success;
+                if (granted)
+                    _safetyValue.Text = "PLC 已确认本站持有控制权";
+                else if (authority.Owner == 0)
+                    _safetyValue.Text = "PLC 当前未分配控制权，可申请";
+                else if (authority.Owner != _axisService!.ControlStationCode)
+                    _safetyValue.Text = $"{Auto.FormatControlOwner(authority.Owner)}持有控制权，本站未授权";
+                else
+                    _safetyValue.Text = "PLC 尚未授予本站有效控制权";
+                if (locked) _safetyValue.Text += "；运行中禁止交接";
+                _safetyValue.ForeColor = granted && !locked ? UiPalette.Success : UiPalette.Warning;
             }
             else if (_axisService?.ControlStationCode == 0)
+            {
                 _safetyValue.Text = "请配置本站身份并重启；本站身份不等于 PLC 已授权";
-            else if (authority?.Error is string error)
-                _safetyValue.Text = error;
+                _safetyValue.ForeColor = UiPalette.Warning;
+            }
+            else if (_axisService is not null)
+            {
+                // 监控连接与控制连接独立；授权反馈失效时不能沿用旧的成功提示或绿色。
+                _safetyValue.Text = !_axisService.IsConnected ? "控制 ADS 未连接"
+                    : authority?.Error ?? "控制权反馈已过期，等待 PLC 最新反馈";
+                _safetyValue.ForeColor = UiPalette.Warning;
+            }
         }
 
         // 请求发送成功后继续等同序号 PLC 应答，不在本地直接修改控制端。
@@ -91,13 +112,11 @@ namespace Page_switching
             try
             {
                 await _axisService.ChangeControlAuthorityAsync(release, _requestsCancellation.Token);
-                _lastOperation = release ? "PLC 已确认释放控制权" : "PLC 已确认本站取得控制权";
-                OperationJournal.Record("控制权", _lastOperation);
+                OperationJournal.Record("控制权", release ? "PLC 已确认释放控制权" : "PLC 已确认本站取得控制权");
             }
             catch (OperationCanceledException) when (_requestsCancellation.IsCancellationRequested) { }
             catch (Exception ex)
             {
-                _lastOperation = ex.Message;
                 OperationJournal.Record("控制权", "操作未成功：" + ex.Message);
             }
             finally
@@ -105,7 +124,7 @@ namespace Page_switching
                 _requestPending = false;
                 if (!IsDisposed && !Disposing)
                 {
-                    _safetyValue.Text = _lastOperation ?? "操作已取消";
+                    ApplyAuthorityStatus();
                     RefreshRequested?.Invoke(this, EventArgs.Empty);
                 }
             }
