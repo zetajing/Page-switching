@@ -27,7 +27,7 @@ PLC `ST_MachineMonitor` 和 C# `PlcMachineMonitor` 均明确采用 1 字节对�
 
 `FB_HmiFeedback` 在 MAIN 四个基础轴块之后，直接填充 stMonitor 并使心跳每约 500 ms 递增；待机和故障时心跳也持续运行。旧的五项独立监控变量及 GVL_pc 兼容层已删除；控制端、模式、状态、故障码和心跳直接写入 stMonitor。完整故障码和轨迹诊断仍保留在 GVL_HMI，手动页面不再单独读取 GVL_axis.Axis1..4。
 
-App.config 用 `AdsMonitorSnapshot=GVL_HMI.stMonitor` 指定整块地址，原有五个 AdsMonitor 字段地址配置已移除。四轴 32 项成员反馈地址已移除；命令地址仍保留。监控使用独立只读 TwinCAT ADS 客户端，连接目标来自现有配置，首次建立句柄后复用；后续每轮只执行一次结构体读取。手动服务也使用 AdsMonitorSnapshot 地址，通过 DLL 的 ReadAnyAsync<PlcMachineMonitor> 一次读取，保持原手动刷新周期和命令串行锁。两个服务使用独立连接，各自按需读取，不共用缓存。页面隐藏时仍读取这个 148 字节结构，只不生成四轴显示快照。500 ms 调度周期保持现状，不排队积累刷新任务。
+App.config 用 `AdsMonitorSnapshot=GVL_HMI.stMonitor` 指定整块地址，原有五个 AdsMonitor 字段地址配置已移除。四轴 32 项成员反馈地址已移除；命令地址仍保留。监控和手动服务统一使用 `InduLink.Protocols.Ads.AdsClient` 及 DLL 的 `ReadAnyAsync<PlcMachineMonitor>`；句柄创建、复用和释放由 DLL 负责。监控连接时由 DLL 探测 PLC 状态，原有心跳、过期、整轮超时和错误显示继续由监控服务处理。两个服务保留独立连接，各自按需读取，不共用缓存，保持现有控制、轨迹上传和心跳调度。页面隐藏时仍读取这个 148 字节结构，只不生成四轴显示快照。500 ms 调度周期保持现状，不排队积累刷新任务。
 
 一块读取减少请求往返和字段采样间隔，不承诺跨任务原子性；如将来需要严格同一扫描快照，需另外实现发布缓冲/一致性协议。它不改变 PLC 2 ms 轨迹取点周期。
 

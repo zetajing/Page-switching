@@ -1,17 +1,17 @@
-using TwinCAT.Ads;
+using InduLink.Protocols.Ads;
 
 namespace Page_switching;
 
-// 直接读取 PLC 反馈，本服务不提供写入或控制方法。
+// 与轴服务统一使用 InduLink ADS 封装，本服务只提供反馈读取。
 public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
 {
     private readonly MachineMonitorOptions _options;
     private readonly SemaphoreSlim _refreshGate = new(1, 1);
     private readonly CancellationTokenSource _lifetime = new();
     private readonly object _stateSync = new();
-    // 句柄只属于当前客户端；刷新与清理都受 _refreshGate 保护，不并发访问。
-    private uint? _monitorHandle;
+    // 刷新与清理都受 _refreshGate 保护；句柄的创建、缓存和释放交给 DLL。
     private AdsClient? _client;
+    private bool _resetClient;
     private MachineMonitorSnapshot _snapshot = new();
     private long? _lastSuccessTick;
     private long? _lastHeartbeatTick;
@@ -78,31 +78,33 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
             {
                 if (_failureSinceTick.HasValue && !HasElapsed(_failureSinceTick.Value, _options.ReconnectIntervalMilliseconds))
                     return LatestSnapshot;
-                closeClient = _failureSinceTick.HasValue || _client is not null && !_client.IsConnected;
+                closeClient = _resetClient || _failureSinceTick.HasValue || _client is not null && !_client.IsConnected;
             }
             if (closeClient) await CloseClientAsync().ConfigureAwait(false);
             lock (_stateSync)
             {
-                _client ??= new AdsClient { Timeout = _options.ConnectTimeoutMilliseconds };
+                _client ??= new AdsClient(new AdsClientOptions
+                {
+                    DeviceId = "beckhoff-monitor",
+                    AmsNetId = _options.AmsNetId,
+                    Port = _options.AdsPort,
+                    ConnectTimeoutMilliseconds = _options.ConnectTimeoutMilliseconds,
+                    OperationTimeoutMilliseconds = _options.OperationTimeoutMilliseconds,
+                    ValidateTargetStateOnConnect = true
+                });
             }
             timeout.CancelAfter(_options.ConnectTimeoutMilliseconds);
             timeout.Token.ThrowIfCancellationRequested();
             if (!_client.IsConnected)
             {
-                if (string.IsNullOrWhiteSpace(_options.AmsNetId))
-                    await _client.ConnectAsync(_options.AdsPort, timeout.Token).ConfigureAwait(false);
-                else
-                    await _client.ConnectAsync(new AmsNetId(_options.AmsNetId), _options.AdsPort, timeout.Token).ConfigureAwait(false);
-                // 本机地址来自实际 Router；两个客户端的 ADS 端口由 Router 分配。
-                OperationJournal.Record("ADS 诊断", $"监控 ADS 地址：本机={_client.SourceAddress}，目标={_client.Address}");
-                _readOperation = "读取 PLC 状态";
-                var state = await _client.ReadStateAsync(timeout.Token).ConfigureAwait(false);
-                if (!state.Succeeded) throw new InvalidOperationException("PLC 状态读取失败：" + state.ErrorCode);
+                // DLL 建连时探测 PLC 状态，使用与轴服务相同的连接和超时机制。
+                await _client.ConnectAsync(timeout.Token).ConfigureAwait(false);
+                OperationJournal.Record("ADS 诊断",
+                    $"监控 ADS 已通过 InduLink 连接并确认 PLC 状态，目标={_options.AmsNetId}:{_options.AdsPort}");
             }
             timeout.Token.ThrowIfCancellationRequested();
 
-            _client.Timeout = _options.OperationTimeoutMilliseconds;
-            // 整块读取复用句柄；单次请求超时与整轮读取超时仍分开计算。
+            // DLL 复用句柄；单次请求超时与整轮读取超时仍分开计算。
             timeoutMilliseconds = _options.RefreshTimeoutMilliseconds;
             timeout.CancelAfter(timeoutMilliseconds);
             var errors = new List<string>();
@@ -150,7 +152,7 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
         return frame.Value.Value.ToSnapshot(includeAxes);
     }
 
-    // PLC 实际读取就在这里：断点查看 symbol、result.Value 和 result.ErrorCode。
+    // 与轴服务调用同一个 DLL 泛型接口；断点查看 symbol、frame 和实际异常。
     private async Task<FeedbackField<PlcMachineMonitor>> ReadFrameAsync(List<string> errors, CancellationToken token)
     {
         var symbol = _options.SnapshotSymbol;
@@ -160,40 +162,21 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
             symbol = symbol.Trim();
             try
             {
-                // 首次使用才获取句柄，后续刷新只发送读取请求。
-                if (!_monitorHandle.HasValue)
-                {
-                    _readOperation = $"获取句柄 {symbol}";
-                    var created = await _client!.CreateVariableHandleAsync(symbol, token).ConfigureAwait(false);
-                    if (!created.Succeeded)
-                    {
-                        error = $"ADS error {created.ErrorCode} (0x{(int)created.ErrorCode:X8})";
-                        errors.Add($"{symbol}：{error}");
-                        return FeedbackField<PlcMachineMonitor>.Unavailable(error);
-                    }
-                    _monitorHandle = created.Handle;
-                }
                 _readOperation = $"读取变量 {symbol}";
-                var result = await _client!.ReadAnyAsync<PlcMachineMonitor>(_monitorHandle.Value, token).ConfigureAwait(false);
-                if (result.Succeeded)
-                {
-                    return new FeedbackField<PlcMachineMonitor>(result.Value, true);
-                }
-                else
-                {
-                    error = $"ADS error {result.ErrorCode} (0x{(int)result.ErrorCode:X8})";
-                    // PLC 下载或在线修改可能使句柄失效；当前字段报错，下轮重新获取。
-                    if (IsInvalidHandle(result.ErrorCode))
-                    {
-                        var invalidHandle = _monitorHandle.Value;
-                        _monitorHandle = null;
-                        _readOperation = $"释放失效句柄 {symbol}";
-                        await _client.DeleteVariableHandleAsync(invalidHandle, token).ConfigureAwait(false);
-                    }
-                }
+                var frame = await _client!.ReadAnyAsync<PlcMachineMonitor>(
+                    symbol, cancellationToken: token).ConfigureAwait(false);
+                return new FeedbackField<PlcMachineMonitor>(frame, true);
             }
             catch (OperationCanceledException) when (token.IsCancellationRequested) { throw; }
-            catch (Exception ex) { error = AdsDiagnostics.DescribeException(ex); }
+            catch (Exception ex)
+            {
+                error = AdsDiagnostics.DescribeException(ex);
+                // 在线修改会使 DLL 缓存的句柄失效；下轮重建客户端，由 DLL 集中清理。
+                // 单纯找不到符号时不重连，仍保留具体变量和原始 ADS 错误。
+                _resetClient = error.Contains("DeviceSymbolVersionInvalid", StringComparison.OrdinalIgnoreCase)
+                    || error.Contains("ReadAny", StringComparison.OrdinalIgnoreCase)
+                    && error.Contains("DeviceSymbolNotFound", StringComparison.OrdinalIgnoreCase);
+            }
         }
         // 整帧读取失败时返回无效，不能把失败值显示成零或 false。
         errors.Add($"{symbol}：{error}");
@@ -254,9 +237,6 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
     private static bool HasElapsed(long timestamp, int milliseconds) =>
         Environment.TickCount64 - timestamp >= milliseconds;
 
-    private static bool IsInvalidHandle(AdsErrorCode code) =>
-        code is AdsErrorCode.DeviceSymbolVersionInvalid or AdsErrorCode.DeviceSymbolNotFound;
-
     private async Task CloseClientAsync()
     {
         AdsClient? client;
@@ -264,6 +244,7 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
         {
             client = _client;
             _client = null;
+            _resetClient = false;
             _lastHeartbeat = null;
             _lastHeartbeatTick = null;
             _heartbeatConfirmed = false;
@@ -271,14 +252,11 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
         }
         try
         {
-            if (client?.IsConnected == true && _monitorHandle.HasValue)
+            if (client is not null)
             {
-                // 重连或退出时集中释放；整批清理最多等待一次请求超时，断网时不逐项等待。
+                // DLL 集中释放自己的句柄，应用不再管理官方 SDK 的句柄生命周期。
                 using var cleanup = new CancellationTokenSource(_options.OperationTimeoutMilliseconds);
-                var result = await client.DeleteVariableHandleAsync(_monitorHandle.Value, cleanup.Token).ConfigureAwait(false);
-                cleanup.Token.ThrowIfCancellationRequested();
-                if (!result.Succeeded && !IsInvalidHandle(result.ErrorCode))
-                    throw new InvalidOperationException("释放监控句柄失败：" + result.ErrorCode);
+                await client.DisconnectAsync(cleanup.Token).ConfigureAwait(false);
             }
         }
         catch (Exception ex)
@@ -287,8 +265,6 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
         }
         finally
         {
-            // 句柄不能跨客户端复用，清理失败时也必须丢弃本地缓存。
-            _monitorHandle = null;
             client?.Dispose();
         }
     }
