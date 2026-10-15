@@ -42,12 +42,6 @@ public partial class Auto
         finally { _waveImporting = false; if (!IsDisposed) UpdateWaveControls(); }
     }
 
-    private async void SendWaveButton_Click(object? sender, EventArgs e)
-    {
-        if (_waveSignal is null || _waveService is null) return;
-        await RunWaveUiAsync("发送造波信号", () => _waveService.UploadWaveAsync(_waveSignal));
-    }
-
     private async void StartWaveButton_Click(object? sender, EventArgs e)
     {
         if (_waveService is null) return;
