@@ -69,7 +69,7 @@ class TrajectoryChecks(unittest.TestCase):
         motion = (PLC / "GVLs" / "GVL_motion.TcGVL").read_text(encoding="utf-8")
         self.assertIn("ARRAY[1..4, 0..2099999] OF LREAL", source)
         self.assertIn("cMaxPoints : UDINT := 2100000", source)
-        self.assertIn("ARRAY[1..4, 0..99999] OF LREAL", motion)
+        self.assertIn("ARRAY[0..20, 1..4, 0..99999] OF LREAL", motion)
         self.assertIn("cUploadPoints : UDINT := 100000", source)
         self.assertIn("nPointCount : UDINT", motion)
         self.assertIn("nCurrentPoint : UDINT", motion)

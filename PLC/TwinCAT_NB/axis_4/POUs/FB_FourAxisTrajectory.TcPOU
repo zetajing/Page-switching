@@ -3,7 +3,7 @@
   <POU Name="FB_FourAxisTrajectory" Id="{f339b171-2adc-4ce0-8fc1-1403fdabbc80}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_FourAxisTrajectory
 // 四轴整表轨迹：上位机只下发 LREAL 位置点，本块收齐并校验后统一执行。
-// 正常流程：0 空闲 -> 5 拼表 -> 0 等下一段 -> 10 校验 -> 15 首点定位
+// 正常流程：0 登记各段 -> 全部下发后 5 统一拼表 -> 0 就绪 -> 10 校验 -> 15 首点定位
 //           -> 20 开外部给定 -> 30 取点 -> 40 保持末点 -> 60 关闭 -> 70 确认静止 -> 0。
 // 异常流程：运动阶段转 50 减速，再经 40/60/70 退出，最后在 90 等待复位。
 // 本块每 2 ms 调用一次；使能、点动、回原等基础控制在 FB_AxisControl 中。
@@ -25,10 +25,11 @@ VAR
     aDisable : ARRAY[1..4] OF MC_ExtSetPointGenDisable; // 四个关闭实例；确认全部退出之前不交回手动。
     aMoveInit : ARRAY[1..4] OF MC_MoveAbsolute; // 四轴各自定位到轨迹首点，全部完成才同步执行位置表。
     aStopInit : ARRAY[1..4] OF MC_Stop; // 外部给定尚未开启时的停车，如取消首点定位。
-    rtUpload, rtClear, rtStart, rtReset : R_TRIG; // 上传、清表、启动、复位的单扫描上升沿。
+    rtUpload, rtAssemble, rtClear, rtStart, rtReset : R_TRIG; // 收段、拼表、清表、启动、复位的上升沿。
     tmHeartbeat, tmEnable, tmMoveInit, tmExit : TON; // 分别监视通信、外部给定开启、首点定位和退出超时。
     udiLastHeartbeat, udiSequence : UDINT; // 上一扫描心跳值；当前整条轨迹的上传序号。
-    nCount, nLoaded, nOffset, nBlockCount, nBlockPoint : UDINT; // 总点数、已确认点数、本段全局偏移、本段长度、本段复制游标。
+    nCount, nReceived, nLoaded : UDINT; // 总点数、已登记下发点数、四轴已拼接点数。
+    nSegment, nSegmentPoint, nCopyCount, nCopyBytes : UDINT; // 当前段、段内点号、本拍复制点数/每轴字节数。
     nCheckPoint, nSendPoint, nPrevious, nNext : UDINT; // 校验点号、执行点号、前点号、后点号，均从 0 开始。
     nHoldCycles, nStopCycles, nState : UINT; // 末点保持计数、减速状态最少扫描计数、状态机编号。
     i, nBatch : INT; // 轴号 1..4；本扫描处理的批内点计数。
@@ -42,13 +43,15 @@ END_VAR
 VAR CONSTANT
     cDt : LREAL := 0.002; // 单位秒，必须等于 PLC/NC SAF 周期和差分函数周期。
     cMaxPoints : UDINT := 2100000; // 单轴完整表容量，与 aPosition 第二维一致。
-    cUploadPoints : UDINT := 100000; // 单轴每段容量，与 GVL_motion.aUpload 第二维一致。
-    cPointsPerScan : INT := 128; // 拼表和校验均分扫描执行，不一次遍历整条轨迹。
+    cUploadPoints : UDINT := 100000; // 单轴每段容量，与 GVL_motion.aUpload 第三维一致。
+    cCopyPointsPerScan : UDINT := 1024; // 每扫描每轴最多复制 8 KiB；需在目标 PLC 实测任务时间。
+    cPointsPerScan : INT := 128; // 数值校验分扫描执行，不一次遍历整条轨迹。
 END_VAR]]></Declaration>
     <Implementation>
       <ST><![CDATA[// 1. 上位机操作转为上升沿，防止保持 TRUE 时每扫描重复发起请求。
-// 接口顺序：写段数据和元数据 -> xUpload 上升沿 -> 等待段确认 -> 写下一段。
+// 接口顺序：写独立段 -> xUpload 登记 -> 全部段确认 -> xAssemble 统一拼表。
 rtUpload(CLK := GVL_motion.xUpload);
+rtAssemble(CLK := GVL_motion.xAssemble);
 rtClear(CLK := GVL_motion.xClear);
 rtStart(CLK := GVL_motion.xStart);
 rtReset(CLK := GVL_motion.xReset);
@@ -112,48 +115,58 @@ END_IF
 
 // 4. 状态机准备本周期给定和阶段；实际 MC 功能块统一在末尾每扫描调用。
 CASE nState OF
-0: // 空闲：先清表/收段，整条表全部到齐后才允许启动。
-    // 清表只清计数和就绪状态，不遍历清零约 67.2 MB 数据。
+0: // 空闲：先接收所有独立段，再统一拼表；拼接完成后才允许启动。
+    // 清表只清计数和就绪状态，不遍历清零约 134.4 MB 的接收区和执行表。
     // 新轨迹必须从偏移 0 连续覆盖所有有效点，旧数据不会在未收齐时被执行。
-    // 同扫描多个请求的优先级为 Clear -> Upload -> Start。
+    // 同扫描多个请求的优先级为 Clear -> Upload -> Assemble -> Start。
     IF rtClear.Q AND xAllDisabled AND xMovesIdle THEN
         nCount := 0;
+        nReceived := 0;
         nLoaded := 0;
         udiSequence := 0;
         GVL_motion.xDataReady := FALSE;
         GVL_motion.xDone := FALSE;
     ELSIF rtUpload.Q AND NOT GVL_motion.xError THEN
-        // 顺序拼接，避免重复段、漏段和无符号减法下溢。
-        // nLoaded 同时表示已完整确认的点数和下一段唯一允许的起始偏移。
-        // 先检查 nLoaded<=总点数，再计算剩余量，防止 UDINT 无符号减法下溢。
-        // 连续段的整表总点数和轨迹序号必须一致；重复、漏段、越界都报 1001。
+        // 只登记写完的独立段，此处不复制任何位置点。
+        // 连续偏移及固定段长共同避免漏段、重复段和错段；先检查范围再做 UDINT 减法。
         IF (GVL_motion.nPointCount < 4) OR (GVL_motion.nPointCount > cMaxPoints)
             OR (GVL_motion.nSampleTimeUs <> 2000) OR (GVL_motion.udiUploadSequence = 0)
             OR (GVL_motion.udiUploadSequence = GVL_motion.udiAcceptedSequence)
             OR (GVL_motion.nUploadCount = 0) OR (GVL_motion.nUploadCount > cUploadPoints)
-            OR (GVL_motion.nUploadOffset <> nLoaded) THEN
+            OR (GVL_motion.nUploadOffset <> nReceived) THEN
             GVL_motion.udiErrorId := 1001;
-        ELSIF nLoaded > GVL_motion.nPointCount THEN
+        ELSIF nReceived > GVL_motion.nPointCount THEN
             GVL_motion.udiErrorId := 1001;
-        ELSIF GVL_motion.nUploadCount > GVL_motion.nPointCount - nLoaded THEN
+        ELSIF GVL_motion.nUploadCount <> MIN(cUploadPoints, GVL_motion.nPointCount - nReceived) THEN
             GVL_motion.udiErrorId := 1001;
-        ELSIF (nLoaded <> 0) AND ((GVL_motion.nPointCount <> nCount)
+        ELSIF (nReceived <> 0) AND ((GVL_motion.nPointCount <> nCount)
             OR (GVL_motion.udiUploadSequence <> udiSequence)) THEN
             GVL_motion.udiErrorId := 1001;
         ELSE
-            // 接受本段时锁存元数据，后续状态 5 按锁存值复制并监视元数据变动。
-            // nBlockPoint 是段内点号，nOffset+nBlockPoint 是整表点号。
+            // 接收确认只表示 PC 已声明本段四轴写完；ADS 数据仍须由 PC 遵守只写一次的约定。
             nCount := GVL_motion.nPointCount;
             udiSequence := GVL_motion.udiUploadSequence;
-            nOffset := nLoaded;
-            nBlockCount := GVL_motion.nUploadCount;
-            nBlockPoint := 0;
+            nReceived := nReceived + GVL_motion.nUploadCount;
             GVL_motion.xDataReady := FALSE;
-            nState := 5;
         END_IF
         IF GVL_motion.udiErrorId <> 0 THEN
             GVL_motion.xError := TRUE;
             nState := 90;
+        END_IF
+    ELSIF rtAssemble.Q AND NOT GVL_motion.xError THEN
+        // 必须收到全部段的确认和独立的完成请求，不能因最后一段到齐就自动拼表或启动。
+        IF (nCount < 4) OR (nReceived <> nCount) OR (udiSequence = 0)
+            OR (udiSequence = GVL_motion.udiAcceptedSequence)
+            OR (GVL_motion.nPointCount <> nCount) OR (GVL_motion.nSampleTimeUs <> 2000)
+            OR (GVL_motion.udiUploadSequence <> udiSequence) THEN
+            GVL_motion.xError := TRUE;
+            GVL_motion.udiErrorId := 1001;
+            nState := 90;
+        ELSE
+            nLoaded := 0;
+            GVL_motion.xDataReady := FALSE;
+            GVL_motion.xDone := FALSE;
+            nState := 5;
         END_IF
     ELSIF rtStart.Q AND NOT GVL_motion.xError THEN
         GVL_motion.xDone := FALSE;
@@ -181,32 +194,35 @@ CASE nState OF
         END_IF
     END_IF
 
-5: // 上位机必须等待本段确认后，才能覆盖 aUpload 写下一段。
+5: // 全部段下发后才进入这里，按段号拼入四轴连续表，PC 不得再改接收区。
     IF (GVL_motion.nPointCount <> nCount) OR (GVL_motion.udiUploadSequence <> udiSequence)
-        OR (GVL_motion.nUploadOffset <> nOffset) OR (GVL_motion.nUploadCount <> nBlockCount)
-        OR (GVL_motion.nSampleTimeUs <> 2000) THEN
-        // 段未完整复制，不推进 nLoaded；复位后可从相同偏移重新上传。
+        OR (GVL_motion.nSampleTimeUs <> 2000) OR rtUpload.Q OR rtClear.Q OR rtAssemble.Q THEN
+        // 元数据或请求冲突使本次拼接失效；复位后重新 xAssemble，从第 0 点重拼。
         GVL_motion.xError := TRUE;
         GVL_motion.udiErrorId := 1001;
         nState := 90;
     ELSE
-        // 每扫描最多复制 128 个四轴点，nBlockPoint 跨扫描保存进度。
-        // 例：第二段偏移为 100000，则段内 0 点写到 aPosition[i,100000]。
-        // 复制期间上位机不得覆盖 aUpload；元数据检查不提供乱写数据时的原子性保证。
-        FOR nBatch := 1 TO cPointsPerScan DO
-            IF nBlockPoint >= nBlockCount THEN EXIT; END_IF
-            FOR i := 1 TO 4 DO
-                aPosition[i, nOffset + nBlockPoint] := GVL_motion.aUpload[i, nBlockPoint];
-            END_FOR
-            nBlockPoint := nBlockPoint + 1;
+        nSegment := nLoaded / cUploadPoints;
+        nSegmentPoint := nLoaded MOD cUploadPoints;
+        // 同时限制本拍工作量、剩余总点数和当前段剩余量，短末段也不会越界或串轴。
+        nCopyCount := MIN(cCopyPointsPerScan, MIN(nCount - nLoaded, cUploadPoints - nSegmentPoint));
+        nCopyBytes := nCopyCount * SIZEOF(aPosition[1, 0]);
+        xValid := TRUE;
+        FOR i := 1 TO 4 DO
+            // 每轴只做一次有界内存复制；源/目标独立，地址每扫描现取，不缓存指针。
+            IF MEMCPY(destAddr := ADR(aPosition[i, nLoaded]),
+                srcAddr := ADR(GVL_motion.aUpload[nSegment, i, nSegmentPoint]), n := nCopyBytes) <> nCopyBytes THEN
+                xValid := FALSE;
+            END_IF
         END_FOR
-        // 只在整段复制成功后推进 nLoaded，不承认半段数据。
-        // 上位机需等 nLoadedCount=本段偏移+长度 且 xUploadBusy=FALSE，才能覆盖接收区。
-        // 不能只看 Busy=FALSE：上传沿可能尚未被 PLC 扫描接收。
-        IF nBlockPoint = nBlockCount THEN
-            nLoaded := nLoaded + nBlockCount;
-            GVL_motion.xDataReady := nLoaded = nCount;
-            nState := 0;
+        IF NOT xValid THEN
+            GVL_motion.xError := TRUE;
+            GVL_motion.udiErrorId := 1012;
+            nState := 90;
+        ELSE
+            // 四轴本批全部复制成功才推进；最后一批完成后才发布整表就绪。
+            nLoaded := nLoaded + nCopyCount;
+            IF nLoaded = nCount THEN GVL_motion.xDataReady := TRUE; nState := 0; END_IF
         END_IF
     END_IF
 
@@ -451,8 +467,9 @@ IF tmExit.Q AND ((nState = 60) OR (nState = 70)) THEN
     GVL_motion.xError := TRUE;
     GVL_motion.udiErrorId := 1009;
 END_IF
-// 6. 发布上位机反馈：nLoadedCount 只在整段成功后推进。
-// xUploadBusy=拼表；xBusy=轨迹流程占用轴；xRunning=状态 30 正在推进点号。
+// 6. 已接收和已拼接分开发布；只有 xDataReady 才表示完整表可进入启动校验。
+GVL_motion.nReceivedCount := nReceived;
+GVL_motion.udiReceivedSequence := udiSequence;
 GVL_motion.nLoadedCount := nLoaded;
 GVL_motion.nState := nState;
 GVL_motion.xUploadBusy := nState = 5;

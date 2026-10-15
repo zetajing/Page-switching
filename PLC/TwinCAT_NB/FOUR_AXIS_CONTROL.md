@@ -1,6 +1,6 @@
 # 四轴基础控制与整条位置表执行
 
-当前实现参考 `PLC-2M-20241113（60分钟）\PLC-2M-20241113（60分钟）\TwinCAT Project1\setpositionGen` 的位置表、首点定位及 2 ms 外部给定流程。参考工程未修改。上位机只下发四轴位置点，完整位置表全部到齐后才允许启动。
+当前实现参考 `PLC-2M-20241113（60分钟）\PLC-2M-20241113（60分钟）\TwinCAT Project1\setpositionGen` 的位置表、首点定位及 2 ms 外部给定流程。参考工程未修改。PC 先将四轴位置点的所有段下发到独立接收区，全部段确认后单独请求 PLC 统一拼接，完整表拼好后才允许启动。
 
 ## 代码分工
 
@@ -13,9 +13,9 @@
 
 | 参考工程 | 当前四轴实现 |
 | --- | --- |
-| `TAble_zz1..21` 分段接收 | `GVL_motion.aUpload` 统一的四轴分段接收区 |
-| `YunSuan()` 拼入 `GVL.Table` | 每次扫描最多复制 128 点/轴，按连续偏移拼入块内部的完整位置表 |
-| `yusuanwancheng` | `GVL_motion.xDataReady`，全部段到齐后由 PLC 置 TRUE |
+| `TAble_zz1..21` 分段接收 | `GVL_motion.aUpload[段号,轴号,段内点号]`，21 个独立四轴接收段 |
+| `YunSuan()` 拼入 `GVL.Table` | 全部段确认后，`xAssemble` 请求统一拼接，每扫描最多复制 1024 点/轴 |
+| `yusuanwancheng` | `GVL_motion.xDataReady`，所有段拼接完后由 PLC 置 TRUE；下载完成不会自动置 TRUE |
 | `move_init()` 移到首点 | 四个 MC_MoveAbsolute 全部完成并检查到位偏差 |
 | `Table[t]` 每 2 ms 送点 | 四轴共用 `nSendPoint`，每 2 ms 各取自己的位置点 |
 | 固定 Velocity=0、Acceleration=2000 | 相邻位置点差分得到速度和加速度，先整表校验再执行 |
@@ -25,12 +25,13 @@
 ## 容量、周期和内存
 
 - 完整位置表：四轴各 2100000 点，`LREAL`，每轴点号 `0..2099999`。
-- 分段接收区：四轴各 100000 点，`LREAL`，段内点号 `0..99999`。
-- `aUpload[轴号, 段内点号]`：第一维轴号 `1..4`，第二维点号。通过 ADS 符号分别写各轴数组片段；整段二进制按轴排列，不按四轴逐帧交错排列。
+- 分段接收区：21 段，每段四轴各 100000 点，`LREAL`。`aUpload[段号,轴号,段内点号]` 下标分别为 `0..20`、`1..4`、`0..99999`。
+- 每段按轴排列，不按四轴逐帧交错；所有已确认段保持不变，接收期间不复制到执行表。第 1 段对应完整表 `0..99999`，第 2 段对应 `100000..199999`，依此类推。
 - 固定间隔 2 ms，无额外插值。最大首末点时间差为 `(2100000-1)×0.002 = 4199.998 秒`，约 70 分钟；精确 60 分钟需要 1800001 点。
-- 完整表与上传区约占 **70.4 MB（67.14 MiB）**，不含其它运行时开销。容量是声明值，未在目标 PLC 验证内存、编译或长时间运行能力。
+- 完整表与独立接收区各占 67.2 MB，合计 **134.4 MB（128.17 MiB）**，不含其它运行时开销。相对原来的单段复用方案增加 64 MB，以保留整条待拼接轨迹；目标 PLC 的可用内存和长时间运行能力仍需验证。
 - PLC 与 NC SAF 周期均为 2 ms。PLC 优先级 7，NC SAF 优先级 4、NC SVB 优先级 8。
-- 拼表和校验每扫描最多处理 128 点/轴。100000 点一段名义复制约 1.564 秒；2100000 点整表校验约 32.814 秒，均未计调度、通信和执行开销，需实测 2 ms 任务时间。
+- 拼表按段、按轴调用有界 `MEMCPY`，每扫描最多复制 1024 点/轴，即四轴合计 32 KiB；批次不会跨过段尾。2100000 点需 2058 次拼接扫描，按 2 ms 名义约 4.116 秒，不含请求/反馈及调度开销。
+- 整表数值校验仍为每扫描 128 点/轴，最大表名义约 32.814 秒。复制和校验都需实测 2 ms 任务时间，不能将名义扫描次数当作实时性能证明。
 
 ## 基础轴接口
 
@@ -78,20 +79,24 @@ ST_AxisAds 末尾增加了反馈字段。上位机按符号分别访问；如整
 
 ## 上位机上传协议
 
-新接口代替上一版的“每帧位置/速度/加速度结构体”。xDataReady、nLoadedCount 和 xUploadBusy 都由 PLC 写，上位机只读。
+本版替换上一版“复用单段接收区、边收边拼”的协议。接收数组改为三维，并增加 `xAssemble`、`nReceivedCount` 和 `udiReceivedSequence`，PC 必须同步更新下发地址和握手。反馈字段均由 PLC 写，PC 只读。
 
-1. 确认 `xBusy=FALSE`、`xUploadBusy=FALSE`。有故障先复位，再将 xClear 给一个上升沿，确认 nLoadedCount=0、xDataReady=FALSE。
+1. 确认 `xBusy=FALSE`、`xUploadBusy=FALSE`。有故障先复位，再将 xClear 给一个上升沿，确认 nReceivedCount=0、nLoadedCount=0、udiReceivedSequence=0、xDataReady=FALSE。
 2. 设置新的非零 `udiUploadSequence`，与 udiAcceptedSequence 不同；设置整条轨迹总点数 `nPointCount` 和 `nSampleTimeUs=2000`。整条轨迹所有上传段共用这些元数据。
-3. 准备第一段四轴位置数据：写入 `aUpload[1..4,0..段点数-1]`，设置 `nUploadOffset=0`、`nUploadCount=段点数`，给 xUpload 一个上升沿。
-4. 等待 `nLoadedCount = nUploadOffset+nUploadCount` 且 xUploadBusy=FALSE，再允许覆盖上传区。不能只看到 xUploadBusy=FALSE 就立即覆盖，因为提交请求可能还没被 PLC 扫描到。
-5. 下一段 nUploadOffset 必须等于当前 nLoadedCount，重复以上操作。每段最多 100000 点/轴，末段可不足。不能漏段、重复段或超出总点数。
-6. `nLoadedCount=nPointCount` 后，PLC 设置 xDataReady=TRUE，表示整条位置表完整到齐。运行中不再接收上传，不是流式双缓冲续传。
+3. 按 `段号=nUploadOffset/100000` 写该段四轴的全部位置数据：`aUpload[段号,1..4,0..本段点数-1]`。非末段必须 100000 点/轴；末段只写剩余点。四轴写入均成功后，设置 nUploadOffset、nUploadCount，给 xUpload 一个上升沿。
+4. 等待 `udiReceivedSequence=本次轨迹序号`、`nReceivedCount=nUploadOffset+nUploadCount` 且无故障，再写下一独立段。`xUploadBusy=FALSE` 不表示段请求已确认；已确认段禁止覆盖。xUpload 回 FALSE 并至少保持一个 PLC 扫描后才能提交下一段。
+5. 下一段 nUploadOffset 必须等于当前 nReceivedCount。不能漏段、重复段或超出总点数；总点数、采样周期和整表序号必须保持一致。下载期间 nLoadedCount 始终为 0，xDataReady 为 FALSE。
+6. 全部段确认后，PC 单独给 `xAssemble` 一个上升沿，通知 PLC 下发完成。PLC 进入状态 5，xUploadBusy=TRUE，统一拼接到内部四轴连续表。等待 `nLoadedCount=nPointCount`、`xDataReady=TRUE`、`xUploadBusy=FALSE` 且无故障，才算拼表完成。拼接期间不得写任何接收段或改变整表元数据；完成后也不会自动启动运动。
 7. 开始独立的心跳通信循环，每 100~200 ms 改变 `udiHeartbeat`。校验和运动期间超过 1 秒不变化会联停；上传阶段不要求心跳。
 8. 四轴就绪、xStop=FALSE 时，给 xStart 一个上升沿。PLC 先校验整表，再自动将四轴移到各自首点；全部完成后才激活四轴外部给定并推进共同点号。
 9. 监视 xBusy、xRunning、xDone、xError、udiErrorId、nState、nCurrentPoint。xRunning 只表示正在推进位置表，不包括首点定位和停止阶段。
 10. 正常结束保持末点，不自动返回零位。xDone 保持到清表、复位或下次启动。再次执行需清表并使用新序号重新上传，避免旧启动沿重放。
 
-上传区在段复制期间必须保持不变；元数据改动会拒绝本段，已完成段的 nLoadedCount 不推进，复位后可从相同偏移重传。PLC 不提供未按协议乱写数据时的原子事务保证。xUpload/xClear/xStart/xReset 均为上升沿信号，需回 FALSE 后才能再次触发。
+PC 使用 ADS 原始块写入时，先解析 aUpload 的实际 IndexGroup/IndexOffset。段号 s、轴号 a、段内起点 k 对应相对字节偏移 `((s*4+(a-1))*100000+k)*8`，本次长度为 `点数*8` 字节；每次写入限制在当前轴当前段内。不能把四轴交错排列后直接写入，也不能把单个 LREAL 元素的符号句柄当作任意长度数组句柄。重新下载或在线变更 PLC 后重新解析符号地址。
+
+例如总点数 100003：PC 写段 0 的四轴各 100000 点并等待接收确认，再写段 1 的四轴各 3 点并等待接收确认；此时 nReceivedCount=100003、nLoadedCount=0、xDataReady=FALSE。PC 再发 xAssemble，PLC 才将两段统一拼为完整表。
+
+拼表过程中元数据变化或新的 Upload/Clear/Assemble 请求会报 1001；内存复制失败报 1012，不发布完整表就绪。故障复位后可用原序号重新 xAssemble，从第 0 点重拼。下载时漏段/错段可复位后从 nReceivedCount 指示的下一段继续；换轨迹必须先清表。接收确认是 PC 声明本段四轴已写完，不是内容校验或原子事务，PC 必须等待所有 ADS 写入成功，PLC 不能检测绕过协议直接覆盖数组的行为。所有请求位均须回 FALSE 并保持至少一个 PLC 扫描，再产生下次上升沿。
 
 ## 轨迹规划、停止和状态
 
@@ -108,7 +113,7 @@ ST_AxisAds 末尾增加了反馈字段。上位机按符号分别访问；如整
 | nState | 含义 |
 | --- | --- |
 | 0 | 空闲/等待下一段 |
-| 5 | 分周期拼接当前上传段，仅 xUploadBusy 为 TRUE，不占用基础轴控制 |
+| 5 | 全部段下发后统一分周期拼表，仅 xUploadBusy 为 TRUE，不占用基础轴控制 |
 | 10 | 整表校验，xBusy=TRUE |
 | 15 | 四轴自动定位到各自轨迹首点 |
 | 20 | 等待外部给定全部激活，5 秒超时 |
@@ -132,15 +137,16 @@ ST_AxisAds 末尾增加了反馈字段。上位机按符号分别访问；如整
 | 1009 | 外部给定退出或等待静止超时，保持占用 |
 | 1010 | 某轴错误或 NC 反馈 I/O 无效 |
 | 1011 | 首点定位超过 60 秒 |
+| 1012 | 拼表的内存复制返回字节数异常，完整表不就绪 |
 | 其它 | MoveAbsolute、Stop、外部给定 Enable/Disable 的原始错误码 |
 
 关闭外部给定失败时保持占用。xReset 新上升沿使 Disable 请求重试，确认退出和静止后再给新复位沿清组故障。各轴错误仍需各轴 reset。
 
 ## 当前验证边界
 
-离线检查脚本为 `tests/verify_trajectory.py`，使用 Python 标准库运行。6 项检查涵盖项目 XML、编译文件引用、ST 控制块结构、数组边界/分段拼接、位置差分和平滑参考位置表，以及 1000 组停车数值检查。它不执行完整的 PLC 状态机，也不验证 ADS 通信。
+离线检查脚本使用 Python 标准库运行。`tests/verify_trajectory.py` 检查项目 XML、文件引用、ST 控制块结构、数组边界、位置差分、平滑位置表及 1000 组停车数值；`tests/verify_upload_assembly.py` 直接解释实际 ST 的状态 0/5，检查整表完成请求、所有容量边界、四轴复制范围、错段/漏段/序号变化、提前启动、复制失败和重拼。内存复制由受检模拟器替代；测试不执行完整 PLC/NC 状态机，也不验证 ADS 数据传输或实机运动。
 
-当前环境没有可用 TwinCAT XAE 编译器，未做 TwinCAT 编译、下载、在线激活、实机运动、60 分钟连续运行或 2 ms 实时性能测试。
+本次 27 项离线检查通过。已检测到本机安装的 XAE，并在临时工程副本尝试离线自动化编译，但构建调用返回 `HRESULT E_FAIL`，未取得 TwinCAT 编译通过的结果。未做 PLC 下载、在线激活、实机运动、60 分钟连续运行或 2 ms 实时性能测试。
 
 参考项目只读取；位置表修改前备份：`C:\Users\75881\AppData\Local\Temp\TwinCAT_NB_before_position_table_20261015_094405`。
 

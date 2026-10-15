@@ -72,7 +72,7 @@ FOR i := 1 TO 4 DO
     xAbort := xAbort OR GVL_motion.axPositiveLimit[i] OR GVL_motion.axNegativeLimit[i] OR GVL_sy.axis[i].Status.SoftLimitMinExceeded OR GVL_sy.axis[i].Status.SoftLimitMaxExceeded;
 END_FOR
 // 轨迹块先更新组状态和 xBusy，后面的基础块在本扫描就能据此禁止手动抢占。
-// 单纯上传状态 5 不置 xBusy，不占用基础轴控制。
+// 全部下发后的统一拼表状态 5 不置 xBusy，不占用基础轴控制。
 fbTrajectory(Axes := GVL_sy.axis, xAxesReady := xAxesReady, xAbort := xAbort, xAxisFault := xAxisFault);
 
 // 四个实例各自保存 Power/Jog/Home/Stop/Reset 的状态，便于逐轴打断点。

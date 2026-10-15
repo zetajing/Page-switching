@@ -1,6 +1,6 @@
 # switch 与 TwinCAT_NB 手动控制、监控对接
 
-本次范围是四轴手动控制和机器只读监控。已有轨迹上传/执行接口继续保留，未接入自动造波页面，也未改变造波计算和机械点位转换。
+基础对接范围是四轴手动控制和机器只读监控。轨迹接收协议现已改为“PC 全部下发后，PLC 统一拼接”，详见下文；未接入自动造波页面，也未改变造波计算和机械点位转换。
 
 ## 配套源码与版本
 
@@ -54,6 +54,16 @@
 
 内部轨迹状态 30 对应页面运行 2；5/10/15/20 对应准备 1；40/50/60/70 对应停止中 4；退出后有错误为故障 7；正常完成为 6；其余为待机 0。未实现的暂停 3、已停止 5 不使用常量模拟。
 
+## 轨迹下发与统一拼接
+
+配套 PLC 参考旧工程的独立分段接收方式：`GVL_motion.aUpload[0..20,1..4,0..99999]`，下标为段号、轴号、段内点号。每段最多 100000 个 LREAL 点/轴，非末段必须写满，末段只写剩余点。
+
+PC 写完一段四轴数据后，用 nUploadOffset、nUploadCount 和 xUpload 上升沿登记，等待 `udiReceivedSequence=本次序号`、`nReceivedCount=本段末偏移` 的 PLC 确认，再下发下一独立段。所有段确认前只接收，不拼表；已确认段禁止覆盖。
+
+全部下发后，PC 单独给 xAssemble 上升沿，PLC 在状态 5 分扫描将所有段拼为四轴连续表；每扫描每轴最多复制 1024 点。只有 `nLoadedCount=nPointCount`、`xDataReady=TRUE`、`xUploadBusy=FALSE` 且无故障，才表示拼接完成，后续 xStart 仍是独立请求。
+
+本版新增 xAssemble、nReceivedCount、udiReceivedSequence，并改变 aUpload 数组布局；旧的单段复用发送端必须同步升级。接收区加执行表共 134.4 MB，部署前检查目标 PLC 的内存和 2 ms 任务时间。完整步骤、短末段例子和重试条件见 [四轴轨迹说明](../PLC/TwinCAT_NB/FOUR_AXIS_CONTROL.md#上位机上传协议)。
+
 ## 部署前后验证
 
 1. 在 XAE 编译配套 PLC 源码。确认四轴 PLC↔NC 映射、传感器、急停/STO 和运行联锁。
@@ -63,6 +73,6 @@
 5. 使能后不点动，确认 Enabled 仍为 TRUE、位置和速度正常；再逐轴低速验证正负方向、松键停车、停止、回原和复位。
 6. 验证轨迹占用时手动命令互锁、故障码发布和解除后的清零。自动造波界面保持本次之前的行为。
 
-离线检查：在配套 PLC 目录运行 `tests/verify_trajectory.py`、`tests/verify_switch_contract.py`。外部目录可用环境变量 `SWITCH_PROJECT` 指定本仓库。契约检查覆盖实际 App.config 中的 60 个轴地址和 5 个全局地址、PLC 类型、反馈调用顺序及只读边界；它不执行完整 PLC 状态机或验证实际 ADS 通信。
+离线检查：在配套 PLC 目录运行 `python -m unittest discover -s tests -p 'verify_*.py' -v`。其中 `verify_upload_assembly.py` 直接解释实际 ST 状态 0/5，检查接收、统一拼接和异常恢复；内存复制使用范围受检的模拟器。外部目录可用环境变量 `SWITCH_PROJECT` 指定本仓库。契约检查覆盖实际 App.config 中的 60 个轴地址和 5 个全局地址、PLC 类型、反馈调用顺序及只读边界；它不执行完整 PLC/NC 状态机或验证实际 ADS 数据传输。
 
 上位机 Release 编译通过不等于实机对接完成；本次没有下载 PLC、写现场轴命令或验证 2 ms 实时性能。控制权规则检查脚本为 `tests/verify_control_authority.py`。
