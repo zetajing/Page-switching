@@ -14,6 +14,7 @@ namespace Page_switching
         private IReadOnlyList<AxisSnapshot> _lastSnapshots = Array.Empty<AxisSnapshot>();
         private bool _refreshInProgress;
         private bool _commandInProgress;
+        // 停止可以在普通命令等待时继续受理；计数控制按钮，版本防止旧结果覆盖新提示。
         private int _stopRequestsInProgress;
         private long _stopRequestVersion;
         private bool _jogActive;
@@ -178,10 +179,11 @@ namespace Page_switching
         // 根据布尔信号更新一个状态灯的文字和颜色。
         private static void UpdateSignalLamp(AntdUI.Label lamp, string caption, bool? active, Color activeColor)
         {
+            var signalText = active.HasValue ? (active.Value ? "触发" : "未触发") : "无有效数据";
             lamp.Text = $"{(active == true ? "●" : "○")} {caption}{(active.HasValue ? string.Empty : " --")}";
             lamp.BackColor = active == true ? activeColor : UiPalette.Canvas;
-            lamp.ForeColor = active == true ? Color.White : active.HasValue ? UiPalette.SecondaryText : UiPalette.Muted;
-            lamp.AccessibleName = $"{caption}：{(active.HasValue ? active.Value ? "触发" : "未触发" : "无有效数据")}";
+            lamp.ForeColor = active == true ? Color.White : (active.HasValue ? UiPalette.SecondaryText : UiPalette.Muted);
+            lamp.AccessibleName = $"{caption}：{signalText}";
         }
 
         // 显示当前选中轴的状态、位置、速度和可用控制按钮。
@@ -231,7 +233,8 @@ namespace Page_switching
         private void SetCommandButtonEnabled(AntdUI.Button button, bool canControl)
         {
             var isStopButton = ReferenceEquals(button, stopAllButton) || ReferenceEquals(button, stopSelectedButton);
-            var enabled = canControl && (isStopButton || (!_commandInProgress && _stopRequestsInProgress == 0));
+            var ordinaryCommandsAvailable = !_commandInProgress && _stopRequestsInProgress == 0;
+            var enabled = canControl && (isStopButton || ordinaryCommandsAvailable);
             if (button.Enabled != enabled)
             {
                 button.Enabled = enabled;

@@ -4,28 +4,6 @@ namespace Page_switching.panel
     public partial class WaveBatchCalibrationPage : UserControl
     {
         private readonly System.Data.DataTable pointsRows = new();
-        private void InitializeTables()
-        {
-            // 直接绑定原始表格数据；列定义不依赖 AntdUI 的隐藏 Designer Columns 属性。
-            pointsRows.Columns.Add("C0", typeof(object));
-            points.Columns.Add(new AntdUI.Column("C0", "共同水位(mm)") { Editable = true, ReadOnly = false });
-            pointsRows.Columns.Add("C1", typeof(object));
-            points.Columns.Add(new AntdUI.Column("C1", "CH1原始值") { Editable = true, ReadOnly = false });
-            pointsRows.Columns.Add("C2", typeof(object));
-            points.Columns.Add(new AntdUI.Column("C2", "CH2原始值") { Editable = true, ReadOnly = false });
-            pointsRows.Columns.Add("C3", typeof(object));
-            points.Columns.Add(new AntdUI.Column("C3", "CH3原始值") { Editable = true, ReadOnly = false });
-            pointsRows.Columns.Add("C4", typeof(object));
-            points.Columns.Add(new AntdUI.Column("C4", "CH4原始值") { Editable = true, ReadOnly = false });
-            pointsRows.Columns.Add("C5", typeof(object));
-            points.Columns.Add(new AntdUI.Column("C5", "CH5原始值") { Editable = true, ReadOnly = false });
-            pointsRows.Columns.Add("C6", typeof(object));
-            points.Columns.Add(new AntdUI.Column("C6", "CH6原始值") { Editable = true, ReadOnly = false });
-            points.DataSource = pointsRows;
-            points.EditMode = AntdUI.TEditMode.DoubleClick;
-            points.MultipleRows = true;
-        }
-
         private readonly AntdUI.Checkbox[] _channelChecks;
         // 这里只选择文件标定通道，不启用未确认的设备采集协议。
         private IEnumerable<int> SelectedChannels => Enumerable.Range(0, 6).Where(index => _channelChecks[index].Checked);
@@ -37,23 +15,9 @@ namespace Page_switching.panel
             _channelChecks = [channel1Check, channel2Check, channel3Check, channel4Check, channel5Check, channel6Check];
             // 设计器只加载布局，运行时才绑定标定操作。
             if (System.ComponentModel.LicenseManager.UsageMode == System.ComponentModel.LicenseUsageMode.Designtime) return;
-            addButton.Click += (_, _) =>
-            {
-                var index = pointsRows.Rows.Add(new object[7]);
-                FillRaw(index);
-                OperationJournal.Record("批量标定", "添加共同水位标定点。");
-            };
-            readButton.Click += (_, _) =>
-            {
-                if (points.SelectedsReal().OfType<System.Data.DataRow>().FirstOrDefault() is { } row) FillRaw(row);
-                OperationJournal.Record("批量标定", "读取最近收到的真实通道原始值。");
-            };
-            removeButton.Click += (_, _) =>
-            {
-                foreach (System.Data.DataRow row in points.SelectedsReal().OfType<System.Data.DataRow>().ToArray()) pointsRows.Rows.Remove(row);
-                points.Refresh();
-                OperationJournal.Record("批量标定", "删除所选标定点。");
-            };
+            addButton.Click += (_, _) => AddPoint();
+            readButton.Click += (_, _) => ReadSelectedPoint();
+            removeButton.Click += (_, _) => RemoveSelectedPoints();
             saveButton.Click += (_, _) => Save();
             foreach (var check in _channelChecks)
                 check.CheckedChanged += (_, _) => OperationJournal.Record("批量标定",
@@ -62,12 +26,44 @@ namespace Page_switching.panel
                 $"{points.Columns[e.ColumnIndex].Title}：{e.Record}");
         }
 
+        private void InitializeTables()
+        {
+            TableColumns.Initialize(points, pointsRows, true,
+                "共同水位(mm)", "CH1原始值", "CH2原始值", "CH3原始值", "CH4原始值", "CH5原始值", "CH6原始值");
+            points.EditMode = AntdUI.TEditMode.DoubleClick;
+            points.MultipleRows = true;
+        }
+
         internal event EventHandler? BackRequested;
         // 保存成功后通知主窗体，避免单通道页面显示旧系数。
         internal event EventHandler? CalibrationSaved;
 
         private void BackButton_Click(object? sender, EventArgs e) =>
             BackRequested?.Invoke(this, e);
+
+        // 新行仍保留七列：共同水位加六个文件标定通道。
+        private void AddPoint()
+        {
+            var row = pointsRows.Rows.Add(new object[7]);
+            FillRaw(row);
+            OperationJournal.Record("批量标定", "添加共同水位标定点。");
+        }
+
+        private void ReadSelectedPoint()
+        {
+            var row = points.SelectedsReal().OfType<System.Data.DataRow>().FirstOrDefault();
+            if (row is not null) FillRaw(row);
+            OperationJournal.Record("批量标定", "读取最近收到的真实通道原始值。");
+        }
+
+        private void RemoveSelectedPoints()
+        {
+            // 先取出选择结果，再删除行，避免遍历过程中修改同一集合。
+            foreach (var row in points.SelectedsReal().OfType<System.Data.DataRow>().ToArray())
+                pointsRows.Rows.Remove(row);
+            points.Refresh();
+            OperationJournal.Record("批量标定", "删除所选标定点。");
+        }
 
         private void FillRaw(System.Data.DataRow row)
         {

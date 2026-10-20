@@ -7,55 +7,7 @@ using System.Text.Json;
 
 namespace Page_switching;
 
-public sealed record WaveCalibrationPoint(double RawCount, double WaterLevel);
-
-public sealed class WaveCalibrationProfile
-{
-    public int Channel { get; set; }
-    public double ZeroRawCount { get; set; }
-    public double Slope { get; set; } = 1;
-    public double Intercept { get; set; }
-    public string Version { get; set; } = Guid.NewGuid().ToString("N");
-    public List<WaveCalibrationPoint> Points { get; set; } = [];
-
-    public double Convert(int rawCount) => (rawCount - ZeroRawCount) * Slope + Intercept;
-
-    public void Fit()
-    {
-        if (Points.Count < 2)
-            throw new InvalidOperationException("至少需要两个标定点。");
-        var meanX = Points.Average(p => p.RawCount - ZeroRawCount);
-        var meanY = Points.Average(p => p.WaterLevel);
-        var denominator = Points.Sum(p => Math.Pow(p.RawCount - ZeroRawCount - meanX, 2));
-        if (denominator < 1e-12)
-            throw new InvalidOperationException("标定点的原始值不能全部相同。");
-        Slope = Points.Sum(p => (p.RawCount - ZeroRawCount - meanX) * (p.WaterLevel - meanY)) / denominator;
-        Intercept = meanY - Slope * meanX;
-        Version = Guid.NewGuid().ToString("N");
-    }
-}
-
-public sealed record WaveSample(
-    Guid SessionId, int Channel, DateTimeOffset Timestamp, int? RawCount,
-    double? CalibratedValue, string CalibrationVersion);
-
-public sealed class WaveCaptureManifest
-{
-    public Guid SessionId { get; set; }
-    public string DeviceAddress { get; set; } = "";
-    public DateTimeOffset StartedAt { get; set; }
-    public DateTimeOffset? EndedAt { get; set; }
-    public int SampleRateHz { get; set; }
-    public int[] Channels { get; set; } = [];
-    public long SampleCount { get; set; }
-    public string CalibrationVersion { get; set; } = "";
-    public string CsvPath { get; set; } = "";
-    public string SyncStatus { get; set; } = "待同步";
-    public string? SyncError { get; set; }
-    public bool IsLegacyImport { get; set; }
-}
-
-/// <summary>Shared local source of truth for capture, calibration, and session browsing.</summary>
+// 统一管理标定、采集文件和任务索引；各页面共用这一份工作区。
 public sealed class WaveDataWorkspace : IDisposable
 {
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
@@ -99,6 +51,7 @@ public sealed class WaveDataWorkspace : IDisposable
         }
     }
 
+    // 标定管理：返回副本，保存成功后才替换工作区内的配置。
     public WaveCalibrationProfile GetCalibration(int channel)
     {
         ValidateChannel(channel);
@@ -138,6 +91,7 @@ public sealed class WaveDataWorkspace : IDisposable
         lock (_gate) SaveProfiles(profiles);
     }
 
+    // 采集会话：写入和结束都受同一把锁保护，避免释放正在使用的文件。
     public WaveCaptureManifest StartSession(string deviceAddress, int sampleRateHz, IReadOnlyCollection<int> channels)
     {
         if (channels.Count != 1 || !channels.Contains(1))
@@ -272,6 +226,7 @@ public sealed class WaveDataWorkspace : IDisposable
         return recent.ToArray();
     }
 
+    // 旧格式导入导出：保留原始单位和通道，不补造缺失的实采数据。
     public WaveCaptureManifest ImportLegacyCapture(string path)
     {
         var lines = File.ReadAllLines(path);
@@ -363,7 +318,7 @@ public sealed class WaveDataWorkspace : IDisposable
         for (var row = 0; row < profiles.Max(p => p.Points.Count); row++)
             writer.WriteLine(string.Join(",", profiles.SelectMany(p =>
             {
-                // The old parser expects the coefficient row at the same index for every COM pair.
+                // 各 COM 列对的系数必须位于同一行，点数不足时沿用最后一个标定点。
                 var point = p.Points[Math.Min(row, p.Points.Count - 1)];
                 return new[] { Format(point.RawCount), Format(point.WaterLevel) };
             })));
@@ -421,6 +376,7 @@ public sealed class WaveDataWorkspace : IDisposable
         }
     }
 
+    // 数据库同步串行执行；单个任务失败仍保留本地记录并继续后续任务。
     public async Task<int> SynchronizeSessionsAsync(CancellationToken cancellationToken = default)
     {
         await _syncGate.WaitAsync(cancellationToken);
@@ -436,6 +392,31 @@ public sealed class WaveDataWorkspace : IDisposable
         if (string.IsNullOrWhiteSpace(connectionString)) throw new InvalidOperationException("数据库连接字符串未配置。");
         using var connection = new SqlConnection(connectionString);
         await connection.OpenAsync(cancellationToken);
+        await EnsureSessionTableAsync(connection, cancellationToken);
+        var synced = 0;
+        foreach (var manifest in ListSessions().Where(x => x.EndedAt.HasValue && x.SyncStatus != "已同步"))
+        {
+            try
+            {
+                await SaveSessionIndexAsync(connection, manifest, cancellationToken);
+                manifest.SyncStatus = "已同步";
+                manifest.SyncError = null;
+                SaveManifest(manifest);
+                synced++;
+            }
+            catch (Exception ex)
+            {
+                manifest.SyncStatus = "待同步";
+                manifest.SyncError = ex.Message;
+                SaveManifest(manifest);
+            }
+        }
+        return synced;
+    }
+
+    // 表结构保持兼容；数据库只保存会话索引，逐点采样仍保存在 CSV。
+    private static async Task EnsureSessionTableAsync(SqlConnection connection, CancellationToken cancellationToken)
+    {
         const string schema = """
             IF OBJECT_ID(N'dbo.WaveCaptureSessions', N'U') IS NULL
             CREATE TABLE dbo.WaveCaptureSessions (
@@ -453,49 +434,52 @@ public sealed class WaveDataWorkspace : IDisposable
             """;
         using (var create = new SqlCommand(schema, connection))
             await create.ExecuteNonQueryAsync(cancellationToken);
-        var synced = 0;
-        foreach (var manifest in ListSessions().Where(x => x.EndedAt.HasValue && x.SyncStatus != "已同步"))
+    }
+
+    private static async Task SaveSessionIndexAsync(
+        SqlConnection connection, WaveCaptureManifest manifest, CancellationToken cancellationToken)
+    {
+        using var command = CreateSessionIndexCommand(connection, manifest);
+        await command.ExecuteNonQueryAsync(cancellationToken);
+    }
+
+    // 单独组装参数化命令，便于检查字段、类型和长度，不把数据拼入 SQL。
+    private static SqlCommand CreateSessionIndexCommand(SqlConnection connection, WaveCaptureManifest manifest)
+    {
+        const string sql = """
+            UPDATE dbo.WaveCaptureSessions SET
+              DeviceAddress=@DeviceAddress, StartedAt=@StartedAt, EndedAt=@EndedAt,
+              SampleRateHz=@SampleRateHz, Channels=@Channels, SampleCount=@SampleCount,
+              CalibrationVersion=@CalibrationVersion, CsvPath=@CsvPath, IsLegacyImport=@IsLegacyImport
+            WHERE SessionId=@SessionId;
+            IF @@ROWCOUNT=0
+            INSERT INTO dbo.WaveCaptureSessions
+              (SessionId, DeviceAddress, StartedAt, EndedAt, SampleRateHz, Channels,
+               SampleCount, CalibrationVersion, CsvPath, IsLegacyImport)
+            VALUES (@SessionId, @DeviceAddress, @StartedAt, @EndedAt, @SampleRateHz,
+                    @Channels, @SampleCount, @CalibrationVersion, @CsvPath, @IsLegacyImport);
+            """;
+        var command = new SqlCommand(sql, connection);
+        try
         {
-            try
-            {
-                const string sql = """
-                    UPDATE dbo.WaveCaptureSessions SET
-                      DeviceAddress=@DeviceAddress, StartedAt=@StartedAt, EndedAt=@EndedAt,
-                      SampleRateHz=@SampleRateHz, Channels=@Channels, SampleCount=@SampleCount,
-                      CalibrationVersion=@CalibrationVersion, CsvPath=@CsvPath, IsLegacyImport=@IsLegacyImport
-                    WHERE SessionId=@SessionId;
-                    IF @@ROWCOUNT=0
-                    INSERT INTO dbo.WaveCaptureSessions
-                      (SessionId, DeviceAddress, StartedAt, EndedAt, SampleRateHz, Channels,
-                       SampleCount, CalibrationVersion, CsvPath, IsLegacyImport)
-                    VALUES (@SessionId, @DeviceAddress, @StartedAt, @EndedAt, @SampleRateHz,
-                            @Channels, @SampleCount, @CalibrationVersion, @CsvPath, @IsLegacyImport);
-                    """;
-                using var command = new SqlCommand(sql, connection);
-                command.Parameters.Add("@SessionId", SqlDbType.UniqueIdentifier).Value = manifest.SessionId;
-                command.Parameters.Add("@DeviceAddress", SqlDbType.NVarChar, 128).Value = manifest.DeviceAddress;
-                command.Parameters.Add("@StartedAt", SqlDbType.DateTimeOffset).Value = manifest.StartedAt;
-                command.Parameters.Add("@EndedAt", SqlDbType.DateTimeOffset).Value = manifest.EndedAt!.Value;
-                command.Parameters.Add("@SampleRateHz", SqlDbType.Int).Value = manifest.SampleRateHz;
-                command.Parameters.Add("@Channels", SqlDbType.NVarChar, 64).Value = string.Join(",", manifest.Channels);
-                command.Parameters.Add("@SampleCount", SqlDbType.BigInt).Value = manifest.SampleCount;
-                command.Parameters.Add("@CalibrationVersion", SqlDbType.NVarChar, 64).Value = manifest.CalibrationVersion;
-                command.Parameters.Add("@CsvPath", SqlDbType.NVarChar, 1024).Value = manifest.CsvPath;
-                command.Parameters.Add("@IsLegacyImport", SqlDbType.Bit).Value = manifest.IsLegacyImport;
-                await command.ExecuteNonQueryAsync(cancellationToken);
-                manifest.SyncStatus = "已同步";
-                manifest.SyncError = null;
-                SaveManifest(manifest);
-                synced++;
-            }
-            catch (Exception ex)
-            {
-                manifest.SyncStatus = "待同步";
-                manifest.SyncError = ex.Message;
-                SaveManifest(manifest);
-            }
+            command.Parameters.Add("@SessionId", SqlDbType.UniqueIdentifier).Value = manifest.SessionId;
+            command.Parameters.Add("@DeviceAddress", SqlDbType.NVarChar, 128).Value = manifest.DeviceAddress;
+            command.Parameters.Add("@StartedAt", SqlDbType.DateTimeOffset).Value = manifest.StartedAt;
+            command.Parameters.Add("@EndedAt", SqlDbType.DateTimeOffset).Value = manifest.EndedAt!.Value;
+            command.Parameters.Add("@SampleRateHz", SqlDbType.Int).Value = manifest.SampleRateHz;
+            command.Parameters.Add("@Channels", SqlDbType.NVarChar, 64).Value = string.Join(",", manifest.Channels);
+            command.Parameters.Add("@SampleCount", SqlDbType.BigInt).Value = manifest.SampleCount;
+            command.Parameters.Add("@CalibrationVersion", SqlDbType.NVarChar, 64).Value = manifest.CalibrationVersion;
+            command.Parameters.Add("@CsvPath", SqlDbType.NVarChar, 1024).Value = manifest.CsvPath;
+            command.Parameters.Add("@IsLegacyImport", SqlDbType.Bit).Value = manifest.IsLegacyImport;
+            return command;
         }
-        return synced;
+        catch
+        {
+            // 组装失败时尚未交给调用方，仍由这里释放命令。
+            command.Dispose();
+            throw;
+        }
     }
 
     public void Dispose() => EndSession();

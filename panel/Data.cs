@@ -7,33 +7,6 @@ public partial class Data : UserControl
 {
     private readonly System.Data.DataTable sessionGridRows = new();
     private readonly System.Data.DataTable sampleGridRows = new();
-    private void InitializeTables()
-    {
-        // 直接绑定原始表格数据；列定义不依赖 AntdUI 的隐藏 Designer Columns 属性。
-        sessionGridRows.Columns.Add("C0", typeof(object));
-        sessionGrid.Columns.Add(new AntdUI.Column("C0", "任务 ID") { Editable = false, ReadOnly = true });
-        sessionGridRows.Columns.Add("C1", typeof(object));
-        sessionGrid.Columns.Add(new AntdUI.Column("C1", "开始时间") { Editable = false, ReadOnly = true });
-        sessionGridRows.Columns.Add("C2", typeof(object));
-        sessionGrid.Columns.Add(new AntdUI.Column("C2", "通道") { Editable = false, ReadOnly = true });
-        sessionGridRows.Columns.Add("C3", typeof(object));
-        sessionGrid.Columns.Add(new AntdUI.Column("C3", "样本数") { Editable = false, ReadOnly = true });
-        sessionGridRows.Columns.Add("C4", typeof(object));
-        sessionGrid.Columns.Add(new AntdUI.Column("C4", "数据库") { Editable = false, ReadOnly = true });
-        sessionGrid.DataSource = sessionGridRows;
-
-        // 直接绑定原始表格数据；列定义不依赖 AntdUI 的隐藏 Designer Columns 属性。
-        sampleGridRows.Columns.Add("C0", typeof(object));
-        sampleGrid.Columns.Add(new AntdUI.Column("C0", "采样时间") { Editable = false, ReadOnly = true });
-        sampleGridRows.Columns.Add("C1", typeof(object));
-        sampleGrid.Columns.Add(new AntdUI.Column("C1", "通道") { Editable = false, ReadOnly = true });
-        sampleGridRows.Columns.Add("C2", typeof(object));
-        sampleGrid.Columns.Add(new AntdUI.Column("C2", "原始计数") { Editable = false, ReadOnly = true });
-        sampleGridRows.Columns.Add("C3", typeof(object));
-        sampleGrid.Columns.Add(new AntdUI.Column("C3", "标定值 (mm)") { Editable = false, ReadOnly = true });
-        sampleGrid.DataSource = sampleGridRows;
-    }
-
     private WaveDataWorkspace? _workspace;
     private readonly Dictionary<System.Data.DataRow, WaveCaptureManifest> _sessionManifests = new();
     internal event Action<WaveCaptureManifest, int?>? AnalysisRequested;
@@ -56,20 +29,39 @@ public partial class Data : UserControl
         exportButton.Click += (_, _) => ExportSelected();
         syncButton.Click += async (_, _) => await SyncAsync();
         legacyExportButton.Click += async (_, _) => await ExportLegacyAsync();
-        analyzeButton.Click += (_, _) =>
-        {
-            var manifest = SelectedManifest();
-            if (manifest is null) { status.Text = "请先选择采集任务。"; return; }
-            try
-            {
-                // 刷新文件失败时留在当前页，避免异常逃出按钮事件。
-                _workspace.FlushActiveSession();
-                AnalysisRequested?.Invoke(manifest, SelectedChannel());
-            }
-            catch (Exception ex) { status.Text = "打开分析失败：" + ex.Message; }
-        };
+        analyzeButton.Click += (_, _) => OpenSelectedAnalysis();
         VisibleChanged += (_, _) => { if (Visible) RefreshSessions(); };
         RefreshSessions();
+    }
+
+    private void InitializeTables()
+    {
+        TableColumns.Initialize(sessionGrid, sessionGridRows, false,
+            "任务 ID", "开始时间", "通道", "样本数", "数据库");
+
+        TableColumns.Initialize(sampleGrid, sampleGridRows, false,
+            "采样时间", "通道", "原始计数", "标定值 (mm)");
+    }
+
+    // 先刷新采集文件，再请求主窗体切页；失败时保留当前页面和错误提示。
+    private void OpenSelectedAnalysis()
+    {
+        var manifest = SelectedManifest();
+        if (manifest is null)
+        {
+            status.Text = "请先选择采集任务。";
+            return;
+        }
+
+        try
+        {
+            _workspace!.FlushActiveSession();
+            AnalysisRequested?.Invoke(manifest, SelectedChannel());
+        }
+        catch (Exception ex)
+        {
+            status.Text = "打开分析失败：" + ex.Message;
+        }
     }
 
     private void RefreshSessions()

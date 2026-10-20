@@ -38,8 +38,17 @@ public partial class Config : UserControl
         }
     }
 
-    // 将 Router 和波形生成器配置加载到界面控件。
+    // 按页面分组加载配置，最后再按当前选项更新控件可用状态。
     private void LoadSettings()
+    {
+        LoadWaveGeneratorSettings();
+        operationLogDirectoryTextBox.Text = OperationJournal.DirectoryPath;
+        LoadRouterSettings();
+        UpdateWaveGeneratorState();
+        UpdateInputState();
+    }
+
+    private void LoadWaveGeneratorSettings()
     {
         waveGeneratorModeComboBox.Items.AddRange(["外部 WFast.exe", "WaveMaker 内置算法", "旧 WP-5-6.exe"]);
         waveGeneratorModeComboBox.SelectedIndex = Read("WaveGeneratorMode", "ExternalExe") switch
@@ -48,7 +57,10 @@ public partial class Config : UserControl
         };
         waveGeneratorPathTextBox.Text = Read("WaveGeneratorPath");
         waveProgramDirectoryTextBox.Text = WaveProgramSettings.ProgramDirectory;
-        operationLogDirectoryTextBox.Text = OperationJournal.DirectoryPath;
+    }
+
+    private void LoadRouterSettings()
+    {
         routerEnabledCheckBox.Checked = ReadBool("AdsTcpRouterEnabled", false);
         routerNameTextBox.Text = Read("AdsTcpRouterName", "PageSwitchingRouter");
         localNetIdTextBox.Text = Read("AdsTcpRouterLocalNetId");
@@ -56,8 +68,6 @@ public partial class Config : UserControl
         remoteNameTextBox.Text = Read("AdsTcpRouterRemoteName", "WaveMakerPlc");
         remoteAddressTextBox.Text = Read("AdsTcpRouterRemoteAddress");
         remoteNetIdTextBox.Text = Read("AdsTcpRouterRemoteNetId", Read("AdsAmsNetId"));
-        UpdateWaveGeneratorState();
-        UpdateInputState();
     }
 
     // 从 App.config 读取数据库开关、连接字符串以及 SQL Server 账号密码。
@@ -109,17 +119,7 @@ public partial class Config : UserControl
             var connectionString = _databaseConnectionTextBox.Text.Trim();
             var userName = _databaseUserNameTextBox.Text.Trim();
             var password = _databasePasswordTextBox.Text;
-            if (_databaseEnabledCheckBox.Checked && string.IsNullOrWhiteSpace(connectionString))
-            {
-                throw new InvalidOperationException("启用数据库日志时，连接字符串不能为空。");
-            }
-
-            if (!string.IsNullOrWhiteSpace(password) && string.IsNullOrWhiteSpace(userName))
-            {
-                throw new InvalidOperationException("填写数据库密码时，账号不能为空。");
-            }
-
-            connectionString = AddSqlServerCredentials(connectionString, userName, password);
+            connectionString = ValidateDatabaseSettings(connectionString, userName, password);
 
             SaveSettings(
                 ("DatabaseEnabled", _databaseEnabledCheckBox.Checked.ToString().ToLowerInvariant()),
@@ -138,6 +138,16 @@ public partial class Config : UserControl
         {
             ShowSaveResult("数据库配置保存失败：" + ex.Message, UiPalette.Danger);
         }
+    }
+
+    // 校验通过后才将页面账号密码写入连接字符串。
+    private string ValidateDatabaseSettings(string connectionString, string userName, string password)
+    {
+        if (_databaseEnabledCheckBox.Checked && string.IsNullOrWhiteSpace(connectionString))
+            throw new InvalidOperationException("启用数据库日志时，连接字符串不能为空。");
+        if (!string.IsNullOrWhiteSpace(password) && string.IsNullOrWhiteSpace(userName))
+            throw new InvalidOperationException("填写数据库密码时，账号不能为空。");
+        return AddSqlServerCredentials(connectionString, userName, password);
     }
 
     // 打开文件选择框，让用户选择波形生成程序。
@@ -343,7 +353,7 @@ public partial class Config : UserControl
     {
         try
         {
-            ValidateInputs();
+            ValidateRouterInputs();
             AdsConnectionSettings.Save(
                 ("AdsTcpRouterEnabled", routerEnabledCheckBox.Checked.ToString().ToLowerInvariant()),
                 ("AdsTcpRouterName", routerNameTextBox.Text.Trim()),
@@ -374,7 +384,7 @@ public partial class Config : UserControl
     }
 
     // 检查 Router 名称、Net ID、地址和端口是否合法。
-    private void ValidateInputs()
+    private void ValidateRouterInputs()
     {
         if (!routerEnabledCheckBox.Checked)
         {

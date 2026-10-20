@@ -73,14 +73,14 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
         _readOperation = "连接";
         try
         {
-            bool closeClient;
+            bool needsClientReset;
             lock (_stateSync)
             {
                 if (_failureSinceTick.HasValue && !HasElapsed(_failureSinceTick.Value, _options.ReconnectIntervalMilliseconds))
                     return LatestSnapshot;
-                closeClient = _resetClient || _failureSinceTick.HasValue || _client is not null && !_client.IsConnected;
+                needsClientReset = _resetClient || _failureSinceTick.HasValue || (_client is not null && !_client.IsConnected);
             }
-            if (closeClient) await CloseClientAsync().ConfigureAwait(false);
+            if (needsClientReset) await CloseClientAsync().ConfigureAwait(false);
             lock (_stateSync)
             {
                 _client ??= new AdsClient(new AdsClientOptions
@@ -173,9 +173,10 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
                 error = AdsDiagnostics.DescribeException(ex);
                 // 在线修改会使 DLL 缓存的句柄失效；下轮重建客户端，由 DLL 集中清理。
                 // 单纯找不到符号时不重连，仍保留具体变量和原始 ADS 错误。
-                _resetClient = error.Contains("DeviceSymbolVersionInvalid", StringComparison.OrdinalIgnoreCase)
-                    || error.Contains("ReadAny", StringComparison.OrdinalIgnoreCase)
+                var symbolVersionChanged = error.Contains("DeviceSymbolVersionInvalid", StringComparison.OrdinalIgnoreCase);
+                var cachedHandleMissing = error.Contains("ReadAny", StringComparison.OrdinalIgnoreCase)
                     && error.Contains("DeviceSymbolNotFound", StringComparison.OrdinalIgnoreCase);
+                _resetClient = symbolVersionChanged || cachedHandleMissing;
             }
         }
         // 整帧读取失败时返回无效，不能把失败值显示成零或 false。

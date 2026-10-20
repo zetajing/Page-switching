@@ -6,18 +6,6 @@ namespace Page_switching.panel;
 public partial class Calibration : UserControl
 {
     private readonly System.Data.DataTable pointsGridRows = new();
-    private void InitializeTables()
-    {
-        // 直接绑定原始表格数据；列定义不依赖 AntdUI 的隐藏 Designer Columns 属性。
-        pointsGridRows.Columns.Add("C0", typeof(object));
-        pointsGrid.Columns.Add(new AntdUI.Column("C0", "原始计数") { Editable = true, ReadOnly = false });
-        pointsGridRows.Columns.Add("C1", typeof(object));
-        pointsGrid.Columns.Add(new AntdUI.Column("C1", "标定水位 (mm)") { Editable = true, ReadOnly = false });
-        pointsGrid.DataSource = pointsGridRows;
-        pointsGrid.EditMode = AntdUI.TEditMode.DoubleClick;
-        pointsGrid.MultipleRows = true;
-    }
-
     private WaveDataWorkspace? _workspace;
     private WaveCalibrationProfile? _profile;
 
@@ -40,12 +28,20 @@ public partial class Calibration : UserControl
         exportButton.Click += (_, _) => Export();
         batchButton.Click += (_, _) => BatchCalibrationRequested?.Invoke(this, EventArgs.Empty);
         _workspace.SampleRecorded += Workspace_SampleRecorded;
-        Disposed += (_, _) => _workspace.SampleRecorded -= Workspace_SampleRecorded;
+        Disposed += Calibration_Disposed;
         channelPicker.SelectedIndex = 0;
     }
 
     // 页面只发出切换请求，具体显示由主窗体处理。
     internal event EventHandler? BatchCalibrationRequested;
+
+    private void InitializeTables()
+    {
+        TableColumns.Initialize(pointsGrid, pointsGridRows, true,
+            "原始计数", "标定水位 (mm)");
+        pointsGrid.EditMode = AntdUI.TEditMode.DoubleClick;
+        pointsGrid.MultipleRows = true;
+    }
 
     // 批量标定保存成功后，主窗体同步刷新这里的通道系数。
     internal void LoadChannel()
@@ -183,6 +179,14 @@ public partial class Calibration : UserControl
             result.Text = "标定文件已导出。";
         }
         catch (Exception ex) { result.Text = "导出失败：" + ex.Message; }
+    }
+
+    // 工作区比页面存活更久，释放页面时必须解除采样通知。
+    private void Calibration_Disposed(object? sender, EventArgs e)
+    {
+        Disposed -= Calibration_Disposed;
+        if (_workspace is not null)
+            _workspace.SampleRecorded -= Workspace_SampleRecorded;
     }
 
     private static bool TryNumber(string text, out double value) =>

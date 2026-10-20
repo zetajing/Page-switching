@@ -5,25 +5,8 @@ namespace Page_switching.panel
     public partial class WaveAnalysisPage : UserControl
     {
         private readonly System.Data.DataTable elementsRows = new();
-        private void InitializeTables()
-        {
-            // 直接绑定原始表格数据；列定义不依赖 AntdUI 的隐藏 Designer Columns 属性。
-            elementsRows.Columns.Add("C0", typeof(object));
-            elements.Columns.Add(new AntdUI.Column("C0", "要素") { Editable = false, ReadOnly = true });
-            elementsRows.Columns.Add("C1", typeof(object));
-            elements.Columns.Add(new AntdUI.Column("C1", "值") { Editable = false, ReadOnly = true });
-            elements.DataSource = elementsRows;
-        }
-
         private WaveAnalysisResult? _result;
         private bool _busy;
-        // Designer 重载可能重复释放页面，先解除事件，取消和释放只执行一次。
-        private void DisposeLifetime(object? sender, EventArgs e)
-        {
-            Disposed -= DisposeLifetime;
-            _lifetime.Cancel();
-            _lifetime.Dispose();
-        }
         private readonly CancellationTokenSource _lifetime = new();
         private string _metadata = "{}";
 
@@ -44,6 +27,12 @@ namespace Page_switching.panel
                 number.ValueChanged += (_, _) => ClearResult();
             foreach (var picker in new[] { unitInput, spectrumInput, methodInput })
                 picker.SelectedIndexChanged += (_, _) => ClearResult();
+        }
+
+        private void InitializeTables()
+        {
+            TableColumns.Initialize(elements, elementsRows, false,
+                "要素", "值");
         }
 
         private void Browse()
@@ -107,18 +96,36 @@ namespace Page_switching.panel
                 information["UsedSamples"] = result.UsedSamples;
                 information["WaveCount"] = result.WaveCount;
                 _metadata = information.ToJsonString();
-                foreach (var item in result.Statistics)
-                    elementsRows.Rows.Add(item.Key, double.IsFinite(item.Value) ? item.Value.ToString("0.######") : "无完整波");
-                elements.Refresh();
-                plot.SetSeries(result.Frequencies, result.Theoretical, result.Measured);
-                plot.VerticalCaption = legacy ? "S(f)（旧文件单位）" : "S(f) (m²·s)";
-                status.Text = legacy ? "旧程序结果已读取；波高保留旧程序单位，须用实测样例确认。"
-                    : $"CH{channel}：使用前 {result.UsedSamples:N0} 点，{result.WaveCount} 个完整上跨零波；去均值、Hann窗、单边FFT谱。理论谱为深水模型，水深只记录，未做浅水修正；旧EXE等价性待验收。";
-                OperationJournal.Record("波浪分析", path + "；" + status.Text);
-                exportSpectrumButton.Enabled = exportElementsButton.Enabled = true;
+                ShowAnalysisResult(result, legacy, channel, path);
             }
-            catch (Exception ex) { if (!IsDisposed) status.Text = "分析失败：" + ex.Message; OperationJournal.Record("波浪分析", ex.Message); }
-            finally { _busy = false; if (!IsDisposed) { analyzeButton.Enabled = true; options.Enabled = true; } }
+            catch (Exception ex)
+            {
+                if (!IsDisposed) status.Text = "分析失败：" + ex.Message;
+                OperationJournal.Record("波浪分析", ex.Message);
+            }
+            finally
+            {
+                _busy = false;
+                if (!IsDisposed)
+                {
+                    analyzeButton.Enabled = true;
+                    options.Enabled = true;
+                }
+            }
+        }
+
+        // 分析完成后统一更新表格、曲线和结果提示；只展示已有计算结果。
+        private void ShowAnalysisResult(WaveAnalysisResult result, bool legacy, int channel, string path)
+        {
+            foreach (var item in result.Statistics)
+                elementsRows.Rows.Add(item.Key, double.IsFinite(item.Value) ? item.Value.ToString("0.######") : "无完整波");
+            elements.Refresh();
+            plot.SetSeries(result.Frequencies, result.Theoretical, result.Measured);
+            plot.VerticalCaption = legacy ? "S(f)（旧文件单位）" : "S(f) (m²·s)";
+            status.Text = legacy ? "旧程序结果已读取；波高保留旧程序单位，须用实测样例确认。"
+                : $"CH{channel}：使用前 {result.UsedSamples:N0} 点，{result.WaveCount} 个完整上跨零波；去均值、Hann窗、单边FFT谱。理论谱为深水模型，水深只记录，未做浅水修正；旧EXE等价性待验收。";
+            OperationJournal.Record("波浪分析", path + "；" + status.Text);
+            exportSpectrumButton.Enabled = exportElementsButton.Enabled = true;
         }
 
         private void Export(bool statistics)
@@ -206,6 +213,14 @@ namespace Page_switching.panel
             channelInput.Value = channel ?? manifest.Channels.FirstOrDefault(1);
             rateInput.Value = Math.Clamp(manifest.SampleRateHz, 1, 1000);
             ClearResult();
+        }
+
+        // Designer 重载可能重复释放页面，先解除事件，取消和释放只执行一次。
+        private void DisposeLifetime(object? sender, EventArgs e)
+        {
+            Disposed -= DisposeLifetime;
+            _lifetime.Cancel();
+            _lifetime.Dispose();
         }
 
         private void ClearResult()
