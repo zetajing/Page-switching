@@ -34,11 +34,11 @@ namespace Page_switching
         private readonly bool _recordOperations = LicenseManager.UsageMode != LicenseUsageMode.Designtime;
         private UserControl? _currentPage;
         private bool? _lastAdsConnected;
-        private static readonly HashSet<string> ResultLabels =
-        [
+        private static readonly HashSet<string> ResultLabels = new HashSet<string>
+        {
             "regularStatusLabel", "irregularStatusLabel",
             "result", "status", "_hintLabel", "_connectionStatusLabel"
-        ];
+        };
 
         // 初始化共享轴服务和各个页面，并显示默认页面。
         public Mainpage()
@@ -67,8 +67,11 @@ namespace Page_switching
             _analysisPage = new WaveAnalysisPage();
             _correctionPage = new SignalCorrectionPage();
             // 页面集合统一用于日志注册和退出释放，不再维护两份清单。
-            _pages = [_autoPage, _manualPage, _configPage, _waveformPage, _waveHeightMeterPage,
-                _dataPage, _calibrationPage, _batchCalibrationPage, _analysisPage, _correctionPage, _controlAuthorityPage];
+            _pages = new UserControl[]
+            {
+                _autoPage, _manualPage, _configPage, _waveformPage, _waveHeightMeterPage,
+                _dataPage, _calibrationPage, _batchCalibrationPage, _analysisPage, _correctionPage, _controlAuthorityPage
+            };
             ConnectPageEvents();
             RegisterPageLogging();
             InitializeStartup();
@@ -363,52 +366,86 @@ namespace Page_switching
             }
         }
 
-        // 递归注册各类控件的日志；只在初始化时调用，避免切页后重复订阅。
+        // 递归注册各类控件的日志；逐项判断类型，方便在对应分支打断点。
         private static void TrackActions(UserControl page, Control parent)
         {
             foreach (Control control in parent.Controls)
             {
-                var pageName = GetPageName(page);
-                switch (control)
+                string pageName = GetPageName(page);
+                // as 转换失败会返回 null，下面只处理转换成功的控件。
+                AntdUI.Button? button = control as AntdUI.Button;
+                AntdUI.Checkbox? checkBox = control as AntdUI.Checkbox;
+                AntdUI.Select? comboBox = control as AntdUI.Select;
+                AntdUI.Radio? radioButton = control as AntdUI.Radio;
+                AntdUI.Tabs? tabs = control as AntdUI.Tabs;
+                AntdUI.Table? table = control as AntdUI.Table;
+                AntdUI.Label? label = control as AntdUI.Label;
+
+                if (button != null && button.Name != "jogNegativeButton" && button.Name != "jogPositiveButton"
+                    && button.Name != "clearLogButton" && button.Name != "resetViewButton")
                 {
-                    case AntdUI.Button button when button.Name is not ("jogNegativeButton" or "jogPositiveButton" or "clearLogButton" or "resetViewButton"):
-                        button.Click += (_, _) => OperationJournal.Record(pageName,
-                            "点击" + (button.Text ?? "").Replace("\r", " ").Replace("\n", " ").Trim());
-                        break;
-                    case AntdUI.Checkbox checkBox when checkBox.Name != "autoScaleCheckBox" && page is not WaveBatchCalibrationPage:
-                        checkBox.CheckedChanged += (_, _) => OperationJournal.Record(pageName,
-                            $"{(checkBox.Text ?? "").Trim()}：{(checkBox.Checked ? "选中" : "取消")}");
-                        break;
-                    case AntdUI.Select comboBox:
-                        // 只记录用户正在操作的下拉框，程序加载默认值时不额外记日志。
-                        comboBox.SelectedIndexChanged += (_, _) =>
+                    button.Click += (_, _) =>
+                    {
+                        string text = (button.Text ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                        OperationJournal.Record(pageName, "点击" + text);
+                    };
+                }
+                else if (checkBox != null && checkBox.Name != "autoScaleCheckBox" && !(page is WaveBatchCalibrationPage))
+                {
+                    checkBox.CheckedChanged += (_, _) =>
+                    {
+                        string text = (checkBox.Text ?? "").Trim();
+                        string state = checkBox.Checked ? "选中" : "取消";
+                        OperationJournal.Record(pageName, text + "：" + state);
+                    };
+                }
+                else if (comboBox != null)
+                {
+                    // 只记录用户正在操作的下拉框，程序加载默认值时不额外记日志。
+                    comboBox.SelectedIndexChanged += (_, _) =>
+                    {
+                        if (comboBox.HasFocus || comboBox.Expand)
                         {
-                            if (comboBox.HasFocus || comboBox.Expand)
-                                OperationJournal.Record(pageName, "选择" + comboBox.Text);
-                        };
-                        break;
-                    case AntdUI.Radio radioButton:
-                        radioButton.CheckedChanged += (_, _) =>
+                            OperationJournal.Record(pageName, "选择" + comboBox.Text);
+                        }
+                    };
+                }
+                else if (radioButton != null)
+                {
+                    radioButton.CheckedChanged += (_, _) =>
+                    {
+                        if (radioButton.Checked)
                         {
-                            if (radioButton.Checked)
-                                OperationJournal.Record(pageName, "选择" + radioButton.Text);
-                        };
-                        break;
-                    case AntdUI.Tabs tabs:
-                        tabs.SelectedIndexChanged += (_, _) => OperationJournal.Record(pageName,
-                            "切换到" + tabs.SelectedTab?.Text);
-                        break;
-                    case AntdUI.Table table when page is not WaveBatchCalibrationPage:
-                        table.CellEditComplete += (_, e) =>
+                            OperationJournal.Record(pageName, "选择" + radioButton.Text);
+                        }
+                    };
+                }
+                else if (tabs != null)
+                {
+                    tabs.SelectedIndexChanged += (_, _) =>
+                    {
+                        OperationJournal.Record(pageName, "切换到" + tabs.SelectedTab?.Text);
+                    };
+                }
+                else if (table != null && !(page is WaveBatchCalibrationPage))
+                {
+                    table.CellEditComplete += (_, e) =>
+                    {
+                        System.Data.DataRow? row = e.Record as System.Data.DataRow;
+                        if (row != null)
                         {
-                            if (e.Record is System.Data.DataRow row)
-                                OperationJournal.Record(pageName,
-                                    $"第{row.Table.Rows.IndexOf(row) + 1}行{table.Columns[e.ColumnIndex].Title}：{row[e.ColumnIndex]}");
-                        };
-                        break;
-                    case AntdUI.Label label when ShouldTrackResultLabel(page, label):
-                        label.TextChanged += (_, _) => OperationJournal.Record(pageName, label.Text ?? "");
-                        break;
+                            int rowNumber = row.Table.Rows.IndexOf(row) + 1;
+                            string title = table.Columns[e.ColumnIndex].Title;
+                            OperationJournal.Record(pageName, $"第{rowNumber}行{title}：{row[e.ColumnIndex]}");
+                        }
+                    };
+                }
+                else if (label != null && ShouldTrackResultLabel(page, label))
+                {
+                    label.TextChanged += (_, _) =>
+                    {
+                        OperationJournal.Record(pageName, label.Text ?? "");
+                    };
                 }
 
                 TrackActions(page, control);
@@ -416,10 +453,22 @@ namespace Page_switching
         }
 
         // 已主动记录结果的页面不再从标签变化重复推断，其他页面保留原有日志。
-        private static bool ShouldTrackResultLabel(UserControl page, AntdUI.Label label) =>
-            ResultLabels.Contains(label.Name) &&
-            page is not (WaveAnalysisPage or SignalCorrectionPage or WaveBatchCalibrationPage) &&
-            !(page is WaveformPage && label.Name == "status");
+        private static bool ShouldTrackResultLabel(UserControl page, AntdUI.Label label)
+        {
+            if (!ResultLabels.Contains(label.Name))
+            {
+                return false;
+            }
+            if (page is WaveAnalysisPage || page is SignalCorrectionPage || page is WaveBatchCalibrationPage)
+            {
+                return false;
+            }
+            if (page is WaveformPage && label.Name == "status")
+            {
+                return false;
+            }
+            return true;
+        }
 
         // AntdUI 导航统一更新默认、悬停和按下颜色；页面切换仍使用同一个入口。
         private void SetActiveNavigation(AntdUI.Button activeButton)
@@ -461,29 +510,79 @@ namespace Page_switching
             var owner = Auto.FormatMonitorField(snapshot.ControlOwner, Auto.FormatControlOwner);
             var mode = Auto.FormatMonitorField(snapshot.ControlMode, Auto.FormatControlMode);
             controlStatusLabel.Text = $"页面：{GetCurrentPageName()}    控制端：{owner}    模式：{mode}";
-            controlStatusLabel.ForeColor = snapshot.ControlOwner.IsAvailable && snapshot.ControlOwner.Value is ushort ownerCode && ownerCode <= 3 &&
-                snapshot.ControlMode.IsAvailable && snapshot.ControlMode.Value is ushort modeCode && modeCode <= 2
-                ? UiPalette.Muted : UiPalette.Warning;
+            // 分开查看两个字段是否有效，断点处能直接观察每个判断结果。
+            bool ownerValid = snapshot.ControlOwner.IsAvailable && snapshot.ControlOwner.Value.HasValue
+                && snapshot.ControlOwner.Value.Value <= 3;
+            bool modeValid = snapshot.ControlMode.IsAvailable && snapshot.ControlMode.Value.HasValue
+                && snapshot.ControlMode.Value.Value <= 2;
+            if (ownerValid && modeValid)
+            {
+                controlStatusLabel.ForeColor = UiPalette.Muted;
+            }
+            else
+            {
+                controlStatusLabel.ForeColor = UiPalette.Warning;
+            }
         }
 
         // 根据当前缓存页面返回顶部状态栏要显示的页面名称。
-        private string GetCurrentPageName() => _currentPage is null ? "系统" : GetPageName(_currentPage);
-
-        private static string GetPageName(UserControl page) => page switch
+        private string GetCurrentPageName()
         {
-            Auto => "自动运行",
-            Manual => "手动控制",
-            ControlAuthority => "控制权申请",
-            Calibration => "标定管理",
-            WaveBatchCalibrationPage => "批量标定",
-            Data => "数据管理",
-            WaveformPage => "波形生成",
-            Config => "系统配置",
-            Wave_Height_Meter => "浪高监测",
-            WaveAnalysisPage => "波浪分析",
-            SignalCorrectionPage => "信号修正",
-            _ => "系统"
-        };
+            if (_currentPage == null)
+            {
+                return "系统";
+            }
+            return GetPageName(_currentPage);
+        }
+
+        private static string GetPageName(UserControl page)
+        {
+            if (page is Auto)
+            {
+                return "自动运行";
+            }
+            if (page is Manual)
+            {
+                return "手动控制";
+            }
+            if (page is ControlAuthority)
+            {
+                return "控制权申请";
+            }
+            if (page is Calibration)
+            {
+                return "标定管理";
+            }
+            if (page is WaveBatchCalibrationPage)
+            {
+                return "批量标定";
+            }
+            if (page is Data)
+            {
+                return "数据管理";
+            }
+            if (page is WaveformPage)
+            {
+                return "波形生成";
+            }
+            if (page is Config)
+            {
+                return "系统配置";
+            }
+            if (page is Wave_Height_Meter)
+            {
+                return "浪高监测";
+            }
+            if (page is WaveAnalysisPage)
+            {
+                return "波浪分析";
+            }
+            if (page is SignalCorrectionPage)
+            {
+                return "信号修正";
+            }
+            return "系统";
+        }
 
         protected override void OnLoad(EventArgs e)
         {

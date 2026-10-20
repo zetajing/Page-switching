@@ -31,23 +31,24 @@ public sealed class AxisServiceOptions
     // 合并用户保存的 ADS 连接参数；四根轴的变量地址仍来自 App.config。
     public static AxisServiceOptions FromConfiguration(NameValueCollection? settings = null)
     {
-        settings ??= AdsConnectionSettings.GetSettings();
-        var stationCode = ControlStationIdentity.GetPlcCode(ControlStationIdentity.Parse(settings["ControlStationIdentity"]));
-        // 反馈统一读取监控结构体；命令必须进入本站邮箱，未配置身份时禁止写命令。
-        string Command(string key) => stationCode == 0 ? "" : (settings[key] ?? "")
-            .Replace("{station}", stationCode.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        if (settings == null)
+        {
+            settings = AdsConnectionSettings.GetSettings();
+        }
+        var station = ControlStationIdentity.Parse(settings["ControlStationIdentity"]);
+        ushort stationCode = ControlStationIdentity.GetPlcCode(station);
         var symbols = new AxisSymbolMap[4];
         for (var axisNumber = 1; axisNumber <= 4; axisNumber++)
         {
             symbols[axisNumber - 1] = new AxisSymbolMap
             {
-                EnableCommand = Command($"AdsAxis{axisNumber}EnableCommand"),
-                ResetAlarmCommand = Command($"AdsAxis{axisNumber}ResetAlarmCommand"),
-                HomeCommand = Command($"AdsAxis{axisNumber}HomeCommand"),
-                StopCommand = Command($"AdsAxis{axisNumber}StopCommand"),
-                JogSpeedCommand = Command($"AdsAxis{axisNumber}JogSpeedCommand"),
-                JogPositiveCommand = Command($"AdsAxis{axisNumber}JogPositiveCommand"),
-                JogNegativeCommand = Command($"AdsAxis{axisNumber}JogNegativeCommand")
+                EnableCommand = ReadCommandSymbol(settings, stationCode, $"AdsAxis{axisNumber}EnableCommand"),
+                ResetAlarmCommand = ReadCommandSymbol(settings, stationCode, $"AdsAxis{axisNumber}ResetAlarmCommand"),
+                HomeCommand = ReadCommandSymbol(settings, stationCode, $"AdsAxis{axisNumber}HomeCommand"),
+                StopCommand = ReadCommandSymbol(settings, stationCode, $"AdsAxis{axisNumber}StopCommand"),
+                JogSpeedCommand = ReadCommandSymbol(settings, stationCode, $"AdsAxis{axisNumber}JogSpeedCommand"),
+                JogPositiveCommand = ReadCommandSymbol(settings, stationCode, $"AdsAxis{axisNumber}JogPositiveCommand"),
+                JogNegativeCommand = ReadCommandSymbol(settings, stationCode, $"AdsAxis{axisNumber}JogNegativeCommand")
             };
         }
 
@@ -67,5 +68,18 @@ public sealed class AxisServiceOptions
                 System.Globalization.CultureInfo.InvariantCulture),
             AxisSymbols = symbols
         };
+    }
+
+    // 未配置本站身份时不生成命令地址；普通方法可直接进入并逐项查看配置值。
+    private static string ReadCommandSymbol(NameValueCollection settings, ushort stationCode, string key)
+    {
+        if (stationCode == 0)
+        {
+            return "";
+        }
+
+        string symbol = settings[key] ?? "";
+        string stationNumber = stationCode.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        return symbol.Replace("{station}", stationNumber);
     }
 }

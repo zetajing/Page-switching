@@ -50,11 +50,20 @@ public partial class Config : UserControl
 
     private void LoadWaveGeneratorSettings()
     {
-        waveGeneratorModeComboBox.Items.AddRange(["外部 WFast.exe", "WaveMaker 内置算法", "旧 WP-5-6.exe"]);
-        waveGeneratorModeComboBox.SelectedIndex = Read("WaveGeneratorMode", "ExternalExe") switch
+        waveGeneratorModeComboBox.Items.AddRange(new object[] { "外部 WFast.exe", "WaveMaker 内置算法", "旧 WP-5-6.exe" });
+        string mode = Read("WaveGeneratorMode", "ExternalExe");
+        if (mode == "WaveMaker")
         {
-            "WaveMaker" => 1, "LegacyExe" => 2, _ => 0
-        };
+            waveGeneratorModeComboBox.SelectedIndex = 1;
+        }
+        else if (mode == "LegacyExe")
+        {
+            waveGeneratorModeComboBox.SelectedIndex = 2;
+        }
+        else
+        {
+            waveGeneratorModeComboBox.SelectedIndex = 0;
+        }
         waveGeneratorPathTextBox.Text = Read("WaveGeneratorPath");
         waveProgramDirectoryTextBox.Text = WaveProgramSettings.ProgramDirectory;
     }
@@ -430,16 +439,43 @@ public partial class Config : UserControl
     }
 
     // ADS 连接参数优先读取用户保存值，其余配置沿用 App.config。
-    private static string Read(string key, string fallback = "") =>
-        AdsConnectionSettings.Read(key)?.Trim() is { Length: > 0 } value ? value : fallback;
+    private static string Read(string key, string fallback = "")
+    {
+        string? value = AdsConnectionSettings.Read(key);
+        if (value == null)
+        {
+            return fallback;
+        }
+
+        value = value.Trim();
+        if (value.Length == 0)
+        {
+            return fallback;
+        }
+        return value;
+    }
 
     // 读取布尔配置项，格式无效时使用默认值。
-    private static bool ReadBool(string key, bool fallback) =>
-        bool.TryParse(Read(key), out var value) ? value : fallback;
+    private static bool ReadBool(string key, bool fallback)
+    {
+        bool value;
+        if (bool.TryParse(Read(key), out value))
+        {
+            return value;
+        }
+        return fallback;
+    }
 
     // 读取端口配置并限制到有效端口范围。
-    private static decimal ReadPort(string key, int fallback) =>
-        int.TryParse(Read(key), out var value) && value is >= 1 and <= 65535 ? value : fallback;
+    private static decimal ReadPort(string key, int fallback)
+    {
+        int value;
+        if (int.TryParse(Read(key), out value) && value >= 1 && value <= 65535)
+        {
+            return value;
+        }
+        return fallback;
+    }
 
     // 从连接字符串中读取已有的 SQL Server 账号密码，兼容旧配置。
     private static (string UserName, string Password) ReadDatabaseCredentials(string connectionString)

@@ -179,11 +179,28 @@ namespace Page_switching
         // 根据布尔信号更新一个状态灯的文字和颜色。
         private static void UpdateSignalLamp(AntdUI.Label lamp, string caption, bool? active, Color activeColor)
         {
-            var signalText = active.HasValue ? (active.Value ? "触发" : "未触发") : "无有效数据";
-            lamp.Text = $"{(active == true ? "●" : "○")} {caption}{(active.HasValue ? string.Empty : " --")}";
-            lamp.BackColor = active == true ? activeColor : UiPalette.Canvas;
-            lamp.ForeColor = active == true ? Color.White : (active.HasValue ? UiPalette.SecondaryText : UiPalette.Muted);
-            lamp.AccessibleName = $"{caption}：{signalText}";
+            // 无效、触发和未触发分别赋值，便于检查文字、颜色和实际信号。
+            if (!active.HasValue)
+            {
+                lamp.Text = "○ " + caption + " --";
+                lamp.BackColor = UiPalette.Canvas;
+                lamp.ForeColor = UiPalette.Muted;
+                lamp.AccessibleName = caption + "：无有效数据";
+            }
+            else if (active.Value)
+            {
+                lamp.Text = "● " + caption;
+                lamp.BackColor = activeColor;
+                lamp.ForeColor = Color.White;
+                lamp.AccessibleName = caption + "：触发";
+            }
+            else
+            {
+                lamp.Text = "○ " + caption;
+                lamp.BackColor = UiPalette.Canvas;
+                lamp.ForeColor = UiPalette.SecondaryText;
+                lamp.AccessibleName = caption + "：未触发";
+            }
         }
 
         // 显示当前选中轴的状态、位置、速度和可用控制按钮。
