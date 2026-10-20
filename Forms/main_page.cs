@@ -366,86 +366,94 @@ namespace Page_switching
             }
         }
 
-        // 递归注册各类控件的日志；逐项判断类型，方便在对应分支打断点。
+        // 按控件类型分派日志注册，每个 case 内保留独立步骤，方便打断点。
         private static void TrackActions(UserControl page, Control parent)
         {
             foreach (Control control in parent.Controls)
             {
                 string pageName = GetPageName(page);
-                // as 转换失败会返回 null，下面只处理转换成功的控件。
-                AntdUI.Button? button = control as AntdUI.Button;
-                AntdUI.Checkbox? checkBox = control as AntdUI.Checkbox;
-                AntdUI.Select? comboBox = control as AntdUI.Select;
-                AntdUI.Radio? radioButton = control as AntdUI.Radio;
-                AntdUI.Tabs? tabs = control as AntdUI.Tabs;
-                AntdUI.Table? table = control as AntdUI.Table;
-                AntdUI.Label? label = control as AntdUI.Label;
+                switch (control)
+                {
+                    case AntdUI.Button button:
+                        if (button.Name == "jogNegativeButton" || button.Name == "jogPositiveButton"
+                            || button.Name == "clearLogButton" || button.Name == "resetViewButton")
+                        {
+                            break;
+                        }
+                        button.Click += (_, _) =>
+                        {
+                            string text = (button.Text ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                            OperationJournal.Record(pageName, "点击" + text);
+                        };
+                        break;
 
-                if (button != null && button.Name != "jogNegativeButton" && button.Name != "jogPositiveButton"
-                    && button.Name != "clearLogButton" && button.Name != "resetViewButton")
-                {
-                    button.Click += (_, _) =>
-                    {
-                        string text = (button.Text ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
-                        OperationJournal.Record(pageName, "点击" + text);
-                    };
-                }
-                else if (checkBox != null && checkBox.Name != "autoScaleCheckBox" && !(page is WaveBatchCalibrationPage))
-                {
-                    checkBox.CheckedChanged += (_, _) =>
-                    {
-                        string text = (checkBox.Text ?? "").Trim();
-                        string state = checkBox.Checked ? "选中" : "取消";
-                        OperationJournal.Record(pageName, text + "：" + state);
-                    };
-                }
-                else if (comboBox != null)
-                {
-                    // 只记录用户正在操作的下拉框，程序加载默认值时不额外记日志。
-                    comboBox.SelectedIndexChanged += (_, _) =>
-                    {
-                        if (comboBox.HasFocus || comboBox.Expand)
+                    case AntdUI.Checkbox checkBox:
+                        if (checkBox.Name == "autoScaleCheckBox" || page is WaveBatchCalibrationPage)
                         {
-                            OperationJournal.Record(pageName, "选择" + comboBox.Text);
+                            break;
                         }
-                    };
-                }
-                else if (radioButton != null)
-                {
-                    radioButton.CheckedChanged += (_, _) =>
-                    {
-                        if (radioButton.Checked)
+                        checkBox.CheckedChanged += (_, _) =>
                         {
-                            OperationJournal.Record(pageName, "选择" + radioButton.Text);
-                        }
-                    };
-                }
-                else if (tabs != null)
-                {
-                    tabs.SelectedIndexChanged += (_, _) =>
-                    {
-                        OperationJournal.Record(pageName, "切换到" + tabs.SelectedTab?.Text);
-                    };
-                }
-                else if (table != null && !(page is WaveBatchCalibrationPage))
-                {
-                    table.CellEditComplete += (_, e) =>
-                    {
-                        System.Data.DataRow? row = e.Record as System.Data.DataRow;
-                        if (row != null)
+                            string text = (checkBox.Text ?? "").Trim();
+                            string state = checkBox.Checked ? "选中" : "取消";
+                            OperationJournal.Record(pageName, text + "：" + state);
+                        };
+                        break;
+
+                    case AntdUI.Select comboBox:
+                        // 只记录用户正在操作的下拉框，程序加载默认值时不额外记日志。
+                        comboBox.SelectedIndexChanged += (_, _) =>
                         {
-                            int rowNumber = row.Table.Rows.IndexOf(row) + 1;
-                            string title = table.Columns[e.ColumnIndex].Title;
-                            OperationJournal.Record(pageName, $"第{rowNumber}行{title}：{row[e.ColumnIndex]}");
+                            if (comboBox.HasFocus || comboBox.Expand)
+                            {
+                                OperationJournal.Record(pageName, "选择" + comboBox.Text);
+                            }
+                        };
+                        break;
+
+                    case AntdUI.Radio radioButton:
+                        radioButton.CheckedChanged += (_, _) =>
+                        {
+                            if (radioButton.Checked)
+                            {
+                                OperationJournal.Record(pageName, "选择" + radioButton.Text);
+                            }
+                        };
+                        break;
+
+                    case AntdUI.Tabs tabs:
+                        tabs.SelectedIndexChanged += (_, _) =>
+                        {
+                            OperationJournal.Record(pageName, "切换到" + tabs.SelectedTab?.Text);
+                        };
+                        break;
+
+                    case AntdUI.Table table:
+                        if (page is WaveBatchCalibrationPage)
+                        {
+                            break;
                         }
-                    };
-                }
-                else if (label != null && ShouldTrackResultLabel(page, label))
-                {
-                    label.TextChanged += (_, _) =>
-                    {
-                        OperationJournal.Record(pageName, label.Text ?? "");
-                    };
+                        table.CellEditComplete += (_, e) =>
+                        {
+                            System.Data.DataRow? row = e.Record as System.Data.DataRow;
+                            if (row != null)
+                            {
+                                int rowNumber = row.Table.Rows.IndexOf(row) + 1;
+                                string title = table.Columns[e.ColumnIndex].Title;
+                                OperationJournal.Record(pageName, $"第{rowNumber}行{title}：{row[e.ColumnIndex]}");
+                            }
+                        };
+                        break;
+
+                    case AntdUI.Label label:
+                        if (ShouldTrackResultLabel(page, label))
+                        {
+                            label.TextChanged += (_, _) =>
+                            {
+                                OperationJournal.Record(pageName, label.Text ?? "");
+                            };
+                        }
+                        break;
                 }
 
                 TrackActions(page, control);
@@ -535,53 +543,36 @@ namespace Page_switching
             return GetPageName(_currentPage);
         }
 
+        // 页面类型集中对应显示名称，使用 switch 语句逐项返回。
         private static string GetPageName(UserControl page)
         {
-            if (page is Auto)
+            switch (page)
             {
-                return "自动运行";
+                case Auto:
+                    return "自动运行";
+                case Manual:
+                    return "手动控制";
+                case ControlAuthority:
+                    return "控制权申请";
+                case Calibration:
+                    return "标定管理";
+                case WaveBatchCalibrationPage:
+                    return "批量标定";
+                case Data:
+                    return "数据管理";
+                case WaveformPage:
+                    return "波形生成";
+                case Config:
+                    return "系统配置";
+                case Wave_Height_Meter:
+                    return "浪高监测";
+                case WaveAnalysisPage:
+                    return "波浪分析";
+                case SignalCorrectionPage:
+                    return "信号修正";
+                default:
+                    return "系统";
             }
-            if (page is Manual)
-            {
-                return "手动控制";
-            }
-            if (page is ControlAuthority)
-            {
-                return "控制权申请";
-            }
-            if (page is Calibration)
-            {
-                return "标定管理";
-            }
-            if (page is WaveBatchCalibrationPage)
-            {
-                return "批量标定";
-            }
-            if (page is Data)
-            {
-                return "数据管理";
-            }
-            if (page is WaveformPage)
-            {
-                return "波形生成";
-            }
-            if (page is Config)
-            {
-                return "系统配置";
-            }
-            if (page is Wave_Height_Meter)
-            {
-                return "浪高监测";
-            }
-            if (page is WaveAnalysisPage)
-            {
-                return "波浪分析";
-            }
-            if (page is SignalCorrectionPage)
-            {
-                return "信号修正";
-            }
-            return "系统";
         }
 
         protected override void OnLoad(EventArgs e)
