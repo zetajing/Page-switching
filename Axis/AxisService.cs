@@ -24,6 +24,23 @@ public sealed partial class AxisService : IDisposable
         {
             throw new ArgumentException("必须提供四个造波板轴的 ADS 符号映射。", nameof(options));
         }
+
+        // 每根轴只创建一个对象；页面取得的是同一组对象，通信仍由本服务统一管理。
+        Axis[] axes = new Axis[4];
+        for (int index = 0; index < axes.Length; index++)
+        {
+            axes[index] = new Axis(this, index + 1);
+        }
+        Axes = Array.AsReadOnly(axes);
+    }
+
+    public IReadOnlyList<Axis> Axes { get; }
+
+    // 外部使用 1～4 的轴号，内部集合下标从 0 开始。
+    public Axis GetAxis(int axisNumber)
+    {
+        ValidateAxisNumber(axisNumber);
+        return Axes[axisNumber - 1];
     }
 
     public int RefreshIntervalMilliseconds => _options.RefreshIntervalMilliseconds;
@@ -149,6 +166,7 @@ public sealed partial class AxisService : IDisposable
                 _adsClient = null;
                 _connected = false;
             }
+            UpdateAxisSnapshots(CreateUnavailableSnapshots("ADS 未连接"));
 
             if (client is not null)
             {
@@ -180,12 +198,17 @@ public sealed partial class AxisService : IDisposable
         try
         {
             var client = GetConnectedClient();
+            IReadOnlyList<AxisSnapshot> snapshots;
             if (client is null)
             {
-                return CreateUnavailableSnapshots("ADS 未连接");
+                snapshots = CreateUnavailableSnapshots("ADS 未连接");
             }
-
-            return await ReadAdsSnapshotsAsync(client, cancellationToken).ConfigureAwait(false);
+            else
+            {
+                snapshots = await ReadAdsSnapshotsAsync(client, cancellationToken).ConfigureAwait(false);
+            }
+            UpdateAxisSnapshots(snapshots);
+            return snapshots;
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
@@ -194,7 +217,9 @@ public sealed partial class AxisService : IDisposable
                 _lastError = ex.Message;
             }
 
-            return CreateUnavailableSnapshots("读取失败");
+            var snapshots = CreateUnavailableSnapshots("读取失败");
+            UpdateAxisSnapshots(snapshots);
+            return snapshots;
         }
         finally
         {
@@ -211,6 +236,19 @@ public sealed partial class AxisService : IDisposable
     public Task DisableAllAsync(CancellationToken cancellationToken) =>
         WriteAllAsync(
             _options.AxisSymbols.Select(axis => axis.EnableCommand).ToArray(), false, cancellationToken);
+
+    // 单轴使能沿用批量写入的门锁、控制权和造波互锁，只提交本轴符号。
+    public Task SetAxisEnabledAsync(int axisNumber, bool enabled, CancellationToken cancellationToken)
+    {
+        ThrowIfDisposed();
+        ValidateAxisNumber(axisNumber);
+        string symbol = _options.AxisSymbols[axisNumber - 1].EnableCommand;
+        if (string.IsNullOrWhiteSpace(symbol))
+        {
+            throw new InvalidOperationException($"轴 {axisNumber} 尚未配置 ADS 控制符号。");
+        }
+        return WriteAllAsync(new string[] { symbol }, enabled, cancellationToken);
+    }
 
     // 将一组布尔变量批量写成指定值。
     private async Task WriteAllAsync(
@@ -238,6 +276,14 @@ public sealed partial class AxisService : IDisposable
     public Task ResetAlarmsAsync(CancellationToken cancellationToken) =>
         PulseAllAsync(
             _options.AxisSymbols.Select(axis => axis.ResetAlarmCommand).ToArray(), cancellationToken);
+
+    // 本轴报警复位复用原有 50 ms 脉冲，取消时仍尝试清零。
+    public Task ResetAxisAlarmAsync(int axisNumber, CancellationToken cancellationToken)
+    {
+        ValidateAxisNumber(axisNumber);
+        string symbol = _options.AxisSymbols[axisNumber - 1].ResetAlarmCommand;
+        return PulseAxisAsync(axisNumber, symbol, cancellationToken);
+    }
 
     // 将四根轴的 HomeCommand 置位 50 毫秒后复位。
     public Task HomeAllAsync(CancellationToken cancellationToken) =>
@@ -417,6 +463,15 @@ public sealed partial class AxisService : IDisposable
                 return snapshot;
             })
             .ToArray();
+    }
+
+    // 仍然整帧读取四轴，再把各轴结果交给固定对象，避免逐轴增加 ADS 请求。
+    private void UpdateAxisSnapshots(IReadOnlyList<AxisSnapshot> snapshots)
+    {
+        for (int index = 0; index < Axes.Count; index++)
+        {
+            Axes[index].UpdateSnapshot(snapshots[index]);
+        }
     }
 
     // 仅在服务和 ADS 客户端都处于连接状态时返回客户端。

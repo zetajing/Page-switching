@@ -11,7 +11,6 @@ namespace Page_switching
         private readonly AntdUI.Label[] _negativeLimitLamps;
         private readonly AntdUI.Label[] _originLamps;
         private readonly AntdUI.Label[] _positiveLimitLamps;
-        private IReadOnlyList<AxisSnapshot> _lastSnapshots = Array.Empty<AxisSnapshot>();
         private bool _refreshInProgress;
         private bool _commandInProgress;
         // 停止可以在普通命令等待时继续受理；计数控制按钮，版本防止旧结果覆盖新提示。
@@ -19,7 +18,7 @@ namespace Page_switching
         private long _stopRequestVersion;
         private bool _jogActive;
         private bool _jogPositive;
-        private int _jogAxisNumber;
+        private Axis? _jogAxis;
         private long _jogRequestVersion;
 
         // 供设计器使用；自行创建并管理轴服务。
@@ -127,7 +126,6 @@ namespace Page_switching
                     return;
                 }
 
-                _lastSnapshots = snapshots;
                 UpdateAxisOverview(snapshots);
                 UpdateConnectionState();
             }
@@ -206,23 +204,14 @@ namespace Page_switching
         // 显示当前选中轴的状态、位置、速度和可用控制按钮。
         private void UpdateSelectedAxisDetails()
         {
-            var selectedIndex = Math.Max(0, axisSelector.SelectedIndex);
-            if (selectedIndex >= _lastSnapshots.Count)
-            {
-                selectedStatusLabel.Text = "未连接";
-                selectedActualLabel.Text = "--";
-                selectedSpeedLabel.Text = "--";
-            }
-            else
-            {
-                var snapshot = _lastSnapshots[selectedIndex];
-                selectedStatusLabel.Text = snapshot.StatusText;
-                selectedStatusLabel.ForeColor = GetStatusColor(snapshot);
-                selectedActualLabel.Text = FormatValue(snapshot.ActualPosition, _axisService.Unit);
-                selectedSpeedLabel.Text = FormatValue(snapshot.Speed, _axisService.Unit + "/s");
-            }
+            Axis axis = SelectedAxis;
+            AxisSnapshot snapshot = axis.Snapshot;
+            selectedStatusLabel.Text = snapshot.StatusText;
+            selectedStatusLabel.ForeColor = GetStatusColor(snapshot);
+            selectedActualLabel.Text = FormatValue(snapshot.ActualPosition, _axisService.Unit);
+            selectedSpeedLabel.Text = FormatValue(snapshot.Speed, _axisService.Unit + "/s");
 
-            var canControlAxis = _axisService.CanControlAxis(selectedIndex + 1);
+            bool canControlAxis = axis.CanControl;
             SetCommandButtonEnabled(jogNegativeButton, canControlAxis);
             SetCommandButtonEnabled(jogPositiveButton, canControlAxis);
             SetCommandButtonEnabled(homeSelectedButton, canControlAxis);
@@ -302,19 +291,19 @@ namespace Page_switching
         // 点击后触发当前所选轴的回零变量。
         private async void HomeSelectedButton_Click(object? sender, EventArgs e)
         {
-            var axisNumber = SelectedAxisNumber;
+            Axis axis = SelectedAxis;
             await RunCommandAsync(
-                token => _axisService.HomeAxisAsync(axisNumber, token),
-                $"轴 {axisNumber} 开始回零");
+                token => axis.HomeAsync(token),
+                $"轴 {axis.AxisNumber} 开始回零");
         }
 
         // 点击后触发当前所选轴的停止变量。
         private async void StopSelectedButton_Click(object? sender, EventArgs e)
         {
-            var axisNumber = SelectedAxisNumber;
+            Axis axis = SelectedAxis;
             await RunStopCommandAsync(
-                token => _axisService.StopAxisAsync(axisNumber, token),
-                $"已请求轴 {axisNumber} 停止，正在发送命令……", $"轴 {axisNumber} 停止命令已发送");
+                token => axis.StopAsync(token),
+                $"已请求轴 {axis.AxisNumber} 停止，正在发送命令……", $"轴 {axis.AxisNumber} 停止命令已发送");
         }
 
         // 按下负向点动按钮时启动负向点动。
@@ -343,22 +332,23 @@ namespace Page_switching
                 return;
             }
 
-            _jogAxisNumber = SelectedAxisNumber;
+            // 保存按下时的轴对象，后续切换选择框也只清零这根轴。
+            Axis axis = SelectedAxis;
+            _jogAxis = axis;
             _jogPositive = positive;
             _jogActive = true;
             var stopRequestVersion = _jogRequestVersion = _stopRequestVersion;
             OperationJournal.Record("手动控制",
-                $"请求轴 {_jogAxisNumber} {(positive ? "正向" : "负向")}点动，速度 {jogSpeedInput.Value:0.0}");
+                $"请求轴 {axis.AxisNumber} {(positive ? "正向" : "负向")}点动，速度 {jogSpeedInput.Value:0.0}");
             try
             {
-                await _axisService.JogAsync(
-                    _jogAxisNumber,
+                await axis.JogAsync(
                     positive,
                     true,
                     decimal.ToDouble(jogSpeedInput.Value),
                     _lifetimeCancellation.Token);
                 if (CanUpdateCommandStatus(stopRequestVersion))
-                    ShowCommandResult($"轴 {_jogAxisNumber} 正在{(positive ? "正向" : "负向")}点动");
+                    ShowCommandResult($"轴 {axis.AxisNumber} 正在{(positive ? "正向" : "负向")}点动");
             }
             catch (OperationCanceledException)
             {
@@ -375,27 +365,27 @@ namespace Page_switching
         // 清除当前轴的点动方向信号。
         private async Task StopActiveJogAsync()
         {
-            if (!_jogActive)
+            if (!_jogActive || _jogAxis == null)
             {
                 return;
             }
 
-            var axisNumber = _jogAxisNumber;
+            Axis axis = _jogAxis;
             var positive = _jogPositive;
             _jogActive = false;
+            _jogAxis = null;
             // 松开或隐藏页面后的清零仍属于原点动，不能覆盖之后接受的停止请求。
             var stopRequestVersion = _jogRequestVersion;
             try
             {
-                await _axisService.JogAsync(
-                    axisNumber,
+                await axis.JogAsync(
                     positive,
                     false,
                     decimal.ToDouble(jogSpeedInput.Value),
                     _lifetimeCancellation.Token);
                 if (CanUpdateCommandStatus(stopRequestVersion))
                 {
-                    ShowCommandResult($"轴 {axisNumber} 点动已停止");
+                    ShowCommandResult($"轴 {axis.AxisNumber} 点动已停止");
                 }
             }
             catch (OperationCanceledException)
@@ -503,7 +493,15 @@ namespace Page_switching
         private bool CanUpdateCommandStatus(long stopRequestVersion) =>
             !IsDisposed && stopRequestVersion == _stopRequestVersion;
 
-        private int SelectedAxisNumber => Math.Max(0, axisSelector.SelectedIndex) + 1;
+        // 下拉框只负责选择对象，单轴命令不再反复传入轴号。
+        private Axis SelectedAxis
+        {
+            get
+            {
+                int axisNumber = Math.Max(0, axisSelector.SelectedIndex) + 1;
+                return _axisService.GetAxis(axisNumber);
+            }
+        }
 
         // 将可空数值格式化为带单位的界面文字。
         private static string FormatValue(double? value, string unit) =>

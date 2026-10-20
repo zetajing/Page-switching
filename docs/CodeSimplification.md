@@ -6,6 +6,28 @@
 
 简单事件可以保留直接调用；事件中有多步处理时使用代码块。通信所需的 `async/await`、取消和锁保持原有执行顺序。现有公开的数据类型和接口保持兼容，不为了改语法而更换数据模型或计算公式。
 
+## 四根轴对象与共享通信服务
+
+`AxisService` 创建并持有四个 `Axis` 对象。`GetAxis(1)` 到 `GetAxis(4)` 按轴号取得同一组对象；`Axes` 集合只读，不允许页面替换轴对象。`Axis` 保存轴号和最近一次的 `Snapshot`，提供使能、取消使能、报警复位、回零、停止、点动入口。
+
+```csharp
+Axis axis1 = axisService.GetAxis(1);
+
+// 仍由共享服务整帧读取四轴，完成后分别更新各轴的 Snapshot。
+await axisService.ReadSnapshotAsync(token);
+AxisSnapshot state = axis1.Snapshot;
+
+// 单轴操作入口清楚可见；连接、权限检查和命令排队仍在 AxisService 中。
+await axis1.HomeAsync(token);
+await axis1.StopAsync(token);
+```
+
+手动页通过 `SelectedAxis` 取得所选对象；点动按下时保存 `_jogAxis`，松开和隐藏页面时清零原轴，不跟随之后的下拉框选择。全部使能、全部回零、全部停止等操作保留共享服务原有的批量流程。轴对象不创建或释放 ADS 客户端；连接和退出统一由共享服务管理。
+
+`Snapshot` 是最近一次读取的缓存，不表示持续实时采样。仍需结合连接状态和 `CanControl` 判断是否可以操作；读取失败和断开连接会替换为不可用反馈。页面显示和日志沿用现有入口，不增加 Designer 控件。
+
+推荐断点顺序：`Manual.SelectedAxis → Axis.HomeAsync/StopAsync/JogAsync → AxisService`；反馈查看 `ReadSnapshotAsync → UpdateAxisSnapshots → Axis.Snapshot`。
+
 ## 2026-10-20 可读性整理
 
 本次整理面向上位机代码阅读，保持既有公开接口、页面布局、配置键、ADS 布局和文件格式。自动造波控制、PLC 源码、造波公式和轴点位转换不在本次变更内。
@@ -14,7 +36,7 @@
 
 1. `Program.Main → Mainpage`：构造函数创建共享服务和缓存页面；`ConnectPageEvents` 连接跨页请求，`RegisterPageLogging` 注册一次操作日志，`InitializeStartup` 显示默认页面并登记启动事件。
 2. `NavigateTo → ShowPage`：所有页面切换继续通过主窗体；批量标定返回、数据管理打开分析也使用缓存页面，保留输入。
-3. `Manual → AxisService`：页面负责显示和按钮状态，服务负责串行通信。`AxisServiceOptions.cs` 单独保存轴配置与命令符号映射；监控继续使用独立客户端。
+3. `Manual → Axis → AxisService`：页面负责显示和按钮状态，轴对象提供单轴入口，服务负责串行通信。`AxisServiceOptions.cs` 单独保存轴配置与命令符号映射；监控继续使用独立客户端。
 4. `TableColumns.Initialize`：表格列的标题、顺序和编辑权限由调用页明确提供；辅助方法只创建已有的 `C0…Cn` 列键、object 列类型和绑定关系，不控制页面业务。
 5. `WaveDataModels.cs → WaveDataWorkspace`：先了解标定、样本、会话类型，再看标定保存、采集会话、旧格式导入导出和数据库同步。数据库按建表、保存单任务、更新本地同步状态阅读。
 
