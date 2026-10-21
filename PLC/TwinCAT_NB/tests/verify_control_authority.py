@@ -166,6 +166,10 @@ class FeedbackRecoveryChecks(unittest.TestCase):
         begin = source.index("IF (nReply = 1) AND")
         end = source.index("GVL_control.aStation[i].nResult :=", begin)
         cls.grant = StBranch(source[begin:end])
+        cls.release_lock = StBranch(re.search(r"xReleaseLocked := xMotionBusy.*?;", source, re.S)[0])
+        begin = source.index("IF NOT xOwnerLost THEN")
+        cls.owner_commands = StBranch(source[begin:source.index("IF NOT xLocked AND", begin)])
+        cls.release_success = StBranch(re.search(r"IF nReply = 1 THEN.*?END_IF", source, re.S)[0])
 
     def scan(self, owner=0, busy=False, invalid=True, stations=(2,)):
         values = dict(nOwner=owner, xMotionBusy=busy, xFeedbackInvalid=invalid,
@@ -191,12 +195,11 @@ class FeedbackRecoveryChecks(unittest.TestCase):
         values, replies = self.scan(busy=True)
         self.assertEqual((values["nOwner"], replies), (0, [2]))
 
-    def test_invalid_feedback_never_allows_handoff_or_release(self):
+    def test_invalid_feedback_preserves_takeover_lock(self):
         for owner in (1, 2, 3):
             values, replies = self.scan(owner=owner, stations=(1, 2, 3))
             self.assertEqual(values["nOwner"], owner)
             self.assertEqual(replies, [1 if station == owner else 2 for station in (1, 2, 3)])
-            self.assertEqual(self.decision.execute(owner, owner, 2, locked=values["xLocked"]), 2)
 
     def test_same_scan_recovery_grants_only_first_station(self):
         values, replies = self.scan(stations=(1, 2, 3))
@@ -205,6 +208,42 @@ class FeedbackRecoveryChecks(unittest.TestCase):
     def test_valid_feedback_restores_normal_priority_handoff(self):
         values, replies = self.scan(owner=3, invalid=False, stations=(1,))
         self.assertEqual((values["nOwner"], replies, values["xLocked"]), (1, [1], False))
+
+    def release(self, busy=False, invalid=True, enabled_axis=0, lost=False, pending=None, station=2):
+        axes = {i: NS(jogz=False, jogf=False, gohome=False, xStart=True) for i in range(1, 5)}
+        if pending in ("jogz", "jogf", "gohome"): setattr(axes[4], pending, True)
+        values = dict(nOwner=2, xMotionBusy=busy, xFeedbackInvalid=invalid, xOwnerLost=lost,
+                      xResetCommands=False, GVL_control=NS(aStation={2: NS(
+                          aAxis=axes, xWaveSession=pending == "session")}),
+                      GVL_motion=NS(nCommandStation=2, xStart=pending == "trajectory"),
+                      GVL_axis=NS(**{f"Axis{i}": NS(xEnabled=i == enabled_axis) for i in range(1, 5)}))
+        self.lock.run(values)
+        self.release_lock.run(values)
+        self.owner_commands.run(values)
+        values["nReply"] = self.decision.execute(2, station, 2, locked=values["xReleaseLocked"])
+        self.release_success.run(values)
+        return values
+
+    def test_idle_disabled_owner_can_release_despite_invalid_feedback_and_enable_requests(self):
+        values = self.release()
+        self.assertTrue(values["xLocked"], "I/O 故障仍禁止接管")
+        self.assertEqual(values["nReply"], 1)
+        self.assertEqual(values["nOwner"], 0)
+        self.assertTrue(values["xResetCommands"], "释放会清旧使能请求，不会在反馈恢复后重放")
+
+    def test_release_still_rejects_motion_pending_commands_and_enabled_faulted_axes(self):
+        for changes in ({"busy": True}, {"lost": True},
+                        *({"enabled_axis": i} for i in range(1, 5)),
+                        *({"pending": name} for name in ("jogz", "jogf", "gohome", "session", "trajectory"))):
+            with self.subTest(changes=changes):
+                values = self.release(**changes)
+                self.assertEqual((values["nReply"], values["nOwner"]), (2, 2))
+                self.assertFalse(values["xResetCommands"])
+
+    def test_nonowner_cannot_release_and_valid_idle_enabled_axis_keeps_previous_behavior(self):
+        self.assertEqual(self.release(station=1)["nReply"], 5)
+        values = self.release(invalid=False, enabled_axis=4)
+        self.assertEqual((values["nReply"], values["nOwner"]), (1, 0))
 
     def test_each_nc_motion_condition_blocks_recovery(self):
         source = ET.parse(ROOT / "axis_4/POUs/MAIN.TcPOU").findtext(".//ST")

@@ -70,18 +70,21 @@ namespace Page_switching
             var locked = authority?.Locked != false;
             var granted = authority?.Granted == true && authority.Owner == _axisService?.ControlStationCode;
             _requestButton.Enabled = available && !locked && !_requestPending && !granted;
-            _releaseButton.Enabled = available && !locked && !_requestPending && granted;
+            // 接管锁和主动释放许可独立；只采用 PLC 确认的释放条件。
+            _releaseButton.Enabled = available && authority?.CanRelease == true && !_requestPending && granted;
             if (available)
             {
                 _ownerValue.Text = Auto.FormatControlOwner(authority!.Owner);
                 // I/O 故障与运动锁分别提示；无主时可申请复位，不能把授权当作允许运动。
                 if (authority!.FeedbackInvalid)
                 {
-                    if (granted) _safetyValue.Text = "NC I/O 无效：本站可复位，禁止运动";
+                    if (granted) _safetyValue.Text = authority.CanRelease
+                        ? "NC I/O 无效：可复位或释放，禁止运动"
+                        : "NC I/O 无效：可复位，暂不可释放";
                     else if (authority.Owner == 0)
                         _safetyValue.Text = locked ? "NC I/O 无效且运动占用，暂不可申请"
                             : "NC I/O 无效：可申请后复位，禁止运动";
-                    else _safetyValue.Text = "NC I/O 无效：禁止交接，由持有站处理";
+                    else _safetyValue.Text = "NC I/O 无效：禁止接管，由持有站处理";
                 }
                 else if (granted)
                     _safetyValue.Text = "PLC 已确认本站持有控制权";

@@ -138,6 +138,20 @@ internal static class Program
                 await Reject(() => service.UploadWaveAsync(signal), "stalled heartbeat");
                 Check(!service.HasControlAuthority && AdsClient.Model.StartWrites == 0, "uncertain stop suspends authorization");
             }
+            AdsClient.Model = new FakePlc { FeedbackInvalid = true, ReleaseAllowed = false };
+            using (var service = new AxisService(Options()))
+            {
+                await service.ConnectAsync(CancellationToken.None);
+                await Until(() => service.HasControlAuthority);
+                await Reject(() => service.ChangeControlAuthorityAsync(true, CancellationToken.None), "release permission absent");
+                Check(AdsClient.Model.AuthorityRequestWrites == 0, "blocked release never writes request");
+                AdsClient.Model.ReleaseAllowed = true;
+                await Until(() => service.AuthorityStatus.CanRelease);
+                Check(service.AuthorityStatus.Locked, "takeover stays locked during recovery release");
+                await service.ChangeControlAuthorityAsync(true, CancellationToken.None);
+                Check(AdsClient.Model.AuthorityOwner == 0 && !service.HasControlAuthority, "release waits for PLC ack and owner zero");
+                Check(service.AuthorityStatus.FeedbackInvalid, "release does not pretend I/O fault cleared");
+            }
             Console.WriteLine($"Wave service: {assertions} assertions passed (fake ADS only).");
         }
         finally { File.Delete(temp); }
@@ -195,9 +209,9 @@ namespace InduLink.Protocols.Ads
         { foreach (var request in requests) await WriteAsync(request, token); }
         public Task<ReadResult> ReadManyAsync(IReadOnlyCollection<ReadRequest> requests, CancellationToken token)
         {
-            lock (Model) return Task.FromResult(new ReadResult(new[] { new ReadValue((ushort)1),
-                new ReadValue(Model.Session || Model.FeedbackInvalid), new ReadValue(true), new ReadValue((uint)0),
-                new ReadValue((ushort)1), new ReadValue(Model.FeedbackInvalid) }));
+            lock (Model) return Task.FromResult(new ReadResult(new[] { new ReadValue(Model.AuthorityOwner),
+                new ReadValue(Model.Session || Model.FeedbackInvalid), new ReadValue(Model.AuthorityOwner == 1), new ReadValue(Model.AuthorityAck),
+                new ReadValue((ushort)1), new ReadValue(Model.FeedbackInvalid), new ReadValue(Model.ReleaseAllowed && !Model.Session) }));
         }
         public Task<T> ReadAnyAsync<T>(string symbol, int[]? args = null, CancellationToken cancellationToken = default)
         {
@@ -210,6 +224,11 @@ namespace InduLink.Protocols.Ads
     {
         public bool FeedbackInvalid;
         public int ResetWrites;
+        public bool ReleaseAllowed = true;
+        public ushort AuthorityOwner = 1;
+        public uint AuthorityAck;
+        public int AuthorityRequestWrites;
+        private ushort authorityAction;
         public PlcMachineMonitor Frame = new()
         {
             Version = PlcMachineMonitor.LayoutVersion, Size = PlcMachineMonitor.ByteSize, ControlOwner = 1,
@@ -226,6 +245,14 @@ namespace InduLink.Protocols.Ads
         {
             if (request.Address.EndsWith(".reset") && request.Value is true) ResetWrites++;
             string address = request.Address;
+            if (address.EndsWith(".nAction")) authorityAction = (ushort)request.Value;
+            if (address.EndsWith(".udiRequestSequence"))
+            {
+                AuthorityRequestWrites++;
+                AuthorityAck = (uint)request.Value;
+                if (authorityAction == 2 && ReleaseAllowed && !Session)
+                    AuthorityOwner = Frame.ControlOwner = 0;
+            }
             if (address.EndsWith("xWaveSession")) Session = (bool)request.Value;
             if (address == "GVL_motion.udiHeartbeat") WaveHeartbeatWrites++;
             if (address == "GVL_motion.nPointCount") Frame.PointCount = (uint)request.Value;
