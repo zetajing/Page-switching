@@ -138,14 +138,14 @@ class AuthorityChecks(unittest.TestCase):
         self.assertLess(main.index("fbAuthority("), main.index("aCommandGate[1]("))
         self.assertLess(main.index("aCommandGate[4]("), main.index("fbAxis1("))
         authority = ET.parse(ROOT / "axis_4/POUs/FB_ControlAuthority.TcPOU").findtext(".//ST")
-        self.assertIn("IF NOT xLocked AND xOwnerLost", authority)
+        self.assertIn("IF NOT xReleaseLocked AND xOwnerLost", authority)
         self.assertIn("udiRequestSequence <> GVL_control.aStation[i].udiAckSequence", authority)
         self.assertIn("GVL_control.aStation[i].aAxis := aEmpty", authority)
         self.assertIn("OR GVL_control.aStation[nOwner].aAxis[j].gohome", authority)
 
     def test_idle_revocation_clears_loss_latch_before_new_requests(self):
         source = ET.parse(ROOT / "axis_4/POUs/FB_ControlAuthority.TcPOU").findtext(".//ST")
-        revoke = source.index("IF NOT xLocked AND xOwnerLost")
+        revoke = source.index("IF NOT xReleaseLocked AND xOwnerLost")
         dispatch = source.index("// 同一扫描先处理释放")
         # 清失联锁存后才处理新请求，防止新持有者继承上一站的失联状态。
         self.assertIn("xOwnerLost := FALSE;", source[revoke:dispatch])
@@ -168,7 +168,8 @@ class FeedbackRecoveryChecks(unittest.TestCase):
         cls.grant = StBranch(source[begin:end])
         cls.release_lock = StBranch(re.search(r"xReleaseLocked := xMotionBusy.*?;", source, re.S)[0])
         begin = source.index("IF NOT xOwnerLost THEN")
-        cls.owner_commands = StBranch(source[begin:source.index("IF NOT xLocked AND", begin)])
+        cls.owner_commands = StBranch(source[begin:source.index("IF NOT xReleaseLocked AND", begin)]
+                                      + "xReleaseLocked := xReleaseLocked OR xOwnerLost;")
         cls.release_success = StBranch(re.search(r"IF nReply = 1 THEN.*?END_IF", source, re.S)[0])
 
     def scan(self, owner=0, busy=False, invalid=True, stations=(2,)):

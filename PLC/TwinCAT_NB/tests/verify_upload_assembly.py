@@ -5,6 +5,7 @@ from types import SimpleNamespace
 import re
 import unittest
 import xml.etree.ElementTree as ET
+from copy import deepcopy
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -13,7 +14,7 @@ SOURCE = re.sub(r"//[^\n]*", "", POU.findtext(".//ST"))
 
 
 class StBranch:
-    """仅支持本次分支使用的 IF、FOR 和赋值；不支持的语法直接使测试失败。"""
+    """执行受测源码的 IF、FOR、赋值及注入的函数调用；不支持的语法直接失败。"""
 
     def __init__(self, source):
         # 数组下标后的成员访问也保留点号，例如 axis[i].Status.Disabled。
@@ -65,8 +66,14 @@ class StBranch:
                 statements.append(("for", variable, start, end, body))
             else:
                 target = token
-                self.take(":=")
-                statements.append(("set", target, self.until(";")))
+                # 完整控制权扫描还会写数组成员并调用 TON，保留实际源码调用顺序。
+                while self.tokens[self.index] not in {":=", "("}:
+                    target += " " + self.take()
+                if self.tokens[self.index] == "(":
+                    statements.append(("call", target + " " + self.until(";")))
+                else:
+                    self.take(":=")
+                    statements.append(("set", target, self.until(";")))
         return statements
 
     @staticmethod
@@ -74,10 +81,11 @@ class StBranch:
         # ADR 作为受检的数组地址描述，MEMCPY 模拟器记录复制范围，无须分配 134 MB。
         expression = re.sub(r"ADR\s*\(\s*(\w+(?:\.\w+)*)\s*\[([^]]+)\]\s*\)",
                             r'ADR("\1", (\2))', expression)
-        expression = expression.replace(":=", "=").replace("<>", "!=")
+        # 先隔离 ST 的命名参数，避免把比较式中的同名变量误当参数赋值。
+        expression = expression.replace(":=", "__ST_NAMED_ARGUMENT__").replace("<>", "!=")
         # 函数命名参数保留单等号，其余单等号转换为比较。
         expression = re.sub(r"(?<![!<>=])=(?!=)", "==", expression)
-        expression = re.sub(r"\b(destAddr|srcAddr|n)\s*==", r"\1=", expression)
+        expression = expression.replace("__ST_NAMED_ARGUMENT__", "=")
         for before, after in (("AND", "and"), ("OR", "or"), ("NOT", "not"),
                               ("TRUE", "True"), ("FALSE", "False"), ("MOD", "%")):
             expression = re.sub(r"\b" + before + r"\b", after, expression)
@@ -99,12 +107,16 @@ class StBranch:
                     for index in range(self.value(start, values), self.value(end, values) + 1):
                         values[variable] = index
                         execute(body)
+                elif statement[0] == "call":
+                    self.value(statement[1], values)
                 else:
                     _, target, expression = statement
                     value = self.value(expression, values)
-                    if "." in target:
-                        parent, member = target.rsplit(".", 1)
-                        setattr(values[parent], member, value)
+                    if "." in target or "[" in target:
+                        # ST 结构体/数组赋值复制内容，不让各站邮箱共享同一个空命令对象。
+                        values["__st_value"] = deepcopy(value)
+                        exec(target + " = __st_value", {"__builtins__": {}}, values)
+                        values.pop("__st_value")
                     else:
                         values[target] = value
         execute(self.statements)

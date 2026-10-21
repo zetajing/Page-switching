@@ -51,15 +51,16 @@ IF nOwner <> 0 THEN
             OR ((GVL_motion.nCommandStation = nOwner) AND GVL_motion.xStart);
     END_IF
     xLocked := xLocked OR xReleaseLocked;
-    // 失联锁存未解除时不能凭恢复心跳主动释放，仍走原有停车撤权流程。
-    xReleaseLocked := xReleaseLocked OR xOwnerLost;
     // 运行期间冻结 Owner；高优先级申请不迫使设备停车让权。
-    // 失联则仅撤命令并停车，停稳前仍保留原 Owner，不授予别的站点。
-    IF NOT xLocked AND xOwnerLost THEN
+    // 失联撤权检查运动/使能退出条件，不能使用含 I/O 故障的接管锁，否则永远保留旧 Owner。
+    // 旧邮箱保持位在失联后已忽略；撤权后下方统一清空，不因心跳恢复而重新执行。
+    IF NOT xReleaseLocked AND xOwnerLost THEN
         nOwner := 0;
         xOwnerLost := FALSE;
         xResetCommands := TRUE;
     END_IF
+    // 尚未满足退出条件时继续冻结失联站，恢复心跳也不能自动恢复旧授权。
+    xReleaseLocked := xReleaseLocked OR xOwnerLost;
 END_IF
 
 // 同一扫描先处理释放，再按 1/2/3 的优先级处理申请；被拒绝的请求立即应答，不排队自动接管。
