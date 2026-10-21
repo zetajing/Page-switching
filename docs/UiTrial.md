@@ -1,5 +1,7 @@
 # AntdUI 与 ScottPlot 试用记录
 
+[返回文档导航](README.md)
+
 当前全面迁移与验证见 [AntdUI 全页面迁移](AntdUiMigration.md)。以下保留初期试用记录。
 
 初期版本沿用 .NET 8 WinForms、Designer 页面布局和统一页面切换。新增依赖为 AntdUI 2.4.12、ScottPlot.WinForms 5.1.59，使用 Windows 10 2004（19041）及以上的平台目标，以匹配现代 SkiaSharp WinForms 依赖。
