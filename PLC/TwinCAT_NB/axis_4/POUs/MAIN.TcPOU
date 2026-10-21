@@ -29,16 +29,18 @@ FOR i := 1 TO 4 DO
  GVL_sy.axis[i].ReadStatus();
  END_FOR
 // 运行锁：点动、回原、轨迹、停止/退出及未消费的运动命令都阻止交接。
-// 使用 NC 状态、实际速度和轴块 Busy，不仅依赖造波 Running 位。
+// 使用 NC 状态、实际速度和轴块 Busy；I/O 无效单独发布，不能冒充运动占用。
 xControlBusy := GVL_motion.xBusy OR GVL_axis.Axis1.xBusy OR GVL_axis.Axis2.xBusy
     OR GVL_axis.Axis3.xBusy OR GVL_axis.Axis4.xBusy;
+GVL_control.xFeedbackInvalid := FALSE;
 FOR i := 1 TO 4 DO
     xControlBusy := xControlBusy OR GVL_sy.axis[i].Status.Moving
         OR GVL_sy.axis[i].Status.Homing OR GVL_sy.axis[i].Status.Stopping
-        OR GVL_sy.axis[i].Status.ExtSetPointGenEnabled OR GVL_sy.axis[i].Status.IoDataInvalid
+        OR GVL_sy.axis[i].Status.ExtSetPointGenEnabled
         OR (ABS(GVL_sy.axis[i].NcToPlc.ActVelo) > 0.000001);
+    GVL_control.xFeedbackInvalid := GVL_control.xFeedbackInvalid OR GVL_sy.axis[i].Status.IoDataInvalid;
 END_FOR
-fbAuthority(xMotionBusy := xControlBusy);
+fbAuthority(xMotionBusy := xControlBusy, xFeedbackInvalid := GVL_control.xFeedbackInvalid);
 aCommands := aEmptyCommands;
 IF GVL_control.xCanCommand THEN aCommands := GVL_control.aStation[GVL_control.nOwner].aAxis; END_IF
 // 交接扫描清除命令；新持有者必须在获授权应答后重新发动作，不能继承旧命令。

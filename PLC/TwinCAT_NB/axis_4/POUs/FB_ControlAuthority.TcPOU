@@ -3,7 +3,8 @@
   <POU Name="FB_ControlAuthority" Id="{9270AB05-B370-44A3-9D02-4FCF92386078}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_ControlAuthority
 VAR_INPUT
-    xMotionBusy : BOOL; // 含实际运动、轨迹占用、轴块 Busy、无效反馈，不仅看造波运行位。
+    xMotionBusy : BOOL; // 含实际运动、轨迹占用、轴块 Busy，不仅看造波运行位。
+    xFeedbackInvalid : BOOL; // NC I/O 无效时不允许已有持有者交接，避免把无效速度当作停稳。
 END_VAR
 VAR
     nOwner : UINT; // 私有持有者，启动 0；GVL_control.nOwner 只是只读发布副本。
@@ -28,7 +29,9 @@ FOR i := 1 TO 3 DO
 END_FOR
 // 纯软件申请：三站均可申请，由在线状态、运行锁和站号优先级决定结果。
 
-xLocked := xMotionBusy;
+// 无主且无运动占用时允许首次申请，用于故障复位，避免“先复位才能申请”的死锁。
+// 已有持有者时仍保守锁住交接；I/O 恢复前，基础轴块禁止新使能和手动运动。
+xLocked := xMotionBusy OR (xFeedbackInvalid AND (nOwner <> 0));
 IF nOwner <> 0 THEN
     IF NOT GVL_control.aStation[nOwner].xOnline THEN xOwnerLost := TRUE; END_IF
     // 已接收但尚未进入 NC 运动的命令也锁住交接，覆盖“申请与启动同一扫描”的窗口。
@@ -72,6 +75,8 @@ FOR i := 1 TO 3 DO
         IF (nReply = 1) AND (GVL_control.aStation[i].nAction = 1) THEN
             IF nOwner <> i THEN xResetCommands := TRUE; END_IF
             nOwner := INT_TO_UINT(i);
+            // 故障恢复申请只授予一个站点，后续同扫描申请仍须通过反馈锁检查。
+            xLocked := xLocked OR xFeedbackInvalid;
         END_IF
         GVL_control.aStation[i].nResult := nReply;
         GVL_control.aStation[i].udiAckSequence := GVL_control.aStation[i].udiRequestSequence;

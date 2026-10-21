@@ -5,7 +5,7 @@ namespace Page_switching;
 
 public sealed record ControlAuthorityStatus(
     bool Available, bool Granted, bool Locked, ushort Owner,
-    uint AckSequence, ushort Result, long ReadAt, string? Error)
+    uint AckSequence, ushort Result, long ReadAt, string? Error, bool FeedbackInvalid = false)
 {
     public bool IsFresh => Available && Environment.TickCount64 - ReadAt < 1500;
     public static ControlAuthorityStatus Unavailable(string? error) => new(false, false, true, 0, 0, 0, 0, error);
@@ -77,14 +77,15 @@ public sealed partial class AxisService
                         new ReadRequest(client.DeviceId, "GVL_control.xLocked", DataType.Bool),
                         new ReadRequest(client.DeviceId, StationPrefix + ".xGranted", DataType.Bool),
                         new ReadRequest(client.DeviceId, StationPrefix + ".udiAckSequence", DataType.UInt32),
-                        new ReadRequest(client.DeviceId, StationPrefix + ".nResult", DataType.UInt16)
+                        new ReadRequest(client.DeviceId, StationPrefix + ".nResult", DataType.UInt16),
+                        new ReadRequest(client.DeviceId, "GVL_control.xFeedbackInvalid", DataType.Bool)
                     ], token).ConfigureAwait(false);
                     var values = result.Values;
-                    if (values.Count != 5 || values.Any(v => v.Quality != QualityStatus.Good || v.Value is null))
+                    if (values.Count != 6 || values.Any(v => v.Quality != QualityStatus.Good || v.Value is null))
                         throw new InvalidOperationException("PLC 控制权反馈读取失败，请核对配套 PLC 是否部署。");
                     _authorityStatus = new ControlAuthorityStatus(true, (bool)values[2].Value!,
                         (bool)values[1].Value!, (ushort)values[0].Value!, (uint)values[3].Value!,
-                        (ushort)values[4].Value!, Environment.TickCount64, null);
+                        (ushort)values[4].Value!, Environment.TickCount64, null, (bool)values[5].Value!);
                 }
                 finally { _operationGate.Release(); }
             }
@@ -117,7 +118,9 @@ public sealed partial class AxisService
             var initial = AuthorityStatus;
             if (!initial.IsFresh) throw new InvalidOperationException(initial.Error ?? "控制权反馈不可用");
             // 此检查只改善提示，真正的运行锁仍由 PLC 在受理请求时检查。
-            if (initial.Locked) throw new InvalidOperationException("设备运行或运动命令尚未退出，禁止控制权交接。");
+            if (initial.Locked) throw new InvalidOperationException(initial.FeedbackInvalid
+                ? "NC I/O 数据无效，禁止控制权交接；请由当前持有站排查或复位。"
+                : "设备运行或运动命令尚未退出，禁止控制权交接。");
             var sequence = unchecked((_lastAuthoritySequence ?? initial.AckSequence) + 1);
             if (sequence == 0) sequence = 1;
             _lastAuthoritySequence = sequence;

@@ -4,6 +4,8 @@ from pathlib import Path
 import re
 import unittest
 import xml.etree.ElementTree as ET
+from types import SimpleNamespace as NS
+from verify_upload_assembly import StBranch
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -150,6 +152,95 @@ class AuthorityChecks(unittest.TestCase):
         self.assertIn("xResetCommands := TRUE;", source[revoke:dispatch])
         # 同扫描重新授予原站也清命令，避免旧点动/回原保持位重放。
         self.assertIn("(nOwner <> nOldOwner) OR xResetCommands", source)
+
+
+class FeedbackRecoveryChecks(unittest.TestCase):
+    """执行真实 ST 的锁定、授予和使能条件，覆盖 I/O 故障导致的无主死锁。"""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.decision = DecisionProgram()
+        source = ET.parse(ROOT / "axis_4/POUs/FB_ControlAuthority.TcPOU").findtext(".//ST")
+        source = re.sub(r"//[^\n]*", "", source)
+        cls.lock = StBranch(re.search(r"xLocked := xMotionBusy.*?;", source, re.S)[0])
+        begin = source.index("IF (nReply = 1) AND")
+        end = source.index("GVL_control.aStation[i].nResult :=", begin)
+        cls.grant = StBranch(source[begin:end])
+
+    def scan(self, owner=0, busy=False, invalid=True, stations=(2,)):
+        values = dict(nOwner=owner, xMotionBusy=busy, xFeedbackInvalid=invalid,
+                      xResetCommands=False, INT_TO_UINT=int)
+        self.lock.run(values)
+        replies = []
+        for station in stations:
+            reply = self.decision.execute(values["nOwner"], station, 1, locked=values["xLocked"])
+            values.update(nReply=reply, i=station, GVL_control=NS(aStation={station: NS(nAction=1)}))
+            self.grant.run(values)
+            replies.append(reply)
+        return values, replies
+
+    def test_unowned_invalid_io_can_acquire_for_reset(self):
+        for station in (1, 2, 3):
+            values, replies = self.scan(stations=(station,))
+            self.assertEqual(replies, [1])
+            self.assertEqual(values["nOwner"], station)
+            self.assertTrue(values["xLocked"], "获授权后立即锁住交接，直到反馈恢复")
+            self.assertTrue(values["xResetCommands"])
+
+    def test_motion_still_blocks_first_acquisition(self):
+        values, replies = self.scan(busy=True)
+        self.assertEqual((values["nOwner"], replies), (0, [2]))
+
+    def test_invalid_feedback_never_allows_handoff_or_release(self):
+        for owner in (1, 2, 3):
+            values, replies = self.scan(owner=owner, stations=(1, 2, 3))
+            self.assertEqual(values["nOwner"], owner)
+            self.assertEqual(replies, [1 if station == owner else 2 for station in (1, 2, 3)])
+            self.assertEqual(self.decision.execute(owner, owner, 2, locked=values["xLocked"]), 2)
+
+    def test_same_scan_recovery_grants_only_first_station(self):
+        values, replies = self.scan(stations=(1, 2, 3))
+        self.assertEqual((values["nOwner"], replies), (1, [1, 2, 2]))
+
+    def test_valid_feedback_restores_normal_priority_handoff(self):
+        values, replies = self.scan(owner=3, invalid=False, stations=(1,))
+        self.assertEqual((values["nOwner"], replies, values["xLocked"]), (1, [1], False))
+
+    def test_each_nc_motion_condition_blocks_recovery(self):
+        source = ET.parse(ROOT / "axis_4/POUs/MAIN.TcPOU").findtext(".//ST")
+        assignment = re.search(r"xControlBusy := xControlBusy.*?;", source, re.S)[0]
+        # 测试解释器不解析小数 token；保留真实比较式，将阈值绑定为同值常量。
+        program = StBranch(assignment.replace("0.000001", "cVelocityTolerance"))
+        for field in (None, "Moving", "Homing", "Stopping", "ExtSetPointGenEnabled", "velocity"):
+            status = NS(Moving=False, Homing=False, Stopping=False,
+                        ExtSetPointGenEnabled=False, IoDataInvalid=True)
+            if field and field != "velocity": setattr(status, field, True)
+            axis = NS(Status=status, NcToPlc=NS(ActVelo=0.1 if field == "velocity" else 0))
+            for index in (1, 2, 3, 4):
+                values = dict(xControlBusy=False, GVL_sy=NS(axis={index: axis}), i=index,
+                              ABS=abs, cVelocityTolerance=0.000001)
+                program.run(values)
+                self.assertEqual(values["xControlBusy"], field is not None)
+
+    def test_invalid_io_blocks_new_power_but_not_reset(self):
+        source = ET.parse(ROOT / "axis_4/POUs/FB_AxisControl.TcPOU").findtext(".//ST")
+        enable = re.search(r"fbPower\(Axis := Axis, Enable := (.*?),\s*Enable_Positive", source, re.S)[1]
+        reset = re.search(r"fbReset\(Axis := Axis, Execute := (.*?)\);", source, re.S)[1]
+        manual = re.search(r"xManual := .*?;", source, re.S)[0]
+        program = StBranch("xEnable := " + enable + "; xReset := " + reset + "; " + manual)
+        for invalid in (False, True):
+            values = dict(Data=NS(xStart=True, reset=True, xStop=False), xPermit=True,
+                          xConfigValid=True, xHoldPower=False, Axis=NS(Status=NS(
+                              IoDataInvalid=invalid, Moving=False, Error=False, ExtSetPointGenEnabled=False)),
+                          rtReset=NS(Q=True), xGroupBusy=False, xStopRequest=False,
+                          fbPower=NS(Status=True), fbStop=NS(Busy=False), fbReset=NS(Busy=False))
+            program.run(values)
+            self.assertEqual(values["xEnable"], not invalid)
+            self.assertTrue(values["xReset"], "反馈故障不能再次堵住已授权的复位入口")
+            self.assertFalse(values["xManual"], "复位同扫描不能启动手动运动")
+            values["Data"].reset = False
+            program.run(values)
+            self.assertEqual(values["xManual"], not invalid)
 
 
 if __name__ == "__main__":

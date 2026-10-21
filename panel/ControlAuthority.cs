@@ -74,16 +74,25 @@ namespace Page_switching
             if (available)
             {
                 _ownerValue.Text = Auto.FormatControlOwner(authority!.Owner);
-                if (granted)
+                // I/O 故障与运动锁分别提示；无主时可申请复位，不能把授权当作允许运动。
+                if (authority!.FeedbackInvalid)
+                {
+                    if (granted) _safetyValue.Text = "NC I/O 无效：本站可复位，禁止运动";
+                    else if (authority.Owner == 0)
+                        _safetyValue.Text = locked ? "NC I/O 无效且运动占用，暂不可申请"
+                            : "NC I/O 无效：可申请后复位，禁止运动";
+                    else _safetyValue.Text = "NC I/O 无效：禁止交接，由持有站处理";
+                }
+                else if (granted)
                     _safetyValue.Text = "PLC 已确认本站持有控制权";
                 else if (authority.Owner == 0)
-                    _safetyValue.Text = "PLC 当前未分配控制权，可申请";
+                    _safetyValue.Text = locked ? "PLC 未分配控制权，运动或命令未退出" : "PLC 当前未分配控制权，可申请";
                 else if (authority.Owner != _axisService!.ControlStationCode)
                     _safetyValue.Text = $"{Auto.FormatControlOwner(authority.Owner)}持有控制权，本站未授权";
                 else
                     _safetyValue.Text = "PLC 尚未授予本站有效控制权";
-                if (locked) _safetyValue.Text += "；运行中禁止交接";
-                _safetyValue.ForeColor = granted && !locked ? UiPalette.Success : UiPalette.Warning;
+                if (locked && !authority.FeedbackInvalid) _safetyValue.Text += "；禁止交接";
+                _safetyValue.ForeColor = granted && !locked && !authority.FeedbackInvalid ? UiPalette.Success : UiPalette.Warning;
             }
             else if (_axisService?.ControlStationCode == 0)
             {

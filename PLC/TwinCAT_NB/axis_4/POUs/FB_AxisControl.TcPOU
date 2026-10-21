@@ -50,7 +50,8 @@ xHoldPower := fbPower.Status AND (Axis.Status.Moving OR xGroupBusy
 // 3. Data.xStart 是保持型使能请求，不是轨迹启动位。
 // xHoldPower 只维持已有使能以完成减速；Stop.Done/Error 后不再因 Busy 单独保持使能。
 // 正负方向分别受硬限位和位置边界约束，Override=100 表示 100%。
-fbPower(Axis := Axis, Enable := (Data.xStart AND xPermit AND xConfigValid) OR xHoldPower,
+// I/O 无效时仍可接收复位，但不接受新使能；已有运动的减速保持沿用 xHoldPower。
+fbPower(Axis := Axis, Enable := (Data.xStart AND xPermit AND xConfigValid AND NOT Axis.Status.IoDataInvalid) OR xHoldPower,
     Enable_Positive := NOT xPositiveLimit AND (Axis.NcToPlc.ActPos < Config.lrMaxPosition),
     Enable_Negative := NOT xNegativeLimit AND (Axis.NcToPlc.ActPos > Config.lrMinPosition), Override := 100);
 xStopRequest := Data.xStop OR NOT Data.xStart OR NOT xPermit

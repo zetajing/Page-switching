@@ -67,6 +67,14 @@ internal static class Program
                 await Reject(() => service.UploadWaveAsync(signal), "no authority");
                 await service.ConnectAsync(CancellationToken.None);
                 await Until(() => service.HasControlAuthority);
+                // NC 反馈故障不撤销本站复位权限；上位机必须收到独立故障标志。
+                AdsClient.Model.FeedbackInvalid = true;
+                await Until(() => service.AuthorityStatus.FeedbackInvalid);
+                Check(service.HasControlAuthority && service.AuthorityStatus.Locked, "invalid feedback retains reset authority");
+                await service.ResetAlarmsAsync(CancellationToken.None);
+                Check(AdsClient.Model.ResetWrites == 4, "authorized reset reaches all four mailboxes");
+                AdsClient.Model.FeedbackInvalid = false;
+                await Until(() => !service.AuthorityStatus.FeedbackInvalid);
                 await service.UploadWaveAsync(signal);
                 var model = AdsClient.Model;
                 Check(service.WaveStatus.Ready && model.Frame.DataReady, "upload waits for ready");
@@ -188,7 +196,8 @@ namespace InduLink.Protocols.Ads
         public Task<ReadResult> ReadManyAsync(IReadOnlyCollection<ReadRequest> requests, CancellationToken token)
         {
             lock (Model) return Task.FromResult(new ReadResult(new[] { new ReadValue((ushort)1),
-                new ReadValue(Model.Session), new ReadValue(true), new ReadValue((uint)0), new ReadValue((ushort)1) }));
+                new ReadValue(Model.Session || Model.FeedbackInvalid), new ReadValue(true), new ReadValue((uint)0),
+                new ReadValue((ushort)1), new ReadValue(Model.FeedbackInvalid) }));
         }
         public Task<T> ReadAnyAsync<T>(string symbol, int[]? args = null, CancellationToken cancellationToken = default)
         {
@@ -199,6 +208,8 @@ namespace InduLink.Protocols.Ads
     }
     public sealed class FakePlc
     {
+        public bool FeedbackInvalid;
+        public int ResetWrites;
         public PlcMachineMonitor Frame = new()
         {
             Version = PlcMachineMonitor.LayoutVersion, Size = PlcMachineMonitor.ByteSize, ControlOwner = 1,
@@ -213,6 +224,7 @@ namespace InduLink.Protocols.Ads
         private int runReads;
         public void Write(WriteRequest request)
         {
+            if (request.Address.EndsWith(".reset") && request.Value is true) ResetWrites++;
             string address = request.Address;
             if (address.EndsWith("xWaveSession")) Session = (bool)request.Value;
             if (address == "GVL_motion.udiHeartbeat") WaveHeartbeatWrites++;

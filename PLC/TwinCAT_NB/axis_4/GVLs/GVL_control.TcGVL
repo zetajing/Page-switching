@@ -9,6 +9,7 @@ VAR_GLOBAL
     // 以下由仲裁块写，任何上位机都不能直接写 Owner 来取得权限。
     nOwner : UINT;
     xLocked : BOOL; // 运行/运动命令尚未退出，禁止申请接管和释放。
+    xFeedbackInvalid : BOOL; // 任一轴 NC I/O 无效；无主且无运动占用时可申请后复位，禁止使能/运动。
     xCanCommand : BOOL;
     xOwnerChanged : BOOL;
     xStopOwner : BOOL; // 失联后撤销命令并停车，保持旧 Owner 直到停稳。
