@@ -411,7 +411,7 @@ namespace Page_switching
             centralRuleLabel.Name = "centralRuleLabel";
             centralRuleLabel.Size = new Size(1120, 102);
             centralRuleLabel.TabIndex = 2;
-            centralRuleLabel.Text = "停稳后按主控选择受理中心申请；运行中锁定当前控制端，即使中心优先级最高也不能接管。";
+            centralRuleLabel.Text = "空闲时可申请，优先级最高；运行中不交接。";
             // 
             // localCaptionLabel
             // 
@@ -430,7 +430,7 @@ namespace Page_switching
             localRuleLabel.Name = "localRuleLabel";
             localRuleLabel.Size = new Size(1120, 102);
             localRuleLabel.TabIndex = 4;
-            localRuleLabel.Text = "中心解除主控并开放本地授权后，本地可在停稳时申请；用于检修、调试及局部试验，运行中不交接。";
+            localRuleLabel.Text = "空闲时可申请，可由造波控制室接管；运行中不交接。";
             // 
             // remoteCaptionLabel
             // 
@@ -449,7 +449,7 @@ namespace Page_switching
             remoteRuleLabel.Name = "remoteRuleLabel";
             remoteRuleLabel.Size = new Size(1120, 102);
             remoteRuleLabel.TabIndex = 6;
-            remoteRuleLabel.Text = "中心控制室与拖车本地均解除主控，并开启远程授权后，远程方可操作；运行中不交接；停稳后新申请按优先级及授权处理。";
+            remoteRuleLabel.Text = "空闲时可申请，可由更高优先级站接管；运行中不交接。";
             // 
             // plcResponsibilityLabel
             // 
@@ -460,7 +460,7 @@ namespace Page_switching
             plcResponsibilityLabel.Name = "plcResponsibilityLabel";
             plcResponsibilityLabel.Size = new Size(1290, 36);
             plcResponsibilityLabel.TabIndex = 7;
-            plcResponsibilityLabel.Text = "PLC 执行优先级仲裁；运行中拒绝申请接管和释放，停稳后须重新申请。";
+            plcResponsibilityLabel.Text = "持有站空闲时可释放；失联退出后需重新申请。";
             // 
             // rulesGroupCaption
             // 

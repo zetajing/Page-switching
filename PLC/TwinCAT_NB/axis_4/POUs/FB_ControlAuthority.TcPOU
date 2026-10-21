@@ -4,15 +4,14 @@
     <Declaration><![CDATA[FUNCTION_BLOCK FB_ControlAuthority
 VAR_INPUT
     xMotionBusy : BOOL; // 含实际运动、轨迹占用、轴块 Busy，不仅看造波运行位。
-    xFeedbackInvalid : BOOL; // NC I/O 无效时禁止其他站接管，避免把无效速度当作停稳。
+    xFeedbackInvalid : BOOL; // I/O 故障只在轴仍使能时阻止交接，未使能时可申请和释放。
 END_VAR
 VAR
     nOwner : UINT; // 私有持有者，启动 0；GVL_control.nOwner 只是只读发布副本。
     nOldOwner : UINT;
     xOwnerLost : BOOL;
     xResetCommands : BOOL; // 撤权后同扫描重新授予原站，也必须清旧命令。
-    xLocked : BOOL;
-    xReleaseLocked : BOOL; // 主动释放只退出授权；I/O 故障下还须确认四轴未使能。
+    xLocked : BOOL; // 申请、释放、失联退出统一使用这一份运动联锁。
     axSeenHeartbeat : ARRAY[1..3] OF BOOL;
     aLastHeartbeat : ARRAY[1..3] OF UDINT;
     aTimeout : ARRAY[1..3] OF TON;
@@ -30,12 +29,9 @@ FOR i := 1 TO 3 DO
 END_FOR
 // 纯软件申请：三站均可申请，由在线状态、运行锁和站号优先级决定结果。
 
-// 无主且无运动占用时允许首次申请，用于故障复位，避免“先复位才能申请”的死锁。
-// 已有持有者时仍保守锁住接管；I/O 恢复前，基础轴块禁止新使能和手动运动。
-xLocked := xMotionBusy OR (xFeedbackInvalid AND (nOwner <> 0));
-// 反馈故障继续阻止接管；未使能且无运动占用时，允许持有站主动退出故障恢复授权。
-// 释放成功会在下方清空全部邮箱，旧使能请求不会留到 I/O 恢复后执行。
-xReleaseLocked := xMotionBusy OR (xFeedbackInvalid AND (GVL_axis.Axis1.xEnabled
+// 一份联锁：有运动占用，或 I/O 故障且轴仍使能时，禁止交接。
+// I/O 故障本身不锁控制权；基础轴块仍独立禁止故障下的新使能和运动。
+xLocked := xMotionBusy OR (xFeedbackInvalid AND (GVL_axis.Axis1.xEnabled
     OR GVL_axis.Axis2.xEnabled OR GVL_axis.Axis3.xEnabled OR GVL_axis.Axis4.xEnabled));
 IF nOwner <> 0 THEN
     IF NOT GVL_control.aStation[nOwner].xOnline THEN xOwnerLost := TRUE; END_IF
@@ -43,24 +39,19 @@ IF nOwner <> 0 THEN
     // 失联后忽略旧邮箱中的保持命令，让实际停车完成后可以退出，不会永远卡住 Owner。
     IF NOT xOwnerLost THEN
         FOR j := 1 TO 4 DO
-            xReleaseLocked := xReleaseLocked OR GVL_control.aStation[nOwner].aAxis[j].jogz
+            xLocked := xLocked OR GVL_control.aStation[nOwner].aAxis[j].jogz
                 OR GVL_control.aStation[nOwner].aAxis[j].jogf
                 OR GVL_control.aStation[nOwner].aAxis[j].gohome;
         END_FOR
-        xReleaseLocked := xReleaseLocked OR GVL_control.aStation[nOwner].xWaveSession
+        xLocked := xLocked OR GVL_control.aStation[nOwner].xWaveSession
             OR ((GVL_motion.nCommandStation = nOwner) AND GVL_motion.xStart);
     END_IF
-    xLocked := xLocked OR xReleaseLocked;
-    // 运行期间冻结 Owner；高优先级申请不迫使设备停车让权。
-    // 失联撤权检查运动/使能退出条件，不能使用含 I/O 故障的接管锁，否则永远保留旧 Owner。
-    // 旧邮箱保持位在失联后已忽略；撤权后下方统一清空，不因心跳恢复而重新执行。
-    IF NOT xReleaseLocked AND xOwnerLost THEN
+    // 失联先撤命令；退出条件满足后清旧 Owner。恢复心跳不会恢复旧授权。
+    IF NOT xLocked AND xOwnerLost THEN
         nOwner := 0;
         xOwnerLost := FALSE;
         xResetCommands := TRUE;
     END_IF
-    // 尚未满足退出条件时继续冻结失联站，恢复心跳也不能自动恢复旧授权。
-    xReleaseLocked := xReleaseLocked OR xOwnerLost;
 END_IF
 
 // 同一扫描先处理释放，再按 1/2/3 的优先级处理申请；被拒绝的请求立即应答，不排队自动接管。
@@ -69,7 +60,7 @@ FOR i := 1 TO 3 DO
         AND (GVL_control.aStation[i].udiRequestSequence <> GVL_control.aStation[i].udiAckSequence)
         AND (GVL_control.aStation[i].nAction = 2) THEN
         nReply := F_ControlDecision(nOwner := nOwner, nStation := INT_TO_UINT(i), nAction := 2,
-            xLocked := xReleaseLocked, xOnline := GVL_control.aStation[i].xOnline);
+            xLocked := xLocked, xOnline := GVL_control.aStation[i].xOnline);
         IF nReply = 1 THEN nOwner := 0; xResetCommands := TRUE; END_IF
         GVL_control.aStation[i].nResult := nReply;
         GVL_control.aStation[i].udiAckSequence := GVL_control.aStation[i].udiRequestSequence;
@@ -82,10 +73,7 @@ FOR i := 1 TO 3 DO
             nAction := GVL_control.aStation[i].nAction, xLocked := xLocked,
             xOnline := GVL_control.aStation[i].xOnline);
         IF (nReply = 1) AND (GVL_control.aStation[i].nAction = 1) THEN
-            IF nOwner <> i THEN xResetCommands := TRUE; END_IF
             nOwner := INT_TO_UINT(i);
-            // 故障恢复申请只授予一个站点，后续同扫描申请仍须通过反馈锁检查。
-            xLocked := xLocked OR xFeedbackInvalid;
         END_IF
         GVL_control.aStation[i].nResult := nReply;
         GVL_control.aStation[i].udiAckSequence := GVL_control.aStation[i].udiRequestSequence;
@@ -114,7 +102,7 @@ FOR i := 1 TO 3 DO
 END_FOR
 GVL_control.nOwner := nOwner;
 GVL_control.xLocked := xLocked;
-GVL_control.xCanRelease := (nOwner <> 0) AND NOT xReleaseLocked AND NOT xOwnerLost;
+GVL_control.xCanRelease := (nOwner <> 0) AND NOT xLocked AND NOT xOwnerLost;
 GVL_control.xStopOwner := xOwnerLost;
 ]]></ST></Implementation>
   </POU>

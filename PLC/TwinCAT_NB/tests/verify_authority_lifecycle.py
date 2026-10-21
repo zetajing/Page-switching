@@ -40,7 +40,7 @@ class AuthorityFixture:
         self.motion = NS(nCommandStation=0, xStart=False, xUpload=False, xAssemble=False,
                          xClear=False, xReset=False, xStop=False)
         self.values = dict(nOwner=0, nOldOwner=0, xOwnerLost=False, xResetCommands=False,
-                           xLocked=False, xReleaseLocked=False, xMotionBusy=False,
+                           xLocked=False, xMotionBusy=False,
                            xFeedbackInvalid=invalid, axSeenHeartbeat={i: False for i in range(1, 4)},
                            aLastHeartbeat={i: 0 for i in range(1, 4)},
                            aTimeout={i: ScanTimer() for i in range(1, 4)}, aEmpty=empty_commands(),
@@ -132,18 +132,46 @@ class AuthorityLifecycleChecks(unittest.TestCase):
         self.assertTrue(f.stations[1].xGranted)
         self.assertFalse(f.stations[2].xGranted)
 
-    def test_faulted_release_does_not_accept_same_scan_takeover_or_replay_request(self):
+    def test_idle_release_and_new_request_complete_in_one_scan(self):
         f = AuthorityFixture()
         self.assertEqual(f.request(), 1)
         f.stations[1].nAction = 1
         f.stations[1].udiRequestSequence = 1
         self.assertEqual(f.request(action=2, beats=(1, 2)), 1)
-        self.assert_cleared(f)
-        self.assertEqual((f.stations[1].udiAckSequence, f.stations[1].nResult), (1, 2))
+        self.assertEqual(f.control.nOwner, 1)
+        self.assertTrue(f.stations[1].xGranted)
+        self.assertFalse(f.stations[2].xGranted)
+        self.assertTrue(f.control.xOwnerChanged)
+        self.assertEqual((f.stations[1].udiAckSequence, f.stations[1].nResult), (1, 1))
+
+    def test_busy_request_is_acknowledged_and_never_replayed(self):
+        f = AuthorityFixture()
+        self.assertEqual(f.request(), 1)
+        f.values['xMotionBusy'] = True
+        self.assertEqual(f.request(station=1, beats=(1, 2)), 2)
+        f.values['xMotionBusy'] = False
         f.scan(beats=(1, 2))
-        self.assertEqual(f.control.nOwner, 0, '被拒绝的申请不能在下一扫描自动重放')
+        self.assertEqual(f.control.nOwner, 2, '被拒绝的申请不能在空闲后自动重放')
         self.assertEqual(f.request(station=1), 1)
         self.assertEqual(f.control.nOwner, 1)
+
+    def test_io_fault_uses_same_idle_priority_and_release_rules(self):
+        f = AuthorityFixture()
+        self.assertEqual(f.request(station=3), 1)
+        self.assertFalse(f.control.xLocked)
+        self.assertTrue(f.control.xCanRelease)
+        self.assertEqual(f.request(station=1, beats=(1, 3)), 1)
+        self.assertEqual(f.request(station=2, beats=(1, 2)), 6)
+        self.assertEqual(f.request(station=1, action=2), 1)
+        self.assert_cleared(f)
+
+    def test_faulted_enabled_axis_blocks_first_acquisition(self):
+        f = AuthorityFixture()
+        f.axis.Axis4.xEnabled = True
+        self.assertEqual(f.request(), 2)
+        self.assertEqual(f.control.nOwner, 0)
+        f.axis.Axis4.xEnabled = False
+        self.assertEqual(f.request(), 1)
 
     def test_invalid_feedback_multiple_new_requests_choose_one_station(self):
         f = AuthorityFixture()
@@ -151,7 +179,7 @@ class AuthorityLifecycleChecks(unittest.TestCase):
             mailbox.nAction = mailbox.udiRequestSequence = 1
         f.scan(beats=(1, 2, 3))
         self.assertEqual(f.control.nOwner, 1)
-        self.assertEqual([f.stations[i].nResult for i in (1, 2, 3)], [1, 2, 2])
+        self.assertEqual([f.stations[i].nResult for i in (1, 2, 3)], [1, 6, 6])
         self.assertTrue(f.control.xCanCommand)
 
     def test_valid_feedback_keeps_existing_idle_disconnect_behavior(self):

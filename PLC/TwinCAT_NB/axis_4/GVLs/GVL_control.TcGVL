@@ -8,9 +8,9 @@ VAR_GLOBAL
     // 纯软件申请，不使用现场主控选择位；PLC 按心跳、运行锁及优先级授予控制权。
     // 以下由仲裁块写，任何上位机都不能直接写 Owner 来取得权限。
     nOwner : UINT;
-    xLocked : BOOL; // 申请/接管锁：运动、命令未退出或已有持有者时反馈无效。
-    xCanRelease : BOOL; // PLC 确认当前持有站可主动释放；不表示其他站可以接管。
-    xFeedbackInvalid : BOOL; // 任一轴 NC I/O 无效；无主且无运动占用时可申请后复位，禁止使能/运动。
+    xLocked : BOOL; // 统一交接锁：运动、待执行运动命令，或 I/O 故障下轴仍使能。
+    xCanRelease : BOOL; // 由 Owner 和 xLocked 推导，保留此反馈供已有上位机兼容。
+    xFeedbackInvalid : BOOL; // 任一轴 NC I/O 无效；单独提示，基础轴块禁止新使能/运动。
     xCanCommand : BOOL;
     xOwnerChanged : BOOL;
     xStopOwner : BOOL; // 失联后撤销命令并停车，保持旧 Owner 直到停稳。

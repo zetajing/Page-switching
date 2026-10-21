@@ -70,31 +70,21 @@ namespace Page_switching
             var locked = authority?.Locked != false;
             var granted = authority?.Granted == true && authority.Owner == _axisService?.ControlStationCode;
             _requestButton.Enabled = available && !locked && !_requestPending && !granted;
-            // 接管锁和主动释放许可独立；只采用 PLC 确认的释放条件。
-            _releaseButton.Enabled = available && authority?.CanRelease == true && !_requestPending && granted;
+            // 两种操作使用同一交接锁，持有站释放、非持有站申请。
+            _releaseButton.Enabled = available && !locked && !_requestPending && granted;
             if (available)
             {
                 _ownerValue.Text = Auto.FormatControlOwner(authority!.Owner);
-                // I/O 故障与运动锁分别提示；无主时可申请复位，不能把授权当作允许运动。
-                if (authority!.FeedbackInvalid)
-                {
-                    if (granted) _safetyValue.Text = authority.CanRelease
-                        ? "NC I/O 无效：可复位或释放，禁止运动"
-                        : "NC I/O 无效：可复位，暂不可释放";
-                    else if (authority.Owner == 0)
-                        _safetyValue.Text = locked ? "NC I/O 无效且运动占用，暂不可申请"
-                            : "NC I/O 无效：可申请后复位，禁止运动";
-                    else _safetyValue.Text = "NC I/O 无效：禁止接管，由持有站处理";
-                }
+                if (locked)
+                    _safetyValue.Text = "忙碌中，暂不能交接";
                 else if (granted)
-                    _safetyValue.Text = "PLC 已确认本站持有控制权";
+                    _safetyValue.Text = "本站已授权，可释放";
                 else if (authority.Owner == 0)
-                    _safetyValue.Text = locked ? "PLC 未分配控制权，运动或命令未退出" : "PLC 当前未分配控制权，可申请";
-                else if (authority.Owner != _axisService!.ControlStationCode)
-                    _safetyValue.Text = $"{Auto.FormatControlOwner(authority.Owner)}持有控制权，本站未授权";
+                    _safetyValue.Text = "未分配，可申请";
                 else
-                    _safetyValue.Text = "PLC 尚未授予本站有效控制权";
-                if (locked && !authority.FeedbackInvalid) _safetyValue.Text += "；禁止交接";
+                    _safetyValue.Text = "可按站点优先级申请";
+                // 故障提示不再改变控制权规则；运动许可仍由 PLC 的轴控制检查。
+                if (authority.FeedbackInvalid) _safetyValue.Text += "；I/O 无效，禁止运动";
                 _safetyValue.ForeColor = granted && !locked && !authority.FeedbackInvalid ? UiPalette.Success : UiPalette.Warning;
             }
             else if (_axisService?.ControlStationCode == 0)

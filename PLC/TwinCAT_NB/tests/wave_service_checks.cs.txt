@@ -70,7 +70,7 @@ internal static class Program
                 // NC 反馈故障不撤销本站复位权限；上位机必须收到独立故障标志。
                 AdsClient.Model.FeedbackInvalid = true;
                 await Until(() => service.AuthorityStatus.FeedbackInvalid);
-                Check(service.HasControlAuthority && service.AuthorityStatus.Locked, "invalid feedback retains reset authority");
+                Check(service.HasControlAuthority && !service.AuthorityStatus.Locked, "invalid feedback alone keeps control available");
                 await service.ResetAlarmsAsync(CancellationToken.None);
                 Check(AdsClient.Model.ResetWrites == 4, "authorized reset reaches all four mailboxes");
                 AdsClient.Model.FeedbackInvalid = false;
@@ -147,7 +147,7 @@ internal static class Program
                 Check(AdsClient.Model.AuthorityRequestWrites == 0, "blocked release never writes request");
                 AdsClient.Model.ReleaseAllowed = true;
                 await Until(() => service.AuthorityStatus.CanRelease);
-                Check(service.AuthorityStatus.Locked, "takeover stays locked during recovery release");
+                Check(!service.AuthorityStatus.Locked, "one idle lock permits request and release");
                 await service.ChangeControlAuthorityAsync(true, CancellationToken.None);
                 Check(AdsClient.Model.AuthorityOwner == 0 && !service.HasControlAuthority, "release waits for PLC ack and owner zero");
                 Check(service.AuthorityStatus.FeedbackInvalid, "release does not pretend I/O fault cleared");
@@ -210,8 +210,8 @@ namespace InduLink.Protocols.Ads
         public Task<ReadResult> ReadManyAsync(IReadOnlyCollection<ReadRequest> requests, CancellationToken token)
         {
             lock (Model) return Task.FromResult(new ReadResult(new[] { new ReadValue(Model.AuthorityOwner),
-                new ReadValue(Model.Session || Model.FeedbackInvalid), new ReadValue(Model.AuthorityOwner == 1), new ReadValue(Model.AuthorityAck),
-                new ReadValue((ushort)1), new ReadValue(Model.FeedbackInvalid), new ReadValue(Model.ReleaseAllowed && !Model.Session) }));
+                new ReadValue(Model.Session || !Model.ReleaseAllowed), new ReadValue(Model.AuthorityOwner == 1), new ReadValue(Model.AuthorityAck),
+                new ReadValue((ushort)1), new ReadValue(Model.FeedbackInvalid) }));
         }
         public Task<T> ReadAnyAsync<T>(string symbol, int[]? args = null, CancellationToken cancellationToken = default)
         {
