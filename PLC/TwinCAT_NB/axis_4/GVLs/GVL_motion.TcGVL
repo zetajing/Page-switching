@@ -6,8 +6,8 @@
 // PC 连续提交各段，全部下发后用 xAssemble 请求 PLC 拼表；xDataReady 后才允许启动。
 // xUpload/xAssemble/xClear/xStart/xReset 都需回 FALSE 后再产生下一次上升沿。
 VAR_GLOBAL
-    // 接实际联锁和传感器；许可默认 FALSE。轴块只处理基础控制。
-    xMotionPermit : BOOL; // 普通运行联锁，调试前保持 FALSE，不代替急停/STO。
+    // 运行许可由 MAIN 每扫描写入；当前仅用于虚拟轴调试。
+    xMotionPermit : BOOL; // 实机改接安全继电器允许反馈，不代替硬件安全回路。
     axPositiveLimit : ARRAY[1..4] OF BOOL;
     axNegativeLimit : ARRAY[1..4] OF BOOL;
     axHomeSensor : ARRAY[1..4] OF BOOL;

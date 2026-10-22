@@ -24,7 +24,11 @@ VAR
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[// 先统一刷新轴状态，再决定四轴本周期的共同轨迹帧。
+      <ST><![CDATA[// 当前仅用于虚拟轴软件调试，明确给出运行许可。
+// 接实机前必须将下一行替换为现场安全继电器的运行允许反馈。
+GVL_motion.xMotionPermit := TRUE;
+
+// 先统一刷新轴状态，再决定四轴本周期的共同轨迹帧。
 FOR i := 1 TO 4 DO
  GVL_sy.axis[i].ReadStatus();
  END_FOR
