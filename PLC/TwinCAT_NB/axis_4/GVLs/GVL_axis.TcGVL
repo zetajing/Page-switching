@@ -2,6 +2,8 @@
 <TcPlcObject Version="1.1.0.1">
   <GVL Name="GVL_axis" Id="{26300288-3096-43e2-833c-dddff8221f5e}">
     <Declaration><![CDATA[VAR_GLOBAL
+    // PLC 内部手动命令与轴反馈；命令由 A03_ManualCommands 转交，反馈由基础轴块更新。
+    // 上位机手动命令写 GVL_control.aStation[站号].aAxis，状态读取 GVL_HMI.stMonitor。
 
     Axis1 : ST_AxisAds;
     Axis2 : ST_AxisAds;

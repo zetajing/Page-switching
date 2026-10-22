@@ -4,10 +4,41 @@
 
 ## 代码分工
 
-- `FB_AxisControl`：每轴一个实例，保留 MC_Power、MC_Reset、MC_Jog、MC_Home、MC_Stop 和状态反馈。轨迹占用时通过 xGroupBusy 禁止手动命令抢占。
-- `FB_FourAxisTrajectory`：分段拼表、整表检查、四轴首点定位、外部给定激活、同步取点、联停和退出。
-- `F_TrajectoryPoint`：根据相邻位置点计算本点速度、加速度，校验与执行共用同一函数。
-- `MAIN`：统一刷新四轴状态，调用轨迹块和四个基础轴块。
+`POUs` 按功能分目录，`MAIN` 只保留虚拟轴运行许可设置和六个 Action 的顺序调用。各 Action 共用 MAIN 的原有变量和功能块实例，四轴仍固定对应 NC 轴 1..4。
+
+| 目录 | 程序 | 职责 |
+| --- | --- | --- |
+| `Feedback_反馈` | `FB_HmiFeedback` | 发布实际位置、使能、故障等只读反馈，不发运动命令 |
+| `ControlAuthority_控制权` | `FB_ControlAuthority`、`F_ControlDecision` | 处理申请、释放、心跳、优先级及统一交接锁 |
+| `ManualControl_手动控制` | `FB_AxisCommandGate`、`FB_AxisControl` | 转交授权站手动命令；逐轴执行 Power、Reset、Jog、Home、Stop |
+| `Trajectory_点位与轨迹` | `FB_FourAxisTrajectory`、`F_TrajectoryPoint` | 收段、拼表、整表校验、首点定位、外部给定、联停及退出 |
+
+在 TwinCAT 中展开 `MAIN` 可进入以下动作，每扫描按表中顺序执行：
+
+| Action | 内容 |
+| --- | --- |
+| `A01_ReadAxisStatus` | 调用四轴 ReadStatus，刷新 NC 实际状态 |
+| `A02_ControlAuthority` | 汇总交接条件并调用控制权仲裁块 |
+| `A03_ManualCommands` | 取当前授权站的手动命令，通过四个命令门写入内部轴命令 |
+| `A04_TrajectoryControl` | 汇总现有轨迹联锁，调用点位与轨迹块 |
+| `A05_ManualAxes` | 每扫描调用 fbAxis1..4，更新异步 MC 块与实际轴反馈 |
+| `A06_PublishFeedback` | 在本扫描四轴块更新后，发布 GVL_HMI 反馈 |
+
+手动命令转交放在轨迹调用之前，基础轴块放在轨迹调用之后，保持同扫描的命令冲突和组占用联锁。各实例名称、NC 映射、2 ms 周期及原有条件保持不变。
+
+本轮只整理目录和调用入口。收段、拼表与轨迹执行仍在 `FB_FourAxisTrajectory` 内，自动轨迹状态机没有拆改；`F_TrajectoryPoint` 继续由校验与执行共用。
+
+## 上位机功能入口与读写方向
+
+| 操作 | 上位机入口 | PLC 处理位置 |
+| --- | --- | --- |
+| 查看状态 | 读取 `GVL_HMI.stMonitor`；完整故障和轨迹诊断读取 GVL_HMI 对应字段 | A01 刷新，A06 发布；不要求持有控制权 |
+| 申请、释放控制权 | 写本站 `GVL_control.aStation[站号]` 的请求与心跳；读取同序号应答和授权结果 | A02 控制权仲裁 |
+| 手动操作 | 写本站 `GVL_control.aStation[站号].aAxis[轴号]` | A03 转交已授权命令，A05 执行基础轴控制 |
+| 下发点位 | 写 `GVL_motion.aUpload`、元数据和上传握手请求 | A04 调用现有轨迹块登记、拼表；下发完成不会自动启动 |
+| 启动、停止轨迹 | 写 GVL_motion 中的站号、启动/停止命令与运行心跳 | A04 执行原有授权和运行条件检查 |
+
+`GVL_axis.Axis1..Axis4` 是 PLC 内部命令及反馈：命令由命令门转交，实际反馈由基础轴块更新。上位机手动操作统一写本站命令区，不能直接改内部轴命令或 PLC 反馈。GVL_motion 的运行许可、传感器和设备配置仍按下方“首次设备配置”接入。
 
 ## 与参考工程的对应关系
 
@@ -35,16 +66,16 @@
 
 ## 基础轴接口
 
-`GVL_axis.Axis1..Axis4` 沿用以下命令和反馈：
+`GVL_axis.Axis1..Axis4` 沿用以下内部命令和反馈；表中命令由 PLC 命令门从本站命令区转交，上位机读取状态统一使用 GVL_HMI：
 
 | 字段 | 方向 | 含义 |
 | --- | --- | --- |
-| `xStart` | 上位机写 | 保持型使能请求；撤销后先停车再撤使能 |
-| `xStop` | 上位机写 | 保持停止，松开后等待 MC_Stop 解锁 |
-| `jogz` / `jogf` | 上位机写 | 正反点动，松开减速；同时按下不运行 |
-| `lrJogSpeed` | 上位机写 | 正数，不能超过最大速度 |
-| `gohome` | 上位机写 | 上升沿启动 NC 标准回零 |
-| `reset` | 上位机写 | 上升沿复位该轴，须静止、轨迹已退出且停止已释放 |
+| `xStart` | PLC 转交命令 | 保持型使能请求；撤销后先停车再撤使能 |
+| `xStop` | PLC 转交命令 | 保持停止，松开后等待 MC_Stop 解锁 |
+| `jogz` / `jogf` | PLC 转交命令 | 正反点动，松开减速；同时按下不运行 |
+| `lrJogSpeed` | PLC 转交命令 | 正数，不能超过最大速度 |
+| `gohome` | PLC 转交命令 | 上升沿启动 NC 标准回零 |
+| `reset` | PLC 转交命令 | 上升沿复位该轴，须静止、轨迹已退出且停止已释放 |
 | `lrActualPosition` / `lrSpeed` | PLC 写 | NC 实际位置、速度 |
 | `xMotorRun` / `xHomed` | PLC 写 | 正在运动、已回零 |
 | `xPositiveLimit` / `xNegativeLimit` / `xOriginSignal` | PLC 写 | 限位和原点反馈 |

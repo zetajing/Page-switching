@@ -5,6 +5,7 @@ import os
 import re
 import unittest
 import xml.etree.ElementTree as ET
+from plc_source import main_source
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -56,7 +57,7 @@ class SwitchContractChecks(unittest.TestCase):
                     self.assertNotIn(f"AdsAxis{axis}{key}", self.settings)
                     self.assertEqual(fields[member], plc_type)
         # xEnabled 必须来自 Power 状态，不能用运动位代替。
-        axis_source = ET.parse(ROOT / "axis_4/POUs/FB_AxisControl.TcPOU").findtext(".//ST")
+        axis_source = ET.parse(ROOT / "axis_4/POUs/ManualControl_手动控制/FB_AxisControl.TcPOU").findtext(".//ST")
         self.assertIn("Data.xEnabled := fbPower.Status;", axis_source)
         self.assertIn("Data.xMotorRun := Axis.Status.Moving;", axis_source)
 
@@ -73,16 +74,23 @@ class SwitchContractChecks(unittest.TestCase):
         self.assertEqual(fields["stMonitor"], "ST_MachineMonitor")
 
     def test_feedback_runs_after_axis_blocks(self):
-        source = ET.parse(ROOT / "axis_4/POUs/MAIN.TcPOU").findtext(".//ST")
+        source = main_source(ROOT)
+        # 检查真实调用顺序和次数，防止整理 Action 时漏调、重调或提前发布反馈。
+        calls = ["ReadStatus()", "fbAuthority(", "aCommandGate[1](", "aCommandGate[4](",
+                 "fbTrajectory(", "fbAxis1(", "fbAxis2(", "fbAxis3(", "fbAxis4(", "fbHmiFeedback();"]
+        positions = [source.index(call) for call in calls]
+        self.assertEqual(positions, sorted(positions))
+        for call in calls:
+            self.assertEqual(source.count(call), 1, call)
         self.assertGreater(source.index("fbHmiFeedback();"), source.index("fbAxis4("))
         project = ET.parse(ROOT / "axis_4/axis_4.plcproj")
         includes = {n.get("Include") for n in project.findall(
             ".//p:Compile", {"p": "http://schemas.microsoft.com/developer/msbuild/2003"})}
         self.assertIn("GVLs\\GVL_HMI.TcGVL", includes)
-        self.assertIn("POUs\\FB_HmiFeedback.TcPOU", includes)
+        self.assertIn("POUs\\Feedback_反馈\\FB_HmiFeedback.TcPOU", includes)
 
     def test_feedback_never_writes_axis_commands(self):
-        source = ET.parse(ROOT / "axis_4/POUs/FB_HmiFeedback.TcPOU").findtext(".//ST")
+        source = ET.parse(ROOT / "axis_4/POUs/Feedback_反馈/FB_HmiFeedback.TcPOU").findtext(".//ST")
         source = re.sub(r"//[^\n]*", "", source)
         self.assertFalse(re.search(r"GVL_(axis|motion)\.\w+(?:\.\w+)*\s*:=", source))
         self.assertNotIn("GVL_pc.", source)

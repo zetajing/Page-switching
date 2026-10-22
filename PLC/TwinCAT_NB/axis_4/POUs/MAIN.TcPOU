@@ -28,10 +28,38 @@ END_VAR
 // 接实机前必须将下一行替换为现场安全继电器的运行允许反馈。
 GVL_motion.xMotionPermit := TRUE;
 
+// 刷新四轴实际状态；只读取 NC 反馈，不要求持有控制权。
+A01_ReadAxisStatus();
+
+// 汇总交接条件并处理控制权；写入 GVL_control 仲裁反馈。
+A02_ControlAuthority();
+
+// 取出授权站手动命令；通过命令门写入 GVL_axis 命令字段。
+A03_ManualCommands();
+
+// 汇总轨迹联锁并调用原轨迹块；更新 GVL_motion 轨迹状态。
+A04_TrajectoryControl();
+
+// 调用四轴基础控制；更新 NC 控制输出及 GVL_axis 实际反馈。
+A05_ManualAxes();
+
+// 发布本扫描执行后的反馈；只写 GVL_HMI，不产生运动命令。
+A06_PublishFeedback();
+]]></ST>
+    </Implementation>
+    <Action Name="A01_ReadAxisStatus" Id="{d342207c-f231-5ee1-99f1-05ad1db0ec87}">
+      <Implementation>
+        <ST><![CDATA[// 刷新四轴实际状态；只读取 NC 反馈，不要求持有控制权。
 // 先统一刷新轴状态，再决定四轴本周期的共同轨迹帧。
 FOR i := 1 TO 4 DO
  GVL_sy.axis[i].ReadStatus();
  END_FOR
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A02_ControlAuthority" Id="{3eeb1f59-5728-51cf-b201-23836cbf5d99}">
+      <Implementation>
+        <ST><![CDATA[// 汇总交接条件并处理控制权；写入 GVL_control 仲裁反馈。
 // 运行锁：点动、回原、轨迹、停止/退出及未消费的运动命令都阻止交接。
 // 使用 NC 状态、实际速度和轴块 Busy；I/O 无效单独发布，不能冒充运动占用。
 xControlBusy := GVL_motion.xBusy OR GVL_axis.Axis1.xBusy OR GVL_axis.Axis2.xBusy
@@ -45,6 +73,12 @@ FOR i := 1 TO 4 DO
     GVL_control.xFeedbackInvalid := GVL_control.xFeedbackInvalid OR GVL_sy.axis[i].Status.IoDataInvalid;
 END_FOR
 fbAuthority(xMotionBusy := xControlBusy, xFeedbackInvalid := GVL_control.xFeedbackInvalid);
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A03_ManualCommands" Id="{455d291c-6bbf-5830-8f93-78839db9156a}">
+      <Implementation>
+        <ST><![CDATA[// 取出授权站手动命令；通过命令门写入 GVL_axis 命令字段。
 aCommands := aEmptyCommands;
 IF GVL_control.xCanCommand THEN aCommands := GVL_control.aStation[GVL_control.nOwner].aAxis; END_IF
 // 交接扫描清除命令；新持有者必须在获授权应答后重新发动作，不能继承旧命令。
@@ -53,7 +87,12 @@ aCommandGate[1](Data := GVL_axis.Axis1, Command := aCommands[1], xPermit := xCom
 aCommandGate[2](Data := GVL_axis.Axis2, Command := aCommands[2], xPermit := xCommandPermit, xStop := GVL_control.xStopOwner);
 aCommandGate[3](Data := GVL_axis.Axis3, Command := aCommands[3], xPermit := xCommandPermit, xStop := GVL_control.xStopOwner);
 aCommandGate[4](Data := GVL_axis.Axis4, Command := aCommands[4], xPermit := xCommandPermit, xStop := GVL_control.xStopOwner);
-
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A04_TrajectoryControl" Id="{1d20d96a-49bd-5fb3-9b5c-92dd45de2540}">
+      <Implementation>
+        <ST><![CDATA[// 汇总轨迹联锁并调用原轨迹块；更新 GVL_motion 轨迹状态。
 // 这里先汇总基础块上一扫描的使能反馈。
 // 下方 xAbort 在追加 Homed/StandStill 前使用此值，防止把正常运动的“非静止”误判为联停。
 xAxesReady := GVL_axis.Axis1.xEnabled AND GVL_axis.Axis2.xEnabled AND GVL_axis.Axis3.xEnabled AND GVL_axis.Axis4.xEnabled;
@@ -81,7 +120,12 @@ END_FOR
 // 轨迹块先更新组状态和 xBusy，后面的基础块在本扫描就能据此禁止手动抢占。
 // 全部下发后的统一拼表状态 5 不置 xBusy，不占用基础轴控制。
 fbTrajectory(Axes := GVL_sy.axis, xAxesReady := xAxesReady, xAbort := xAbort, xAxisFault := xAxisFault);
-
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A05_ManualAxes" Id="{e283efde-06ca-5b80-bffe-6ba54f46393f}">
+      <Implementation>
+        <ST><![CDATA[// 调用四轴基础控制；更新 NC 控制输出及 GVL_axis 实际反馈。
 // 四个实例各自保存 Power/Jog/Home/Stop/Reset 的状态，便于逐轴打断点。
 // 四个基础实例每扫描都调用，持续更新异步 MC 块 Busy/Done/Error。
 // Axis1..4 固定对应 NC 引用 [1]..[4]，不通过选中轴号复用一个实例。
@@ -101,9 +145,16 @@ fbAxis4(Axis := GVL_sy.axis[4], Data := GVL_axis.Axis4, Config := GVL_motion.aCo
     xPermit := GVL_motion.xMotionPermit AND GVL_control.xCanCommand, xPositiveLimit := GVL_motion.axPositiveLimit[4],
     xNegativeLimit := GVL_motion.axNegativeLimit[4], xHomeSensor := GVL_motion.axHomeSensor[4],
     xGroupBusy := GVL_motion.xBusy);
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A06_PublishFeedback" Id="{1ee1214a-0779-5158-9078-6f391e452af9}">
+      <Implementation>
+        <ST><![CDATA[// 发布本扫描执行后的反馈；只写 GVL_HMI，不产生运动命令。
 // 所有基础块本周期输出更新后，再发布 HMI 状态；避免把请求位误当成执行反馈。
 fbHmiFeedback();
 ]]></ST>
-    </Implementation>
+      </Implementation>
+    </Action>
   </POU>
 </TcPlcObject>

@@ -13,6 +13,7 @@ VAR_GLOBAL
     axHomeSensor : ARRAY[1..4] OF BOOL;
     aConfig : ARRAY[1..4] OF ST_AxisConfig; // 仅在轨迹空闲、轴静止时修改的设备实际参数。
 
+    // 以下为上位机写入的轨迹命令与点位；nUploadStation、xStopped 两项由 PLC 写、上位机只读。
     nCommandStation : UINT; // 上位机命令来源，必须等于有效 Owner；不是授权本身。
     nUploadStation : UINT; // PLC 锁存的上传所属站，只读。
     xStopped : BOOL; // 人工停止完成；不同于自然完成 xDone 或故障。

@@ -4,6 +4,7 @@ from pathlib import Path
 import re
 import unittest
 import xml.etree.ElementTree as ET
+from plc_source import main_source
 from types import SimpleNamespace as NS
 from verify_upload_assembly import StBranch
 
@@ -13,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 class DecisionProgram:
     def __init__(self):
-        source = ET.parse(ROOT / "axis_4/POUs/F_ControlDecision.TcPOU").findtext(".//ST")
+        source = ET.parse(ROOT / "axis_4/POUs/ControlAuthority_控制权/F_ControlDecision.TcPOU").findtext(".//ST")
         source = re.sub(r"//[^\n]*", "", source)
         self.tokens = re.findall(r"\w+|:=|<>|<=|>=|[();<>=+\-]", source)
         self.index = 0
@@ -131,20 +132,20 @@ class AuthorityChecks(unittest.TestCase):
             self.assertEqual(self.decision.execute(0, 1, action), 7)
 
     def test_lock_sources_and_no_command_bypass(self):
-        main = ET.parse(ROOT / "axis_4/POUs/MAIN.TcPOU").findtext(".//ST")
+        main = main_source(ROOT)
         for condition in ("Status.Moving", "Status.Homing", "Status.Stopping",
                           "Status.ExtSetPointGenEnabled", "NcToPlc.ActVelo", "Axis1.xBusy"):
             self.assertIn(condition, main)
         self.assertLess(main.index("fbAuthority("), main.index("aCommandGate[1]("))
         self.assertLess(main.index("aCommandGate[4]("), main.index("fbAxis1("))
-        authority = ET.parse(ROOT / "axis_4/POUs/FB_ControlAuthority.TcPOU").findtext(".//ST")
+        authority = ET.parse(ROOT / "axis_4/POUs/ControlAuthority_控制权/FB_ControlAuthority.TcPOU").findtext(".//ST")
         self.assertIn("IF NOT xLocked AND xOwnerLost", authority)
         self.assertIn("udiRequestSequence <> GVL_control.aStation[i].udiAckSequence", authority)
         self.assertIn("GVL_control.aStation[i].aAxis := aEmpty", authority)
         self.assertIn("OR GVL_control.aStation[nOwner].aAxis[j].gohome", authority)
 
     def test_idle_revocation_clears_loss_latch_before_new_requests(self):
-        source = ET.parse(ROOT / "axis_4/POUs/FB_ControlAuthority.TcPOU").findtext(".//ST")
+        source = ET.parse(ROOT / "axis_4/POUs/ControlAuthority_控制权/FB_ControlAuthority.TcPOU").findtext(".//ST")
         revoke = source.index("IF NOT xLocked AND xOwnerLost")
         dispatch = source.index("// 同一扫描先处理释放")
         # 清失联锁存后才处理新请求，防止新持有者继承上一站的失联状态。
@@ -158,7 +159,7 @@ class AxisInterlockChecks(unittest.TestCase):
     """执行基础轴真实条件，确认控制权精简没有绕过运动和复位联锁。"""
 
     def test_each_nc_motion_condition_blocks_recovery(self):
-        source = ET.parse(ROOT / "axis_4/POUs/MAIN.TcPOU").findtext(".//ST")
+        source = main_source(ROOT)
         assignment = re.search(r"xControlBusy := xControlBusy.*?;", source, re.S)[0]
         # 测试解释器不解析小数 token；保留真实比较式，将阈值绑定为同值常量。
         program = StBranch(assignment.replace("0.000001", "cVelocityTolerance"))
@@ -174,7 +175,7 @@ class AxisInterlockChecks(unittest.TestCase):
                 self.assertEqual(values["xControlBusy"], field is not None)
 
     def test_invalid_io_blocks_new_power_but_not_reset(self):
-        source = ET.parse(ROOT / "axis_4/POUs/FB_AxisControl.TcPOU").findtext(".//ST")
+        source = ET.parse(ROOT / "axis_4/POUs/ManualControl_手动控制/FB_AxisControl.TcPOU").findtext(".//ST")
         enable = re.search(r"fbPower\(Axis := Axis,\s*Enable := (.*?),\s*Enable_Positive", source, re.S)[1]
         reset = re.search(r"fbReset\(Axis := Axis, Execute := (.*?)\);", source, re.S)[1]
         manual = re.search(r"xManual := .*?;", source, re.S)[0]

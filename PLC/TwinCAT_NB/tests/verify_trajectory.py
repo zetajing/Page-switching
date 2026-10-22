@@ -14,7 +14,8 @@ PLC = ROOT / "axis_4"
 
 
 def st_source(name):
-    return ET.parse(PLC / "POUs" / name).findtext(".//ST")
+    return "\n".join(node.text or "" for node in
+        ET.parse(next((PLC / "POUs").rglob(name))).findall(".//ST"))
 
 
 class TrajectoryChecks(unittest.TestCase):
@@ -51,7 +52,7 @@ class TrajectoryChecks(unittest.TestCase):
     def test_control_block_nesting(self):
         # 只检查控制结构配对，不将此结果当作 ST 编译成功。
         closing = {"END_IF": "IF", "END_FOR": "FOR", "END_CASE": "CASE"}
-        for path in (PLC / "POUs").glob("*.TcPOU"):
+        for path in (PLC / "POUs").rglob("*.TcPOU"):
             source = st_source(path.name)
             source = re.sub(r"\(\*.*?\*\)", "", source, flags=re.S)
             source = re.sub(r"//[^\n]*", "", source)
@@ -65,7 +66,7 @@ class TrajectoryChecks(unittest.TestCase):
             self.assertFalse(stack, str(path))
 
     def test_capacity_and_chunk_boundaries(self):
-        source = (PLC / "POUs" / "FB_FourAxisTrajectory.TcPOU").read_text(encoding="utf-8")
+        source = (PLC / "POUs" / "Trajectory_点位与轨迹" / "FB_FourAxisTrajectory.TcPOU").read_text(encoding="utf-8")
         motion = (PLC / "GVLs" / "GVL_motion.TcGVL").read_text(encoding="utf-8")
         self.assertIn("ARRAY[1..4, 0..2099999] OF LREAL", source)
         self.assertIn("cMaxPoints : UDINT := 2100000", source)

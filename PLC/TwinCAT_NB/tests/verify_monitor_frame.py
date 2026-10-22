@@ -24,7 +24,7 @@ class MonitorFrameChecks(unittest.TestCase):
             ("nControlMode", "UINT"), ("nWaveState", "UINT"), ("uiWaveFaultCode", "UINT"), ("udiHeartbeat", "UDINT")]
             + [(f"Axis{i}", "ST_AxisMonitor") for i in range(1, 5)]
             + [('nTrajectoryState', 'UINT'), ('nReceivedCount', 'UDINT'), ('nLoadedCount', 'UDINT'), ('nPointCount', 'UDINT'), ('nCurrentPoint', 'UDINT'), ('udiReceivedSequence', 'UDINT'), ('udiAcceptedSequence', 'UDINT'), ('udiErrorId', 'UDINT'), ('nUploadStation', 'UINT'), ('xUploadBusy', 'BOOL'), ('xDataReady', 'BOOL'), ('xTrajectoryBusy', 'BOOL'), ('xRunning', 'BOOL'), ('xDone', 'BOOL'), ('xError', 'BOOL'), ('xStopped', 'BOOL'), ('xMotionPermit', 'BOOL'), ('xConfigValid', 'BOOL'), ('xAxesIdle', 'BOOL'), ('xAxisFault', 'BOOL'), ('xAxesStopped', 'BOOL')])
-        source = ET.parse(ROOT / "axis_4/POUs/FB_HmiFeedback.TcPOU").findtext(".//ST")
+        source = ET.parse(ROOT / "axis_4/POUs/Feedback_反馈/FB_HmiFeedback.TcPOU").findtext(".//ST")
         for i in range(1, 5):
             for member, _ in axis:
                 self.assertIn(f"GVL_HMI.stMonitor.Axis{i}.{member} := GVL_axis.Axis{i}.{member};", source)

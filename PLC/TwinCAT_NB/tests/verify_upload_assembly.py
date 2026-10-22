@@ -9,7 +9,7 @@ from copy import deepcopy
 
 
 ROOT = Path(__file__).resolve().parents[1]
-POU = ET.parse(ROOT / "axis_4/POUs/FB_FourAxisTrajectory.TcPOU")
+POU = ET.parse(ROOT / "axis_4/POUs/Trajectory_点位与轨迹/FB_FourAxisTrajectory.TcPOU")
 SOURCE = re.sub(r"//[^\n]*", "", POU.findtext(".//ST"))
 
 

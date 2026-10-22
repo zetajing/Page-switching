@@ -28,7 +28,7 @@ def empty_commands():
 
 class AuthorityFixture:
     def __init__(self, invalid=True):
-        source = ET.parse(ROOT / 'axis_4/POUs/FB_ControlAuthority.TcPOU').findtext('.//ST')
+        source = ET.parse(ROOT / 'axis_4/POUs/ControlAuthority_控制权/FB_ControlAuthority.TcPOU').findtext('.//ST')
         source = re.sub(r'//[^\n]*', '', source).replace('T#3S', 'cTimeout')
         self.program = StBranch(source)
         decision = DecisionProgram()

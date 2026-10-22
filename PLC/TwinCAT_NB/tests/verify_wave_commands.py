@@ -6,7 +6,7 @@ from verify_upload_assembly import ROOT, SOURCE, StBranch, AssemblyFixture
 class WaveCommandChecks(unittest.TestCase):
     def test_idle_accepts_disabled_axes_but_requires_valid_stopped_feedback(self):
         import re
-        source = (ROOT / "axis_4/POUs/FB_HmiFeedback.TcPOU").read_text(encoding="utf-8")
+        source = (ROOT / "axis_4/POUs/Feedback_反馈/FB_HmiFeedback.TcPOU").read_text(encoding="utf-8")
         assignments = re.findall(r"GVL_HMI\.stMonitor\.xAxesIdle :=.*?;", source, re.S)
         self.assertEqual(len(assignments), 2)
 
@@ -35,7 +35,7 @@ class WaveCommandChecks(unittest.TestCase):
             with self.subTest(changes=changes): self.assertFalse(idle(**changes))
 
     def test_stop_confirmation_requires_valid_nc_feedback(self):
-        source = (ROOT / "axis_4/POUs/FB_AxisControl.TcPOU").read_text(encoding="utf-8")
+        source = (ROOT / "axis_4/POUs/ManualControl_手动控制/FB_AxisControl.TcPOU").read_text(encoding="utf-8")
         stopped = source[source.index("Data.xStopped :="):source.index("Data.xBusy :=")]
         self.assertIn("NOT Axis.Status.IoDataInvalid", stopped)
         self.assertIn("ABS(Axis.NcToPlc.ActVelo)", stopped)
@@ -59,7 +59,7 @@ class WaveCommandChecks(unittest.TestCase):
 
     def test_rising_edge_outputs_are_never_written(self):
         import re
-        for path in (ROOT / "axis_4/POUs").glob("*.TcPOU"):
+        for path in (ROOT / "axis_4/POUs").rglob("*.TcPOU"):
             source = path.read_text(encoding="utf-8")
             self.assertFalse(re.search(r"\brt\w+\.Q\s*:=", source), str(path))
 

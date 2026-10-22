@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 class AxisEnableChecks(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        source = ET.parse(ROOT / 'axis_4/POUs/FB_AxisControl.TcPOU').findtext('.//ST')
+        source = ET.parse(ROOT / 'axis_4/POUs/ManualControl_手动控制/FB_AxisControl.TcPOU').findtext('.//ST')
         source = re.sub(r'//[^\n]*', '', source).replace('1.0E12', 'cLimit')
 
         def assignment(name):

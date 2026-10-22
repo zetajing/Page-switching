@@ -30,13 +30,13 @@
       <SubType>Code</SubType>
       <LinkAlways>true</LinkAlways>
     </Compile>
-    <Compile Include="POUs\F_ControlDecision.TcPOU">
+    <Compile Include="POUs\ControlAuthority_控制权\F_ControlDecision.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="POUs\FB_ControlAuthority.TcPOU">
+    <Compile Include="POUs\ControlAuthority_控制权\FB_ControlAuthority.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="POUs\FB_AxisCommandGate.TcPOU">
+    <Compile Include="POUs\ManualControl_手动控制\FB_AxisCommandGate.TcPOU">
       <SubType>Code</SubType>
     </Compile>
 
@@ -44,7 +44,7 @@
       <SubType>Code</SubType>
       <LinkAlways>true</LinkAlways>
     </Compile>
-    <Compile Include="POUs\FB_HmiFeedback.TcPOU">
+    <Compile Include="POUs\Feedback_反馈\FB_HmiFeedback.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="DUTs\ST_AxisConfig.TcDUT">
@@ -57,13 +57,13 @@
       <SubType>Code</SubType>
       <LinkAlways>true</LinkAlways>
     </Compile>
-    <Compile Include="POUs\FB_AxisControl.TcPOU">
+    <Compile Include="POUs\ManualControl_手动控制\FB_AxisControl.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="POUs\FB_FourAxisTrajectory.TcPOU">
+    <Compile Include="POUs\Trajectory_点位与轨迹\FB_FourAxisTrajectory.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="POUs\F_TrajectoryPoint.TcPOU">
+    <Compile Include="POUs\Trajectory_点位与轨迹\F_TrajectoryPoint.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="DUTs\ST_AxisAds.TcDUT">
@@ -89,6 +89,10 @@
     <Folder Include="GVLs" />
     <Folder Include="VISUs" />
     <Folder Include="POUs" />
+    <Folder Include="POUs\Feedback_反馈" />
+    <Folder Include="POUs\ControlAuthority_控制权" />
+    <Folder Include="POUs\ManualControl_手动控制" />
+    <Folder Include="POUs\Trajectory_点位与轨迹" />
   </ItemGroup>
   <ItemGroup>
     <!-- GVL_sy 中的 AXIS_REF 轴引用类型由 Tc2_MC2 提供。 -->
