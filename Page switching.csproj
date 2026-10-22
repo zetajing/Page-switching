@@ -43,6 +43,14 @@
       <SubType>Code</SubType>
       <DependentUpon>main_page.cs</DependentUpon>
     </Compile>
+    <Compile Update="Forms\LoginForm.Designer.cs">
+      <SubType>Code</SubType>
+      <DependentUpon>LoginForm.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Forms\AccountManagementForm.Designer.cs">
+      <SubType>Code</SubType>
+      <DependentUpon>AccountManagementForm.cs</DependentUpon>
+    </Compile>
     <EmbeddedResource Update="Forms\main_page.resx">
       <DependentUpon>main_page.cs</DependentUpon>
     </EmbeddedResource>

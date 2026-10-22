@@ -38,6 +38,9 @@ namespace Page_switching
             controlAuthorityButton = new AntdUI.Button();
             panel1 = new AntdUI.Panel();
             headerStatusPanel = new AntdUI.Panel();
+            accountPanel = new Panel();
+            currentUserLabel = new AntdUI.Label();
+            manageAccountsButton = new AntdUI.Button();
             controlStatusLabel = new AntdUI.Label();
             adsStatusLabel = new AntdUI.Label();
             appTitleLabel = new AntdUI.Label();
@@ -129,6 +132,7 @@ namespace Page_switching
             // 
             panel1.BackColor = Color.White;
             panel1.Controls.Add(headerStatusPanel);
+            panel1.Controls.Add(accountPanel);
             panel1.Controls.Add(appTitleLabel);
             panel1.Dock = DockStyle.Top;
             panel1.Location = new Point(0, 0);
@@ -151,6 +155,24 @@ namespace Page_switching
             headerStatusPanel.Radius = 0;
             headerStatusPanel.Size = new Size(427, 75);
             headerStatusPanel.TabIndex = 2;
+            // 登录账号与管理入口独立于 PLC 控制端状态。
+            accountPanel.BackColor = Color.White;
+            accountPanel.Controls.Add(currentUserLabel);
+            accountPanel.Controls.Add(manageAccountsButton);
+            accountPanel.Dock = DockStyle.Right;
+            accountPanel.Name = "accountPanel";
+            accountPanel.Padding = new Padding(10, 14, 10, 14);
+            accountPanel.Size = new Size(340, 75);
+            currentUserLabel.AutoEllipsis = true;
+            currentUserLabel.Dock = DockStyle.Fill;
+            currentUserLabel.Font = new Font("Microsoft YaHei UI", 9F);
+            currentUserLabel.Name = "currentUserLabel";
+            currentUserLabel.Text = "尚未登录";
+            manageAccountsButton.Dock = DockStyle.Right;
+            manageAccountsButton.Name = "manageAccountsButton";
+            manageAccountsButton.Size = new Size(100, 47);
+            manageAccountsButton.Text = "账号管理";
+            manageAccountsButton.Click += ManageAccountsButton_Click;
             // 
             // controlStatusLabel
             // 
@@ -502,6 +524,9 @@ namespace Page_switching
         private AntdUI.Button controlAuthorityButton;
         private AntdUI.Panel panel1;
         private AntdUI.Panel headerStatusPanel;
+        private Panel accountPanel;
+        private AntdUI.Label currentUserLabel;
+        private AntdUI.Button manageAccountsButton;
         private Panel panel2;
         private Panel panelswitch;
         private Panel contentPanel;

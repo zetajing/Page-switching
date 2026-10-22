@@ -1,0 +1,161 @@
+using System.Security.Cryptography;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using Page_switching;
+
+int checks = 0;
+void Check(bool condition, string message)
+{
+    if (!condition) throw new Exception(message);
+    checks++;
+}
+void Throws<T>(Action action, string message) where T : Exception
+{
+    try { action(); }
+    catch (T) { checks++; return; }
+    throw new Exception(message);
+}
+
+string directory = Path.Combine(Path.GetTempPath(), "PageSwitching_LoginChecks_" + Guid.NewGuid().ToString("N"));
+Directory.CreateDirectory(directory);
+try
+{
+    string path = Path.Combine(directory, "nested", "users.json");
+    var service = new LoginService(path);
+    Check(!service.HasAccount, "没有账号文件时才允许首次注册。");
+    Check(service.ValidateLogin("Admin", "admin-pass-1") is null, "空库不能登录。");
+    Throws<ArgumentException>(() => service.CreateAccount("\nAdmin", "admin-pass-1"), "账号不能包含控制字符。");
+    Throws<ArgumentException>(() => service.CreateAccount(" ", "admin-pass-1"), "账号不能为空。");
+    Throws<ArgumentException>(() => service.CreateAccount(new string('x', 33), "admin-pass-1"), "账号长度必须受限。");
+    Throws<ArgumentException>(() => service.CreateAccount("Admin", "short"), "首次密码不能过短。");
+    Check(!File.Exists(path), "无效输入不能写入账号库。");
+    LoginUser admin = service.CreateAccount("  Admin  ", "admin-pass-1");
+    Check(admin.UserName == "Admin" && admin.IsAdministrator, "首个账号必须是管理员并保留大小写。");
+    Check(service.HasAccount, "创建后账号库存在。");
+    string firstFile = File.ReadAllText(path);
+    Throws<InvalidOperationException>(() => service.CreateAccount("Other", "other-pass-1"), "已有账号不能首次注册覆盖。");
+    Check(File.ReadAllText(path) == firstFile, "重复首次注册不能修改账号库。");
+    Check(!firstFile.Contains("admin-pass-1"), "账号库不能包含明文密码。");
+    using (var document = JsonDocument.Parse(firstFile))
+    {
+        var account = document.RootElement.GetProperty("users")[0];
+        byte[] salt = Convert.FromBase64String(account.GetProperty("salt").GetString()!);
+        byte[] hash = Convert.FromBase64String(account.GetProperty("passwordHash").GetString()!);
+        Check(salt.Length == 16 && hash.Length == 32, "盐和哈希长度必须符合约定。");
+        byte[] expected = Rfc2898DeriveBytes.Pbkdf2("admin-pass-1", salt, 600000, HashAlgorithmName.SHA256, 32);
+        Check(CryptographicOperations.FixedTimeEquals(hash, expected), "实际密码派生参数必须符合约定。");
+    }
+    Check(service.ValidateLogin(" admin ", "admin-pass-1") == admin, "登录忽略账号大小写并返回保存的名称。");
+    Check(service.ValidateLogin("Admin", "wrong-pass-1") is null, "错误密码必须拒绝。");
+    Check(service.ValidateLogin("Unknown", "admin-pass-1") is null, "未知账号必须拒绝。");
+    Check(service.ValidateLogin("Admin", "short") is null, "无效长度密码必须拒绝。");
+
+    service.AddUser(admin, "OperatorA", "operator-pass-1", UserRole.Operator);
+    var secondService = new LoginService(path);
+    LoginUser operatorUser = secondService.ValidateLogin("operatora", "operator-pass-1")!;
+    Check(operatorUser.UserName == "OperatorA" && !operatorUser.IsAdministrator, "新增账号可从新服务实例登录。");
+    Check(service.GetUsers(admin).Count == 2, "管理员能读取账号列表。");
+    Throws<InvalidOperationException>(() => service.AddUser(admin, "OPERATORa", "another-pass-1", UserRole.Operator), "重复账号忽略大小写。");
+    Throws<ArgumentException>(() => service.AddUser(admin, "Other", new string('x', 129), UserRole.Operator), "密码长度必须受限。");
+    Throws<ArgumentException>(() => service.AddUser(admin, "Other", "another-pass-1", (UserRole)99), "非法角色不能保存。");
+    Throws<UnauthorizedAccessException>(() => service.GetUsers(operatorUser), "操作员不能读取管理列表。");
+    Throws<UnauthorizedAccessException>(() => service.AddUser(operatorUser, "Other", "other-pass-1", UserRole.Operator), "操作员不能增加账号。");
+    Throws<UnauthorizedAccessException>(() => service.ResetPassword(operatorUser, "Admin", "changed-pass-1"), "操作员不能重置密码。");
+    Throws<UnauthorizedAccessException>(() => service.DeleteUser(operatorUser, "Admin"), "操作员不能删除账号。");
+    var forgedOperator = operatorUser with { Role = UserRole.Administrator };
+    Throws<UnauthorizedAccessException>(() => service.GetUsers(forgedOperator), "不能只信调用者传入的管理员角色。");
+    Throws<UnauthorizedAccessException>(() => service.GetUsers(new LoginUser("Missing", UserRole.Administrator)), "不存在的账号不能管理。");
+
+    string beforeReset = File.ReadAllText(path);
+    service.ResetPassword(admin, "operatorA", "changed-pass-1");
+    Check(service.ValidateLogin("OperatorA", "operator-pass-1") is null, "重置后旧密码必须失效。");
+    Check(service.ValidateLogin("OperatorA", "changed-pass-1") == operatorUser, "重置后角色和名称不变。");
+    Check(beforeReset != File.ReadAllText(path), "重置密码必须持久化新盐和哈希。");
+    Throws<InvalidOperationException>(() => service.ResetPassword(admin, "Missing", "changed-pass-1"), "重置不存在的账号必须报错。");
+    Throws<InvalidOperationException>(() => service.DeleteUser(admin, "Admin"), "不能删除最后一个管理员。");
+    service.AddUser(admin, "BackupAdmin", "backup-pass-1", UserRole.Administrator);
+    Throws<InvalidOperationException>(() => service.DeleteUser(admin, "ADMIN"), "即使有其他管理员，也不能删除当前登录账号。");
+    var backupAdmin = service.ValidateLogin("BackupAdmin", "backup-pass-1")!;
+    service.DeleteUser(admin, "BackupAdmin");
+    Throws<UnauthorizedAccessException>(() => secondService.GetUsers(backupAdmin), "被删除的管理员会话不能继续管理。");
+    service.DeleteUser(admin, "operatorA");
+    Check(service.ValidateLogin("OperatorA", "changed-pass-1") is null, "被删除账号不能登录。");
+    Check(secondService.GetUsers(admin).Count == 1, "删除应持久化并被其他实例看到。");
+    Check(!Directory.EnumerateFiles(Path.GetDirectoryName(path)!, "*.tmp").Any(), "保存后不遗留临时文件。");
+
+    // 同一进程内多个服务实例更新同一个库，不能互相覆盖账号。
+    Parallel.For(0, 4, index => new LoginService(path).AddUser(admin, "Parallel" + index, "parallel-pass-1", UserRole.Operator));
+    Check(service.GetUsers(admin).Count == 5, "并发更新必须串行保存且不能丢失账号。");
+    using (var document = JsonDocument.Parse(File.ReadAllText(path)))
+    {
+        var samePasswordUsers = document.RootElement.GetProperty("users").EnumerateArray()
+            .Where(user => user.GetProperty("userName").GetString()!.StartsWith("Parallel")).ToArray();
+        Check(samePasswordUsers.Select(user => user.GetProperty("salt").GetString()).Distinct().Count() == 4,
+            "即使密码相同，每个账号仍必须有独立随机盐。");
+        Check(samePasswordUsers.Select(user => user.GetProperty("passwordHash").GetString()).Distinct().Count() == 4,
+            "相同密码在不同随机盐下不能保存为相同哈希。");
+    }
+
+    // 文件允许读取但禁止替换时，失败的保存不能损坏现有账号库。
+    string beforeFailedSave = File.ReadAllText(path);
+    using (var locked = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+        Throws<IOException>(() => service.AddUser(admin, "BlockedSave", "blocked-pass-1", UserRole.Operator),
+            "无法原子替换时必须报告保存失败。");
+    Check(File.ReadAllText(path) == beforeFailedSave, "保存失败后必须保留原账号库。");
+    Check(service.GetUsers(admin).Count == 5, "保存失败的账号不能出现在账号库。");
+    Check(!Directory.EnumerateFiles(Path.GetDirectoryName(path)!, "*.tmp").Any(), "保存失败也必须清理临时文件。");
+
+    string validFile = File.ReadAllText(path);
+    foreach (string corrupt in new[] { "", "not json", "{}", "null", "{\"version\":1,\"users\":[]}" })
+    {
+        File.WriteAllText(path, corrupt);
+        Throws<InvalidDataException>(() => _ = service.HasAccount, "损坏文件不能回到首次注册。");
+        Throws<InvalidDataException>(() => service.CreateAccount("Intruder", "intruder-pass-1"), "损坏库不能被注册覆盖。");
+        Throws<InvalidDataException>(() => service.ValidateLogin("Admin", "admin-pass-1"), "损坏库不能登录。");
+        Check(File.ReadAllText(path) == corrupt, "读取损坏文件不能改写原资料。");
+    }
+    foreach (Action<JsonObject> corrupt in new Action<JsonObject>[]
+    {
+        root => root["version"] = 99,
+        root => root.Remove("version"),
+        root => root["users"]![0]!["salt"] = "broken base64",
+        root => root["users"]![0]!["passwordHash"] = Convert.ToBase64String(new byte[31]),
+        root => root["users"]![0]!["role"] = 99,
+        root => root["users"]![0]!.AsObject().Remove("role"),
+        root => root["users"]![0]!["role"] = (int)UserRole.Operator,
+        root => root["users"]![1]!["userName"] = "ADMIN",
+        root => root["users"]![0]!["userName"] = "\nAdmin",
+        root => root["users"]![0] = null
+    })
+    {
+        var root = JsonNode.Parse(validFile)!.AsObject();
+        corrupt(root);
+        File.WriteAllText(path, root.ToJsonString());
+        Throws<InvalidDataException>(() => _ = service.HasAccount, "非法版本或账号记录必须拒绝。");
+    }
+
+    File.WriteAllText(path, validFile);
+    using (var locked = new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+        Throws<IOException>(() => _ = service.HasAccount, "读取失败不能误判为无账号。");
+    Check(service.ValidateLogin("Admin", "admin-pass-1") == admin, "文件可读后仍能使用原账号登录。");
+
+    // 两个首次注册请求只能有一个成功，已创建的文件不能被第二次覆盖。
+    string racePath = Path.Combine(directory, "first-race.json");
+    int created = 0;
+    int rejected = 0;
+    Parallel.For(0, 2, index =>
+    {
+        try
+        {
+            new LoginService(racePath).CreateAccount("First" + index, "first-pass-1");
+            Interlocked.Increment(ref created);
+        }
+        catch (InvalidOperationException) { Interlocked.Increment(ref rejected); }
+    });
+    Check(created == 1 && rejected == 1, "并发首次注册只能创建一个管理员。");
+    Console.WriteLine($"Login service checks: {checks} assertions passed.");
+}
+finally
+{
+    Directory.Delete(directory, recursive: true);
+}

@@ -14,6 +14,7 @@ namespace Page_switching
         private readonly WaveformPage _waveformPage;
         private readonly AxisService _axisService;
         private readonly MachineMonitorService _monitorService;
+        private readonly LoginUser? _currentUser;
         private readonly Wave_Height_Meter _waveHeightMeterPage;
         private readonly Data _dataPage;
         private readonly Calibration _calibrationPage;
@@ -41,10 +42,21 @@ namespace Page_switching
         };
 
         // 初始化共享轴服务和各个页面，并显示默认页面。
-        public Mainpage()
+        public Mainpage() : this(null) { }
+
+        internal Mainpage(LoginUser? user)
         {
+            _currentUser = user;
             InitializeComponent();
             InitializeOperationJournal();
+            // 登录只记录软件使用者；PLC 站点身份和控制权仍走原有流程。
+            if (user is not null)
+            {
+                string role = user.IsAdministrator ? "管理员" : "操作员";
+                Text = "造波控制系统 - " + user.UserName;
+                currentUserLabel.Text = user.UserName + " · " + role;
+                if (_recordOperations) OperationJournal.Record("登录", user.UserName + "（" + role + "）登录成功");
+            }
 
             // 本次启动只读取一次 ADS 配置；保存的新参数在下次启动才应用。
             var settings = AdsConnectionSettings.GetSettings();
@@ -74,7 +86,24 @@ namespace Page_switching
             };
             ConnectPageEvents();
             RegisterPageLogging();
+            ApplyUserPermissions();
             InitializeStartup();
+        }
+
+        // 账号管理、配置与标定仅管理员可用；设备操作仍须另行取得 PLC 控制权。
+        private void ApplyUserPermissions()
+        {
+            bool administrator = _currentUser?.IsAdministrator == true;
+            manageAccountsButton.Enabled = administrator;
+            bu_Configuration.Enabled = administrator;
+            Bu_Calibration.Enabled = administrator;
+        }
+
+        private void ManageAccountsButton_Click(object? sender, EventArgs e)
+        {
+            if (_currentUser?.IsAdministrator != true) return;
+            using var dialog = new AccountManagementForm(new LoginService(), _currentUser);
+            dialog.ShowDialog(this);
         }
 
         // 先接入日志通知，后续服务和页面初始化产生的记录也能被主窗体接收。
@@ -183,10 +212,17 @@ namespace Page_switching
         {
             if (_closing || IsDisposed) return;
             // 即使读取仍在执行，也按当前时间将历史反馈降为过期。
-            _autoPage.ApplyMonitorSnapshot(_monitorService.LatestSnapshot);
-            _controlAuthorityPage.ApplyMonitorSnapshot(_monitorService.LatestSnapshot);
-            UpdateHeaderStatus();
+            PublishMonitorSnapshot();
             await RefreshMonitorAsync();
+        }
+
+        // 一次取得反馈，同一份快照同时更新页面和顶部状态，避免各处重复读取。
+        private void PublishMonitorSnapshot()
+        {
+            var snapshot = _monitorService.LatestSnapshot;
+            _autoPage.ApplyMonitorSnapshot(snapshot);
+            _controlAuthorityPage.ApplyMonitorSnapshot(snapshot);
+            UpdateHeaderStatus(snapshot);
         }
 
         // 定时器直接等待 ADS 读取，再在当前 UI 线程更新页面，便于逐行调试。
@@ -202,9 +238,7 @@ namespace Page_switching
                 await _monitorRefreshTask;
                 if (_closing || IsDisposed) return;
                 _lastMonitorError = null;
-                _autoPage.ApplyMonitorSnapshot(_monitorService.LatestSnapshot);
-                _controlAuthorityPage.ApplyMonitorSnapshot(_monitorService.LatestSnapshot);
-                UpdateHeaderStatus();
+                PublishMonitorSnapshot();
             }
             catch (OperationCanceledException) when (_closing || cancellationToken.IsCancellationRequested) { }
             catch (Exception ex)
@@ -328,13 +362,34 @@ namespace Page_switching
 
         private void NavigateTo(UserControl page, AntdUI.Button button)
         {
+            // 集中复查入口，事件或内部跳转同样不能绕过管理员页面限制。
+            if (!CanOpenPage(page))
+            {
+                if (_recordOperations) OperationJournal.Record("权限", "当前账号无权打开" + GetPageName(page));
+                return;
+            }
             if (_recordOperations) OperationJournal.Record("页面切换", "打开" + GetPageName(page));
             ShowPage(page);
-            SetActiveNavigation(button);
+            // 切页时共用同一份反馈，保持顶部与控制权页显示一致。
+            var snapshot = _monitorService.LatestSnapshot;
+            SetActiveNavigation(button, snapshot);
             if (ReferenceEquals(page, _autoPage) || ReferenceEquals(page, _controlAuthorityPage))
             {
-                _controlAuthorityPage.ApplyMonitorSnapshot(_monitorService.LatestSnapshot);
+                _controlAuthorityPage.ApplyMonitorSnapshot(snapshot);
                 _ = RefreshMonitorAsync();
+            }
+        }
+
+        private bool CanOpenPage(UserControl page)
+        {
+            switch (page)
+            {
+                case Config:
+                case Calibration:
+                case WaveBatchCalibrationPage:
+                    return _currentUser?.IsAdministrator == true;
+                default:
+                    return true;
             }
         }
 
@@ -479,7 +534,7 @@ namespace Page_switching
         }
 
         // AntdUI 导航统一更新默认、悬停和按下颜色；页面切换仍使用同一个入口。
-        private void SetActiveNavigation(AntdUI.Button activeButton)
+        private void SetActiveNavigation(AntdUI.Button activeButton, MachineMonitorSnapshot snapshot)
         {
             foreach (var button in new[] { Bu_auto, Bu_manual, Bu_Calibration, Bu_data, button2, button5,
                          analysisButton, correctionButton, bu_Configuration, controlAuthorityButton })
@@ -495,11 +550,11 @@ namespace Page_switching
             navigationMarker.Top = activeButton.Top;
             navigationMarker.Height = activeButton.Height;
 
-            UpdateHeaderStatus();
+            UpdateHeaderStatus(snapshot);
         }
 
         // 页面名称和设备反馈分开显示，切页不改变实际控制端或运行模式。
-        private void UpdateHeaderStatus()
+        private void UpdateHeaderStatus(MachineMonitorSnapshot? snapshot = null)
         {
             if (_closing || IsDisposed || Disposing)
             {
@@ -512,7 +567,7 @@ namespace Page_switching
                 OperationJournal.Record("系统", connected ? "手动 ADS 已连接" : "手动 ADS 未连接");
                 _lastAdsConnected = connected;
             }
-            var snapshot = _monitorService.LatestSnapshot;
+            snapshot ??= _monitorService.LatestSnapshot;
             adsStatusLabel.Text = $"● ADS：手动{(connected ? "已连接" : "未连接")} / 监控{(snapshot.IsConnected ? "已连接" : "未连接")}";
             adsStatusLabel.ForeColor = connected && snapshot.IsLive ? UiPalette.Success : UiPalette.Warning;
             var owner = Auto.FormatMonitorField(snapshot.ControlOwner, Auto.FormatControlOwner);

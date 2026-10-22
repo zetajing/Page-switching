@@ -1,0 +1,153 @@
+using System.ComponentModel;
+using System.ComponentModel.Design;
+using System.Reflection;
+using System.Runtime.Loader;
+using System.Runtime.InteropServices;
+using System.Windows.Forms;
+
+internal static class Program
+{
+    static Assembly app = null!;
+    static int checks;
+    const BindingFlags Members = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+
+    static void Check(bool passed, string message)
+    {
+        checks++;
+        if (!passed) throw new Exception(message);
+    }
+
+    static object Create(string name, params object?[] arguments) =>
+        Activator.CreateInstance(app.GetType("Page_switching." + name)!, Members, null, arguments, null)!;
+    static object? Call(object target, string name, params object?[] arguments) =>
+        target.GetType().GetMethod(name, Members)!.Invoke(target, arguments);
+    static Control Field(object target, string name) =>
+        (Control)target.GetType().GetField(name, Members)!.GetValue(target)!;
+    static object? Property(object target, string name) => target.GetType().GetProperty(name, Members)!.GetValue(target);
+
+    static void Complete(Task task)
+    {
+        var limit = DateTime.UtcNow.AddSeconds(20);
+        while (!task.IsCompleted)
+        {
+            if (DateTime.UtcNow > limit) throw new TimeoutException("UI 提交未退出");
+            Application.DoEvents();
+            Thread.Sleep(5);
+        }
+        task.GetAwaiter().GetResult();
+    }
+
+    static void Render(Form form, string output)
+    {
+        form.ShowInTaskbar = false;
+        form.Opacity = 0;
+        form.Show();
+        Application.DoEvents();
+        using var bitmap = new System.Drawing.Bitmap(form.Width, form.Height);
+        form.DrawToBitmap(bitmap, new System.Drawing.Rectangle(System.Drawing.Point.Empty, bitmap.Size));
+        bitmap.Save(output);
+        form.Hide();
+    }
+
+    static void CheckLayout(Form form, params string[] names)
+    {
+        foreach (string name in names)
+        {
+            Control control = Field(form, name);
+            Check(control.Parent!.ClientRectangle.Contains(control.Bounds), name + " 越出父容器");
+            Check(control.Width > 0 && control.Height >= 25, name + " 尺寸无效");
+        }
+    }
+
+    [STAThread]
+    static void Main(string[] args)
+    {
+        Application.SetHighDpiMode(HighDpiMode.DpiUnaware);
+        Application.EnableVisualStyles();
+        // 主窗体仅创建/绘制；设计上下文禁止启动 Router、ADS 和周期刷新。
+        LicenseManager.CurrentContext = new DesigntimeLicenseContext();
+        string dll = Path.GetFullPath(args[0]);
+        // 检查程序从临时目录启动，显式加载应用随附的图形本机库。
+        string nativeDirectory = Path.Combine(Path.GetDirectoryName(dll)!, "runtimes",
+            "win-" + RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant(), "native");
+        foreach (string native in Directory.GetFiles(nativeDirectory, "*.dll")) NativeLibrary.Load(native);
+        string output = Path.GetFullPath(args[1]);
+        Directory.CreateDirectory(output);
+        AssemblyLoadContext.Default.Resolving += (_, name) =>
+        {
+            string path = Path.Combine(Path.GetDirectoryName(dll)!, name.Name + ".dll");
+            return File.Exists(path) ? AssemblyLoadContext.Default.LoadFromAssemblyPath(path) : null;
+        };
+        app = Assembly.LoadFrom(dll);
+        string temporary = Path.Combine(Path.GetTempPath(), "PageSwitching_LoginUI_" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(temporary);
+        try
+        {
+            object service = Create("LoginService", Path.Combine(temporary, "users.json"));
+            using (var setup = (Form)Create("LoginForm", service))
+            {
+                Render(setup, Path.Combine(output, "login-first-admin.png"));
+                Check(Field(setup, "titleLabel").Text == "创建管理员", "首次创建管理员");
+                CheckLayout(setup, "userNameInput", "passwordInput", "confirmPasswordInput", "submitButton", "exitButton");
+                Field(setup, "userNameInput").Text = "管理员";
+                Field(setup, "passwordInput").Text = "LocalTest-Password01";
+                Field(setup, "confirmPasswordInput").Text = "different";
+                Complete((Task)Call(setup, "SubmitAsync")!);
+                Check(setup.DialogResult != DialogResult.OK && !(bool)Property(service, "HasAccount")!, "两次密码不同不能创建账号");
+                Field(setup, "confirmPasswordInput").Text = "LocalTest-Password01";
+                Complete((Task)Call(setup, "SubmitAsync")!);
+                Check(setup.DialogResult == DialogResult.OK, "创建完成进入系统");
+            }
+            object admin = Call(service, "ValidateLogin", "管理员", "LocalTest-Password01")!;
+            object operatorRole = Enum.Parse(app.GetType("Page_switching.UserRole")!, "Operator");
+            Call(service, "AddUser", admin, "操作员", "Operator-Test01", operatorRole);
+            object operatorUser = Call(service, "ValidateLogin", "操作员", "Operator-Test01")!;
+            using (var login = (Form)Create("LoginForm", service))
+            {
+                Render(login, Path.Combine(output, "login.png"));
+                Check(Field(login, "titleLabel").Text == "用户登录", "后续进入登录模式");
+                Field(login, "userNameInput").Text = "操作员";
+                Field(login, "passwordInput").Text = "Wrong-Password";
+                Complete((Task)Call(login, "SubmitAsync")!);
+                Check(login.DialogResult != DialogResult.OK && Field(login, "messageLabel").Text.Contains("不正确"), "错误密码留在登录页");
+                Field(login, "passwordInput").Text = "Operator-Test01";
+                Complete((Task)Call(login, "SubmitAsync")!);
+                Check(login.DialogResult == DialogResult.OK && !(bool)Property(Property(login, "User")!, "IsAdministrator")!, "操作员按真实角色登录");
+            }
+            using (var manager = (Form)Create("AccountManagementForm", service, admin))
+            {
+                Call(manager, "ReloadUsers");
+                Render(manager, Path.Combine(output, "account-management.png"));
+                Check(((DataGridView)Field(manager, "accountGrid")).Rows.Count == 2, "账号列表显示两种角色");
+                CheckLayout(manager, "accountGrid", "userNameInput", "passwordInput", "confirmPasswordInput", "addButton", "resetButton", "deleteButton");
+            }
+            foreach (var entry in new[] { (User: admin, Admin: true), (User: operatorUser, Admin: false) })
+            {
+                using var main = (Form)Create("Mainpage", entry.User);
+                Render(main, Path.Combine(output, entry.Admin ? "main-admin.png" : "main-operator.png"));
+                Check(Field(main, "manageAccountsButton").Enabled == entry.Admin, "账号管理按钮权限");
+                Check(Field(main, "bu_Configuration").Enabled == entry.Admin, "配置按钮权限");
+                Check(Field(main, "Bu_Calibration").Enabled == entry.Admin, "标定按钮权限");
+                foreach (string page in new[] { "_configPage", "_calibrationPage", "_batchCalibrationPage" })
+                    Check((bool)Call(main, "CanOpenPage", main.GetType().GetField(page, Members)!.GetValue(main))! == entry.Admin, "统一页面入口权限：" + page);
+                foreach (string page in new[] { "_autoPage", "_manualPage", "_dataPage", "_controlAuthorityPage" })
+                    Check((bool)Call(main, "CanOpenPage", main.GetType().GetField(page, Members)!.GetValue(main))!, "保留操作员功能：" + page);
+                CheckLayout(main, "currentUserLabel", "manageAccountsButton");
+                Check(!Field(main, "accountPanel").Bounds.IntersectsWith(Field(main, "headerStatusPanel").Bounds), "账号区与设备状态区不重叠");
+            }
+            using (var scaled = (Form)Create("LoginForm", service))
+            {
+                scaled.Scale(new System.Drawing.SizeF(1.5F, 1.5F));
+                Render(scaled, Path.Combine(output, "login-150-percent.png"));
+                CheckLayout(scaled, "userNameInput", "passwordInput", "submitButton", "exitButton");
+            }
+            File.WriteAllText(Path.Combine(temporary, "users.json"), "{ damaged");
+            using (var damaged = (Form)Create("LoginForm", service))
+            {
+                Check(!Field(damaged, "submitButton").Enabled && Field(damaged, "messageLabel").Text.Contains("损坏"), "损坏账号库不能重新注册或进入主窗体");
+            }
+            Console.WriteLine($"Login UI: {checks} assertions passed; offline only, no Router or PLC connection.");
+        }
+        finally { Directory.Delete(temporary, recursive: true); }
+    }
+}
