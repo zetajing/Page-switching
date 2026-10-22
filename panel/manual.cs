@@ -254,31 +254,32 @@ namespace Page_switching
         }
 
         // 点击后将四根轴的使能变量全部写为 true。
+        // ADS 写入成功只代表请求已提交，实际使能状态以各轴 PLC 反馈为准。
         private async void EnableAllButton_Click(object? sender, EventArgs e)
         {
             await RunCommandAsync(
-                token => _axisService.EnableAllAsync(token), "全部轴已使能");
+                token => _axisService.EnableAllAsync(token), "全部轴使能请求已发送，请查看各轴实际状态");
         }
 
         // 点击后将四根轴的使能变量全部写为 false。
         private async void DisableAllButton_Click(object? sender, EventArgs e)
         {
             await RunCommandAsync(
-                token => _axisService.DisableAllAsync(token), "全部轴已取消使能");
+                token => _axisService.DisableAllAsync(token), "全部轴取消使能请求已发送，请查看各轴实际状态");
         }
 
         // 点击后触发四根轴的报警复位变量。
         private async void ResetAlarmButton_Click(object? sender, EventArgs e)
         {
             await RunCommandAsync(
-                token => _axisService.ResetAlarmsAsync(token), "报警复位命令已执行");
+                token => _axisService.ResetAlarmsAsync(token), "报警复位请求已发送");
         }
 
         // 点击后触发四根轴的回零变量。
         private async void HomeAllButton_Click(object? sender, EventArgs e)
         {
             await RunCommandAsync(
-                token => _axisService.HomeAllAsync(token), "全部轴开始回零");
+                token => _axisService.HomeAllAsync(token), "全部轴回零请求已发送");
         }
 
         // 点击后触发四根轴的停止变量。
@@ -294,7 +295,7 @@ namespace Page_switching
             Axis axis = SelectedAxis;
             await RunCommandAsync(
                 token => axis.HomeAsync(token),
-                $"轴 {axis.AxisNumber} 开始回零");
+                $"轴 {axis.AxisNumber} 回零请求已发送");
         }
 
         // 点击后触发当前所选轴的停止变量。
@@ -348,7 +349,7 @@ namespace Page_switching
                     decimal.ToDouble(jogSpeedInput.Value),
                     _lifetimeCancellation.Token);
                 if (CanUpdateCommandStatus(stopRequestVersion))
-                    ShowCommandResult($"轴 {axis.AxisNumber} 正在{(positive ? "正向" : "负向")}点动");
+                    ShowCommandResult($"轴 {axis.AxisNumber} {(positive ? "正向" : "负向")}点动请求已发送");
             }
             catch (OperationCanceledException)
             {
@@ -385,7 +386,7 @@ namespace Page_switching
                     _lifetimeCancellation.Token);
                 if (CanUpdateCommandStatus(stopRequestVersion))
                 {
-                    ShowCommandResult($"轴 {axis.AxisNumber} 点动已停止");
+                    ShowCommandResult($"轴 {axis.AxisNumber} 停止点动请求已发送");
                 }
             }
             catch (OperationCanceledException)
@@ -401,7 +402,7 @@ namespace Page_switching
             }
         }
 
-        // 统一执行按钮命令、显示结果并在成功后刷新轴状态。
+        // 显示命令提交结果，再刷新 PLC 实际状态；提交成功不等于动作已经完成。
         private async Task RunCommandAsync(
             Func<CancellationToken, Task> action,
             string successMessage)
