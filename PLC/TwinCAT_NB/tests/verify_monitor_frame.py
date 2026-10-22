@@ -38,7 +38,7 @@ class MonitorFrameChecks(unittest.TestCase):
     def test_actual_csharp_marshalling_and_failure_quality(self):
         with tempfile.TemporaryDirectory(prefix="TwinCAT_MonitorLayout_") as directory:
             folder = Path(directory)
-            links = "".join(f'<Compile Include="{escape(str(SWITCH / "Axis" / name))}" />'
+            links = "".join(f'<Compile Include="{escape(str(SWITCH / "Axis/Feedback" / name))}" />'
                             for name in ("PlcMachineMonitor.cs", "MachineMonitorSnapshot.cs", "AxisSnapshot.cs"))
             (folder / "Probe.csproj").write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup>'
                 '<OutputType>Exe</OutputType><TargetFramework>net8.0</TargetFramework>'

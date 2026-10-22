@@ -16,9 +16,9 @@ internal static class Program
         using var limit = new CancellationTokenSource(5000);
         while (!ready()) await Task.Delay(20, limit.Token);
     }
-    static AxisServiceOptions Options() => new()
+    static AxisServiceOptions Options(ushort station = 1) => new()
     {
-        ControlStationCode = 1,
+        ControlStationCode = station,
         AxisSymbols = Enumerable.Range(1, 4).Select(i => new AxisSymbolMap
         {
             EnableCommand = $"GVL_control.aStation[1].aAxis[{i}].xStart",
@@ -60,6 +60,25 @@ internal static class Program
                         throw new Exception("chunk range");
                 }
                 assertions++;
+            }
+            // 只读连接不需要站点身份或控制权；读取不会触发申请、心跳或运动写入。
+            AdsClient.Model = new FakePlc { AuthorityOwner = 0 };
+            using (var service = new AxisService(Options(station: 0)))
+            {
+                var disconnected = await service.ReadSnapshotAsync(CancellationToken.None);
+                Check(disconnected.Count == 4 && disconnected.All(s => s.ActualPosition is null), "disconnected read is unavailable");
+                await service.ConnectAsync(CancellationToken.None);
+                AdsClient.Model.Frame.Axis1.ActualPosition = 12.5;
+                var snapshots = await service.ReadSnapshotAsync(CancellationToken.None);
+                Check(!service.HasControlAuthority && snapshots[0].ActualPosition == 12.5, "read without authority");
+                Check(ReferenceEquals(service.GetAxis(1).Snapshot, snapshots[0]), "fixed axis receives latest read");
+                Check(!snapshots[0].IsEnabled, "enable display uses actual feedback");
+                await Reject(() => service.EnableAllAsync(CancellationToken.None), "manual command without authority");
+                Check(AdsClient.Model.TotalWrites == 0, "read and rejected command never write PLC");
+                AdsClient.Model.Frame.Version = 0;
+                snapshots = await service.ReadSnapshotAsync(CancellationToken.None);
+                Check(snapshots.All(s => s.ActualPosition is null), "invalid frame never retains valid display");
+                Check(AdsClient.Model.TotalWrites == 0, "read failure never attempts reset or reconnect write");
             }
             AdsClient.Model = new FakePlc();
             using (var service = new AxisService(Options()))
@@ -222,6 +241,7 @@ namespace InduLink.Protocols.Ads
     }
     public sealed class FakePlc
     {
+        public int TotalWrites;
         public bool FeedbackInvalid;
         public int ResetWrites;
         public bool ReleaseAllowed = true;
@@ -243,6 +263,7 @@ namespace InduLink.Protocols.Ads
         private int runReads;
         public void Write(WriteRequest request)
         {
+            TotalWrites++;
             if (request.Address.EndsWith(".reset") && request.Value is true) ResetWrites++;
             string address = request.Address;
             if (address.EndsWith(".nAction")) authorityAction = (ushort)request.Value;
