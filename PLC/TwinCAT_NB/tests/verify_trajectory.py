@@ -35,7 +35,7 @@ class StartCheckFixture:
                                    lrInitVelocity=10) for _ in range(4)]
         self.values = dict(GVL_motion=self.motion, aConfig=self.config, nState=10,
                            xAxesReady=True, xValid=False, udiSequence=7, nSendPoint=99,
-                           cPositionLimit=1.0E12, cToleranceLimit=1.0E6,
+                           cPositionLimit=1.0E12, cToleranceLimit=1.0E6, INT_TO_UINT=int,
                            nCount=2100000, aPosition={(axis, 0): axis * 2.5 for axis in range(1, 5)},
                            aSet=[None] + [NS(lrPosition=-1, lrVelocity=-1, lrAcceleration=-1)
                                           for _ in range(4)])
@@ -72,6 +72,8 @@ class TrajectoryChecks(unittest.TestCase):
                     fixture.scan()
                     self.assertEqual(fixture.values["nState"], 90)
                     self.assertEqual(fixture.motion.udiErrorId, 1002)
+                    self.assertEqual(fixture.motion.nFaultAxis, axis)
+                    self.assertEqual(fixture.motion.nFaultSource, 15)
                     self.assertTrue(fixture.motion.xError)
                     self.assertEqual(fixture.motion.udiAcceptedSequence, 3)
                     self.assertEqual(fixture.values["nSendPoint"], 99)

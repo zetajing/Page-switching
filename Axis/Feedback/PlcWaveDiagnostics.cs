@@ -3,6 +3,42 @@ namespace Page_switching;
 // 页面和操作日志共用的只读说明；不读取额外 ADS 符号，不修改任何 PLC 条件。
 internal static class PlcWaveDiagnostics
 {
+    // 与 PLC MAIN / FB_FourAxisTrajectory 的来源码对应，原始 MC 错误号另行显示。
+    internal static string DescribeSource(ushort source) => source switch
+    {
+        0 => "组条件，详见原始错误码",
+        1 => "运行许可丢失",
+        2 => "控制权失效",
+        3 => "使能请求撤销或使能反馈丢失",
+        4 => "单轴停止请求",
+        5 => "点动、回原或复位命令冲突",
+        6 => "软限位或硬限位触发",
+        7 => "轨迹心跳超时",
+        8 => "轴故障或 NC I/O 无效",
+        9 => "外部给定意外退出",
+        10 => "MC_MoveAbsolute 首点定位",
+        11 => "MC_ExtSetPointGenEnable 开启外部给定",
+        12 => "MC_Stop 首点定位停车",
+        13 => "MC_ExtSetPointGenDisable 关闭外部给定",
+        14 => "等待退出超时",
+        15 => "轴参数检查",
+        16 => "轴就绪或首点到位检查",
+        17 => "收段、拼表或启动元数据检查",
+        18 => "拼表内存复制",
+        19 => "首点定位超时",
+        20 => "开启外部给定超时",
+        _ => $"未知来源 {source}"
+    };
+
+    internal static string DescribeFirstFault(PlcMachineMonitor frame)
+    {
+        if (!frame.Error) return "无轨迹组故障";
+        string axis = frame.FaultAxis == 0 ? "组条件" : $"轴 {frame.FaultAxis}";
+        return $"首次故障：{DescribeState(frame.FaultState)}，{axis}，{DescribeSource(frame.FaultSource)}；"
+            + $"原始错误={frame.TrajectoryErrorId}（0x{frame.TrajectoryErrorId:X}）；"
+            + $"停车/退出错误={frame.CleanupErrorId}（0 表示未报告清理错误，不代表已经停稳）";
+    }
+
     // 对应 FB_FourAxisTrajectory 的 nState，不是页面的 WaveState 枚举。
     internal static string DescribeState(ushort state)
     {
@@ -52,7 +88,9 @@ internal static class PlcWaveDiagnostics
     // CurrentPoint 是本扫描准备发送的轨迹点，不表示轴已到位，也不是整表校验失败点。
     internal static string DescribeFrame(PlcMachineMonitor frame)
     {
-        return $"PLC 状态={frame.TrajectoryState}（{DescribeState(frame.TrajectoryState)}），"
+        return DescribeFirstFault(frame) + "；"
+            + $"PLC 程序={frame.ProgramVersion}，接口行为版本={frame.BehaviorVersion}，"
+            + $"PLC 状态={frame.TrajectoryState}（{DescribeState(frame.TrajectoryState)}），"
             + $"执行点={frame.CurrentPoint}/{frame.PointCount}，"
             + $"接收={frame.ReceivedCount}/{frame.PointCount}，拼接={frame.LoadedCount}/{frame.PointCount}，"
             + $"序号（接收/执行）={frame.ReceivedSequence}/{frame.AcceptedSequence}，"

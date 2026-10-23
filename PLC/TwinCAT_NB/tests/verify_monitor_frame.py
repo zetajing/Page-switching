@@ -23,12 +23,12 @@ class MonitorFrameChecks(unittest.TestCase):
         self.assertEqual(frame, [("nVersion", "UINT"), ("nByteSize", "UINT"), ("nControlOwner", "UINT"),
             ("nControlMode", "UINT"), ("nWaveState", "UINT"), ("uiWaveFaultCode", "UINT"), ("udiHeartbeat", "UDINT")]
             + [(f"Axis{i}", "ST_AxisMonitor") for i in range(1, 5)]
-            + [('nTrajectoryState', 'UINT'), ('nReceivedCount', 'UDINT'), ('nLoadedCount', 'UDINT'), ('nPointCount', 'UDINT'), ('nCurrentPoint', 'UDINT'), ('udiReceivedSequence', 'UDINT'), ('udiAcceptedSequence', 'UDINT'), ('udiErrorId', 'UDINT'), ('nUploadStation', 'UINT'), ('xUploadBusy', 'BOOL'), ('xDataReady', 'BOOL'), ('xTrajectoryBusy', 'BOOL'), ('xRunning', 'BOOL'), ('xDone', 'BOOL'), ('xError', 'BOOL'), ('xStopped', 'BOOL'), ('xMotionPermit', 'BOOL'), ('xConfigValid', 'BOOL'), ('xAxesIdle', 'BOOL'), ('xAxisFault', 'BOOL'), ('xAxesStopped', 'BOOL')])
+            + [('nTrajectoryState', 'UINT'), ('nReceivedCount', 'UDINT'), ('nLoadedCount', 'UDINT'), ('nPointCount', 'UDINT'), ('nCurrentPoint', 'UDINT'), ('udiReceivedSequence', 'UDINT'), ('udiAcceptedSequence', 'UDINT'), ('udiErrorId', 'UDINT'), ('nUploadStation', 'UINT'), ('xUploadBusy', 'BOOL'), ('xDataReady', 'BOOL'), ('xTrajectoryBusy', 'BOOL'), ('xRunning', 'BOOL'), ('xDone', 'BOOL'), ('xError', 'BOOL'), ('xStopped', 'BOOL'), ('xMotionPermit', 'BOOL'), ('xConfigValid', 'BOOL'), ('xAxesIdle', 'BOOL'), ('xAxisFault', 'BOOL'), ('xAxesStopped', 'BOOL'), ('udiProgramVersion', 'UDINT'), ('nBehaviorVersion', 'UINT'), ('nFaultAxis', 'UINT'), ('nFaultSource', 'UINT'), ('nFaultState', 'UINT'), ('udiCleanupErrorId', 'UDINT')])
         source = ET.parse(ROOT / "axis_4/POUs/Feedback_反馈/FB_HmiFeedback.TcPOU").findtext(".//ST")
         for i in range(1, 5):
             for member, _ in axis:
                 self.assertIn(f"GVL_HMI.stMonitor.Axis{i}.{member} := GVL_axis.Axis{i}.{member};", source)
-        self.assertIn("GVL_HMI.stMonitor.nVersion := 3;", source)
+        self.assertIn("GVL_HMI.stMonitor.nVersion := 4;", source)
         self.assertIn("nByteSize := SIZEOF(GVL_HMI.stMonitor)", source)
         project = ET.parse(ROOT / "axis_4/axis_4.plcproj")
         includes = [n.get("Include") for n in project.findall(".//{*}Compile")]

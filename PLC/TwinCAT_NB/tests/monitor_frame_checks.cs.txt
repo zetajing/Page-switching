@@ -15,13 +15,13 @@ void Reject(PlcMachineMonitor value)
     catch (InvalidOperationException) { checks++; }
 }
 Check(Marshal.SizeOf<PlcAxisMonitor>() == 22, "axis size");
-Check(Marshal.SizeOf<PlcMachineMonitor>() == 148, "frame size");
+Check(Marshal.SizeOf<PlcMachineMonitor>() == 164, "frame size");
 Check((int)Marshal.OffsetOf<PlcMachineMonitor>("Axis1") == 16, "axis1 offset");
 Check((int)Marshal.OffsetOf<PlcMachineMonitor>("Axis4") == 82, "axis4 offset");
 // 直接按协议字节组包，再由 CLR 封送，验证双精度、BOOL、轴顺序和 UINT 高位。
-var bytes = new byte[148];
-BitConverter.GetBytes((ushort)3).CopyTo(bytes, 0);
-BitConverter.GetBytes((ushort)148).CopyTo(bytes, 2);
+var bytes = new byte[164];
+BitConverter.GetBytes((ushort)4).CopyTo(bytes, 0);
+BitConverter.GetBytes((ushort)164).CopyTo(bytes, 2);
 BitConverter.GetBytes((ushort)3).CopyTo(bytes, 4);
 BitConverter.GetBytes((ushort)1).CopyTo(bytes, 6);
 BitConverter.GetBytes((ushort)7).CopyTo(bytes, 8);
@@ -39,10 +39,25 @@ foreach (var (offset,value) in new[] { (106,10000u),(110,5000u),(114,10000u),(11
     BitConverter.GetBytes(value).CopyTo(bytes,offset);
 BitConverter.GetBytes((ushort)3).CopyTo(bytes,134);
 for (int offset = 136; offset < 148; offset++) bytes[offset] = 1;
-var buffer = Marshal.AllocHGlobal(148);
+BitConverter.GetBytes(2026102301u).CopyTo(bytes, 148);
+BitConverter.GetBytes((ushort)1).CopyTo(bytes, 152);
+BitConverter.GetBytes((ushort)2).CopyTo(bytes, 154);
+BitConverter.GetBytes((ushort)10).CopyTo(bytes, 156);
+BitConverter.GetBytes((ushort)15).CopyTo(bytes, 158);
+BitConverter.GetBytes(1009u).CopyTo(bytes, 160);
+var buffer = Marshal.AllocHGlobal(164);
 PlcMachineMonitor frame;
-try { Marshal.Copy(bytes, 0, buffer, 148); frame = Marshal.PtrToStructure<PlcMachineMonitor>(buffer); }
+try { Marshal.Copy(bytes, 0, buffer, 164); frame = Marshal.PtrToStructure<PlcMachineMonitor>(buffer); }
 finally { Marshal.FreeHGlobal(buffer); }
+Check(frame.ProgramVersion == 2026102301u && frame.BehaviorVersion == 1, "program and behavior offsets");
+Check(frame.FaultAxis == 2 && frame.FaultSource == 10 && frame.FaultState == 15, "first fault offsets");
+Check(frame.CleanupErrorId == 1009u, "cleanup error offset");
+frame.ValidateWaveContract();
+frame.BehaviorVersion = 0;
+Check(frame.ToAxisSnapshots().Count == 4, "behavior mismatch still permits feedback read");
+try { frame.ValidateWaveContract(); throw new Exception("wrong behavior accepted"); }
+catch (InvalidOperationException) { checks++; }
+frame.BehaviorVersion = 1;
 Check(frame.TrajectoryState == 30 && frame.ReceivedCount == 10000 && frame.LoadedCount == 5000, "trajectory counts offsets");
 Check(frame.PointCount == 10000 && frame.CurrentPoint == 9999, "trajectory progress offsets");
 Check(frame.ReceivedSequence == 99 && frame.AcceptedSequence == 99 && frame.TrajectoryErrorId == 1010, "sequence/error offsets");
@@ -85,8 +100,9 @@ state.Alarm = true;
 Check(state.ToAxisSnapshot(1).StatusText == "报警", "alarm status priority");
 Check(frame.ToSnapshot(false).Axes.Count == 0, "hidden page");
 frame.Version = 1; Reject(frame);
-frame.Version = 3; frame.Size = 104; Reject(frame);
-frame.Size = 148; frame.Axis2.ActualPosition = double.NaN; frame.Axis3.Speed = double.PositiveInfinity;
+frame.Version = 3; frame.Size = 148; Reject(frame);
+frame.Version = 4; frame.Size = 104; Reject(frame);
+frame.Size = 164; frame.Axis2.ActualPosition = double.NaN; frame.Axis3.Speed = double.PositiveInfinity;
 manual = frame.ToAxisSnapshots();
 Check(manual[1].ActualPosition is null && manual[2].Speed is null, "manual invalid numbers unavailable");
 Check(manual[1].StatusText == "限位" && manual[0].ActualPosition.HasValue, "limit status survives invalid number");

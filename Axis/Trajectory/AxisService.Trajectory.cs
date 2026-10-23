@@ -22,7 +22,9 @@ public sealed partial class AxisService
     private long _waveHeartbeatTick;
     private bool _waveHeartbeatConfirmed;
     private bool _waveNeedsStop;
+    private volatile string? _lastWaveFailure; // 最近一次原始失败；停车错误和后续成功不能抹掉它。
     public WaveOperationStatus WaveStatus => _waveStatus;
+    public string? LastWaveFailure => _lastWaveFailure;
     public bool WaveOperationActive => _waveActive || _waveStopRequested;
 
     // 会话任务属于服务，切换页面不会取消。停止先取消，再等原任务退出，防止迟到的启动写入。
@@ -65,7 +67,10 @@ public sealed partial class AxisService
                     _waveReadySequence = 0;
                     _waveStatus = new(ex is OperationCanceledException ? "正在停止" : "造波操作失败", 0, true, false, ex.Message);
                     if (ex is not OperationCanceledException)
+                    {
+                        _lastWaveFailure = ex.Message;
                         AdsDiagnostics.RecordException("造波操作失败", ex);
+                    }
                     throw;
                 }
                 finally
@@ -102,6 +107,7 @@ public sealed partial class AxisService
     private async Task StartWaveCoreAsync(CancellationToken token)
     {
         var frame = await ReadWaveFrameAsync(token);
+        frame.ValidateWaveContract();
         if (_waveReadySequence == 0 || !frame.DataReady || frame.ReceivedSequence != _waveReadySequence
             || frame.UploadStation != ControlStationCode || frame.AcceptedSequence == _waveReadySequence)
             throw new InvalidOperationException("请先重新发送当前轨迹并等待 PLC 拼接完成。");
@@ -145,6 +151,7 @@ public sealed partial class AxisService
 
     private async Task ExecuteWaveAsync(uint pointCount, CancellationToken token)
     {
+        (await ReadWaveFrameAsync(token)).ValidateWaveContract();
         await VerifyWaveAxisLimitsAsync(token); // 回原可能耗时，再核对一次，参数相同才发启动沿。
         _waveStatus = new("PLC 检查启动条件并定位到首点", 0, true, false);
         await PulseWaveAsync("xStart", token);

@@ -71,6 +71,15 @@ internal static class Program
                 AdsClient.Model.Frame.Axis1.ActualPosition = 12.5;
                 var snapshots = await service.ReadSnapshotAsync(CancellationToken.None);
                 Check(!service.HasControlAuthority && snapshots[0].ActualPosition == 12.5, "read without authority");
+                var diagnostic = await service.ReadDiagnosticsAsync(CancellationToken.None);
+                Check(!service.HasControlAuthority && diagnostic.Limits!.Length == 4, "read all parameters without authority");
+                Check(diagnostic.Frame.Axis1.ActualPosition == 12.5 && diagnostic.Limits![0].MinPosition == -200,
+                    "diagnostic uses real frame and PLC configuration");
+                Check(diagnostic.Format(null).Contains("PLC/NC 原始单位"), "diagnostic does not infer mechanical units");
+                AdsClient.Model.InvalidConfigRead = true;
+                diagnostic = await service.ReadDiagnosticsAsync(CancellationToken.None);
+                Check(diagnostic.Limits is null && diagnostic.ParameterError!.Contains("aConfig"), "invalid parameters stay unavailable, frame remains readable");
+                AdsClient.Model.InvalidConfigRead = false;
                 Check(ReferenceEquals(service.GetAxis(1).Snapshot, snapshots[0]), "fixed axis receives latest read");
                 Check(!snapshots[0].IsEnabled, "enable display uses actual feedback");
                 await Reject(() => service.EnableAllAsync(CancellationToken.None), "manual command without authority");
@@ -265,6 +274,37 @@ internal static class Program
                 Check(OperationJournal.Entries.Any(e => e.Contains("StartWaveCoreAsync"))
                     && OperationJournal.Entries.Any(e => e.Contains("1003")), "operation journal retains fault and call stack");
             }
+            // 配套错误不能清表、写点位或自动使能；停止仍保留独立入口。
+            AdsClient.Model = new FakePlc();
+            AdsClient.Model.Frame.BehaviorVersion = 0;
+            using (var service = new AxisService(Options()))
+            {
+                await service.ConnectAsync(CancellationToken.None);
+                await Until(() => service.HasControlAuthority);
+                var failure = await Reject(() => service.UploadWaveAsync(signal), "incompatible behavior on upload");
+                Check(failure.Message.Contains("接口版本不匹配"), "upload reports precise contract mismatch");
+                Check(AdsClient.Model.ClearWrites == 0 && AdsClient.Model.ArrayWrites == 0
+                    && AdsClient.Model.PointMetadataWrites == 0 && AdsClient.Model.StartWrites == 0, "contract mismatch never mutates point table");
+                Check(service.LastWaveFailure == failure.Message, "original failure retained independently of operation status");
+            }
+            AdsClient.Model = new FakePlc();
+            using (var service = new AxisService(Options()))
+            {
+                await service.ConnectAsync(CancellationToken.None);
+                await Until(() => service.HasControlAuthority);
+                await service.UploadWaveAsync(signal);
+                AdsClient.Model.Frame.BehaviorVersion = 2;
+                await Reject(() => service.StartWaveAsync(), "incompatible behavior before preparation");
+                Check(AdsClient.Model.StartWrites == 0 && !AdsClient.Model.Frame.Axis1.Enabled,
+                    "changed behavior prevents enable and start");
+                await service.StopWaveAsync();
+                Check(service.LastWaveFailure!.Contains("接口版本不匹配"), "successful stop does not erase original failure");
+            }
+            var fault = new PlcMachineMonitor { Error = true, FaultAxis = 2, FaultSource = 10,
+                FaultState = 15, TrajectoryState = 60, TrajectoryErrorId = 0x4000, CleanupErrorId = 1009 };
+            string faultText = PlcWaveDiagnostics.DescribeFirstFault(fault);
+            Check(faultText.Contains("轴 2") && faultText.Contains("MC_MoveAbsolute") && faultText.Contains("定位到首点"), "first fault retains axis, block and original stage");
+            Check(faultText.Contains("16384") && faultText.Contains("1009"), "original error and cleanup error both present");
             foreach (uint code in Enumerable.Range(1001, 12).Select(i => (uint)i))
                 Check(PlcWaveDiagnostics.DescribeFault(code).Contains(code.ToString()), "known code preserved " + code);
             Check(PlcWaveDiagnostics.DescribeFault(0x4000).Contains("16384")
@@ -361,6 +401,7 @@ namespace InduLink.Protocols.Ads
         public PlcMachineMonitor Frame = new()
         {
             Version = PlcMachineMonitor.LayoutVersion, Size = PlcMachineMonitor.ByteSize, ControlOwner = 1,
+            BehaviorVersion = PlcMachineMonitor.ExpectedBehaviorVersion, ProgramVersion = 2026102301,
             MotionPermit = true, ConfigValid = true, AxesIdle = true, AxesStopped = true,
             Axis1 = new() { Homed = true }, Axis3 = new() { Homed = true }, Axis4 = new() { Homed = true }
         };

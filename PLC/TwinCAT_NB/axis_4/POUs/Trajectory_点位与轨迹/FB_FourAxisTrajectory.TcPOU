@@ -11,6 +11,7 @@
 VAR_INPUT
     xAxesReady : BOOL; // 四轴已使能、回零、静止，供启动和首点定位完成时检查。
     xAbort : BOOL; // 外部联停：许可撤销、撤使能、停止、限位或手动命令冲突。
+    nAbortReason : UINT; // MAIN 提供的首个联停原因，0 表示本扫描无联停。
     xAxisFault : BOOL; // 任一轴错误或 NC I/O 反馈无效，拒绝启动或触发联停。
 END_VAR
 VAR_IN_OUT
@@ -68,7 +69,9 @@ VAR
     xResetRequest : BOOL; // 本扫描获准处理的轨迹组故障复位请求。
     xNormalStop : BOOL; // 正常人工停止，不作为 1007 故障。
     lrNewVelocity : LREAL; // 当前减速计算的下一扫描速度，单位为 NC 位置单位/秒。
-    udiBlockError : UDINT; // 本扫描定位/开启块原始错误码，四轴循环后再统一切换状态。
+    nBlockAxis : UINT; // 本扫描首个定位/开启块错误的轴，四轴循环结束后统一联停。
+    nBlockSource : UINT; // 10=首点定位，11=开启外部给定。
+    udiBlockError : UDINT; // 本扫描首个定位/开启块原始错误码，后续轴不能覆盖。
 END_VAR
 VAR CONSTANT
     cDt : LREAL := 0.002; // 单位秒，必须等于 PLC/NC SAF 周期和差分函数周期。
@@ -77,7 +80,14 @@ VAR CONSTANT
     cCopyPointsPerScan : UDINT := 1024; // 每扫描每轴最多复制 8 KiB；需在目标 PLC 实测任务时间。
 END_VAR]]></Declaration>
     <Implementation>
-      <ST><![CDATA[// 1. 上位机操作转为上升沿，防止保持 TRUE 时每扫描重复发起请求。
+      <ST><![CDATA[// 无故障时准备本扫描的诊断位置；故障置位后保持首因，直到有效复位。
+IF NOT GVL_motion.xError THEN
+    GVL_motion.nFaultAxis := 0;
+    GVL_motion.nFaultSource := 0;
+    GVL_motion.nFaultState := nState;
+    GVL_motion.udiCleanupErrorId := 0;
+END_IF
+// 1. 上位机操作转为上升沿，防止保持 TRUE 时每扫描重复发起请求。
 // 接口顺序：写独立段 -> xUpload 登记 -> 全部段确认 -> xAssemble 统一拼表。
 // 原始沿先消费；未授权的保持位不能在以后取得权限时自动变成新请求。
 xCommandAllowed := GVL_control.xCanCommand AND NOT GVL_control.xOwnerChanged
@@ -140,6 +150,10 @@ IF xResetRequest AND ((nState = 0) OR (nState = 90))
     AND xAllStopped AND xAllDisabled AND xMovesIdle THEN
     GVL_motion.xError := FALSE;
     GVL_motion.udiErrorId := 0;
+    GVL_motion.nFaultAxis := 0;
+    GVL_motion.nFaultSource := 0;
+    GVL_motion.nFaultState := 0;
+    GVL_motion.udiCleanupErrorId := 0;
     GVL_motion.xDone := FALSE;
     nState := 0;
 END_IF
@@ -153,9 +167,24 @@ IF (nState >= 10) AND (nState <= 40) AND NOT GVL_motion.xError THEN
     IF xAxisFault OR xAbort OR tmHeartbeat.Q
         OR ((nState >= 30) AND NOT xAllEnabled) THEN
         GVL_motion.xError := TRUE;
-        IF tmHeartbeat.Q THEN GVL_motion.udiErrorId := 1006;
-        ELSIF xAxisFault THEN GVL_motion.udiErrorId := 1010;
-        ELSE GVL_motion.udiErrorId := 1007;
+        IF tmHeartbeat.Q THEN
+            GVL_motion.udiErrorId := 1006;
+            GVL_motion.nFaultSource := 7;
+        ELSIF xAxisFault THEN
+            GVL_motion.udiErrorId := 1010;
+            GVL_motion.nFaultSource := 8;
+            FOR i := 1 TO 4 DO
+                IF Axes[i].Status.Error OR Axes[i].Status.IoDataInvalid
+                    OR ((i = 1) AND GVL_axis.Axis1.xError) OR ((i = 2) AND GVL_axis.Axis2.xError)
+                    OR ((i = 3) AND GVL_axis.Axis3.xError) OR ((i = 4) AND GVL_axis.Axis4.xError) THEN
+                    GVL_motion.nFaultAxis := INT_TO_UINT(i); EXIT;
+                END_IF
+            END_FOR
+        ELSE
+            GVL_motion.udiErrorId := 1007;
+            IF xAbort THEN GVL_motion.nFaultSource := nAbortReason;
+            ELSE GVL_motion.nFaultSource := 9;
+            END_IF
         END_IF
         IF nState = 10 THEN nState := 90; ELSE nState := 50; END_IF
     END_IF
@@ -202,13 +231,17 @@ CASE nState OF
             OR (GVL_motion.nUploadCount = 0) OR (GVL_motion.nUploadCount > cUploadPoints)
             OR (GVL_motion.nUploadOffset <> nReceived) THEN
             GVL_motion.udiErrorId := 1001;
+            GVL_motion.nFaultSource := 17;
         ELSIF nReceived > GVL_motion.nPointCount THEN
             GVL_motion.udiErrorId := 1001;
+            GVL_motion.nFaultSource := 17;
         ELSIF GVL_motion.nUploadCount <> MIN(cUploadPoints, GVL_motion.nPointCount - nReceived) THEN
             GVL_motion.udiErrorId := 1001;
+            GVL_motion.nFaultSource := 17;
         ELSIF (nReceived <> 0) AND ((GVL_motion.nPointCount <> nCount)
             OR (GVL_motion.udiUploadSequence <> udiSequence)) THEN
             GVL_motion.udiErrorId := 1001;
+            GVL_motion.nFaultSource := 17;
         ELSE
             // 接收确认只表示 PC 已声明本段四轴写完；ADS 数据仍须由 PC 遵守只写一次的约定。
             GVL_motion.nUploadStation := GVL_control.nOwner;
@@ -231,6 +264,7 @@ CASE nState OF
             OR (GVL_motion.udiUploadSequence <> udiSequence) THEN
             GVL_motion.xError := TRUE;
             GVL_motion.udiErrorId := 1001;
+            GVL_motion.nFaultSource := 17;
             nState := 90;
         ELSE
             nLoaded := 0;
@@ -248,9 +282,11 @@ CASE nState OF
             OR (GVL_motion.nPointCount <> nCount) OR (GVL_motion.nSampleTimeUs <> 2000)
             OR (GVL_motion.udiUploadSequence <> udiSequence) THEN
             GVL_motion.udiErrorId := 1001;
+            GVL_motion.nFaultSource := 17;
         ELSIF NOT xAxesReady OR NOT xAllDisabled OR NOT xMovesIdle
             OR xAbort OR GVL_motion.xStop OR xAxisFault OR tmHeartbeat.Q THEN
             GVL_motion.udiErrorId := 1004;
+            GVL_motion.nFaultSource := 16;
         ELSE
             // 锁存本次运行参数；配置仅应在轴静止且轨迹空闲时修改。
             // 状态 10 仅检查轴配置和就绪，随后进入首点定位。
@@ -269,6 +305,7 @@ CASE nState OF
         // 元数据或请求冲突使本次拼接失效；复位后重新 xAssemble，从第 0 点重拼。
         GVL_motion.xError := TRUE;
         GVL_motion.udiErrorId := 1001;
+        GVL_motion.nFaultSource := 17;
         nState := 90;
     ELSE
         nSegment := nLoaded / cUploadPoints;
@@ -287,6 +324,7 @@ CASE nState OF
         IF NOT xValid THEN
             GVL_motion.xError := TRUE;
             GVL_motion.udiErrorId := 1012;
+            GVL_motion.nFaultSource := 18;
             nState := 90;
         ELSE
             // 四轴本批全部复制成功才推进；最后一批完成后才发布整表就绪。
@@ -306,7 +344,12 @@ CASE nState OF
             AND (aConfig[i].lrStopDeceleration <= aConfig[i].lrMaxAcceleration)
             AND (aConfig[i].lrStartTolerance > 0) AND (aConfig[i].lrStartTolerance < 1.0E6)
             AND (aConfig[i].lrInitVelocity > 0) AND (aConfig[i].lrInitVelocity <= aConfig[i].lrMaxVelocity);
-        IF NOT xValid THEN GVL_motion.udiErrorId := 1002; EXIT; END_IF
+        IF NOT xValid THEN
+            GVL_motion.udiErrorId := 1002;
+            GVL_motion.nFaultAxis := INT_TO_UINT(i);
+            GVL_motion.nFaultSource := 15;
+            EXIT;
+        END_IF
     END_FOR
     IF GVL_motion.udiErrorId <> 0 THEN
         GVL_motion.xError := TRUE;
@@ -314,6 +357,7 @@ CASE nState OF
     ELSIF NOT xAxesReady THEN
         GVL_motion.xError := TRUE;
         GVL_motion.udiErrorId := 1004;
+        GVL_motion.nFaultSource := 16;
         nState := 90;
     ELSE
         FOR i := 1 TO 4 DO
@@ -334,17 +378,22 @@ CASE nState OF
     IF tmMoveInit.Q THEN
         GVL_motion.xError := TRUE;
         GVL_motion.udiErrorId := 1011;
+        GVL_motion.nFaultSource := 19;
         nState := 50;
     ELSIF xAllInitDone AND xAxesReady THEN
         xValid := TRUE;
         FOR i := 1 TO 4 DO
-            xValid := xValid AND (ABS(Axes[i].NcToPlc.ActPos - aPosition[i, 0]) <= aConfig[i].lrStartTolerance)
-                AND (ABS(Axes[i].NcToPlc.SetPos - aPosition[i, 0]) <= aConfig[i].lrStartTolerance);
+            IF NOT ((ABS(Axes[i].NcToPlc.ActPos - aPosition[i, 0]) <= aConfig[i].lrStartTolerance)
+                AND (ABS(Axes[i].NcToPlc.SetPos - aPosition[i, 0]) <= aConfig[i].lrStartTolerance)) THEN
+                IF xValid THEN GVL_motion.nFaultAxis := INT_TO_UINT(i); END_IF
+                xValid := FALSE;
+            END_IF
         END_FOR
         IF xValid THEN nState := 20;
         ELSE
             GVL_motion.xError := TRUE;
             GVL_motion.udiErrorId := 1004;
+            GVL_motion.nFaultSource := 16;
             nState := 50;
         END_IF
     END_IF
@@ -355,6 +404,7 @@ CASE nState OF
     IF tmEnable.Q THEN
         GVL_motion.xError := TRUE;
         GVL_motion.udiErrorId := 1008;
+        GVL_motion.nFaultSource := 20;
         nState := 50;
     ELSIF xAllEnabled THEN nState := 30;
     END_IF
@@ -430,6 +480,8 @@ END_CASE
 // 关闭请求发出后仍送静止点，直到 NC 确认外部给定已关闭。
 xFeed := (nState >= 20) AND (nState <= 60);
 udiBlockError := 0;
+nBlockAxis := 0;
+nBlockSource := 0;
 FOR i := 1 TO 4 DO
     // A. 首点定位：每轴实例保存自己的 Busy/Done/Error，每扫描都要继续调用。
     // Execute 下降沿不等于立即停止，取消时由下面 MC_Stop 完成停车。
@@ -471,27 +523,52 @@ FOR i := 1 TO 4 DO
     aDisable[i](Axis := Axes[i],
                 Execute := (nState = 60) AND NOT xEnablePending AND NOT xResetRequest);
 
-    // 保留 MC 原始 ErrorID，四轴循环结束后再切换公共状态，避免同一扫描四轴执行不同阶段。
-    IF (aMoveInit[i].Error AND (nState = 15)) THEN udiBlockError := aMoveInit[i].ErrorID; END_IF
-    IF (aEnable[i].Error AND (nState = 20)) THEN udiBlockError := aEnable[i].ErrorID; END_IF
-    IF aStopInit[i].Error AND (nState = 50) THEN
-        GVL_motion.xError := TRUE;
-        GVL_motion.udiErrorId := aStopInit[i].ErrorID;
+    // 四轴仍执行同一阶段；只登记最先出错的轴，循环结束后统一改变状态。
+    IF nBlockAxis = 0 THEN
+        IF aMoveInit[i].Error AND (nState = 15) THEN
+            udiBlockError := aMoveInit[i].ErrorID; nBlockAxis := INT_TO_UINT(i); nBlockSource := 10;
+        ELSIF aEnable[i].Error AND (nState = 20) THEN
+            udiBlockError := aEnable[i].ErrorID; nBlockAxis := INT_TO_UINT(i); nBlockSource := 11;
+        END_IF
     END_IF
-    IF aDisable[i].Error AND (nState = 60) THEN
-        GVL_motion.xError := TRUE;
-        GVL_motion.udiErrorId := aDisable[i].ErrorID;
+    // 清理错误单独保存；此前已有故障时不能覆盖原始错误号和来源。
+    IF ((aStopInit[i].Error AND (nState = 50)) OR (aDisable[i].Error AND (nState = 60)))
+        AND (GVL_motion.udiCleanupErrorId = 0) THEN
+        IF nState = 50 THEN GVL_motion.udiCleanupErrorId := aStopInit[i].ErrorID;
+        ELSE GVL_motion.udiCleanupErrorId := aDisable[i].ErrorID;
+        END_IF
+        IF GVL_motion.udiCleanupErrorId = 0 THEN GVL_motion.udiCleanupErrorId := 1009; END_IF
+        IF NOT GVL_motion.xError THEN
+            GVL_motion.udiErrorId := GVL_motion.udiCleanupErrorId;
+            GVL_motion.nFaultAxis := INT_TO_UINT(i);
+            IF nState = 50 THEN GVL_motion.nFaultSource := 12;
+            ELSE GVL_motion.nFaultSource := 13;
+            END_IF
+            GVL_motion.nFaultState := nState;
+            GVL_motion.xError := TRUE;
+        END_IF
     END_IF
 END_FOR
-IF udiBlockError <> 0 THEN
-    GVL_motion.xError := TRUE;
-    GVL_motion.udiErrorId := udiBlockError;
+IF nBlockAxis <> 0 THEN
+    IF NOT GVL_motion.xError THEN
+        GVL_motion.udiErrorId := udiBlockError;
+        IF udiBlockError = 0 THEN GVL_motion.udiErrorId := 1010; END_IF
+        GVL_motion.nFaultAxis := nBlockAxis;
+        GVL_motion.nFaultSource := nBlockSource;
+        GVL_motion.nFaultState := nState;
+        GVL_motion.xError := TRUE;
+    END_IF
     nState := 50;
 END_IF
 // 退出超时只报错，不强行清 Busy 或改回空闲，防止仍被占用的轴接受新运动。
 IF tmExit.Q AND ((nState = 60) OR (nState = 70)) THEN
-    GVL_motion.xError := TRUE;
-    GVL_motion.udiErrorId := 1009;
+    IF GVL_motion.udiCleanupErrorId = 0 THEN GVL_motion.udiCleanupErrorId := 1009; END_IF
+    IF NOT GVL_motion.xError THEN
+        GVL_motion.udiErrorId := 1009;
+        GVL_motion.nFaultSource := 14;
+        GVL_motion.nFaultState := nState;
+        GVL_motion.xError := TRUE;
+    END_IF
 END_IF
 // 6. 已接收和已拼接分开发布；只有 xDataReady 才表示完整表可进入启动检查。
 GVL_motion.nReceivedCount := nReceived;

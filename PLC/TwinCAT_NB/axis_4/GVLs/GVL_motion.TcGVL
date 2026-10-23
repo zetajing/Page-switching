@@ -44,7 +44,11 @@ VAR_GLOBAL
     xRunning : BOOL; // 状态 30，首点定位及减速不算正常取点运行。
     xDone : BOOL; // 正常完成后保持，清表/复位/新启动时清除。
     xError : BOOL; // 组故障保持位，需确认退出和静止后复位。
-    udiErrorId : UDINT; // 本程序诊断码或 MC 原始 ErrorID，详见说明文档。
+    udiErrorId : UDINT; // 首次故障的程序诊断码或 MC 原始 ErrorID，详见说明文档。
+    nFaultAxis : UINT; // 首次故障轴 1..4；组故障或无故障为 0，复位时清除。
+    nFaultSource : UINT; // 首次故障来源：1许可/2控制权/3使能/4单轴停止/5手动冲突/6限位，7..20见故障说明。
+    nFaultState : UINT; // 首次故障发生阶段；故障退出期间保持，不能用当前停车阶段替代。
+    udiCleanupErrorId : UDINT; // 首个停车、关闭或退出错误，保留原始 udiErrorId。
     nState : UINT; // 对应轨迹块 CASE 的 0/5/10/15/20/30/40/50/60/70/90。
     nCurrentPoint : UDINT; // 最近送出的点号，0 起始。
     udiAcceptedSequence : UDINT; // 已进入首点定位的轨迹序号，不能重复执行。

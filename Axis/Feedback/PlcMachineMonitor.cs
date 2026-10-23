@@ -50,12 +50,13 @@ public struct PlcAxisMonitor
         ? new(value, true) : FeedbackField<double>.Unavailable("反馈数值无效");
 }
 
-// 与 PLC ST_MachineMonitor 完全同序，固定 148 字节；嵌套轴也是 Pack=1。
+// 与 PLC ST_MachineMonitor 完全同序，固定 164 字节；嵌套轴也是 Pack=1。
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
 public struct PlcMachineMonitor
 {
-    public const ushort LayoutVersion = 3;
-    public const ushort ByteSize = 148;
+    public const ushort LayoutVersion = 4;
+    public const ushort ByteSize = 164;
+    public const ushort ExpectedBehaviorVersion = 1; // 上位机整表预检，PLC 保留运动联锁。
     public ushort Version;
     public ushort Size;
     public ushort ControlOwner;
@@ -89,6 +90,22 @@ public struct PlcMachineMonitor
     [MarshalAs(UnmanagedType.I1)] public bool AxesIdle;
     [MarshalAs(UnmanagedType.I1)] public bool AxisFault;
     [MarshalAs(UnmanagedType.I1)] public bool AxesStopped;
+
+    // 追加字段对应 PLC 布局版本4；首次故障与当前停车阶段分别显示。
+    public uint ProgramVersion;
+    public ushort BehaviorVersion;
+    public ushort FaultAxis;
+    public ushort FaultSource;
+    public ushort FaultState;
+    public uint CleanupErrorId;
+
+    // 读取状态只检查布局；下发和启动另外检查行为版本，停车仍可进入原退出流程。
+    internal readonly void ValidateWaveContract()
+    {
+        ValidateLayout();
+        if (BehaviorVersion != ExpectedBehaviorVersion)
+            throw new InvalidOperationException($"点位接口版本不匹配：PLC={BehaviorVersion}，要求={ExpectedBehaviorVersion}（上位机整表预检）；请更新配套程序后重新下发。");
+    }
 
     // 两个页面共用同一布局验证；旧版帧不能被解释成新版轴数据。
     internal readonly void ValidateLayout()

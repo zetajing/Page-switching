@@ -19,7 +19,7 @@
 
 失败点号从 0 开始，并显示 `时间=点号×0.002 秒`。停车估计仍为 `p+v×|v|/(2d)+v×0.002`，不包含实际跟随误差、驱动延迟或额外安全余量。PLC 仍负责实际运行时的权限、心跳、限位、反馈故障、联停、首点到位和 MC 错误；数值预检与实际运行联锁职责分开。
 
-新 PLC 必须配套带预检功能的上位机使用；其他 ADS 客户端也须在写表前执行同等检查。此改动不改变版本 3 / 148 字节反馈布局，也不新增 PLC 预检变量。
+新 PLC 必须配套带预检功能的上位机使用；其他 ADS 客户端也须在写表前执行同等检查。当前配套监控接口为版本4/164字节，下发与启动另外要求接口行为版本1；PLC 不新增整表数值预检变量。
 
 ## 虚拟轴调试参数
 
@@ -48,7 +48,7 @@
 
 ## 数据和权限
 
-- 反馈地址只有 AdsMonitorSnapshot=GVL_HMI.stMonitor，版本 3 / 148 字节；手动页、机器监控和造波服务复用同一结构定义。
+- 反馈地址只有 AdsMonitorSnapshot=GVL_HMI.stMonitor，版本 4 / 164 字节；手动页、机器监控和造波服务复用同一结构定义。
 - ST_ControlStation 增加 xWaveSession，会话期间阻止接管/释放；站点失联后撤命令停车，实际运动锁仍独立有效。
 - GVL_motion.nCommandStation 是命令来源号，必须匹配当前有效 Owner。PLC 锁存 nUploadStation，控制端变化或失联使旧表失去启动资格。它属于应用协议，不代替 ADS 访问权限。
 - GVL_motion.aUpload 仍是 21 段 × 4 轴 × 每轴 100000 点；以小批次最多 1024 点通过 DLL WriteManyAsync 写标量符号。DLL 的 WriteArrayAsync 只能写尺寸匹配的完整数组，不能把某个 LREAL 符号当作数组切片。
@@ -58,9 +58,11 @@
 
 ## 监控布局扩展
 
-前 104 字节的四轴反馈顺序不变，布局版本升级为 3。尾部按顺序：nTrajectoryState(UINT)，nReceivedCount、nLoadedCount、nPointCount、nCurrentPoint、udiReceivedSequence、udiAcceptedSequence、udiErrorId(7×UDINT)，nUploadStation(UINT)，以及 xUploadBusy、xDataReady、xTrajectoryBusy、xRunning、xDone、xError、xStopped、xMotionPermit、xConfigValid、xAxesIdle、xAxisFault、xAxesStopped(12×BOOL)。总长 148 字节，双方 Pack=1。xAxesStopped 用于停稳确认，xAxesIdle 还要求停止等异步块释放，不能混用。
+前 104 字节的四轴反馈顺序不变，布局版本升级为 4。尾部按顺序：nTrajectoryState(UINT)，nReceivedCount、nLoadedCount、nPointCount、nCurrentPoint、udiReceivedSequence、udiAcceptedSequence、udiErrorId(7×UDINT)，nUploadStation(UINT)，以及 xUploadBusy、xDataReady、xTrajectoryBusy、xRunning、xDone、xError、xStopped、xMotionPermit、xConfigValid、xAxesIdle、xAxisFault、xAxesStopped(12×BOOL)。再追加程序版本(UDINT)、接口行为版本/首次故障轴/来源/阶段(4×UINT)、停车退出错误(UDINT)，总长 164 字节，双方 Pack=1。xAxesStopped 用于停稳确认，xAxesIdle 还要求停止等异步块释放，不能混用。
 
 ## 验证边界
+
+本节保留上一轮预检迁移的验证记录。本轮诊断整改和版本4的结果见[运行诊断与轴参数](RuntimeDiagnostics.md)。
 
 本轮迁移已通过上位机 Release 构建（0 警告、0 错误）、67 项 PLC/接口离线回归，以及预检、服务、手动 UI、开始条件 UI 和账号测试。对本机 163831 点文件，实际 C# 预检按 200/12000 通过，按旧 100/100 在从 0 起第 270 点报告差分加速度超限，文件 SHA256 前后一致。实际 TwinCAT 工程与仓库副本的三份改动 PLC 源码已核对一致。
 
@@ -68,6 +70,6 @@
 
 离线测试执行真实 C# 服务和导入器，ADS 使用替身；覆盖四轴相同数据、批次边界、应答超时、写失败、心跳停滞、只回原未就绪轴、重复操作、准备期间停止和取消后禁止继续启动。PLC 测试执行实际 ST 的收段/拼表、权限门控、旧表失效和正常停止分支；NC 调用仍需 XAE 编译及仿真/现场验证。
 
-页面已按多种窗口尺寸实例化渲染，150% 为缩放模拟，不等同于全部真实 DPI/显卡环境验证。源代码与编译成功不代表在线 PLC 已升级。部署需两端一起更新到版本 3；操作软件不会自动下载 PLC 或发送实机轨迹。上传最大表的实际耗时、接收区容量及 2 ms 实时性需在目标控制器测量。
+页面已按多种窗口尺寸实例化渲染，150% 为缩放模拟，不等同于全部真实 DPI/显卡环境验证。源代码与编译成功不代表在线 PLC 已升级。部署需两端一起更新到版本 4；操作软件不会自动下载 PLC 或发送实机轨迹。上传最大表的实际耗时、接收区容量及 2 ms 实时性需在目标控制器测量。
 
 本次交付验证：Release 0 警告/0 错误；离线回归包含布局 82 条 C# 断言与服务/文件/批次 49 条 C# 断言。当前工作布局和仅含本次变更的提交布局各通过 20 项窗口/缩放检查。没有连接实际 PLC 发运动命令。

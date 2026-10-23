@@ -6,12 +6,12 @@
 
 ## 通信布局
 
-PLC `ST_MachineMonitor` 和 C# `PlcMachineMonitor` 均明确采用 1 字节对齐。版本 3 固定 148 字节，按以下顺序排列：
+PLC `ST_MachineMonitor` 和 C# `PlcMachineMonitor` 均明确采用 1 字节对齐。版本 4 固定 164 字节，按以下顺序排列：
 
 | 字段 | PLC 类型 | 字节偏移 |
 | --- | --- | --- |
-| nVersion | UINT，固定 3 | 0 |
-| nByteSize | UINT，SIZEOF(stMonitor)，固定 148 | 2 |
+| nVersion | UINT，固定 4 | 0 |
+| nByteSize | UINT，SIZEOF(stMonitor)，固定 164 | 2 |
 | nControlOwner | UINT | 4 |
 | nControlMode | UINT | 6 |
 | nWaveState | UINT | 8 |
@@ -23,13 +23,28 @@ PLC `ST_MachineMonitor` 和 C# `PlcMachineMonitor` 均明确采用 1 字节对�
 
 控制端编码 0 未分配、1 造波控制室、2 拖车本地、3 远程操作室；模式 0 未选择、1 手动、2 自动；轨迹显示状态 0 待机、1 准备、2 运行、4 停止中、6 完成、7 故障。未知值保留数值提示。故障码保持 UINT，完整源故障超出 UINT 时显示 65535，完整码仍保留在GVL_HMI.udiDetailedFaultCode。轴方向及机械单位需现场确认，不在监控中做角度或丝杆转换。
 
-尾部追加 44 字节轨迹及准备反馈，版本 3 的完整字段顺序见 [造波操作](WaveOperation.md)。包括接收/拼接/执行计数和序号、所属站、完整错误、准备条件及停车完成标志。
+前 104 字节之后的 44 字节为轨迹及准备反馈，前 148 字节的完整字段顺序见 [造波操作](WaveOperation.md)。包括接收/拼接/执行计数和序号、所属站、完整错误、准备条件及停车完成标志。
+
+版本4在偏移148之后追加首次故障诊断，原有字段偏移保持：
+
+| 字段 | PLC 类型 | 字节偏移 |
+| --- | --- | --- |
+| udiProgramVersion | UDINT，当前2026102301 | 148 |
+| nBehaviorVersion | UINT，当前1 | 152 |
+| nFaultAxis | UINT，0为组条件，1..4为轴号 | 154 |
+| nFaultSource | UINT，首次故障来源 | 156 |
+| nFaultState | UINT，首次故障发生阶段 | 158 |
+| udiCleanupErrorId | UDINT，首个停车/退出错误 | 160 |
+
+布局检查和行为版本检查分别进行。手动反馈和诊断读取校验4/164；点位下发和启动另要求行为版本1。未知行为版本不允许清表、下发点位或启动；已经进入停车时仍走原停止流程。版本号只识别配套约定，不能证明其它ADS客户端做过预检。
+
+首次故障保留到有效组复位；停车或关闭错误不会覆盖它。当前停车阶段和首次故障发生阶段分别发布。完整来源码、窗口入口和验证结果见[运行诊断与轴参数](RuntimeDiagnostics.md)。
 
 ## 发布和读取
 
 `FB_HmiFeedback` 在 MAIN 四个基础轴块之后，直接填充 stMonitor 并使心跳每约 500 ms 递增；待机和故障时心跳也持续运行。旧的五项独立监控变量及 GVL_pc 兼容层已删除；控制端、模式、状态、故障码和心跳直接写入 stMonitor。完整故障码和轨迹诊断仍保留在 GVL_HMI，手动页面不再单独读取 GVL_axis.Axis1..4。
 
-App.config 用 `AdsMonitorSnapshot=GVL_HMI.stMonitor` 指定整块地址，原有五个 AdsMonitor 字段地址配置已移除。四轴 32 项成员反馈地址已移除；命令地址仍保留。监控和手动服务统一使用 `InduLink.Protocols.Ads.AdsClient` 及 DLL 的 `ReadAnyAsync<PlcMachineMonitor>`；句柄创建、复用和释放由 DLL 负责。监控连接时由 DLL 探测 PLC 状态，原有心跳、过期、整轮超时和错误显示继续由监控服务处理。两个服务保留独立连接，各自按需读取，不共用缓存，保持现有控制、轨迹上传和心跳调度。页面隐藏时仍读取这个 148 字节结构，只不生成四轴显示快照。500 ms 调度周期保持现状，不排队积累刷新任务。
+App.config 用 `AdsMonitorSnapshot=GVL_HMI.stMonitor` 指定整块地址，原有五个 AdsMonitor 字段地址配置已移除。四轴 32 项成员反馈地址已移除；命令地址仍保留。监控和手动服务统一使用 `InduLink.Protocols.Ads.AdsClient` 及 DLL 的 `ReadAnyAsync<PlcMachineMonitor>`；句柄创建、复用和释放由 DLL 负责。监控连接时由 DLL 探测 PLC 状态，原有心跳、过期、整轮超时和错误显示继续由监控服务处理。两个服务保留独立连接，各自按需读取，不共用缓存，保持现有控制、轨迹上传和心跳调度。页面隐藏时仍读取这个 164 字节结构，只不生成四轴显示快照。500 ms 调度周期保持现状，不排队积累刷新任务。
 
 一块读取减少请求往返和字段采样间隔，不承诺跨任务原子性；如将来需要严格同一扫描快照，需另外实现发布缓冲/一致性协议。它不改变 PLC 2 ms 轨迹取点周期。
 
@@ -46,7 +61,7 @@ App.config 用 `AdsMonitorSnapshot=GVL_HMI.stMonitor` 指定整块地址，原�
 
 先在设备停稳时用 XAE 编译、下载配套 PLC，再重启更新后的上位机。当前在线 PLC 未更新时会显示结构体符号不存在，不能将编译成功当作已部署。
 
-离线运行 `python -m unittest discover -s PLC/TwinCAT_NB/tests -p "verify_*.py" -v`。新增检查验证 PLC 字段顺序、22/148 字节封送、四轴偏移、UINT 高位、BOOL、布局拒绝和数值失效。版本 1 / 100 字节已不兼容，两端必须一起更新到版本 3。仍需现场确认 ADS SDK 和 DLL 对实际 PLC 的整块读取，以及断线、心跳停滞和恢复。
+离线运行 `python -m unittest discover -s PLC/TwinCAT_NB/tests -p "verify_*.py" -v`。新增检查验证 PLC 字段顺序、22/164 字节封送、四轴偏移、UINT 高位、BOOL、布局拒绝和数值失效。版本1/100字节和版本3/148字节均不兼容，两端必须一起更新到版本 4。仍需现场确认 ADS SDK 和 DLL 对实际 PLC 的整块读取，以及断线、心跳停滞和恢复。
 
 性能验收在同一 PLC、网络和调度周期下进行：先预热句柄，再分别采集旧 33 字段和新结构体读取耗时，比较平均值、P95 和失败数。新结构体未部署前无法测得实际优化比例，不报告推测的倍数。
 

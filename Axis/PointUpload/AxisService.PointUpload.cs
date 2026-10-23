@@ -38,6 +38,7 @@ public sealed partial class AxisService
         _waveReadySequence = 0;
         _waveValidatedLimits = null;
         var frame = await ReadWaveFrameAsync(token);
+        frame.ValidateWaveContract();
         if (frame.TrajectoryBusy || frame.UploadBusy || !frame.AxesIdle)
             throw new InvalidOperationException("请先停止运动，再发送轨迹。");
         _waveStatus = new("正在读取轴参数并检查点位", 0, true, false);
@@ -103,36 +104,8 @@ public sealed partial class AxisService
     // 四轴参数只读自 PLC，不在上位机另存一套默认限制，也不整体写回 aConfig。
     private async Task<AxisTrajectoryLimits[]> ReadWaveAxisLimitsAsync(CancellationToken token)
     {
-        var limits = new AxisTrajectoryLimits[4];
-        string[] fields = ["lrMinPosition", "lrMaxPosition", "lrMaxVelocity", "lrMaxAcceleration",
-            "lrStopDeceleration", "lrStartTolerance", "lrInitVelocity"];
-        await WaveAccessAsync(async (client, ct) =>
-        {
-            var requests = new List<ReadRequest>();
-            for (int axis = 1; axis <= 4; axis++)
-                foreach (string field in fields)
-                    requests.Add(new(client.DeviceId, $"GVL_motion.aConfig[{axis}].{field}", DataType.Double));
-            try
-            {
-                var values = (await client.ReadManyAsync(requests, ct)).Values;
-                if (values.Count != requests.Count)
-                    throw new InvalidDataException($"轴参数读取数量不符：收到 {values.Count}，需要 {requests.Count}。");
-                for (int index = 0; index < values.Count; index++)
-                    if (values[index].Quality != QualityStatus.Good || values[index].Value is not double)
-                        throw new InvalidDataException($"轴参数 {requests[index].Address} 反馈无效。");
-                for (int axis = 0; axis < 4; axis++)
-                {
-                    int offset = axis * fields.Length;
-                    limits[axis] = new((double)values[offset].Value!, (double)values[offset + 1].Value!,
-                        (double)values[offset + 2].Value!, (double)values[offset + 3].Value!,
-                        (double)values[offset + 4].Value!, (double)values[offset + 5].Value!, (double)values[offset + 6].Value!);
-                }
-            }
-            catch (Exception ex) when (ex is not OperationCanceledException)
-            {
-                throw new InvalidOperationException($"读取 GVL_motion.aConfig[1..4] 失败：{AdsDiagnostics.DescribeException(ex)}", ex);
-            }
-        }, token);
+        AxisTrajectoryLimits[] limits = [];
+        await WaveAccessAsync(async (client, ct) => limits = await ReadAxisLimitsAsync(client, ct), token);
         return limits;
     }
 

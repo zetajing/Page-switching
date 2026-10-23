@@ -4,9 +4,9 @@
     <Declaration><![CDATA[{attribute 'pack_mode' := '1'}
 TYPE ST_MachineMonitor :
 STRUCT
-    // 布局版本 3，总长 148 字节；修改字段时须同步上位机并升级版本。
-    nVersion : UINT; // PLC 写、上位机只读：监控协议布局版本，当前为 3，上位机据此校验帧。
-    nByteSize : UINT; // PLC 写、上位机只读：完整监控结构字节数，当前为 148，不是轴数量或有效点数。
+    // 布局版本 4，总长 164 字节；修改字段时须同步上位机并升级版本。
+    nVersion : UINT; // PLC 写、上位机只读：监控协议布局版本，当前为 4，上位机据此校验帧。
+    nByteSize : UINT; // PLC 写、上位机只读：完整监控结构字节数，当前为 164，不是轴数量或有效点数。
     nControlOwner : UINT; // PLC 写、上位机只读：仲裁持有者，0 未分配、1 造波控制室、2 拖车本地、3 远程操作室。
     nControlMode : UINT; // PLC 写、上位机只读：0 未分配、1 手动、2 轨迹占用；由持有者和轨迹 Busy 推导，不是模式请求。
     nWaveState : UINT; // PLC 写、上位机只读：页面状态 0 待机、1 准备、2 运行、4 停止中、5 已停止、6 完成、7 故障。
@@ -38,6 +38,13 @@ STRUCT
     xAxesIdle : BOOL; // PLC 写、上位机只读：四轴有效停稳、基础块空闲且无外部给定；未使能轴也可满足空闲。
     xAxisFault : BOOL; // PLC 写、上位机只读：任一基础轴错误、NC 错误或 NC I/O 无效；不是仅指驱动器报警。
     xAxesStopped : BOOL; // 实际停车完成；MC_Stop 可以尚未释放。 PLC 汇总四轴 xStopped，上位机只读；反馈无效时不能确认停稳。
+    // 配套版本及首次故障；均由 PLC 写，上位机只读。
+    udiProgramVersion : UDINT; // PLC 源码发布号，2026102301；下载后才更新在线值。
+    nBehaviorVersion : UINT; // 1=上位机整表预检，PLC 保留接收协议与运动联锁。
+    nFaultAxis : UINT; // 首次轨迹故障轴号 1..4，0 表示组条件或未定位到单轴。
+    nFaultSource : UINT; // 首次故障来源，含联停条件和 MC 块，见故障说明。
+    nFaultState : UINT; // 首次故障发生时的轨迹阶段，不随停车阶段变化。
+    udiCleanupErrorId : UDINT; // 停车/关闭/退出的首个错误，不能覆盖原始轨迹故障。
 END_STRUCT
 END_TYPE]]></Declaration>
   </DUT>

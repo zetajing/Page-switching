@@ -22,6 +22,7 @@ internal static class Program
         PlcMachineMonitor good = new()
         {
             Version = PlcMachineMonitor.LayoutVersion, Size = PlcMachineMonitor.ByteSize,
+            BehaviorVersion = PlcMachineMonitor.ExpectedBehaviorVersion,
             ControlOwner = 2, ControlMode = 1, UploadStation = 2,
             DataReady = true, MotionPermit = true, ConfigValid = true, AxesIdle = true,
             PointCount = 100, ReceivedCount = 100, LoadedCount = 100, ReceivedSequence = 7,
@@ -73,6 +74,8 @@ internal static class Program
         Blocked(() => Set(page, "_waveFrame", null), "反馈");
         var missing = good; missing.DataReady = false;
         Blocked(() => Set(page, "_waveFrame", missing), "拼接");
+        missing = good; missing.BehaviorVersion = 0;
+        Blocked(() => Set(page, "_waveFrame", missing), "接口版本");
         missing = good; missing.MotionPermit = false;
         Blocked(() => Set(page, "_waveFrame", missing), "运动许可");
         missing = good; missing.ConfigValid = false;

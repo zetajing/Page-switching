@@ -35,6 +35,7 @@ udiFault := 0;
 nFaultAxis := 0;
 IF GVL_motion.xError THEN
     udiFault := GVL_motion.udiErrorId;
+    nFaultAxis := GVL_motion.nFaultAxis;
 ELSIF GVL_axis.Axis1.xError THEN
     udiFault := GVL_axis.Axis1.udiErrorId; nFaultAxis := 1;
 ELSIF GVL_axis.Axis2.xError THEN
@@ -84,7 +85,13 @@ GVL_HMI.xTrajectoryBusy := GVL_motion.xBusy;
 
 // 6. 整块接口固定布局，轴反馈从本扫描实际结果集中发布。
 // 普通 ADS 读取不声明为跨任务原子快照。
-GVL_HMI.stMonitor.nVersion := 3;
+GVL_HMI.stMonitor.nVersion := 4;
+GVL_HMI.stMonitor.udiProgramVersion := 2026102301;
+GVL_HMI.stMonitor.nBehaviorVersion := 1;
+GVL_HMI.stMonitor.nFaultAxis := GVL_motion.nFaultAxis;
+GVL_HMI.stMonitor.nFaultSource := GVL_motion.nFaultSource;
+GVL_HMI.stMonitor.nFaultState := GVL_motion.nFaultState;
+GVL_HMI.stMonitor.udiCleanupErrorId := GVL_motion.udiCleanupErrorId;
 GVL_HMI.stMonitor.nByteSize := SIZEOF(GVL_HMI.stMonitor);
 GVL_HMI.stMonitor.Axis1.lrActualPosition := GVL_axis.Axis1.lrActualPosition;
 GVL_HMI.stMonitor.Axis1.lrSpeed := GVL_axis.Axis1.lrSpeed;

@@ -19,6 +19,7 @@ VAR
     fbTrajectory : FB_FourAxisTrajectory; // 四轴点位接收、拼表、校验及轨迹执行实例。
     fbHmiFeedback : FB_HmiFeedback; // 四轴执行结果发布到 switch 只读监控接口。
     xAxesReady : BOOL; // 四轴轨迹启动条件汇总；正常运动中非静止时可为 FALSE。
+    nAbortReason : UINT; // 本扫描首个联停原因，只用于诊断；不改变原联停条件。
     xAbort : BOOL; // 整组联停请求，汇总许可丢失、撤使能、命令冲突及限位等条件。
     xAxisFault : BOOL; // 任一基础轴错误或 NC 错误、I/O 无效，供轨迹块判断故障。
     i : INT; // 四轴状态汇总的循环轴号，范围 1～4。
@@ -114,16 +115,31 @@ xAbort := NOT GVL_motion.xMotionPermit OR NOT GVL_control.xCanCommand
     OR GVL_axis.Axis2.jogz OR GVL_axis.Axis2.jogf OR GVL_axis.Axis2.gohome OR GVL_axis.Axis2.reset
     OR GVL_axis.Axis3.jogz OR GVL_axis.Axis3.jogf OR GVL_axis.Axis3.gohome OR GVL_axis.Axis3.reset
     OR GVL_axis.Axis4.jogz OR GVL_axis.Axis4.jogf OR GVL_axis.Axis4.gohome OR GVL_axis.Axis4.reset;
+// 用相同条件标出联停原因，按许可、控制权、使能、停止、手动冲突的顺序取首项。
+nAbortReason := 0;
+IF NOT GVL_motion.xMotionPermit THEN nAbortReason := 1;
+ELSIF NOT GVL_control.xCanCommand THEN nAbortReason := 2;
+ELSIF (GVL_motion.xBusy AND NOT xAxesReady)
+    OR NOT GVL_axis.Axis1.xStart OR NOT GVL_axis.Axis2.xStart
+    OR NOT GVL_axis.Axis3.xStart OR NOT GVL_axis.Axis4.xStart THEN nAbortReason := 3;
+ELSIF (GVL_axis.Axis1.xStop OR GVL_axis.Axis2.xStop OR GVL_axis.Axis3.xStop OR GVL_axis.Axis4.xStop)
+    AND NOT ((GVL_motion.nCommandStation = GVL_control.nOwner) AND GVL_motion.xStop) THEN nAbortReason := 4;
+ELSIF xAbort THEN nAbortReason := 5;
+END_IF
 // 启动就绪还需四轴已回原、静止、未停止；正常运动中 xAxesReady=FALSE 是预期状态。
 // 汇总本扫描 NC 错误、I/O 无效及软硬限位，供轨迹块在取点前检查。
 FOR i := 1 TO 4 DO
     xAxesReady := xAxesReady AND GVL_sy.axis[i].Status.Homed AND GVL_sy.axis[i].Status.StandStill AND NOT GVL_sy.axis[i].Status.Stopping;
     xAxisFault := xAxisFault OR GVL_sy.axis[i].Status.Error OR GVL_sy.axis[i].Status.IoDataInvalid;
+    IF (nAbortReason = 0) AND (GVL_motion.axPositiveLimit[i] OR GVL_motion.axNegativeLimit[i]
+        OR GVL_sy.axis[i].Status.SoftLimitMinExceeded OR GVL_sy.axis[i].Status.SoftLimitMaxExceeded) THEN
+        nAbortReason := 6;
+    END_IF
     xAbort := xAbort OR GVL_motion.axPositiveLimit[i] OR GVL_motion.axNegativeLimit[i] OR GVL_sy.axis[i].Status.SoftLimitMinExceeded OR GVL_sy.axis[i].Status.SoftLimitMaxExceeded;
 END_FOR
 // 轨迹块先更新组状态和 xBusy，后面的基础块在本扫描就能据此禁止手动抢占。
 // 全部下发后的统一拼表状态 5 不置 xBusy，不占用基础轴控制。
-fbTrajectory(Axes := GVL_sy.axis, xAxesReady := xAxesReady, xAbort := xAbort, xAxisFault := xAxisFault);
+fbTrajectory(Axes := GVL_sy.axis, xAxesReady := xAxesReady, xAbort := xAbort, xAxisFault := xAxisFault, nAbortReason := nAbortReason);
 ]]></ST>
       </Implementation>
     </Action>

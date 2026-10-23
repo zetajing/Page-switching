@@ -95,6 +95,8 @@ public partial class Auto
     {
         if (!authorized) return "本站未取得有效控制权。";
         if (_waveFrame is not { } frame) return "等待有效 PLC 反馈。";
+        if (frame.BehaviorVersion != PlcMachineMonitor.ExpectedBehaviorVersion)
+            return "点位接口版本不匹配，请更新配套 PLC 和上位机。";
         if (frame.UploadBusy) return "PLC 正在拼接轨迹。";
         if (frame.TrajectoryBusy) return "PLC 轨迹任务尚未退出。";
         if (!frame.AxesIdle) return "PLC 未确认四轴空闲，请检查轴忙状态和 NC 反馈。";
@@ -109,7 +111,8 @@ public partial class Auto
             detail = $"PLC 接收：{feedback.ReceivedCount:N0} / {feedback.PointCount:N0}\r\n"
                 + $"PLC 拼接：{feedback.LoadedCount:N0} / {feedback.PointCount:N0}\r\n"
                 + $"执行点号：{feedback.CurrentPoint:N0}　轨迹状态：{feedback.TrajectoryState}（{PlcWaveDiagnostics.DescribeState(feedback.TrajectoryState)}）\r\n"
-                + (feedback.Error ? PlcWaveDiagnostics.DescribeFault(feedback.TrajectoryErrorId) : "发送完成不会自动开始运动。")
+                + (feedback.Error ? PlcWaveDiagnostics.DescribeFault(feedback.TrajectoryErrorId)
+                    + "\r\n" + PlcWaveDiagnostics.DescribeFirstFault(feedback) : "发送完成不会自动开始运动。")
                 + (!active && _waveSignal is not null && sendBlockReason is not null
                     ? "\r\n暂不能发送：" + sendBlockReason : "");
         else detail = "等待有效 PLC 反馈；请确认配套结构体版本已部署。";
@@ -131,6 +134,8 @@ public partial class Auto
             reasons.Add("• 本次尚未完成轨迹发送；重启或更换文件后需重新发送。");
         if (_waveFrame is { } frame)
         {
+            if (frame.BehaviorVersion != PlcMachineMonitor.ExpectedBehaviorVersion)
+                reasons.Add("• 点位接口版本不匹配，请更新配套 PLC 和上位机。");
             if (!frame.DataReady) reasons.Add("• PLC 点位表未拼接就绪。");
             if (!frame.MotionPermit) reasons.Add("• PLC 运动许可未满足。");
             if (!frame.ConfigValid) reasons.Add("• 四轴全局参数无效，请检查 GVL_motion.aConfig[1..4]。");

@@ -51,6 +51,10 @@
       <SubType>Code</SubType>
       <DependentUpon>AccountManagementForm.cs</DependentUpon>
     </Compile>
+    <Compile Update="Forms\MachineDiagnosticsForm.Designer.cs">
+      <SubType>Code</SubType>
+      <DependentUpon>MachineDiagnosticsForm.cs</DependentUpon>
+    </Compile>
     <EmbeddedResource Update="Forms\main_page.resx">
       <DependentUpon>main_page.cs</DependentUpon>
     </EmbeddedResource>

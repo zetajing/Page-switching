@@ -1,0 +1,91 @@
+using System.Reflection;
+using System.Runtime.Loader;
+using System.Windows.Forms;
+
+internal static class Program
+{
+    private static int checks;
+    private const BindingFlags Members = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+    private static void Check(bool value, string name) { checks++; if (!value) throw new Exception(name); }
+
+    [STAThread]
+    private static void Main(string[] args)
+    {
+        Application.SetHighDpiMode(HighDpiMode.DpiUnaware);
+        Application.EnableVisualStyles();
+        string dll = Path.GetFullPath(args[0]);
+        string output = Path.GetFullPath(args[1]);
+        Directory.CreateDirectory(output);
+        AssemblyLoadContext.Default.Resolving += (_, name) =>
+        {
+            string path = Path.Combine(Path.GetDirectoryName(dll)!, name.Name + ".dll");
+            return File.Exists(path) ? AssemblyLoadContext.Default.LoadFromAssemblyPath(path) : null;
+        };
+        var app = Assembly.LoadFrom(dll);
+        Type Type(string name) => app.GetType("Page_switching." + name)!;
+        object Create(string name, params object?[] values) => Activator.CreateInstance(Type(name), Members, null, values, null)!;
+        void Set(object target, string field, object value) => target.GetType().GetField(field, Members)!.SetValue(target, value);
+        Control Field(object target, string field) => (Control)target.GetType().GetField(field, Members)!.GetValue(target)!;
+        object? Call(object target, string method, params object?[] values) => target.GetType().GetMethod(method, Members)!.Invoke(target, values);
+        object frame = Create("PlcMachineMonitor");
+        foreach (var pair in new Dictionary<string, object>
+        {
+            ["Version"] = (ushort)4, ["Size"] = (ushort)164, ["BehaviorVersion"] = (ushort)1,
+            ["ProgramVersion"] = 2026102301u, ["Error"] = true, ["FaultAxis"] = (ushort)2,
+            ["FaultSource"] = (ushort)10, ["FaultState"] = (ushort)15,
+            ["TrajectoryState"] = (ushort)60, ["TrajectoryErrorId"] = 16384u, ["CleanupErrorId"] = 1009u
+        }) Set(frame, pair.Key, pair.Value);
+        Array limits = Array.CreateInstance(Type("AxisTrajectoryLimits"), 4);
+        for (int axis = 0; axis < 4; axis++)
+            limits.SetValue(Create("AxisTrajectoryLimits", -200d-axis, 200d+axis, 200d+axis, 12000d+axis, 100d+axis, 10d+axis, 10d+axis), axis);
+        object snapshot = Create("MachineDiagnosticsSnapshot", frame, limits, DateTimeOffset.Now, null);
+        using var form = (Form)Create("MachineDiagnosticsForm"); // 无服务，不建立 ADS，也不触发任何控制请求。
+        form.ShowInTaskbar = false;
+        form.Opacity = 0;
+        form.Show();
+        Call(form, "ApplySnapshot", snapshot);
+        var grid = (DataGridView)Field(form, "parametersGrid");
+        Check(grid.ReadOnly && !grid.AllowUserToAddRows && !grid.AllowUserToDeleteRows, "parameters remain read-only");
+        Check(grid.Rows.Count == 4 && grid.Columns.Count == 8, "four independent parameter rows");
+        Check(grid.Rows[3].Cells[1].Value?.ToString() == "-203", "axis four configuration not copied from axis one");
+        string text = (string)Call(form, "BuildDiagnosticText")!;
+        foreach (string expected in new[] { "2026102301", "4/164", "轴 2", "MC_MoveAbsolute", "定位到首点", "16384", "1009", "原始单位", "12003" })
+            Check(text.Contains(expected), "copied diagnostic includes " + expected);
+        foreach (var size in new[] { new System.Drawing.Size(1060, 700), new System.Drawing.Size(860, 600) })
+        {
+            form.ClientSize = size;
+            Application.DoEvents();
+            foreach (string field in new[] { "parametersGrid", "diagnosticTextBox", "refreshButton", "copyButton" })
+            {
+                Control control = Field(form, field);
+                Check(control.Parent!.ClientRectangle.Contains(control.Bounds), "control within parent: " + field);
+                Check(control.Width > 0 && control.Height > 20, "visible size: " + field);
+            }
+            using var bitmap = new System.Drawing.Bitmap(form.Width, form.Height);
+            form.DrawToBitmap(bitmap, new System.Drawing.Rectangle(System.Drawing.Point.Empty, bitmap.Size));
+            bitmap.Save(Path.Combine(output, $"diagnostics-{size.Width}x{size.Height}.png"));
+        }
+        snapshot = Create("MachineDiagnosticsSnapshot", frame, null, DateTimeOffset.Now, "模拟 aConfig 读取失败");
+        Call(form, "ApplySnapshot", snapshot);
+        Check(grid.Rows.Count == 0, "failed read removes old parameters instead of displaying zero or stale rows");
+        text = (string)Call(form, "BuildDiagnosticText")!;
+        Check(text.Contains("读取失败") && !text.Contains("12003"), "failure can be copied without stale parameter values");
+        using var authority = (UserControl)Create("ControlAuthority");
+        using var host = new Form { ClientSize = new System.Drawing.Size(1100, 850), ShowInTaskbar = false, Opacity = 0 };
+        host.Controls.Add(authority);
+        authority.Dock = DockStyle.Fill;
+        host.Show();
+        Application.DoEvents();
+        var diagnosticsButton = Field(authority, "diagnosticsButton");
+        Check(diagnosticsButton.Enabled, "read-only diagnostic entry available without a service or control authority");
+        Check(diagnosticsButton.Parent!.ClientRectangle.Contains(diagnosticsButton.Bounds), "diagnostic entry fits authority action row");
+        Call(authority, "DiagnosticsButton_Click", null, EventArgs.Empty);
+        object opened = authority.GetType().GetField("_diagnosticsForm", Members)!.GetValue(authority)!;
+        Check(((Form)opened).Visible && ((Form)opened).Owner == host, "modeless diagnostic window keeps main window available");
+        Call(authority, "DiagnosticsButton_Click", null, EventArgs.Empty);
+        Check(ReferenceEquals(opened, authority.GetType().GetField("_diagnosticsForm", Members)!.GetValue(authority)), "reopening reuses one diagnostic window");
+        authority.Dispose();
+        Check(((Form)opened).IsDisposed, "owner disposal closes diagnostic window");
+        Console.WriteLine($"Diagnostics UI: {checks} assertions passed; no ADS connection or clipboard write.");
+    }
+}
