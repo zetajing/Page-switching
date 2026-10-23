@@ -5,7 +5,7 @@
 // 每轴的 NC 引用、ADS 数据、参数及传感器索引必须一一对应。
 PROGRAM MAIN
 VAR
-    fbAxisConfig : FB_AxisConfig; // 独立轴配置入口，只在首次有效停稳时填写尚未配置的虚拟轴。
+    fbAxisConfig : FB_AxisConfig; // 独立轴配置入口，仅在有效空闲时补全零的虚拟轴配置。
     fbAxis1 : FB_AxisControl; // 轴1基础控制实例，固定对应 GVL_sy.axis[1] 和 GVL_axis.Axis1。
     fbAxis2 : FB_AxisControl; // 轴2基础控制实例，固定对应 GVL_sy.axis[2] 和 GVL_axis.Axis2。
     fbAxis3 : FB_AxisControl; // 轴3基础控制实例，固定对应 GVL_sy.axis[3] 和 GVL_axis.Axis3。
@@ -32,11 +32,11 @@ GVL_motion.xMotionPermit := TRUE;
 // 刷新四轴实际状态；只读取 NC 反馈，不要求持有控制权。
 A01_ReadAxisStatus();
 
-// 轴配置单独处理；先读取 NC 状态，再判断能否执行一次初始化。
-fbAxisConfig();
-
 // 汇总交接条件并处理控制权；写入 GVL_control 仲裁反馈。
 A02_ControlAuthority();
+
+// 轴配置单独处理，使用当前运动锁和现有空闲反馈。
+fbAxisConfig();
 
 // 取出授权站手动命令；通过命令门写入 GVL_axis 命令字段。
 A03_ManualCommands();

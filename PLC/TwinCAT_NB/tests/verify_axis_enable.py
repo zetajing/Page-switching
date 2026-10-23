@@ -62,7 +62,6 @@ class AxisEnableChecks(unittest.TestCase):
         # 执行独立配置块后再检查全局参数，不依赖下载时的变量声明初值。
         fixture = AxisConfigFixture(ROOT)
         fixture.scan()
-        self.assertTrue(fixture.values['xInitialized'])
         configs = fixture.motion.aConfig[1:]
         self.assertEqual(len(configs), 4)
         feedback = ET.parse(ROOT / 'axis_4/POUs/Feedback_反馈/FB_HmiFeedback.TcPOU').findtext('.//ST')

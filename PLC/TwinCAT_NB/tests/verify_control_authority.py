@@ -177,7 +177,7 @@ class AxisInterlockChecks(unittest.TestCase):
     def test_invalid_io_blocks_new_power_but_not_reset(self):
         source = ET.parse(ROOT / "axis_4/POUs/ManualControl_手动控制/FB_AxisControl.TcPOU").findtext(".//ST")
         enable = re.search(r"fbPower\(Axis := Axis,\s*Enable := (.*?),\s*Enable_Positive", source, re.S)[1]
-        reset = re.search(r"fbReset\(Axis := Axis, Execute := (.*?)\);", source, re.S)[1]
+        reset = re.search(r"fbReset\(Axis := Axis,\s*Execute := (.*?)\);", source, re.S)[1]
         manual = re.search(r"xManual := .*?;", source, re.S)[0]
         program = StBranch("xEnable := " + enable + "; xReset := " + reset + "; " + manual)
         for invalid in (False, True):

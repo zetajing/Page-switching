@@ -76,7 +76,7 @@ class SwitchContractChecks(unittest.TestCase):
     def test_feedback_runs_after_axis_blocks(self):
         source = main_source(ROOT)
         # 检查真实调用顺序和次数，防止整理 Action 时漏调、重调或提前发布反馈。
-        calls = ["ReadStatus()", "fbAxisConfig();", "fbAuthority(", "aCommandGate[1](", "aCommandGate[4](",
+        calls = ["ReadStatus()", "fbAuthority(", "fbAxisConfig();", "aCommandGate[1](", "aCommandGate[4](",
                  "fbTrajectory(", "fbAxis1(", "fbAxis2(", "fbAxis3(", "fbAxis4(", "fbHmiFeedback();"]
         positions = [source.index(call) for call in calls]
         self.assertEqual(positions, sorted(positions))
