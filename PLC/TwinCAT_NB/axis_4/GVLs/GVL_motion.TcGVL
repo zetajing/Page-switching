@@ -12,7 +12,7 @@ VAR_GLOBAL
     axNegativeLimit : ARRAY[1..4] OF BOOL; // 四轴负向硬限位输入，索引为轴号 1～4，TRUE 表示触发。
     axHomeSensor : ARRAY[1..4] OF BOOL; // 四轴原点开关输入，索引为轴号 1～4，传给 NC 标准回零校准凸轮。
     // 四轴配置只在 FB_AxisConfig 中填写，手动、反馈和轨迹均读取此数组。
-    aConfig : ARRAY[1..4] OF ST_AxisConfig; // 单位跟随 NC，已有配置不会被初始化块覆盖。
+    aConfig : ARRAY[1..4] OF ST_AxisConfig; // 单位跟随 NC；空闲时由配置块直接更新，运动期间保持。
 
     // 以下为上位机写入的轨迹命令与点位；nUploadStation、xStopped 两项由 PLC 写、上位机只读。
     nCommandStation : UINT; // 上位机命令来源，必须等于有效 Owner；不是授权本身。

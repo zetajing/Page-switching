@@ -1,4 +1,4 @@
-"""执行实际轴配置块，检查复用空闲反馈、补齐全零配置和已有参数保留。"""
+"""执行实际轴配置块，检查空闲时应用调试参数、运动期间保持配置。"""
 from copy import deepcopy
 from pathlib import Path
 from types import SimpleNamespace as NS
@@ -10,7 +10,7 @@ from verify_upload_assembly import StBranch
 ROOT = Path(__file__).resolve().parents[1]
 FIELDS = ("lrMinPosition", "lrMaxPosition", "lrMaxVelocity", "lrMaxAcceleration",
           "lrStopDeceleration", "lrInitVelocity", "lrStartTolerance")
-EXPECTED = dict(zip(FIELDS, (-200, 200, 100, 100, 100, 10, 10)))
+EXPECTED = dict(zip(FIELDS, (-200, 200, 200, 12000, 100, 10, 10)))
 
 
 class AxisConfigFixture:
@@ -78,16 +78,13 @@ class VirtualConfigChecks(unittest.TestCase):
                 self.assertTrue(all(vars(config) == EXPECTED for config in fixture.motion.aConfig[1:]))
                 self.assertEqual(fixture.command_state(), commands, "条件恢复后补参数仍不能改命令")
 
-    def test_any_nonzero_field_preserves_partial_configuration(self):
+    def test_idle_applies_confirmed_values_to_existing_or_partial_configuration(self):
         for field in FIELDS:
             with self.subTest(field=field):
                 fixture = AxisConfigFixture()
                 setattr(fixture.motion.aConfig[2], field, 123)
-                original = deepcopy(fixture.motion.aConfig[2])
                 fixture.scan()
-                self.assertEqual(fixture.motion.aConfig[2], original,
-                                 "只要已有任一非零字段，就不能悄悄重写其余字段")
-                for number in (1, 3, 4):
+                for number in (1, 2, 3, 4):
                     self.assertEqual(vars(fixture.motion.aConfig[number]), EXPECTED)
 
     def test_current_nc_state_blocks_stale_idle_feedback(self):
@@ -110,25 +107,22 @@ class VirtualConfigChecks(unittest.TestCase):
             fixture.scan()
             self.assertTrue(all(vars(config) == EXPECTED for config in fixture.motion.aConfig[1:]))
 
-    def test_mixed_configuration_and_full_zero_can_be_filled_again(self):
+    def test_old_limits_are_held_while_locked_then_updated_when_idle(self):
         fixture = AxisConfigFixture()
-        fixture.motion.aConfig[1] = NS(**{name: value / 2 for name, value in EXPECTED.items()})
-        fixture.motion.aConfig[3].lrInitVelocity = 7
-        existing = deepcopy((fixture.motion.aConfig[1], fixture.motion.aConfig[3]))
+        for config in fixture.motion.aConfig[1:]:
+            vars(config).update(EXPECTED)
+            config.lrMaxVelocity = config.lrMaxAcceleration = 100
+        old = deepcopy(fixture.motion.aConfig)
+        fixture.control.xLocked = True
         fixture.scan()
-        self.assertEqual((fixture.motion.aConfig[1], fixture.motion.aConfig[3]), existing)
-        self.assertEqual(vars(fixture.motion.aConfig[2]), EXPECTED)
-        self.assertEqual(vars(fixture.motion.aConfig[4]), EXPECTED)
-        # 配置内容本身就是标记：正常重复扫描不覆盖，整轴再次全零时允许重新填写。
-        fixture.motion.aConfig[4].lrMaxVelocity = 55
+        self.assertEqual(fixture.motion.aConfig, old, "运动或会话占用期间不能更新旧参数")
+        fixture.control.xLocked = False
+        fixture.scan()
+        for config in fixture.motion.aConfig[1:]:
+            self.assertEqual(vars(config), EXPECTED)
         before = deepcopy(fixture.motion.aConfig)
         fixture.scan()
         self.assertEqual(fixture.motion.aConfig, before)
-        fixture.motion.aConfig[2] = NS(**dict.fromkeys(FIELDS, 0))
-        fixture.scan()
-        self.assertEqual(vars(fixture.motion.aConfig[2]), EXPECTED)
-        self.assertEqual(fixture.motion.aConfig[4].lrMaxVelocity, 55)
-        self.assertEqual((fixture.motion.aConfig[1], fixture.motion.aConfig[3]), existing)
 
     def test_configuration_never_changes_motion_commands_or_feedback(self):
         fixture = AxisConfigFixture()

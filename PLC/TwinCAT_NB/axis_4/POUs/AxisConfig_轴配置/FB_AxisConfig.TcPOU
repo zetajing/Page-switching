@@ -22,20 +22,15 @@ IF GVL_HMI.stMonitor.xAxesIdle AND NOT GVL_control.xLocked AND NOT GVL_control.x
     AND (ABS(GVL_sy.axis[3].NcToPlc.ActVelo) <= 0.000001)
     AND (ABS(GVL_sy.axis[4].NcToPlc.ActVelo) <= 0.000001) THEN
     FOR i := 1 TO 4 DO
-        // 全零表示尚未配置；填好后自然跳过，已有完整或部分配置保持原值。
-        IF (GVL_motion.aConfig[i].lrMinPosition = 0) AND (GVL_motion.aConfig[i].lrMaxPosition = 0)
-            AND (GVL_motion.aConfig[i].lrMaxVelocity = 0) AND (GVL_motion.aConfig[i].lrMaxAcceleration = 0)
-            AND (GVL_motion.aConfig[i].lrStopDeceleration = 0)
-            AND (GVL_motion.aConfig[i].lrInitVelocity = 0) AND (GVL_motion.aConfig[i].lrStartTolerance = 0) THEN
-            // 当前四根虚拟轴使用相同参数，修改数值只需改这里。
-            GVL_motion.aConfig[i].lrMinPosition := -200;
-            GVL_motion.aConfig[i].lrMaxPosition := 200;
-            GVL_motion.aConfig[i].lrMaxVelocity := 100;
-            GVL_motion.aConfig[i].lrMaxAcceleration := 100;
-            GVL_motion.aConfig[i].lrStopDeceleration := 100;
-            GVL_motion.aConfig[i].lrInitVelocity := 10;
-            GVL_motion.aConfig[i].lrStartTolerance := 10;
-        END_IF
+        // 当前四根虚拟轴使用相同参数，空闲时直接应用本块数值，已有旧值也能更新。
+        // 200/12000 按本次虚拟轴调试确认；不作为实机速度、加速度能力。
+        GVL_motion.aConfig[i].lrMinPosition := -200;
+        GVL_motion.aConfig[i].lrMaxPosition := 200;
+        GVL_motion.aConfig[i].lrMaxVelocity := 200;
+        GVL_motion.aConfig[i].lrMaxAcceleration := 12000;
+        GVL_motion.aConfig[i].lrStopDeceleration := 100;
+        GVL_motion.aConfig[i].lrInitVelocity := 10;
+        GVL_motion.aConfig[i].lrStartTolerance := 10;
     END_FOR
 END_IF
 ]]></ST>

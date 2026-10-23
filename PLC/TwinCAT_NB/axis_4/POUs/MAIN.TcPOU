@@ -5,7 +5,7 @@
 // 每轴的 NC 引用、ADS 数据、参数及传感器索引必须一一对应。
 PROGRAM MAIN
 VAR
-    fbAxisConfig : FB_AxisConfig; // 独立轴配置入口，仅在有效空闲时补全零的虚拟轴配置。
+    fbAxisConfig : FB_AxisConfig; // 独立轴配置入口，仅在有效空闲时应用本块的虚拟轴参数。
     fbAxis1 : FB_AxisControl; // 轴1基础控制实例，固定对应 GVL_sy.axis[1] 和 GVL_axis.Axis1。
     fbAxis2 : FB_AxisControl; // 轴2基础控制实例，固定对应 GVL_sy.axis[2] 和 GVL_axis.Axis2。
     fbAxis3 : FB_AxisControl; // 轴3基础控制实例，固定对应 GVL_sy.axis[3] 和 GVL_axis.Axis3。
