@@ -6,6 +6,7 @@ import re
 import unittest
 import xml.etree.ElementTree as ET
 from verify_upload_assembly import StBranch
+from verify_virtual_config import AxisConfigFixture
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -58,12 +59,11 @@ class AxisEnableChecks(unittest.TestCase):
             self.assertFalse(values['xStopRequest'] or values['xStopExecute'])
 
     def test_global_debug_defaults_pass_manual_feedback_and_trajectory_checks(self):
-        # 直接读取全局初值并执行真实校验式，防止局部参数有效、全局仍全零的回归。
-        declaration = ET.parse(ROOT / 'axis_4/GVLs/GVL_motion.TcGVL').findtext('.//Declaration')
-        initial = re.search(r'aConfig\s*:.*?:=\s*\[(.*?)\];', declaration, re.S)[1]
-        configs = [NS(**{name: float(value) for name, value in
-                       re.findall(r'(lr\w+)\s*:=\s*(-?\d+(?:\.\d+)?)', item)})
-                   for item in re.findall(r'\((.*?)\)', initial, re.S)]
+        # 执行独立配置块后再检查全局参数，不依赖下载时的变量声明初值。
+        fixture = AxisConfigFixture(ROOT)
+        fixture.scan()
+        self.assertTrue(fixture.values['xInitialized'])
+        configs = fixture.motion.aConfig[1:]
         self.assertEqual(len(configs), 4)
         feedback = ET.parse(ROOT / 'axis_4/POUs/Feedback_反馈/FB_HmiFeedback.TcPOU').findtext('.//ST')
         monitor_check = re.search(r'GVL_HMI.stMonitor.xConfigValid\s*:=\s*'

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_AxisConfig" Id="{7dd9332e-c8fa-41bf-891c-704d4a4b07e8}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_AxisConfig
+// 轴配置单独在此填写，直接写入全局四轴参数，不经过模板或输入副本。
+// 当前值仅用于虚拟轴调试；接入实机时须按实际 NC 单位、行程和动态参数重新配置。
+VAR
+    xInitialized : BOOL; // 空闲时完成一次配置检查后置 TRUE，不在每扫描反复写参数。
+    xAxesIdle : BOOL; // 本扫描四轴反馈有效、静止且运动块/轨迹均空闲。
+    i : INT; // 四轴配置下标，1～4。
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF NOT xInitialized THEN
+    // 先等当前运动和停止块退出；NC Disabled 也可以是有效的静止状态。
+    xAxesIdle := NOT GVL_motion.xBusy AND NOT GVL_motion.xUploadBusy AND NOT GVL_motion.xStart
+        AND NOT GVL_axis.Axis1.xBusy AND NOT GVL_axis.Axis2.xBusy
+        AND NOT GVL_axis.Axis3.xBusy AND NOT GVL_axis.Axis4.xBusy;
+    FOR i := 1 TO 4 DO
+        xAxesIdle := xAxesIdle
+            AND (GVL_sy.axis[i].Status.StandStill OR GVL_sy.axis[i].Status.Disabled)
+            AND NOT GVL_sy.axis[i].Status.IoDataInvalid
+            AND NOT GVL_sy.axis[i].Status.Moving AND NOT GVL_sy.axis[i].Status.Homing
+            AND NOT GVL_sy.axis[i].Status.Stopping AND NOT GVL_sy.axis[i].Status.ExtSetPointGenEnabled
+            AND (ABS(GVL_sy.axis[i].NcToPlc.ActVelo) <= 0.000001);
+        // 等待已按下的点动/回原请求释放，避免参数刚有效就执行遗留运动请求。
+        IF (GVL_control.nOwner >= 1) AND (GVL_control.nOwner <= 3) THEN
+            xAxesIdle := xAxesIdle
+                AND NOT GVL_control.aStation[GVL_control.nOwner].aAxis[i].jogz
+                AND NOT GVL_control.aStation[GVL_control.nOwner].aAxis[i].jogf
+                AND NOT GVL_control.aStation[GVL_control.nOwner].aAxis[i].gohome;
+        END_IF
+    END_FOR
+
+    IF xAxesIdle THEN
+        FOR i := 1 TO 4 DO
+            // 只填写尚未配置的全零轴，保留已有的完整或部分调试配置。
+            IF (GVL_motion.aConfig[i].lrMinPosition = 0) AND (GVL_motion.aConfig[i].lrMaxPosition = 0)
+                AND (GVL_motion.aConfig[i].lrMaxVelocity = 0) AND (GVL_motion.aConfig[i].lrMaxAcceleration = 0)
+                AND (GVL_motion.aConfig[i].lrStopDeceleration = 0)
+                AND (GVL_motion.aConfig[i].lrInitVelocity = 0) AND (GVL_motion.aConfig[i].lrStartTolerance = 0) THEN
+                // 当前四根虚拟轴使用相同参数；全部直接写到 GVL_motion.aConfig。
+                GVL_motion.aConfig[i].lrMinPosition := -200;
+                GVL_motion.aConfig[i].lrMaxPosition := 200;
+                GVL_motion.aConfig[i].lrMaxVelocity := 100;
+                GVL_motion.aConfig[i].lrMaxAcceleration := 100;
+                GVL_motion.aConfig[i].lrStopDeceleration := 100;
+                GVL_motion.aConfig[i].lrInitVelocity := 10;
+                GVL_motion.aConfig[i].lrStartTolerance := 10;
+            END_IF
+        END_FOR
+        xInitialized := TRUE;
+    END_IF
+END_IF
+]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

@@ -4,7 +4,7 @@
     <Declaration><![CDATA[TYPE ST_AxisConfig :
 STRUCT
     // 单位跟随 NC：位置、位置/秒、位置/秒²。必须按设备行程填写。
-    // 参数在 GVL_motion.aConfig 中集中填写；当前初值仅用于虚拟轴调试，现场位置单位尚未确认。
+    // 参数在 FB_AxisConfig 中集中填写到 GVL_motion.aConfig；当前值仅用于虚拟轴调试，现场位置单位尚未确认。
     lrMinPosition : LREAL; // 设备配置值，PLC 读取：最小允许位置边界，单位跟随 NC 位置单位。
     lrMaxPosition : LREAL; // 设备配置值，PLC 读取：最大允许位置边界，单位跟随 NC 位置单位，须大于最小位置。
     lrMaxVelocity : LREAL; // 设备配置值，PLC 读取：点动及轨迹的速度上限，正值，单位为 NC 位置单位/秒。

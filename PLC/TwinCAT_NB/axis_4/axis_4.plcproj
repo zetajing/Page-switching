@@ -57,6 +57,9 @@
       <SubType>Code</SubType>
       <LinkAlways>true</LinkAlways>
     </Compile>
+    <Compile Include="POUs\AxisConfig_轴配置\FB_AxisConfig.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="POUs\ManualControl_手动控制\FB_AxisControl.TcPOU">
       <SubType>Code</SubType>
     </Compile>
@@ -90,6 +93,7 @@
     <Folder Include="VISUs" />
     <Folder Include="POUs" />
     <Folder Include="POUs\Feedback_反馈" />
+    <Folder Include="POUs\AxisConfig_轴配置" />
     <Folder Include="POUs\ControlAuthority_控制权" />
     <Folder Include="POUs\ManualControl_手动控制" />
     <Folder Include="POUs\Trajectory_点位与轨迹" />
