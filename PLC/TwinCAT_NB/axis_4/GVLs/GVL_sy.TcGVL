@@ -3,7 +3,7 @@
   <GVL Name="GVL_sy" Id="{c9113b15-08c5-4680-a20e-e511a34e278f}">
     <Declaration><![CDATA[VAR_GLOBAL
 
-axis  : ARRAY[1..4] OF AXIS_REF;
+axis  : ARRAY[1..4] OF AXIS_REF; // 四根 NC 轴引用，固定索引 1～4；轴状态从 NC 读取，运动块经此接口下发控制。
 
 END_VAR
 ]]></Declaration>

@@ -4,16 +4,16 @@
     <Declaration><![CDATA[{attribute 'qualified_only'}
 VAR_GLOBAL
     // 整块只读监控接口；由 FB_HmiFeedback 在轴块执行后发布。
-    stMonitor : ST_MachineMonitor;
+    stMonitor : ST_MachineMonitor; // PLC 每扫描发布的整块只读监控帧，包含四轴实际状态与组反馈。
     // 保留完整故障码及轨迹诊断；全部由 PLC 发布，上位机只读。
     udiDetailedFaultCode : UDINT; // 完整错误码，不丢失高 16 位。
     nFaultAxis : UINT; // 0 为组故障或无错误；1..4 为对应轴的首个错误。
     nTrajectoryState : UINT; // 轨迹块内部 nState，区别于上述页面状态编码。
-    nCurrentPoint : UDINT;
-    nLoadedCount : UDINT;
-    nPointCount : UDINT;
-    xDataReady : BOOL;
-    xTrajectoryBusy : BOOL;
+    nCurrentPoint : UDINT; // PLC 发布的最近外部给定点号，从 0 开始，不表示机械轴实际到位。
+    nLoadedCount : UDINT; // PLC 发布的四轴已拼入执行表的点数。
+    nPointCount : UDINT; // PLC 发布的目标单轴总点数，不表示接收或执行进度。
+    xDataReady : BOOL; // PLC 发布的整表拼接完成标志，不表示数值校验或首点定位完成。
+    xTrajectoryBusy : BOOL; // PLC 发布的轨迹占轴标志，含校验、定位、执行和退出阶段。
 END_VAR]]></Declaration>
   </GVL>
 </TcPlcObject>

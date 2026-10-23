@@ -5,22 +5,22 @@
 // 每轴的 NC 引用、ADS 数据、参数及传感器索引必须一一对应。
 PROGRAM MAIN
 VAR
-    fbAxis1 : FB_AxisControl;
-    fbAxis2 : FB_AxisControl;
-    fbAxis3 : FB_AxisControl;
-    fbAxis4 : FB_AxisControl;
-    fbAuthority : FB_ControlAuthority;
-    aCommandGate : ARRAY[1..4] OF FB_AxisCommandGate;
-    aCommands : ARRAY[1..4] OF ST_AxisCommand;
-    aEmptyCommands : ARRAY[1..4] OF ST_AxisCommand;
-    xControlBusy : BOOL;
-    xCommandPermit : BOOL;
-    fbTrajectory : FB_FourAxisTrajectory;
+    fbAxis1 : FB_AxisControl; // 轴1基础控制实例，固定对应 GVL_sy.axis[1] 和 GVL_axis.Axis1。
+    fbAxis2 : FB_AxisControl; // 轴2基础控制实例，固定对应 GVL_sy.axis[2] 和 GVL_axis.Axis2。
+    fbAxis3 : FB_AxisControl; // 轴3基础控制实例，固定对应 GVL_sy.axis[3] 和 GVL_axis.Axis3。
+    fbAxis4 : FB_AxisControl; // 轴4基础控制实例，固定对应 GVL_sy.axis[4] 和 GVL_axis.Axis4。
+    fbAuthority : FB_ControlAuthority; // 三站控制权仲裁实例，处理申请、释放、心跳和交接锁。
+    aCommandGate : ARRAY[1..4] OF FB_AxisCommandGate; // 四轴手动命令门，只向对应轴转交当前持有站的有效命令。
+    aCommands : ARRAY[1..4] OF ST_AxisCommand; // 本扫描从当前持有站邮箱取出的四轴手动命令副本。
+    aEmptyCommands : ARRAY[1..4] OF ST_AxisCommand; // 全零命令模板；无有效控制权时用于清除内部动作请求。
+    xControlBusy : BOOL; // 实际运动、轨迹或轴块忙的汇总，作为禁止控制权交接的判据。
+    xCommandPermit : BOOL; // 允许转交当前持有站手动命令；控制权交接扫描为 FALSE。
+    fbTrajectory : FB_FourAxisTrajectory; // 四轴点位接收、拼表、校验及轨迹执行实例。
     fbHmiFeedback : FB_HmiFeedback; // 四轴执行结果发布到 switch 只读监控接口。
-    xAxesReady : BOOL;
-    xAbort : BOOL;
-    xAxisFault : BOOL;
-    i : INT;
+    xAxesReady : BOOL; // 四轴轨迹启动条件汇总；正常运动中非静止时可为 FALSE。
+    xAbort : BOOL; // 整组联停请求，汇总许可丢失、撤使能、命令冲突及限位等条件。
+    xAxisFault : BOOL; // 任一基础轴错误或 NC 错误、I/O 无效，供轨迹块判断故障。
+    i : INT; // 四轴状态汇总的循环轴号，范围 1～4。
 END_VAR
 ]]></Declaration>
     <Implementation>

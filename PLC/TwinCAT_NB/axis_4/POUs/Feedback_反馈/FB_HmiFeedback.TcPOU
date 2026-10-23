@@ -5,11 +5,11 @@
 // 在 MAIN 的四个基础轴块之后每扫描调用，只发布状态，不写任何轴命令。
 // switch 的机器监控和手动轴反馈使用同一批实际 NC/功能块结果。
 VAR
-    tmHeartbeat : TON;
-    udiFault : UDINT;
-    nFaultAxis : UINT;
-    i : INT;
-    Config : ST_AxisConfig;
+    tmHeartbeat : TON; // PLC 自复位心跳定时器，每约 500 ms 推进一次只读监控心跳。
+    udiFault : UDINT; // 本扫描选出的完整故障码；轨迹组优先，其次为第一根故障轴。
+    nFaultAxis : UINT; // 故障来源轴号：0 为组故障或无故障，1～4 为对应轴。
+    i : INT; // 汇总四轴配置、就绪及故障的循环轴号，范围 1～4。
+    Config : ST_AxisConfig; // 循环检查当前轴的配置副本；只读校验，不修改设备参数。
 END_VAR]]></Declaration>
     <Implementation><ST><![CDATA[// 1. 自复位 TON 每约 500 ms 产生一个扫描周期的 Q，不依赖上位机写入。
 // 心跳始终更新，不能因待机/故障而停住，否则 switch 会认为反馈已过期。

@@ -14,16 +14,16 @@ VAR_INPUT
 END_VAR
 VAR_IN_OUT
     Axis : AXIS_REF; // 对应 NC 轴引用，直接操作原轴接口。
-    Data : ST_AxisAds; // 上位机命令及 PLC 反馈，本块只回写反馈字段。
+    Data : ST_AxisAds; // 内部轴命令及反馈；命令由命令门转交，本块读取命令并更新实际反馈。
 END_VAR
 VAR
-    fbPower : MC_Power;
-    fbJog : MC_Jog;
-    fbHome : MC_Home;
-    fbStop : MC_Stop;
-    fbReset : MC_Reset;
-    rtHome : R_TRIG;
-    rtReset : R_TRIG;
+    fbPower : MC_Power; // 轴软件使能实例；Status 才是实际使能反馈，Data.xStart 仅为请求。
+    fbJog : MC_Jog; // 正反点动实例；速度单位为 NC 位置单位/秒。
+    fbHome : MC_Home; // NC 标准回零实例，使用配置的回零方式和原点凸轮信号。
+    fbStop : MC_Stop; // 单轴减速停止实例；Execute 释放后仍需等待 Busy 解锁。
+    fbReset : MC_Reset; // NC 轴报警复位实例，不代替运动块或轨迹组的独立故障复位。
+    rtHome : R_TRIG; // 回零请求上升沿检测，输入保持 TRUE 不重复发起回零。
+    rtReset : R_TRIG; // 轴复位请求上升沿检测，输入保持 TRUE 不重复发起复位。
     xPositionValid : BOOL; // 位置范围单独校验，只用于方向限制。
     xConfigValid : BOOL; // 运动参数校验，只限制点动/回原，不限制基础使能。
     xManual : BOOL; // 允许手动运动的公共条件。
@@ -31,8 +31,8 @@ VAR
     xHoldPower : BOOL; // 运动/停车未完成或组仍占用时，临时保持已有使能。
     xJogArmed : BOOL; // 联停或轨迹占用后，须先释放按钮才重新允许点动。
     xJogSpeedValid : BOOL; // 点动速度为正且不超过最大速度。
-    lrJogVelocity : LREAL; // 合法点动速度，无效输入先置零。
-    lrStopDeceleration : LREAL; // 停止使用的减速度；参数无效时使用 MC_Stop 的默认规则。
+    lrJogVelocity : LREAL; // 本扫描合法点动速度，单位为 NC 位置单位/秒；无效输入置零。
+    lrStopDeceleration : LREAL; // 本扫描停车减速度，单位为 NC 位置单位/秒²；参数无效时按 MC_Stop 默认规则处理。
 END_VAR]]></Declaration>
     <Implementation><ST><![CDATA[// ReadStatus 在 MAIN 开头统一执行，所有轴使用本周期反馈。
 // 1. 回原/复位取上升沿；输入保持 TRUE 不会每扫描重复发起。

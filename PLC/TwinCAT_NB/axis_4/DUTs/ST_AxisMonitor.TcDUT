@@ -5,14 +5,14 @@
 TYPE ST_AxisMonitor :
 STRUCT
     // 仅反馈，固定 22 字节；顺序与 C# PlcAxisMonitor 完全一致。
-    lrActualPosition : LREAL;
-    lrSpeed : LREAL;
-    xHomed : BOOL;
-    xError : BOOL;
-    xPositiveLimit : BOOL;
-    xNegativeLimit : BOOL;
-    xOriginSignal : BOOL;
-    xEnabled : BOOL; // MC_Power.Status，使能反馈，不以运动位代替。
+    lrActualPosition : LREAL; // PLC 从基础轴转发、上位机只读：NC 实际位置，单位跟随 NC，现场单位尚未确认。
+    lrSpeed : LREAL; // PLC 从基础轴转发、上位机只读：NC 实际速度，单位为 NC 位置单位/秒，含方向正负号。
+    xHomed : BOOL; // PLC 从基础轴转发、上位机只读：NC 已回原反馈，不是回原请求。
+    xError : BOOL; // PLC 从基础轴转发、上位机只读：本轴 NC 或基础 MC 功能块错误。
+    xPositiveLimit : BOOL; // PLC 从基础轴转发、上位机只读：正向硬限位或 NC 正向软限位超限。
+    xNegativeLimit : BOOL; // PLC 从基础轴转发、上位机只读：负向硬限位或 NC 负向软限位超限。
+    xOriginSignal : BOOL; // PLC 从基础轴转发、上位机只读：原点传感器信号，不代表回原已经完成。
+    xEnabled : BOOL; // MC_Power.Status，使能反馈，不以运动位代替。 PLC 从基础轴转发，上位机只读。
 END_STRUCT
 END_TYPE]]></Declaration>
   </DUT>

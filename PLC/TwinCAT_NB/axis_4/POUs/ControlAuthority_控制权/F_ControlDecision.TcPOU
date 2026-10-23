@@ -4,11 +4,11 @@
     <Declaration><![CDATA[FUNCTION F_ControlDecision : UINT
 // 纯仲裁判定，方便针对真实 ST 条件进行离线边界测试。
 VAR_INPUT
-    nOwner : UINT;
-    nStation : UINT;
-    nAction : UINT;
-    xLocked : BOOL;
-    xOnline : BOOL;
+    nOwner : UINT; // 当前控制权持有站；0 未分配，1 控制室、2 拖车本地、3 远程室。
+    nStation : UINT; // 本次申请或释放的来源站号，合法范围 1～3，站号越小优先级越高。
+    nAction : UINT; // 本次控制权操作：1 申请，2 释放。
+    xLocked : BOOL; // 统一交接锁；TRUE 时拒绝转交或释放，持有站重复申请仍可确认授权。
+    xOnline : BOOL; // 请求来源站心跳在线标志；FALSE 时拒绝该站请求。
 END_VAR]]></Declaration>
     <Implementation><ST><![CDATA[// 成功应答不总表示交接：本持有者重复申请只是确认已有权限。
 IF (nStation < 1) OR (nStation > 3) OR ((nAction <> 1) AND (nAction <> 2)) THEN

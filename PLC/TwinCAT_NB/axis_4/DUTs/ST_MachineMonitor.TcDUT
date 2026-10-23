@@ -5,39 +5,39 @@
 TYPE ST_MachineMonitor :
 STRUCT
     // 布局版本 3，总长 148 字节；修改字段时须同步上位机并升级版本。
-    nVersion : UINT;
-    nByteSize : UINT;
-    nControlOwner : UINT;
-    nControlMode : UINT;
-    nWaveState : UINT;
-    uiWaveFaultCode : UINT;
-    udiHeartbeat : UDINT;
-    Axis1 : ST_AxisMonitor;
-    Axis2 : ST_AxisMonitor;
-    Axis3 : ST_AxisMonitor;
-    Axis4 : ST_AxisMonitor;
+    nVersion : UINT; // PLC 写、上位机只读：监控协议布局版本，当前为 3，上位机据此校验帧。
+    nByteSize : UINT; // PLC 写、上位机只读：完整监控结构字节数，当前为 148，不是轴数量或有效点数。
+    nControlOwner : UINT; // PLC 写、上位机只读：仲裁持有者，0 未分配、1 造波控制室、2 拖车本地、3 远程操作室。
+    nControlMode : UINT; // PLC 写、上位机只读：0 未分配、1 手动、2 轨迹占用；由持有者和轨迹 Busy 推导，不是模式请求。
+    nWaveState : UINT; // PLC 写、上位机只读：页面状态 0 待机、1 准备、2 运行、4 停止中、5 已停止、6 完成、7 故障。
+    uiWaveFaultCode : UINT; // PLC 写、上位机只读：组或首个轴的 16 位显示错误码，超过 65535 显示 65535；完整码见 GVL_HMI.udiDetailedFaultCode。
+    udiHeartbeat : UDINT; // PLC 每约 500 ms 递增的反馈心跳，溢出回 0；上位机据变化判断反馈新鲜度，不由上位机写。
+    Axis1 : ST_AxisMonitor; // PLC 写、上位机只读：NC 轴 1 的实际反馈，布局固定为 ST_AxisMonitor。
+    Axis2 : ST_AxisMonitor; // PLC 写、上位机只读：NC 轴 2 的实际反馈，布局固定为 ST_AxisMonitor。
+    Axis3 : ST_AxisMonitor; // PLC 写、上位机只读：NC 轴 3 的实际反馈，布局固定为 ST_AxisMonitor。
+    Axis4 : ST_AxisMonitor; // PLC 写、上位机只读：NC 轴 4 的实际反馈，布局固定为 ST_AxisMonitor。
     // 轨迹及自动准备反馈，顺序对应 C#，继续 1 字节对齐。
-    nTrajectoryState : UINT;
-    nReceivedCount : UDINT;
-    nLoadedCount : UDINT;
-    nPointCount : UDINT;
-    nCurrentPoint : UDINT;
-    udiReceivedSequence : UDINT;
-    udiAcceptedSequence : UDINT;
-    udiErrorId : UDINT;
-    nUploadStation : UINT;
-    xUploadBusy : BOOL;
-    xDataReady : BOOL;
-    xTrajectoryBusy : BOOL;
-    xRunning : BOOL;
-    xDone : BOOL;
-    xError : BOOL;
-    xStopped : BOOL;
-    xMotionPermit : BOOL;
-    xConfigValid : BOOL;
-    xAxesIdle : BOOL;
-    xAxisFault : BOOL;
-    xAxesStopped : BOOL; // 实际停车完成；MC_Stop 可以尚未释放。
+    nTrajectoryState : UINT; // PLC 写、上位机只读：轨迹内部状态 0空闲/5拼表/10校验/15首点定位/20开外部给定/30运行/40末点保持/50减速/60关给定/70等停稳/90故障。
+    nReceivedCount : UDINT; // PLC 写、上位机只读：四轴已登记接收的点数，也是下段起始偏移；不是已拼表点数。
+    nLoadedCount : UDINT; // PLC 写、上位机只读：四轴均已拼入执行表的点数；不代表已校验通过或已运动完成。
+    nPointCount : UDINT; // PLC 转发、上位机只读：上位机在 GVL_motion 中声明的目标总点数，不等于已接收或已拼接点数。
+    nCurrentPoint : UDINT; // PLC 写、上位机只读：最近准备送给 NC 的点号，从 0 开始；不表示实际轴已到该点。
+    udiReceivedSequence : UDINT; // PLC 写、上位机只读：当前接收表所属轨迹序号，清表后为 0；用于核对收段确认。
+    udiAcceptedSequence : UDINT; // PLC 写、上位机只读：已校验通过并进入首点定位的轨迹序号，用于防止重复执行，不是完成序号。
+    udiErrorId : UDINT; // PLC 写、上位机只读：轨迹块完整诊断码或 MC 原始 ErrorID；不汇总单轴错误，0 表示当前无组错误码。
+    nUploadStation : UINT; // PLC 写、上位机只读：接收表归属站，0 无归属、1..3 对应控制站；不是上位机直接申请的授权。
+    xUploadBusy : BOOL; // PLC 写、上位机只读：状态 5 正在统一拼表；不表示上位机当前正在写 ADS。
+    xDataReady : BOOL; // PLC 写、上位机只读：完整位置表已拼接就绪；不代表整表校验通过、轴已使能或已到首点。
+    xTrajectoryBusy : BOOL; // PLC 写、上位机只读：状态 10..70 占用轴控制，包含校验、定位、运行和退出；拼表状态 5 不占用。
+    xRunning : BOOL; // PLC 写、上位机只读：仅内部状态 30 正常取点运行，首点定位和减速退出不算正常取点。
+    xDone : BOOL; // PLC 写、上位机只读：轨迹自然完成且退出后保持，不以启动写入成功或末点已发送代替。
+    xError : BOOL; // PLC 写、上位机只读：轨迹组故障保持位，确认退出并满足静止条件后由组复位请求清除。
+    xStopped : BOOL; // PLC 写、上位机只读：人工组停止流程完成后保持，区别于自然完成 xDone 和组故障 xError。
+    xMotionPermit : BOOL; // PLC 写、上位机只读：当前运行许可反馈，不等于已获控制权、轴已使能或硬件安全确认。
+    xConfigValid : BOOL; // PLC 写、上位机只读：四轴设备参数的监控校验结果；不表示已使能或轨迹整表已校验。
+    xAxesIdle : BOOL; // PLC 写、上位机只读：四轴有效停稳、基础块空闲且无外部给定；未使能轴也可满足空闲。
+    xAxisFault : BOOL; // PLC 写、上位机只读：任一基础轴错误、NC 错误或 NC I/O 无效；不是仅指驱动器报警。
+    xAxesStopped : BOOL; // 实际停车完成；MC_Stop 可以尚未释放。 PLC 汇总四轴 xStopped，上位机只读；反馈无效时不能确认停稳。
 END_STRUCT
 END_TYPE]]></Declaration>
   </DUT>

@@ -3,14 +3,14 @@
   <DUT Name="ST_AxisCommand" Id="{FAC0DCC2-F752-446A-9577-A3D38B864CEA}">
     <Declaration><![CDATA[TYPE ST_AxisCommand :
 STRUCT
-    // 单个站点的命令邮箱；不含反馈，只能由本站写入。
-    xStart : BOOL;
-    xStop : BOOL;
-    jogz : BOOL;
-    jogf : BOOL;
-    gohome : BOOL;
-    reset : BOOL;
-    lrJogSpeed : LREAL;
+    // 单个站点的命令邮箱，不含反馈；本站上位机写请求，PLC 在控制权交接时清空旧命令。
+    xStart : BOOL; // 本站上位机写：保持型使能请求，TRUE 请求使能、FALSE 请求撤使能；不是轨迹启动或实际使能反馈。
+    xStop : BOOL; // 本站上位机写：保持型停止请求，TRUE 停车、FALSE 撤请求；当前客户端发送 50 ms 脉冲，停稳另读反馈。
+    jogz : BOOL; // 本站上位机写：正向点动保持位，按下 TRUE、松开 FALSE；不是实际正转反馈。
+    jogf : BOOL; // 本站上位机写：负向点动保持位，按下 TRUE、松开 FALSE；不是实际反转反馈。
+    gohome : BOOL; // 本站上位机写：回原上升沿请求，须先回 FALSE 再次置 TRUE；当前客户端脉冲 50 ms。
+    reset : BOOL; // 本站上位机写：轴故障复位上升沿请求，须先回 FALSE 再次置 TRUE；当前客户端脉冲 50 ms。
+    lrJogSpeed : LREAL; // 本站上位机写：点动速度幅值，单位为 NC 位置单位/秒；启动点动前先写速度，再写方向位。
 END_STRUCT
 END_TYPE]]></Declaration>
   </DUT>

@@ -4,28 +4,28 @@
     <Declaration><![CDATA[TYPE ST_AxisAds :
 STRUCT
     // PLC → 上位机：反馈量
-    lrActualPosition : LREAL;
-    lrSpeed          : LREAL;
-    xMotorRun        : BOOL;
-    xHomed           : BOOL;
-    xError           : BOOL;
-    xPositiveLimit   : BOOL;
-    xNegativeLimit   : BOOL;
-    xOriginSignal    : BOOL;
+    lrActualPosition : LREAL; // PLC 写、上位机只读：NC 实际位置，单位跟随 NC 位置单位，现场尚未确认。
+    lrSpeed          : LREAL; // PLC 写、上位机只读：NC 实际速度，单位为 NC 位置单位/秒，正负号表示方向。
+    xMotorRun        : BOOL; // PLC 写、上位机只读：NC Moving 实际运动位，不是使能成功或运动请求。
+    xHomed           : BOOL; // PLC 写、上位机只读：NC Homed 回原有效反馈，不以 gohome 请求代替。
+    xError           : BOOL; // PLC 写、上位机只读：NC 或 Power/Stop/Home/Jog/Reset 任一错误，错误码见 udiErrorId。
+    xPositiveLimit   : BOOL; // PLC 写、上位机只读：正向硬限位或 NC 正向软限位超限，TRUE 表示触发。
+    xNegativeLimit   : BOOL; // PLC 写、上位机只读：负向硬限位或 NC 负向软限位超限，TRUE 表示触发。
+    xOriginSignal    : BOOL; // PLC 写、上位机只读：实际原点传感器信号，不等于已完成回原。
 
-    // 上位机 → PLC：命令量
-    xStart     : BOOL;
-    xStop      : BOOL;
-    jogz       : BOOL;
-    jogf       : BOOL;
-    gohome     : BOOL;
-    reset      : BOOL;
-    lrJogSpeed : LREAL;
+    // PLC 命令门转交授权站的命令；上位机应写 aStation[本站].aAxis，不直写以下字段。
+    xStart     : BOOL; // PLC 命令门转交：保持型使能请求，TRUE 请求使能、FALSE 先停车再撤使能；实际结果看 xEnabled。
+    xStop      : BOOL; // PLC 命令门转交：保持型停止请求，TRUE 请求停车并维持停止条件，FALSE 撤请求；完成看 xStopped。
+    jogz       : BOOL; // PLC 命令门转交：正向点动保持请求，按下 TRUE、释放 FALSE 后减速；与 jogf 同时 TRUE 不点动。
+    jogf       : BOOL; // PLC 命令门转交：负向点动保持请求，按下 TRUE、释放 FALSE 后减速；与 jogz 同时 TRUE 不点动。
+    gohome     : BOOL; // PLC 命令门转交：回原上升沿请求，须回 FALSE 后才能再次触发；完成看 xHomed。
+    reset      : BOOL; // PLC 命令门转交：轴故障复位上升沿请求，须回 FALSE 后再次触发；故障是否消除看 xError。
+    lrJogSpeed : LREAL; // PLC 命令门转交：点动速度幅值，单位为 NC 位置单位/秒，须大于 0 且不超过配置上限。
     // 新字段放在末尾；上位机应按 ADS 符号访问，整结构读写须同步更新布局。
-    xEnabled : BOOL; // MC_Power.Status，使能反馈；xStart 为保持型使能请求。
-    xBusy : BOOL;
-    xStopped : BOOL; // 实际停稳且回原/点动退出，允许 MC_Stop.Done 保持。
-    udiErrorId : UDINT;
+    xEnabled : BOOL; // MC_Power.Status，使能反馈；xStart 为保持型使能请求。 PLC 每扫描写，上位机只读。
+    xBusy : BOOL; // PLC 写、上位机只读：轨迹占用或 Jog/Home/Stop/Reset 忙，含停止锁保持，不等于轴正在运动。
+    xStopped : BOOL; // 实际停稳且回原/点动退出，允许 MC_Stop.Done 保持。 PLC 写、上位机只读；不是停止请求，也不要求停止锁已经释放。
+    udiErrorId : UDINT; // PLC 写、上位机只读：按 NC/Power/Stop/Home/Jog/Reset 顺序取首个错误码，0 表示未发布错误码。
 END_STRUCT
 END_TYPE
 ]]></Declaration>

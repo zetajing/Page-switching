@@ -4,9 +4,9 @@
     <Declaration><![CDATA[TYPE ST_TrajectoryPoint :
 STRUCT
     // PLC 内部送点使用；上位机只下发 LREAL 位置表，速度/加速度由相邻点计算。
-    lrPosition : LREAL;
-    lrVelocity : LREAL;
-    lrAcceleration : LREAL;
+    lrPosition : LREAL; // PLC 内部绝对位置给定，来自当前表点或停车积分；不是实际位置反馈，单位跟随 NC。
+    lrVelocity : LREAL; // PLC 内部速度给定，正常运行由相邻点按 2 ms 中心差分计算，首尾为 0；单位为 NC 位置单位/秒。
+    lrAcceleration : LREAL; // PLC 内部加速度给定，正常运行由相邻点按 2 ms 二阶差分计算，停车时另算；单位为 NC 位置单位/秒²。
 END_STRUCT
 END_TYPE]]></Declaration>
   </DUT>

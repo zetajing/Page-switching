@@ -4,16 +4,16 @@
     <Declaration><![CDATA[TYPE ST_ControlStation :
 STRUCT
     // 站点写：先写 nAction，再提交新的非零序号；心跳独立持续更新。
-    udiHeartbeat : UDINT;
-    nAction : UINT; // 1 申请，2 释放。
-    udiRequestSequence : UDINT;
-    xWaveSession : BOOL; // 本站发送/自动准备/执行会话，锁住交接；失联后不再保留锁。
-    aAxis : ARRAY[1..4] OF ST_AxisCommand;
+    udiHeartbeat : UDINT; // 本站上位机持续写变化计数，不是请求沿；PLC 见过变化后判在线，连续 3 秒不变判离线。
+    nAction : UINT; // 1 申请，2 释放。 本站上位机先写动作，再更新请求序号；动作值本身不代表已获授权。
+    udiRequestSequence : UDINT; // 本站上位机写：新的非零序号提交一次请求，PLC 按与应答序号不同识别新请求，不按 BOOL 上升沿。
+    xWaveSession : BOOL; // 本站发送/自动准备/执行会话，锁住交接；失联后不再保留锁。 本站写保持位，PLC 在交接时清零；表示软件会话占用，不是实际轨迹运行反馈。
+    aAxis : ARRAY[1..4] OF ST_AxisCommand; // 本站上位机写：固定对应轴 1..4 的手动命令；PLC 仅转交授权站，交接时清除各站旧命令。
     // PLC 写，站点只读：请求是否成功必须看同序号应答，不能以写成功代替授权。
-    udiAckSequence : UDINT;
-    nResult : UINT; // 1 成功；2 运行锁定；3 保留（旧版现场授权拒绝）；4 离线；5 非持有者；6 优先级；7 无效操作。
-    xOnline : BOOL;
-    xGranted : BOOL;
+    udiAckSequence : UDINT; // PLC 写、本站只读：已处理的请求序号，必须等于本次请求序号后才能采用 nResult。
+    nResult : UINT; // 1 成功；2 运行锁定；3 保留（旧版现场授权拒绝）；4 离线；5 非持有者；6 优先级；7 无效操作。 PLC 写、本站只读；须结合本次相同序号的 udiAckSequence 判断。
+    xOnline : BOOL; // PLC 写、本站只读：心跳变化及 3 秒超时判断结果；ADS 连接成功不等于本站在线。
+    xGranted : BOOL; // PLC 写、本站只读：当前持有者且在线、未失联退出时为 TRUE；写请求成功不代表获授权。
 END_STRUCT
 END_TYPE]]></Declaration>
   </DUT>

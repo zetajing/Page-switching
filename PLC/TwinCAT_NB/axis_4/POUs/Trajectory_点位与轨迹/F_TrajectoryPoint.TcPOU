@@ -4,13 +4,13 @@
     <Declaration><![CDATA[FUNCTION F_TrajectoryPoint : ST_TrajectoryPoint
 // 无状态位置差分函数：整表校验和实际送点共用，不修改位置表或推进点号。
 VAR_INPUT
-    lrPrevious : LREAL; // 前一点 p[k-1]；边界索引由调用方夹紧。
-    lrCurrent : LREAL; // 当前点 p[k]，直接作为绝对位置。
-    lrNext : LREAL; // 后一点 p[k+1]。
+    lrPrevious : LREAL; // 前一点绝对位置 p[k-1]，单位跟随 NC；边界索引由调用方夹紧。
+    lrCurrent : LREAL; // 当前点绝对位置 p[k]，单位跟随 NC，未经角度或丝杆换算。
+    lrNext : LREAL; // 后一点绝对位置 p[k+1]，单位跟随 NC。
     xEndpoint : BOOL; // 首点或末点标志，按静止端点处理。
 END_VAR
 VAR CONSTANT
-    cDt : LREAL := 0.002; // 与 PLC/NC SAF 任务一致，位置单位跟随 NC。
+    cDt : LREAL := 0.002; // 差分采样周期 0.002 秒（2 ms），必须与 PLC/NC SAF 周期一致。
 END_VAR]]></Declaration>
     <Implementation><ST><![CDATA[F_TrajectoryPoint.lrPosition := lrCurrent;
 // 首尾静止；调用方校验首两点、末两点分别相等。

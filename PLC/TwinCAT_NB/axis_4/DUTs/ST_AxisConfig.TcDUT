@@ -4,13 +4,14 @@
     <Declaration><![CDATA[TYPE ST_AxisConfig :
 STRUCT
     // 单位跟随 NC：位置、位置/秒、位置/秒²。必须按设备行程填写。
-    lrMinPosition : LREAL;
-    lrMaxPosition : LREAL;
-    lrMaxVelocity : LREAL;
-    lrMaxAcceleration : LREAL;
-    lrStopDeceleration : LREAL;
-    lrStartTolerance : LREAL;
-    lrInitVelocity : LREAL; // 轨迹启动前，四轴各自移动到首点的速度。
+    // 由设备配置方在轴停稳且轨迹空闲时填写；当前程序不自动赋设备值，现场位置单位尚未确认。
+    lrMinPosition : LREAL; // 设备配置值，PLC 读取：最小允许位置边界，单位跟随 NC 位置单位。
+    lrMaxPosition : LREAL; // 设备配置值，PLC 读取：最大允许位置边界，单位跟随 NC 位置单位，须大于最小位置。
+    lrMaxVelocity : LREAL; // 设备配置值，PLC 读取：点动及轨迹的速度上限，正值，单位为 NC 位置单位/秒。
+    lrMaxAcceleration : LREAL; // 设备配置值，PLC 读取：点动/定位加速度及轨迹加速度幅值上限，正值，单位为 NC 位置单位/秒²。
+    lrStopDeceleration : LREAL; // 设备配置值，PLC 读取：手动、首点定位及轨迹停车减速度幅值，正值且不大于最大加速度，单位为 NC 位置单位/秒²。
+    lrStartTolerance : LREAL; // 设备配置值，PLC 读取：首点定位完成后实际位置和设定位置到首点的容差，轨迹要求大于 0，单位跟随 NC。
+    lrInitVelocity : LREAL; // 轨迹启动前，四轴各自移动到首点的速度。 配置方填写、PLC 读取；须大于 0 且不超过最大速度，单位为 NC 位置单位/秒。
 END_STRUCT
 END_TYPE]]></Declaration>
   </DUT>

@@ -4,12 +4,12 @@
     <Declaration><![CDATA[FUNCTION_BLOCK FB_AxisCommandGate
 // 每扫描在基础轴块之前调用；只从已授权站点邮箱复制命令，反馈字段不受影响。
 VAR_INPUT
-    Command : ST_AxisCommand;
-    xPermit : BOOL;
-    xStop : BOOL;
+    Command : ST_AxisCommand; // 当前持有站对应轴的手动命令副本；不包含轴实际反馈。
+    xPermit : BOOL; // 本扫描手动命令转交许可；无授权或正在交接时为 FALSE。
+    xStop : BOOL; // 控制端失联停车请求，独立于普通手动命令许可。
 END_VAR
 VAR_IN_OUT
-    Data : ST_AxisAds;
+    Data : ST_AxisAds; // 对应轴内部命令区；本块只改命令字段，保留反馈字段。
 END_VAR]]></Declaration>
     <Implementation><ST><![CDATA[Data.xStart := xPermit AND Command.xStart;
 Data.xStop := xStop OR (xPermit AND Command.xStop);

@@ -8,16 +8,17 @@ VAR_INPUT
 END_VAR
 VAR
     nOwner : UINT; // 私有持有者，启动 0；GVL_control.nOwner 只是只读发布副本。
-    nOldOwner : UINT;
-    xOwnerLost : BOOL;
+    nOldOwner : UINT; // 本扫描开始时的持有站，用于识别本扫描是否发生控制权交接。
+    xOwnerLost : BOOL; // 持有站失联锁存；恢复心跳不恢复旧授权，停稳后才清旧持有者。
     xResetCommands : BOOL; // 撤权后同扫描重新授予原站，也必须清旧命令。
     xLocked : BOOL; // 申请、释放、失联退出统一使用这一份运动联锁。
-    axSeenHeartbeat : ARRAY[1..3] OF BOOL;
-    aLastHeartbeat : ARRAY[1..3] OF UDINT;
-    aTimeout : ARRAY[1..3] OF TON;
-    aEmpty : ARRAY[1..4] OF ST_AxisCommand;
-    i, j : INT;
-    nReply : UINT;
+    axSeenHeartbeat : ARRAY[1..3] OF BOOL; // 各站自启动以来是否出现过心跳变化，索引 1～3 对应站号。
+    aLastHeartbeat : ARRAY[1..3] OF UDINT; // 各站上一扫描心跳值，仅用于判断心跳是否变化，不要求连续递增。
+    aTimeout : ARRAY[1..3] OF TON; // 各站心跳超时定时器；连续 3 秒不变化判离线。
+    aEmpty : ARRAY[1..4] OF ST_AxisCommand; // 四轴全零命令模板，交接时清各站旧命令，防止动作重放。
+    i : INT; // 站点循环索引，范围 1～3。
+    j : INT; // 当前站手动命令的轴索引，范围 1～4。
+    nReply : UINT; // 本次仲裁应答码：1 成功、2 锁定、4 离线、5 非持有者、6 优先级、7 无效请求。
 END_VAR]]></Declaration>
     <Implementation><ST><![CDATA[nOldOwner := nOwner;
 xResetCommands := FALSE;
