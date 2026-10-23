@@ -1,0 +1,165 @@
+using System.Reflection;
+using Page_switching;
+
+internal static class Program
+{
+    private static int _checks;
+    private static readonly BindingFlags Private = BindingFlags.Instance | BindingFlags.NonPublic;
+
+    [STAThread]
+    private static void Main()
+    {
+        Application.SetHighDpiMode(HighDpiMode.PerMonitorV2);
+        Application.EnableVisualStyles();
+        var service = new AxisService();
+        using var page = new Auto(service);
+        Field<System.Windows.Forms.Timer>(page, "_waveUiTimer").Stop();
+        var start = Field<AntdUI.Button>(page, "startWaveButton");
+        var stop = Field<AntdUI.Button>(page, "stopWaveButton");
+        var detail = Field<Label>(page, "waveDetailLabel");
+        var stage = Field<Label>(page, "waveStageLabel");
+
+        PlcMachineMonitor good = new()
+        {
+            Version = PlcMachineMonitor.LayoutVersion, Size = PlcMachineMonitor.ByteSize,
+            ControlOwner = 2, ControlMode = 1, UploadStation = 2,
+            DataReady = true, MotionPermit = true, ConfigValid = true, AxesIdle = true,
+            PointCount = 100, ReceivedCount = 100, LoadedCount = 100, ReceivedSequence = 7,
+            Heartbeat = 123
+        };
+        void Reset()
+        {
+            service.IsConnected = true;
+            service.HasControlAuthority = true;
+            service.WaveOperationActive = false;
+            service.WaveStatus = new("已发送，等待开始", 1, false, true);
+            Set(page, "_waveFrame", good);
+            Set(page, "_waveImporting", false);
+            Set(page, "_waveStopping", false);
+            Set(page, "_waveSignal", new WaveTrajectoryFile("offline.csv", new double[] { 0, 0, 0, 0 }));
+        }
+        void Refresh() => page.GetType().GetMethod("UpdateWaveControls", Private)!.Invoke(page, null);
+        void Blocked(Action change, string reason, bool stopAvailable = true)
+        {
+            Reset();
+            change();
+            Refresh();
+            Check(!start.Enabled, "缺少条件时开始按钮必须禁用：" + reason);
+            Check(detail.Text.Contains("暂不能开始") && detail.Text.Contains(reason),
+                "实际详情应显示对应的开始阻断原因：" + reason + "；实际：" + detail.Text);
+            Check(stop.Enabled == stopAvailable, "停止入口不能跟随开始条件一起禁用：" + reason);
+            Check(stage.Text == "已发送，等待开始" || Field<bool>(page, "_waveImporting"),
+                "开始原因不应覆盖已有阶段反馈。");
+        }
+
+        Reset();
+        Refresh();
+        Check(start.Enabled && stop.Enabled, "原有开始门槛全部满足时应可开始和停止。");
+        Check(!detail.Text.Contains("暂不能开始"), "满足条件时不应遗留开始阻断原因。");
+        Check(!good.Axis1.Enabled && !good.Axis2.Enabled && !good.Axis3.Enabled && !good.Axis4.Enabled,
+            "场景必须包含四轴尚未使能。");
+        Check(!good.Axis1.Homed && !good.Axis2.Homed && !good.Axis3.Homed && !good.Axis4.Homed,
+            "场景必须包含四轴尚未回原。");
+        Check(start.Enabled, "使能和必要回原由开始流程完成，不能提前用它们禁用开始按钮。");
+        Check(good.ControlMode == 1 && start.Enabled, "开始前显示手动模式不能形成自动模式循环门槛。");
+
+        // 每次只打破一个原有门槛，直接观察真实控件 Enabled 和详情 Text。
+        Blocked(() => service.IsConnected = false, "控制权", stopAvailable: false);
+        Blocked(() => service.HasControlAuthority = false, "控制权", stopAvailable: false);
+        Blocked(() => service.WaveOperationActive = true, "正在执行");
+        Blocked(() => Set(page, "_waveStopping", true), "停止", stopAvailable: false);
+        Blocked(() => Set(page, "_waveImporting", true), "导入");
+        Blocked(() => service.WaveStatus = new("已发送，等待开始", 1, false, false), "发送");
+        Blocked(() => Set(page, "_waveFrame", null), "反馈");
+        var missing = good; missing.DataReady = false;
+        Blocked(() => Set(page, "_waveFrame", missing), "拼接");
+        missing = good; missing.MotionPermit = false;
+        Blocked(() => Set(page, "_waveFrame", missing), "运动许可");
+        missing = good; missing.ConfigValid = false;
+        Blocked(() => Set(page, "_waveFrame", missing), "参数");
+        missing = good; missing.AxisFault = true;
+        Blocked(() => Set(page, "_waveFrame", missing), "故障");
+        missing = good; missing.AxesIdle = false;
+        Blocked(() => Set(page, "_waveFrame", missing), "空闲");
+        missing = good; missing.UploadStation = 1;
+        Blocked(() => Set(page, "_waveFrame", missing), "本站");
+
+        // 同时欠缺的条件须一起显示，不能只保留第一个，或被“暂不能发送”覆盖。
+        Reset();
+        service.IsConnected = false;
+        service.HasControlAuthority = false;
+        service.WaveOperationActive = true;
+        service.WaveStatus = new("已发送，等待开始", 1, false, false);
+        Set(page, "_waveImporting", true);
+        missing = good;
+        missing.DataReady = missing.MotionPermit = missing.ConfigValid = missing.AxesIdle = false;
+        missing.AxisFault = true;
+        missing.UploadStation = 1;
+        Set(page, "_waveFrame", missing);
+        Refresh();
+        Check(!start.Enabled && !stop.Enabled, "多个条件不满足且无有效控制权时，开始和停止均应禁用。");
+        foreach (string reason in new[] { "控制权", "正在执行", "导入", "发送", "拼接", "运动许可", "参数", "故障", "空闲", "本站" })
+            Check(detail.Text.Contains(reason), "多个阻断原因必须一起展示：" + reason + "；实际：" + detail.Text);
+        Check(detail.Text.Contains("PLC 接收") && detail.Text.Contains("PLC 拼接"),
+            "补充开始原因时仍须保留PLC接收和拼接进度。");
+        int detailChanges = 0;
+        detail.TextChanged += (_, _) => detailChanges++;
+        Refresh();
+        Check(detailChanges == 0, "条件未变化时周期刷新不能反复清除、重写原因导致闪动。");
+
+        Reset();
+        Refresh();
+        Check(start.Enabled && !detail.Text.Contains("暂不能开始"), "条件恢复后必须移除旧原因并恢复开始按钮。");
+        Check(service.CommandCalls == 0, "更新按钮和原因不能调用启动、停止或上传命令。");
+        Console.WriteLine($"Wave start UI checks: {_checks} assertions passed; actual auto.Wave.cs, no PLC access.");
+    }
+
+    private static T Field<T>(object target, string name) =>
+        (T)(target.GetType().GetField(name, Private)?.GetValue(target) ?? throw new Exception("找不到字段：" + name));
+    private static void Set(object target, string name, object? value) =>
+        (target.GetType().GetField(name, Private) ?? throw new Exception("找不到字段：" + name)).SetValue(target, value);
+    private static void Check(bool condition, string message)
+    {
+        if (!condition) throw new Exception(message);
+        _checks++;
+    }
+}
+
+namespace Page_switching
+{
+    // 补齐真实分部文件需要的最少控件，不创建完整页面，也不加载设备服务。
+    public partial class Auto : UserControl
+    {
+        private readonly AntdUI.Button importWaveButton = new();
+        private readonly AntdUI.Button sendWaveButton = new();
+        private readonly AntdUI.Button startWaveButton = new();
+        private readonly AntdUI.Button stopWaveButton = new();
+        private readonly Label waveFileLabel = new();
+        private readonly Label waveStageLabel = new();
+        private readonly Label waveDetailLabel = new();
+        private readonly ProgressBar waveProgressBar = new() { Maximum = 1000 };
+        public Auto()
+        {
+            _waveFrame = null;
+            Controls.AddRange(new Control[] { importWaveButton, sendWaveButton, startWaveButton,
+                stopWaveButton, waveFileLabel, waveStageLabel, waveDetailLabel, waveProgressBar });
+        }
+        public void AddLog(string message) { }
+    }
+
+    public sealed record WaveOperationStatus(string Stage, double Fraction, bool Active, bool Ready, string? Error = null);
+
+    // 服务替身没有网络依赖；若页面刷新误发命令，计数会使检查失败。
+    public sealed class AxisService
+    {
+        public bool IsConnected { get; set; } = true;
+        public bool HasControlAuthority { get; set; } = true;
+        public ushort ControlStationCode => 2;
+        public bool WaveOperationActive { get; set; }
+        public WaveOperationStatus WaveStatus { get; set; } = new("未导入", 0, false, false);
+        public int CommandCalls { get; private set; }
+        public void ForgetWaveSignal() => CommandCalls++;
+        public Task StartWaveAsync() { CommandCalls++; return Task.CompletedTask; }
+        public Task StopWaveAsync() { CommandCalls++; return Task.CompletedTask; }
+    }
+}

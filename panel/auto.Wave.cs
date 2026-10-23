@@ -83,21 +83,49 @@ public partial class Auto
             : null;
         importWaveButton.Enabled = !active && !_waveImporting && _waveFrame is not { TrajectoryBusy: true };
         sendWaveButton.Enabled = sendBlockReason is null && !active && !_waveImporting && _waveSignal is not null;
-        startWaveButton.Enabled = authorized && !active && !_waveImporting && _waveService.WaveStatus.Ready
-            && _waveFrame is { DataReady: true, MotionPermit: true, ConfigValid: true, AxisFault: false, AxesIdle: true } frame
-            && frame.UploadStation == _waveService.ControlStationCode;
+        // 启用条件与提示共用同一份判断，避免按钮变灰却看不到缺少哪项条件。
+        var startBlockReasons = GetWaveStartBlockReasons(authorized, active);
+        startWaveButton.Enabled = startBlockReasons.Count == 0;
         stopWaveButton.Enabled = authorized && !_waveStopping;
         var status = _waveService.WaveStatus;
         waveStageLabel.Text = _waveImporting ? "正在导入文件…" : status.Stage;
         waveProgressBar.Value = (int)Math.Clamp(status.Fraction * 1000, 0, 1000);
         waveStageLabel.AccessibleDescription = status.Error;
+        string detail;
         if (_waveFrame is { } feedback)
-            waveDetailLabel.Text = $"PLC 接收：{feedback.ReceivedCount:N0} / {feedback.PointCount:N0}\r\n"
+            detail = $"PLC 接收：{feedback.ReceivedCount:N0} / {feedback.PointCount:N0}\r\n"
                 + $"PLC 拼接：{feedback.LoadedCount:N0} / {feedback.PointCount:N0}\r\n"
                 + $"执行点号：{feedback.CurrentPoint:N0}　轨迹状态：{feedback.TrajectoryState}\r\n"
                 + (feedback.Error ? $"轨迹故障码：{feedback.TrajectoryErrorId}" : "发送完成不会自动开始运动。")
                 + (!active && _waveSignal is not null && sendBlockReason is not null
                     ? "\r\n暂不能发送：" + sendBlockReason : "");
-        else waveDetailLabel.Text = "等待有效 PLC 反馈；请确认配套结构体版本已部署。";
+        else detail = "等待有效 PLC 反馈；请确认配套结构体版本已部署。";
+        if (startBlockReasons.Count > 0)
+            detail += "\r\n暂不能开始：\r\n" + string.Join("\r\n", startBlockReasons);
+        // 完整文字只更新一次，状态未变时不反复清除、追加原因，避免定时刷新闪动。
+        if (waveDetailLabel.Text != detail) waveDetailLabel.Text = detail;
+    }
+
+    // 保留原有启动门槛；这里只说明缺项，不发送命令、不自动复位或放宽 PLC 联锁。
+    private List<string> GetWaveStartBlockReasons(bool authorized, bool active)
+    {
+        var reasons = new List<string>();
+        if (!authorized) reasons.Add("• 本站未取得有效控制权。");
+        if (active) reasons.Add("• 正在执行造波操作或停止，请等待结束。");
+        if (_waveImporting) reasons.Add("• 正在导入文件。");
+        if (_waveService?.WaveStatus.Ready != true)
+            reasons.Add("• 本次尚未完成轨迹发送；重启或更换文件后需重新发送。");
+        if (_waveFrame is { } frame)
+        {
+            if (!frame.DataReady) reasons.Add("• PLC 点位表未拼接就绪。");
+            if (!frame.MotionPermit) reasons.Add("• PLC 运动许可未满足。");
+            if (!frame.ConfigValid) reasons.Add("• 四轴全局参数无效，请检查 GVL_motion.aConfig[1..4]。");
+            if (frame.AxisFault) reasons.Add("• 存在轴故障或 NC 反馈无效。");
+            if (!frame.AxesIdle) reasons.Add("• PLC 未确认四轴空闲。");
+            if (frame.UploadStation != _waveService?.ControlStationCode)
+                reasons.Add("• PLC 点位表不属于本站，请由本站重新发送。");
+        }
+        else reasons.Add("• 等待有效 PLC 反馈。");
+        return reasons;
     }
 }

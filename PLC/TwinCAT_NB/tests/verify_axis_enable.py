@@ -57,6 +57,31 @@ class AxisEnableChecks(unittest.TestCase):
             self.assertFalse(values['xConfigValid'] or values['xManual'])
             self.assertFalse(values['xStopRequest'] or values['xStopExecute'])
 
+    def test_global_debug_defaults_pass_manual_feedback_and_trajectory_checks(self):
+        # 直接读取全局初值并执行真实校验式，防止局部参数有效、全局仍全零的回归。
+        declaration = ET.parse(ROOT / 'axis_4/GVLs/GVL_motion.TcGVL').findtext('.//Declaration')
+        initial = re.search(r'aConfig\s*:.*?:=\s*\[(.*?)\];', declaration, re.S)[1]
+        configs = [NS(**{name: float(value) for name, value in
+                       re.findall(r'(lr\w+)\s*:=\s*(-?\d+(?:\.\d+)?)', item)})
+                   for item in re.findall(r'\((.*?)\)', initial, re.S)]
+        self.assertEqual(len(configs), 4)
+        feedback = ET.parse(ROOT / 'axis_4/POUs/Feedback_反馈/FB_HmiFeedback.TcPOU').findtext('.//ST')
+        monitor_check = re.search(r'GVL_HMI.stMonitor.xConfigValid\s*:=\s*'
+                                  r'(GVL_HMI.stMonitor.xConfigValid\s+AND.*?);', feedback, re.S)[1]
+        trajectory = ET.parse(ROOT / 'axis_4/POUs/Trajectory_点位与轨迹/FB_FourAxisTrajectory.TcPOU').findtext('.//ST')
+        trajectory_check = re.search(r'xValid\s*:=\s*(\(aConfig\[i\].lrMinPosition.*?);', trajectory, re.S)[1]
+        for config in configs:
+            values = self.fixture()
+            values['Config'] = config
+            self.program.run(values)
+            self.assertTrue(values['xConfigValid'] and values['xManual'])
+            values['GVL_HMI'] = NS(stMonitor=NS(xConfigValid=True))
+            values['aConfig'], values['i'] = [None, config], 1
+            self.assertTrue(StBranch.value(' '.join(monitor_check.split()), values))
+            self.assertTrue(StBranch.value(' '.join(trajectory_check.split()), values))
+        axis_source = ET.parse(ROOT / 'axis_4/POUs/ManualControl_手动控制/FB_AxisControl.TcPOU').findtext('.//ST')
+        self.assertNotRegex(axis_source, r'\bConfig\.\w+\s*:=')
+
     def test_authority_permit_io_and_enable_request_still_gate_new_enable(self):
         for condition in ('permit', 'io', 'request'):
             values = self.fixture(configured=False)

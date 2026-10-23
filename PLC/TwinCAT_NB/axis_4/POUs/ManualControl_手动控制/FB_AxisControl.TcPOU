@@ -38,6 +38,7 @@ END_VAR]]></Declaration>
 // 1. 回原/复位取上升沿；输入保持 TRUE 不会每扫描重复发起。
 rtHome(CLK := Data.gohome);
 rtReset(CLK := Data.reset);
+// Config 由 MAIN 传入 GVL_motion.aConfig；本块只读取，不覆盖输入参数。
 // 2. 分开校验位置和运动参数；未配置时可以基础使能，但不允许发起运动。
 xPositionValid := (Config.lrMinPosition >= -1.0E12) AND (Config.lrMaxPosition <= 1.0E12)
     AND (Config.lrMinPosition < Config.lrMaxPosition);

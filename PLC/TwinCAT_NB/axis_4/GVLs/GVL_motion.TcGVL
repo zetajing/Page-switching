@@ -11,7 +11,23 @@ VAR_GLOBAL
     axPositiveLimit : ARRAY[1..4] OF BOOL; // 四轴正向硬限位输入，索引为轴号 1～4，TRUE 表示触发。
     axNegativeLimit : ARRAY[1..4] OF BOOL; // 四轴负向硬限位输入，索引为轴号 1～4，TRUE 表示触发。
     axHomeSensor : ARRAY[1..4] OF BOOL; // 四轴原点开关输入，索引为轴号 1～4，传给 NC 标准回零校准凸轮。
-    aConfig : ARRAY[1..4] OF ST_AxisConfig; // 四轴实际设备参数，单位跟随 NC；由调试/配置填写，只在静止且轨迹空闲时修改。
+    // 四轴共用的配置入口，手动、监控和轨迹均读取此数组，不在基础轴块内另写一份。
+    // 以下初值仅用于当前虚拟轴调试，单位跟随 NC；实机行程、单位及运动参数需另行确认。
+    // 首点定位速度和到位容差均按本次确认设为 10；只在轴停稳且轨迹空闲时修改配置。
+    aConfig : ARRAY[1..4] OF ST_AxisConfig := [
+        // 轴 1
+        (lrMinPosition := -200, lrMaxPosition := 200, lrMaxVelocity := 100,
+         lrMaxAcceleration := 100, lrStopDeceleration := 100, lrInitVelocity := 10, lrStartTolerance := 10),
+        // 轴 2
+        (lrMinPosition := -200, lrMaxPosition := 200, lrMaxVelocity := 100,
+         lrMaxAcceleration := 100, lrStopDeceleration := 100, lrInitVelocity := 10, lrStartTolerance := 10),
+        // 轴 3
+        (lrMinPosition := -200, lrMaxPosition := 200, lrMaxVelocity := 100,
+         lrMaxAcceleration := 100, lrStopDeceleration := 100, lrInitVelocity := 10, lrStartTolerance := 10),
+        // 轴 4
+        (lrMinPosition := -200, lrMaxPosition := 200, lrMaxVelocity := 100,
+         lrMaxAcceleration := 100, lrStopDeceleration := 100, lrInitVelocity := 10, lrStartTolerance := 10)
+    ];
 
     // 以下为上位机写入的轨迹命令与点位；nUploadStation、xStopped 两项由 PLC 写、上位机只读。
     nCommandStation : UINT; // 上位机命令来源，必须等于有效 Owner；不是授权本身。
