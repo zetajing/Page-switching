@@ -7,7 +7,7 @@ namespace Page_switching;
 public sealed partial class AxisService
 {
     private uint _waveSequence;
-    private uint _waveReadySequence;
+    private volatile uint _waveReadySequence; // 上传任务写入，页面读取；只保留服务中的这一份序号。
     private AxisTrajectoryLimits[]? _waveValidatedLimits; // 已下发表使用的四轴参数；启动前核对是否变化。
 
     public void ForgetWaveSignal()
@@ -38,9 +38,7 @@ public sealed partial class AxisService
         _waveReadySequence = 0;
         _waveValidatedLimits = null;
         var frame = await ReadWaveFrameAsync(token);
-        frame.ValidateWaveContract();
-        if (frame.TrajectoryBusy || frame.UploadBusy || !frame.AxesIdle)
-            throw new InvalidOperationException("请先停止运动，再发送轨迹。");
+        WaveCommandChecks.ThrowIfBlocked(WaveCommandChecks.ForUpload(frame));
         _waveStatus = new("正在读取轴参数并检查点位", 0, true, false);
         var limits = await ReadWaveAxisLimitsAsync(token);
         WavePointValidator.Validate(points, limits, token);

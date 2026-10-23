@@ -15,6 +15,7 @@ internal static class Program
         using var page = new Auto(service);
         Field<System.Windows.Forms.Timer>(page, "_waveUiTimer").Stop();
         var start = Field<AntdUI.Button>(page, "startWaveButton");
+        var send = Field<AntdUI.Button>(page, "sendWaveButton");
         var stop = Field<AntdUI.Button>(page, "stopWaveButton");
         var detail = Field<Label>(page, "waveDetailLabel");
         var stage = Field<Label>(page, "waveStageLabel");
@@ -86,6 +87,41 @@ internal static class Program
         Blocked(() => Set(page, "_waveFrame", missing), "空闲");
         missing = good; missing.UploadStation = 1;
         Blocked(() => Set(page, "_waveFrame", missing), "本站");
+
+        // 页面应提前解释真实执行会拒绝的帧，不能只依靠组汇总标志。
+        missing = good; missing.Axis3.ActualPosition = double.NaN;
+        Blocked(() => Set(page, "_waveFrame", missing), "轴 3 位置反馈无效");
+        missing = good; missing.Axis2.Speed = double.PositiveInfinity;
+        Blocked(() => Set(page, "_waveFrame", missing), "轴 2 速度反馈无效");
+        missing = good; missing.Axis4.Alarm = true;
+        Blocked(() => Set(page, "_waveFrame", missing), "轴 4 报警");
+        missing = good; missing.ReceivedSequence = 8;
+        Blocked(() => Set(page, "_waveFrame", missing), "接收序号");
+        missing = good; missing.AcceptedSequence = 7;
+        Blocked(() => Set(page, "_waveFrame", missing), "已启动过");
+        missing = good; missing.UploadBusy = true;
+        Blocked(() => Set(page, "_waveFrame", missing), "正在拼接");
+        missing = good; missing.TrajectoryBusy = true;
+        Blocked(() => Set(page, "_waveFrame", missing), "尚未退出");
+        missing = good; missing.Error = true; missing.TrajectoryErrorId = 1010;
+        Blocked(() => Set(page, "_waveFrame", missing), "1010");
+        missing = good; missing.Version = 0;
+        Blocked(() => Set(page, "_waveFrame", missing), "布局不匹配");
+
+        // 下发和开始仍是两个步骤；未使能、未回原、未给运动许可不妨碍点位预检与下发。
+        Reset();
+        missing = good; missing.MotionPermit = false; missing.ConfigValid = false;
+        missing.Axis4.Alarm = true; missing.Error = true; missing.TrajectoryErrorId = 1010;
+        Set(page, "_waveFrame", missing);
+        Refresh();
+        Check(send.Enabled && !start.Enabled, "运动准备条件不能误用于禁用发送，真实参数仍在服务预检。");
+        Set(page, "_waveSignal", null);
+        Refresh();
+        Check(!send.Enabled && detail.Text.Contains("暂不能发送：请先导入"), "未导入文件时发送按钮与原因一致。");
+        Reset();
+        Set(page, "_waveImporting", true);
+        Refresh();
+        Check(!send.Enabled && detail.Text.Contains("暂不能发送：正在导入"), "导入期间解释发送禁用原因。");
 
         // 同时欠缺的条件须一起显示，不能只保留第一个，或被“暂不能发送”覆盖。
         Reset();
@@ -173,6 +209,8 @@ namespace Page_switching
         public bool WaveOperationActive { get; set; }
         public WaveOperationStatus WaveStatus { get; set; } = new("未导入", 0, false, false);
         public int CommandCalls { get; private set; }
+        internal List<string> GetWaveStartBlockReasons(PlcMachineMonitor frame) =>
+            WaveCommandChecks.ForStart(frame, ControlStationCode, WaveStatus.Ready ? 7u : 0u);
         public void ForgetWaveSignal() => CommandCalls++;
         public Task StartWaveAsync() { CommandCalls++; return Task.CompletedTask; }
         public Task StopWaveAsync() { CommandCalls++; return Task.CompletedTask; }

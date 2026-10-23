@@ -103,16 +103,15 @@ public sealed partial class AxisService
     public Task StartWaveAsync(CancellationToken cancellationToken = default) =>
         RunWaveOperationAsync(StartWaveCoreAsync, cancellationToken);
 
+    // 页面无需保存第二份上传序号；直接使用服务保存的本次下发凭据解释条件。
+    internal List<string> GetWaveStartBlockReasons(PlcMachineMonitor frame) =>
+        WaveCommandChecks.ForStart(frame, ControlStationCode, _waveReadySequence);
+
     // 启动主线只有三步：核对本次点位表、准备四轴、启动并等待执行结束。
     private async Task StartWaveCoreAsync(CancellationToken token)
     {
         var frame = await ReadWaveFrameAsync(token);
-        frame.ValidateWaveContract();
-        if (_waveReadySequence == 0 || !frame.DataReady || frame.ReceivedSequence != _waveReadySequence
-            || frame.UploadStation != ControlStationCode || frame.AcceptedSequence == _waveReadySequence)
-            throw new InvalidOperationException("请先重新发送当前轨迹并等待 PLC 拼接完成。");
-        CheckPreparation(frame);
-        if (!frame.AxesIdle) throw new InvalidOperationException("轴尚未静止，不能开始自动准备。");
+        WaveCommandChecks.ThrowIfBlocked(GetWaveStartBlockReasons(frame));
         // PLC 已不做整表数值检查；参数改变后必须重新预检、下发，不能沿用旧结论。
         await VerifyWaveAxisLimitsAsync(token);
         _waveNeedsStop = true;
@@ -141,12 +140,11 @@ public sealed partial class AxisService
             try { await Task.Delay(50, token); }
             finally { await WaveWriteAsync(symbol, DataType.Bool, false, CancellationToken.None); }
         }
-        await WaitWaveFrameAsync(f =>
+        return await WaitWaveFrameAsync(f =>
         {
             CheckPreparation(f);
             return f.AxesIdle && f.Axis1.Homed && f.Axis2.Homed && f.Axis3.Homed && f.Axis4.Homed;
         }, 120000, "四轴回原", token);
-        return frame;
     }
 
     private async Task ExecuteWaveAsync(uint pointCount, CancellationToken token)
@@ -172,13 +170,7 @@ public sealed partial class AxisService
 
     private static void CheckPreparation(PlcMachineMonitor frame)
     {
-        if (!frame.MotionPermit) throw new InvalidOperationException("PLC 运动许可未满足。");
-        if (!frame.ConfigValid) throw new InvalidOperationException("PLC 轴参数未配置或无效。");
-        if (new[] { frame.Axis1, frame.Axis2, frame.Axis3, frame.Axis4 }
-            .Any(axis => !double.IsFinite(axis.ActualPosition) || !double.IsFinite(axis.Speed)))
-            throw new InvalidOperationException("轴位置或速度反馈无效。");
-        if (frame.AxisFault || frame.Axis1.Alarm || frame.Axis2.Alarm || frame.Axis3.Alarm || frame.Axis4.Alarm)
-            throw new InvalidOperationException("存在轴报警或无效反馈，请先处理故障。");
+        WaveCommandChecks.ThrowIfBlocked(WaveCommandChecks.ForPreparation(frame));
     }
 
     public async Task StopWaveAsync()

@@ -138,6 +138,44 @@ internal static class Program
                 Check(!model.Session && !model.Frame.TrajectoryBusy, "stop releases session");
                 Check(model.StopReleaseWrites > 0, "stop latch released before idle confirmation");
             }
+            // 页面与真实服务必须解释同一份启动条件；拒绝时不能抢先使能、回原或发启动沿。
+            AdsClient.Model = new FakePlc();
+            using (var service = new AxisService(Options()))
+            {
+                await service.ConnectAsync(CancellationToken.None);
+                await Until(() => service.HasControlAuthority);
+                var model = AdsClient.Model;
+                var cases = new (Action<FakePlc> Change, string Reason)[]
+                {
+                    (p => p.Frame.Axis3.ActualPosition = double.NaN, "轴 3 位置反馈无效"),
+                    (p => p.Frame.Axis2.Speed = double.PositiveInfinity, "轴 2 速度反馈无效"),
+                    (p => p.Frame.Axis4.Alarm = true, "轴 4 报警"),
+                    (p => p.Frame.ReceivedSequence++, "接收序号"),
+                    (p => p.Frame.AcceptedSequence = p.Frame.ReceivedSequence, "已启动过"),
+                    (p => p.Frame.UploadBusy = true, "正在拼接"),
+                    (p => p.Frame.MotionPermit = false, "运动许可"),
+                    (p => { p.Frame.Error = true; p.Frame.TrajectoryErrorId = 1010; }, "1010")
+                };
+                foreach (var item in cases)
+                {
+                    await service.UploadWaveAsync(signal);
+                    var healthy = model.Frame;
+                    item.Change(model);
+                    var reasons = service.GetWaveStartBlockReasons(model.Frame);
+                    Check(reasons.Any(reason => reason.Contains(item.Reason)), "shared start reason: " + item.Reason);
+                    int motionWrites = model.MotionWrites, clearWrites = model.ClearWrites;
+                    var failure = await Reject(() => service.StartWaveAsync(), item.Reason);
+                    Check(failure.Message == string.Join(Environment.NewLine, reasons), "service and page use identical reasons");
+                    Check(model.MotionWrites == motionWrites && model.ClearWrites == clearWrites,
+                        "rejected preparation cannot issue motion or clear points: " + item.Reason);
+                    model.Frame = healthy;
+                }
+                // 下发阶段不使用运动许可/报警作为门槛；仍读取真实参数并执行数值预检。
+                model.Frame.MotionPermit = false;
+                model.Frame.Axis4.Alarm = true;
+                await service.UploadWaveAsync(signal);
+                Check(service.WaveStatus.Ready && model.MotionWrites == 0, "upload remains separate from motion preparation");
+            }
             AdsClient.Model = new FakePlc { FailArrayWrite = true };
             using (var service = new AxisService(Options()))
             {
@@ -414,6 +452,7 @@ namespace InduLink.Protocols.Ads
         public double[][] AxisLimits = Enumerable.Range(1, 4).Select(_ => new[] { -200d, 200, 1000, 1e6, 1000, 10, 10 }).ToArray();
         public int PointMetadataWrites, ClearWrites;
         public int ArrayWrites, StartWrites, StopReleaseWrites, WaveHeartbeatWrites;
+        public int MotionWrites;
         public Dictionary<int, List<double>> ValuesByAxis = new();
         public List<int> HomedAxes = new();
         private uint sequence, offset, size;
@@ -423,6 +462,9 @@ namespace InduLink.Protocols.Ads
             TotalWrites++;
             if (request.Address.EndsWith(".reset") && request.Value is true) ResetWrites++;
             string address = request.Address;
+            if (request.Value is true && (address == "GVL_motion.xStart" || address == "GVL_motion.xStop"
+                || address.Contains(".aAxis[") && (address.EndsWith(".xStart") || address.EndsWith(".gohome") || address.EndsWith(".xStop"))))
+                MotionWrites++;
             if (address == FailWriteSymbol) throw new InvalidOperationException("模拟标量写入失败");
             if (address.EndsWith(".nAction")) authorityAction = (ushort)request.Value;
             if (address.EndsWith(".udiRequestSequence"))

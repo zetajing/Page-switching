@@ -75,9 +75,9 @@ public partial class Auto
         bool active = _waveService.WaveOperationActive || _waveStopping;
         bool authorized = _waveService.IsConnected && _waveService.HasControlAuthority;
         // 上传只要求有效控制权和空闲轴；使能、回原及运动许可在开始阶段检查。
-        string? sendBlockReason = GetWaveSendBlockReason(authorized);
+        string? sendBlockReason = GetWaveSendBlockReason(authorized, active);
         importWaveButton.Enabled = !active && !_waveImporting && _waveFrame is not { TrajectoryBusy: true };
-        sendWaveButton.Enabled = sendBlockReason is null && !active && !_waveImporting && _waveSignal is not null;
+        sendWaveButton.Enabled = sendBlockReason is null;
         // 启用条件与提示共用同一份判断，避免按钮变灰却看不到缺少哪项条件。
         var startBlockReasons = GetWaveStartBlockReasons(authorized, active);
         startWaveButton.Enabled = startBlockReasons.Count == 0;
@@ -91,16 +91,14 @@ public partial class Auto
         if (waveDetailLabel.Text != detail) waveDetailLabel.Text = detail;
     }
 
-    private string? GetWaveSendBlockReason(bool authorized)
+    private string? GetWaveSendBlockReason(bool authorized, bool active)
     {
         if (!authorized) return "本站未取得有效控制权。";
+        if (active) return "正在执行造波操作或停止，请等待结束。";
+        if (_waveImporting) return "正在导入文件。";
+        if (_waveSignal is null) return "请先导入点位文件。";
         if (_waveFrame is not { } frame) return "等待有效 PLC 反馈。";
-        if (frame.BehaviorVersion != PlcMachineMonitor.ExpectedBehaviorVersion)
-            return "点位接口版本不匹配，请更新配套 PLC 和上位机。";
-        if (frame.UploadBusy) return "PLC 正在拼接轨迹。";
-        if (frame.TrajectoryBusy) return "PLC 轨迹任务尚未退出。";
-        if (!frame.AxesIdle) return "PLC 未确认四轴空闲，请检查轴忙状态和 NC 反馈。";
-        return null;
+        return WaveCommandChecks.ForUpload(frame).FirstOrDefault();
     }
 
     // 只组装本次反馈文字，与按钮启用判断共用原因；不产生通信和命令。
@@ -112,14 +110,13 @@ public partial class Auto
                 + $"PLC 拼接：{feedback.LoadedCount:N0} / {feedback.PointCount:N0}\r\n"
                 + $"执行点号：{feedback.CurrentPoint:N0}　轨迹状态：{feedback.TrajectoryState}（{PlcWaveDiagnostics.DescribeState(feedback.TrajectoryState)}）\r\n"
                 + (feedback.Error ? PlcWaveDiagnostics.DescribeFault(feedback.TrajectoryErrorId)
-                    + "\r\n" + PlcWaveDiagnostics.DescribeFirstFault(feedback) : "发送完成不会自动开始运动。")
-                + (!active && _waveSignal is not null && sendBlockReason is not null
-                    ? "\r\n暂不能发送：" + sendBlockReason : "");
+                    + "\r\n" + PlcWaveDiagnostics.DescribeFirstFault(feedback) : "发送完成不会自动开始运动。");
         else detail = "等待有效 PLC 反馈；请确认配套结构体版本已部署。";
+        if (!active && sendBlockReason is not null) detail += "\r\n暂不能发送：" + sendBlockReason;
         if (_waveService?.WaveStatus.Error is { Length: > 0 } error)
             detail += "\r\n最近操作失败：" + error;
         if (startBlockReasons.Count > 0)
-            detail += "\r\n暂不能开始：\r\n" + string.Join("\r\n", startBlockReasons);
+            detail += "\r\n暂不能开始：\r\n" + string.Join("\r\n", startBlockReasons.Select(reason => "• " + reason));
         return detail;
     }
 
@@ -127,24 +124,14 @@ public partial class Auto
     private List<string> GetWaveStartBlockReasons(bool authorized, bool active)
     {
         var reasons = new List<string>();
-        if (!authorized) reasons.Add("• 本站未取得有效控制权。");
-        if (active) reasons.Add("• 正在执行造波操作或停止，请等待结束。");
-        if (_waveImporting) reasons.Add("• 正在导入文件。");
+        if (!authorized) reasons.Add("本站未取得有效控制权。");
+        if (active) reasons.Add("正在执行造波操作或停止，请等待结束。");
+        if (_waveImporting) reasons.Add("正在导入文件。");
         if (_waveService?.WaveStatus.Ready != true)
-            reasons.Add("• 本次尚未完成轨迹发送；重启或更换文件后需重新发送。");
+            reasons.Add("本次尚未完成轨迹发送；重启或更换文件后需重新发送。");
         if (_waveFrame is { } frame)
-        {
-            if (frame.BehaviorVersion != PlcMachineMonitor.ExpectedBehaviorVersion)
-                reasons.Add("• 点位接口版本不匹配，请更新配套 PLC 和上位机。");
-            if (!frame.DataReady) reasons.Add("• PLC 点位表未拼接就绪。");
-            if (!frame.MotionPermit) reasons.Add("• PLC 运动许可未满足。");
-            if (!frame.ConfigValid) reasons.Add("• 四轴全局参数无效，请检查 GVL_motion.aConfig[1..4]。");
-            if (frame.AxisFault) reasons.Add("• 存在轴故障或 NC 反馈无效。");
-            if (!frame.AxesIdle) reasons.Add("• PLC 未确认四轴空闲。");
-            if (frame.UploadStation != _waveService?.ControlStationCode)
-                reasons.Add("• PLC 点位表不属于本站，请由本站重新发送。");
-        }
-        else reasons.Add("• 等待有效 PLC 反馈。");
+            reasons.AddRange(_waveService!.GetWaveStartBlockReasons(frame));
+        else reasons.Add("等待有效 PLC 反馈。");
         return reasons;
     }
 }

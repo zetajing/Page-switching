@@ -13,11 +13,19 @@
 | 手动按钮或点动异常 | `panel/manual.cs`：`RunCommandAsync`、`RunStopCommandAsync`、`StartJogAsync` | 所选轴、按下时保存的 `_jogAxis`、控制权和实际轴反馈 |
 | 点位检查不合格 | `Wave/Legacy/WavePointValidator.cs`：`Validate` | 轴号、点号（从 0 起）、时间、失败项目、实际值和限值；尚未清表或写入点位 |
 | 点位发送或拼接失败 | `Axis/PointUpload/AxisService.PointUpload.cs`：`UploadWaveCoreAsync` | 读取的四轴参数、当前段、轴、段内点及 PLC 接收/拼接点数、上传序号 |
-| 开始按钮不可用 | `panel/auto.Wave.cs`：`GetWaveStartBlockReasons` | 页面“暂不能开始”的全部缺项，与按钮启用共用同一次判断 |
+| 发送或开始按钮不可用 | `panel/auto.Wave.cs` → `Axis/Trajectory/WaveCommandChecks.cs` | 页面“暂不能发送 / 开始”的缺项；实际执行也使用同一组 PLC 条件 |
 | 开始后失败、超时 | `Axis/Trajectory/AxisService.Trajectory.cs`：`StartWaveCoreAsync`、`PrepareWaveAxesAsync`、`ExecuteWaveAsync`、`WaitWaveFrameAsync` | 日志的失败阶段、故障说明、PLC 状态、执行点数、使能轴和已回原轴 |
 | PLC 轴配置有问题 | 实际 TwinCAT 工程的 `POUs/AxisConfig_轴配置/FB_AxisConfig` | 配置统一在该块填写；确认运行中实际值，源码保存不等于 PLC 已更新 |
 
 启动入口现在直接调用具名方法：`StartWaveAsync → RunWaveOperationAsync → StartWaveCoreAsync → PrepareWaveAxesAsync → ExecuteWaveAsync`。上传在调用线程复制输入数组，再进入 `UploadWaveCoreAsync` 读取 PLC 参数并检查整表。检查合格才清表、下发、拼表。只保留一份四轴参数快照用于启动核对，不保留第二份执行点位表；没有新增 PLC 变量或会话层。
+
+2026-10-24：页面和服务的重复条件集中到 `WaveCommandChecks`，只读传入的反馈，不通信、不存状态。`ForUpload` 检查配套接口、拼表占用、轨迹占用和轴空闲；`ForStart` 加查本次接收序号、是否已消费、上传站、组故障及准备条件；`ForPreparation` 检查运行许可、配置和四轴数值/报警。页面读取服务中现有的上传序号，不再另存一份。服务仍在执行前读取新帧，页面可点击不代表执行时条件必然满足。
+
+轴数值无效或报警直接显示轴号，例如“轴 3 位置反馈无效”“轴 4 报警”。只有组汇总故障而没有单轴报警时，提示去运行诊断或 TwinCAT 核对，不猜测轴号。未导入文件、导入中也有对应的发送禁用原因。相同反馈不重写详情文字，避免周期刷新闪动。
+
+三个检查的职责不能混用：未使能、未回原不会禁用开始，原有自动准备流程负责完成；未满足运行许可不会单独禁用下发，服务仍必须读取有效轴参数并检查整表。回原进行中不要求轴空闲。停止入口独立，启动条件缺项不阻断停车。回原方法返回最终确认帧，不再返回之前的使能帧。PLC 源码、ADS 布局、运动顺序、超时和数值预检公式本轮均未修改；PLC 由用户编译下载。
+
+本轮验证：工作目录及仅含本次提交内容的导出副本均通过上位机 Release 构建，0 警告、0 错误；73 项 PLC/接口离线检查通过，其中监控布局 89 条、模拟 ADS 服务 170 条断言；真实造波页面逻辑 124 条、手动页面 126 条断言通过。新增服务场景核对 8 种拒绝原因与页面一致，并确认拒绝时没有使能、回原、启动或清表写入。这些检查不连接真实 PLC，不代表 TwinCAT 编译、下载或实际运动验收；后续不再自动尝试 XAE 编译和下载。
 
 整表数值检查已移到上位机，PLC 删除了 `nCheckPoint` 等五项专用变量/常量，状态 10 只检查配置有效和轴就绪。上位机按 PLC 实际参数检查首尾静止、有限数值、位置/速度/加速度、相邻点增量和停车空间，直接报出具体失败项目。准备前和发启动沿前都会重读参数，变化时要求重新下发。
 
