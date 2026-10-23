@@ -1,0 +1,175 @@
+using System.Globalization;
+using System.Diagnostics;
+using System.Security.Cryptography;
+using Page_switching;
+
+internal static class Program
+{
+    private static int _checks;
+    private static readonly AxisTrajectoryLimits Normal = new(-100, 100, 1000, 1000000, 1000000, 0.1, 10);
+
+    private static void Check(bool condition, string message)
+    {
+        _checks++;
+        if (!condition) throw new Exception(message);
+    }
+
+    private static AxisTrajectoryLimits[] Four(AxisTrajectoryLimits? config = null) =>
+        Enumerable.Repeat(config ?? Normal, 4).ToArray();
+
+    private static void Pass(double[] points, AxisTrajectoryLimits[]? configs = null)
+    {
+        var original = points.ToArray();
+        WavePointValidator.Validate(points, configs ?? Four(), CancellationToken.None);
+        Check(points.SequenceEqual(original), "预检成功不能修改原始点位。");
+    }
+
+    private static string Reject(double[] points, AxisTrajectoryLimits[] configs, params string[] expected)
+    {
+        var original = points.ToArray();
+        try
+        {
+            WavePointValidator.Validate(points, configs, CancellationToken.None);
+            throw new Exception("应拒绝：" + string.Join("；", expected));
+        }
+        catch (InvalidDataException exception)
+        {
+            foreach (string text in expected)
+                Check(exception.Message.Contains(text, StringComparison.Ordinal), "缺少诊断内容：" + text + "；" + exception.Message);
+            Check(points.SequenceEqual(original), "预检失败也不能修改原始点位。");
+            return exception.Message;
+        }
+    }
+
+    private static void Main(string[] args)
+    {
+        // 使用小数逗号的当前文化，仍要求错误中的数值采用 invariant G17。
+        CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("fr-FR");
+        Pass(new[] { 0d, 0, 0, 0 });
+        Pass(new[] { 0d, 0, 1, 2, 2 });
+        Pass(new[] { 0d, 0, -1, -2, -2 });
+        Reject(new[] { 0d, 0, 0 }, Four(), "点位数量", "实际值 3", "至少 4");
+        Reject(new[] { 0d, 0, 0, 0 }, Four()[..3], "轴配置数量", "实际值 3", "4 轴");
+
+        var zero = new[] { 0d, 0, 0, 0 };
+        foreach (double invalid in new[] { 0d, -1, double.NaN, double.PositiveInfinity, double.NegativeInfinity })
+        {
+            Reject(zero, Four(Normal with { MaxVelocity = invalid }), "轴 1", "最大速度配置", "点号 0（从 0 起）", "时间 0 秒", "实际值", "限值");
+            Reject(zero, Four(Normal with { MaxAcceleration = invalid }), "最大加速度配置");
+            Reject(zero, Four(Normal with { StopDeceleration = invalid }), "停止减速度配置");
+            Reject(zero, Four(Normal with { StartTolerance = invalid }), "首点到位容差配置");
+            Reject(zero, Four(Normal with { InitVelocity = invalid }), "首点定位速度配置");
+        }
+        foreach (double invalid in new[] { double.NaN, double.PositiveInfinity, double.NegativeInfinity })
+        {
+            Reject(zero, Four(Normal with { MinPosition = invalid }), "最小位置配置");
+            Reject(zero, Four(Normal with { MaxPosition = invalid }), "最大位置配置");
+            Reject(new[] { 0d, 0, invalid, 0, 0 }, Four(), "轴 1", "实际值", "限值");
+        }
+        Reject(zero, Four(Normal with { MinPosition = -1.0E12 - 1 }), "最小位置配置");
+        Reject(zero, Four(Normal with { MaxPosition = 1.0E12 + 1 }), "最大位置配置");
+        Reject(zero, Four(Normal with { MinPosition = 100 }), "最小位置配置", "< 最大位置");
+        Reject(zero, Four(Normal with { StopDeceleration = 1000001 }), "停止减速度配置");
+        Reject(zero, Four(Normal with { InitVelocity = 1001 }), "首点定位速度配置");
+        Reject(zero, Four(Normal with { MaxVelocity = 1.0E12 }), "最大速度配置");
+        Reject(zero, Four(Normal with { MaxAcceleration = 1.0E12 }), "最大加速度配置");
+        Reject(zero, Four(Normal with { StartTolerance = 1.0E6 }), "首点到位容差配置");
+        Pass(zero, Four(new(-1.0E12, 1.0E12, Math.BitDecrement(1.0E12), Math.BitDecrement(1.0E12),
+            Math.BitDecrement(1.0E12), Math.BitDecrement(1.0E6), Math.BitDecrement(1.0E12))));
+
+        Reject(new[] { 0d, 1, 1, 1 }, Four(), "点号 1（从 0 起）", "时间 0.002 秒", "首两点静止");
+        Reject(new[] { 0d, 0, 1, 2 }, Four(), "点号 3（从 0 起）", "末两点静止");
+        Reject(new[] { 101d, 101, 101, 101 }, Four(), "点号 0（从 0 起）", "位置", "实际值 101", "[-100, 100]");
+        Reject(new[] { -101d, -101, -101, -101 }, Four(), "位置", "实际值 -101");
+        Pass(new[] { -100d, -100, -100, -100 });
+        Pass(new[] { 100d, 100, 100, 100 });
+
+        // 1 个单位在 2 ms 内跨越：中心最大速度为 500，边沿加速度为 250000。
+        var ramp = new[] { 0d, 0, 1, 2, 2 };
+        var rampLimits = Normal with { MaxVelocity = 500, MaxAcceleration = 250000, StopDeceleration = 250000 };
+        Pass(ramp, Four(rampLimits));
+        Reject(ramp, Four(rampLimits with { MaxVelocity = Math.BitDecrement(500) }),
+            "点号 2（从 0 起）", "时间 0.0040000000000000001 秒", "差分速度", "实际值 500");
+        Reject(ramp, Four(rampLimits with { MaxAcceleration = Math.BitDecrement(250000), StopDeceleration = 100 }),
+            "点号 1（从 0 起）", "差分加速度", "实际值 250000");
+
+        // 正负变化在中心速度中可抵消；相邻点位差必须单独拦住。
+        var reversal = new[] { 0d, 0, 2, 0, 0 };
+        Pass(reversal);
+        Reject(reversal, Four(Normal with { MaxVelocity = Math.BitDecrement(1000) }),
+            "点号 2（从 0 起）", "相邻点位差", "实际值 2");
+
+        // 位置本身在范围内，停车边界仍可能超限；等于边界允许，下一浮点数立即拒绝。
+        Pass(ramp, Four(rampLimits with { MaxPosition = 2.625 }));
+        Reject(ramp, Four(rampLimits with { MaxPosition = Math.BitDecrement(2.625) }),
+            "点号 3（从 0 起）", "预测停车位置", "实际值 2.625");
+        var negativeRamp = ramp.Select(p => -p).ToArray();
+        Pass(negativeRamp, Four(rampLimits with { MinPosition = -2.625 }));
+        Reject(negativeRamp, Four(rampLimits with { MinPosition = Math.BitIncrement(-2.625) }),
+            "点号 3（从 0 起）", "预测停车位置", "实际值 -2.625");
+        Reject(ramp, Four(rampLimits with { StopDeceleration = double.Epsilon }), "预测停车位置", "Infinity");
+
+        // 历史 1003 的量化台阶：保留 -250.00000000000003，不能把打印值舍入成刚好 250。
+        string precise = Reject(new[] { 0d, 0, -0.001, -0.001 }, Four(Normal with { MaxAcceleration = 100, StopDeceleration = 100 }),
+            "点号 1（从 0 起）", "差分加速度", "实际值 -250.00000000000003", "限值 绝对值 <= 100");
+        Check(!precise.Contains("0,002", StringComparison.Ordinal), "诊断小数不能跟随当前文化改成逗号。");
+
+        // 四轴共用点位，但任何单轴限制都必须独立生效。
+        for (int axis = 1; axis <= 4; axis++)
+        {
+            var configs = Four(rampLimits);
+            configs[axis - 1] = rampLimits with { MaxVelocity = 499 };
+            Reject(ramp, configs, "轴 " + axis, "差分速度");
+        }
+
+        using var cancelled = new CancellationTokenSource();
+        cancelled.Cancel();
+        try
+        {
+            WavePointValidator.Validate(zero, Four(), cancelled.Token);
+            throw new Exception("已取消的校验不能继续。");
+        }
+        catch (OperationCanceledException) { _checks++; }
+        using var duringCheck = new CancellationTokenSource();
+        var large = new double[2100000];
+        duringCheck.CancelAfter(1);
+        try
+        {
+            WavePointValidator.Validate(large, Four(), duringCheck.Token);
+            throw new Exception("长表校验必须响应取消。");
+        }
+        catch (OperationCanceledException) { _checks++; }
+
+        if (args.Length > 0) CheckLocalFile(args[0]);
+        Console.WriteLine($"Wave point validator checks: {_checks} assertions passed; no PLC connection or motion.");
+    }
+
+    // 本机文件为可选验证；不写回文件，不依赖 ADS，也不让 CI 依赖用户桌面文件。
+    private static void CheckLocalFile(string path)
+    {
+        string beforeHash = Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(path)));
+        var signal = WaveTrajectoryFile.Read(path);
+        Console.WriteLine($"Local file: {path}; points={signal.Positions.Length}; duration={signal.DurationSeconds.ToString("G17", CultureInfo.InvariantCulture)} s; SHA256={beforeHash}");
+        var elapsed = Stopwatch.StartNew();
+        WavePointValidator.Validate(signal.Positions, Four(new(-200, 200, 200, 12000, 100, 10, 10)), CancellationToken.None);
+        elapsed.Stop();
+        Console.WriteLine($"Confirmed virtual-axis limits: PASS; elapsed={elapsed.Elapsed.TotalMilliseconds.ToString("F3", CultureInfo.InvariantCulture)} ms");
+        _checks++;
+        elapsed.Restart();
+        try
+        {
+            WavePointValidator.Validate(signal.Positions, Four(new(-200, 200, 100, 100, 100, 10, 10)), CancellationToken.None);
+            throw new Exception("本机文件应被旧速度/加速度上限拒绝。");
+        }
+        catch (InvalidDataException exception)
+        {
+            elapsed.Stop();
+            Check(exception.Message.Contains("点号 270（从 0 起）", StringComparison.Ordinal)
+                && exception.Message.Contains("差分加速度", StringComparison.Ordinal), "旧配置须准确定位原 1003 的首个超限点。");
+            Console.WriteLine($"Old limits: REJECT; elapsed={elapsed.Elapsed.TotalMilliseconds.ToString("F3", CultureInfo.InvariantCulture)} ms; {exception.Message}");
+        }
+        string afterHash = Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(path)));
+        Check(beforeHash == afterHash, "本机文件只读校验前后哈希须一致。");
+        Console.WriteLine("After validation SHA256=" + afterHash + "; unchanged=" + (beforeHash == afterHash));
+    }
+}

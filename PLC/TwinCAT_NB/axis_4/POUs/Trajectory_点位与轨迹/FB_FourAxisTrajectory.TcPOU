@@ -2,8 +2,8 @@
 <TcPlcObject Version="1.1.0.1">
   <POU Name="FB_FourAxisTrajectory" Id="{f339b171-2adc-4ce0-8fc1-1403fdabbc80}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_FourAxisTrajectory
-// 四轴整表轨迹：上位机只下发 LREAL 位置点，本块收齐并校验后统一执行。
-// 正常流程：0 登记各段 -> 全部下发后 5 统一拼表 -> 0 就绪 -> 10 校验 -> 15 首点定位
+// 四轴整表轨迹：上位机预检后下发 LREAL 位置点，本块收齐后统一执行。
+// 正常流程：0 登记各段 -> 全部下发后 5 统一拼表 -> 0 就绪 -> 10 启动检查 -> 15 首点定位
 //           -> 20 开外部给定 -> 30 取点 -> 40 保持末点 -> 60 关闭 -> 70 确认静止 -> 0。
 // 异常流程：运动阶段转 50 减速，再经 40/60/70 退出，最后在 90 等待复位。
 // 本块每 2 ms 调用一次；使能、点动、回原等基础控制在 FB_AxisControl 中。
@@ -19,7 +19,7 @@ END_VAR
 VAR
     // 完整四轴位置表，只由本块分段写入；运行中不再接收上传。
     aPosition : ARRAY[1..4, 0..2099999] OF LREAL; // [轴号, 完整表点号]，所有点号从 0 开始，单位由 NC 配置决定。
-    aConfig : ARRAY[1..4] OF ST_AxisConfig; // 启动时锁存参数，校验与本次停车使用相同参数。
+    aConfig : ARRAY[1..4] OF ST_AxisConfig; // 启动时锁存参数，首点定位、运行及本次停车使用相同参数。
     aSet : ARRAY[1..4] OF ST_TrajectoryPoint; // 本周期四轴的位置/速度/加速度；减速从最后送出的给定继续计算。
     aEnable : ARRAY[1..4] OF MC_ExtSetPointGenEnable; // 四个外部给定开启实例；异步执行，等待 NC Enabled 反馈。
     aDisable : ARRAY[1..4] OF MC_ExtSetPointGenDisable; // 四个关闭实例；确认全部退出之前不交回手动。
@@ -30,7 +30,7 @@ VAR
     rtClear : R_TRIG; // 清除旧表计数和就绪状态的请求上升沿。
     rtStart : R_TRIG; // 完整位置表就绪后启动轨迹的请求上升沿。
     rtReset : R_TRIG; // 轨迹组故障复位请求上升沿，不复位各 NC 轴故障。
-    tmHeartbeat : TON; // 上位机运行心跳超时定时器，校验/运动期间 1 秒不变则联停。
+    tmHeartbeat : TON; // 上位机运行心跳超时定时器，启动检查/运动期间 1 秒不变则联停。
     tmEnable : TON; // 四轴外部给定开启阶段超时定时器，限时 5 秒。
     tmMoveInit : TON; // 四轴首点定位阶段超时定时器，限时 60 秒。
     tmExit : TON; // 关闭外部给定及确认退出阶段的超时定时器，限时 5 秒。
@@ -43,15 +43,13 @@ VAR
     nSegmentPoint : UDINT; // 当前源段内的起始点号，从 0 开始。
     nCopyCount : UDINT; // 本扫描每轴复制点数，受批次、段尾和总表尾三重限制。
     nCopyBytes : UDINT; // 本扫描每轴复制的字节数，等于点数乘 LREAL 大小。
-    nCheckPoint : UDINT; // 当前整表数值校验点号，从 0 开始。
     nSendPoint : UDINT; // 当前轨迹执行取点号，从 0 开始，不是实际到位点号。
     nPrevious : UDINT; // 差分计算前一点索引，首点处夹紧到有效表范围。
     nNext : UDINT; // 差分计算后一点索引，末点处夹紧到有效表范围。
     nHoldCycles : UINT; // 末点静止给定的保持扫描次数，每扫描为 2 ms。
     nStopCycles : UINT; // 减速阶段扫描计数，用于满足该阶段的最少扫描次数。
-    nState : UINT; // 轨迹内部状态：0 空闲、5 拼表、10 校验、15 首点、20 开启、30 运行、40/50/60/70 退出、90 故障。
+    nState : UINT; // 轨迹内部状态：0 空闲、5 拼表、10 启动检查、15 首点、20 开启、30 运行、40/50/60/70 退出、90 故障。
     i : INT; // 四轴循环索引，范围 1～4。
-    nBatch : INT; // 本扫描数值校验批内循环索引，每扫描最多校验 128 点/轴。
     nDirection : DINT; // 送点方向，本实现使用 +1/-1，静止保持时也保持非零。
     xAllEnabled : BOOL; // 四轴 NC 外部给定均已开启；不是四轴伺服使能汇总。
     xAllDisabled : BOOL; // 四轴外部给定均已关闭，相关开启、关闭和首点停止块均释放 Busy。
@@ -60,7 +58,7 @@ VAR
     xMovesIdle : BOOL; // 四个首点定位块均已释放 Busy。
     xEnablePending : BOOL; // 至少一个外部给定开启块仍忙，退出时先等待开启请求结束。
     xFeed : BOOL; // 本扫描需要向四轴发送外部位置给定。
-    xValid : BOOL; // 当前参数、点值或内存复制批次的临时校验结果，每次检查重新赋值。
+    xValid : BOOL; // 当前轴配置、首点到位或内存复制批次的临时检查结果，每次检查重新赋值。
     xCommandAllowed : BOOL; // 轨迹命令来源为当前有效持有站，且本扫描未发生控制权交接。
     xStopCommand : BOOL; // 当前持有站发出的有效组停止保持命令。
     xUploadRequest : BOOL; // 本扫描获准处理的段登记请求；原始沿已消费后再过滤权限。
@@ -69,9 +67,7 @@ VAR
     xStartRequest : BOOL; // 本扫描获准处理的轨迹启动请求。
     xResetRequest : BOOL; // 本扫描获准处理的轨迹组故障复位请求。
     xNormalStop : BOOL; // 正常人工停止，不作为 1007 故障。
-    Point : ST_TrajectoryPoint; // 校验时的临时点，不推进运行点号。
     lrNewVelocity : LREAL; // 当前减速计算的下一扫描速度，单位为 NC 位置单位/秒。
-    lrStopPosition : LREAL; // 当前给定继续减速的预计停车位置，用于检查停车空间，单位跟随 NC。
     udiBlockError : UDINT; // 本扫描定位/开启块原始错误码，四轴循环后再统一切换状态。
 END_VAR
 VAR CONSTANT
@@ -79,7 +75,6 @@ VAR CONSTANT
     cMaxPoints : UDINT := 2100000; // 单轴完整表容量，与 aPosition 第二维一致。
     cUploadPoints : UDINT := 100000; // 单轴每段容量，与 GVL_motion.aUpload 第三维一致。
     cCopyPointsPerScan : UDINT := 1024; // 每扫描每轴最多复制 8 KiB；需在目标 PLC 实测任务时间。
-    cPointsPerScan : INT := 128; // 数值校验分扫描执行，不一次遍历整条轨迹。
 END_VAR]]></Declaration>
     <Implementation>
       <ST><![CDATA[// 1. 上位机操作转为上升沿，防止保持 TRUE 时每扫描重复发起请求。
@@ -140,7 +135,7 @@ END_FOR
 // 复位只清故障；上传完整的位置表保留，新运行仍需使用新的轨迹序号。
 // 组复位只清本块故障；各 NC 轴故障仍需通过 Axis1..4.reset 复位。
 // 必须已静止、外部给定关闭且相关命令释放，才允许重新进入空闲。
-// 未消费序号的上传/校验故障可按已确认进度重试；已消费序号需清表并换新序号。
+// 未消费序号的上传/启动检查故障可按已确认进度重试；已消费序号需清表并换新序号。
 IF xResetRequest AND ((nState = 0) OR (nState = 90))
     AND xAllStopped AND xAllDisabled AND xMovesIdle THEN
     GVL_motion.xError := FALSE;
@@ -149,7 +144,7 @@ IF xResetRequest AND ((nState = 0) OR (nState = 90))
     nState := 0;
 END_IF
 
-// 上传阶段不占用轴；校验和运动阶段任一轴异常均联停。
+// 上传阶段不占用轴；启动检查和运动阶段任一轴异常均联停。
 // 3. 先判断联停再取点，避免停止条件出现后仍多走一帧。
 // 1006=心跳超时，1010=轴错误，1007=停止/联锁/冲突/外部给定意外退出。
 // 状态 10 尚未发运动命令，可直接进 90；其他阶段先进 50 减速退出。
@@ -166,7 +161,7 @@ IF (nState >= 10) AND (nState <= 40) AND NOT GVL_motion.xError THEN
     END_IF
 END_IF
 
-// 人工停止：取消收段/拼表/校验，运动阶段从当前给定减速；不人为生成故障。
+// 人工停止：取消收段/拼表/启动检查，运动阶段从当前给定减速；不人为生成故障。
 IF xStopCommand AND NOT GVL_motion.xError THEN
     xNormalStop := TRUE;
     GVL_motion.xDataReady := FALSE;
@@ -246,7 +241,7 @@ CASE nState OF
     ELSIF xStartRequest AND NOT GVL_motion.xError THEN
         GVL_motion.xDone := FALSE;
         GVL_motion.nCurrentPoint := 0;
-        // 上传完整只代表表已收齐，不代表数值校验已通过或轴已到首点。
+        // 点位数值由上位机预检；上传完整只代表表已收齐，不代表轴已到首点。
         // 禁止重放已消费序号，避免旧启动命令重复执行轨迹。
         IF NOT GVL_motion.xDataReady OR (GVL_motion.nUploadStation <> GVL_control.nOwner) OR (nLoaded <> nCount) OR (nCount < 4)
             OR (udiSequence = GVL_motion.udiAcceptedSequence)
@@ -257,10 +252,9 @@ CASE nState OF
             OR xAbort OR GVL_motion.xStop OR xAxisFault OR tmHeartbeat.Q THEN
             GVL_motion.udiErrorId := 1004;
         ELSE
-            // 锁存本次校验/运动参数；配置仅应在轴静止且轨迹空闲时修改。
-            // 整表校验完成前，本块不下发运动命令。
+            // 锁存本次运行参数；配置仅应在轴静止且轨迹空闲时修改。
+            // 状态 10 仅检查轴配置和就绪，随后进入首点定位。
             aConfig := GVL_motion.aConfig;
-            nCheckPoint := 0;
             nState := 10;
         END_IF
         IF GVL_motion.udiErrorId <> 0 THEN
@@ -301,80 +295,36 @@ CASE nState OF
         END_IF
     END_IF
 
-10: // 整表到齐后分周期校验位置、差分速度/加速度及停车空间。
-    // 每扫描最多校验 128 个四轴点；校验期间 xBusy=TRUE，手动控制被占用。
-    // 前后点索引限制在 0..nCount-1，首末点不能读取表外元素。
-    FOR nBatch := 1 TO cPointsPerScan DO
-        IF nCheckPoint >= nCount THEN EXIT; END_IF
-        nPrevious := nCheckPoint;
-        IF nCheckPoint > 0 THEN nPrevious := nCheckPoint - 1; END_IF
-        nNext := MIN(nCheckPoint + 1, nCount - 1);
-        FOR i := 1 TO 4 DO
-            // 固定参数与首尾条件每轴在第 0 点检查一次。
-            // 1002=配置无效；1003=数值/首尾/范围/停车空间不合格。
-            IF nCheckPoint = 0 THEN
-                xValid := (aConfig[i].lrMinPosition >= -1.0E12) AND (aConfig[i].lrMaxPosition <= 1.0E12)
-                    AND (aConfig[i].lrMinPosition < aConfig[i].lrMaxPosition)
-                    AND (aConfig[i].lrMaxVelocity > 0) AND (aConfig[i].lrMaxVelocity < 1.0E12)
-                    AND (aConfig[i].lrMaxAcceleration > 0) AND (aConfig[i].lrMaxAcceleration < 1.0E12)
-                    AND (aConfig[i].lrStopDeceleration > 0)
-                    AND (aConfig[i].lrStopDeceleration <= aConfig[i].lrMaxAcceleration)
-                    AND (aConfig[i].lrStartTolerance > 0) AND (aConfig[i].lrStartTolerance < 1.0E6)
-                    AND (aConfig[i].lrInitVelocity > 0) AND (aConfig[i].lrInitVelocity <= aConfig[i].lrMaxVelocity);
-                IF NOT xValid THEN GVL_motion.udiErrorId := 1002; EXIT; END_IF
-                // 首尾各重复一个点，使启动和结束的差分速度为零。
-                IF (aPosition[i, 0] <> aPosition[i, 1])
-                    OR (aPosition[i, nCount - 2] <> aPosition[i, nCount - 1]) THEN
-                    GVL_motion.udiErrorId := 1003; EXIT;
-                END_IF
-            END_IF
-                Point := F_TrajectoryPoint(lrPrevious := aPosition[i, nPrevious],
-                lrCurrent := aPosition[i, nCheckPoint], lrNext := aPosition[i, nNext],
-                xEndpoint := (nCheckPoint = 0) OR (nCheckPoint = nCount - 1));
-            // 正向范围判断同时拒绝 NaN 和无穷。
-            xValid := (Point.lrPosition >= aConfig[i].lrMinPosition)
-                AND (Point.lrPosition <= aConfig[i].lrMaxPosition)
-                AND (ABS(Point.lrVelocity) <= aConfig[i].lrMaxVelocity)
-                AND (ABS(Point.lrAcceleration) <= aConfig[i].lrMaxAcceleration);
-            IF NOT xValid THEN GVL_motion.udiErrorId := 1003; EXIT; END_IF
-            IF nCheckPoint > 0 THEN
-                IF ABS(Point.lrPosition - aPosition[i, nPrevious]) > aConfig[i].lrMaxVelocity * cDt THEN
-                    GVL_motion.udiErrorId := 1005; EXIT;
-                END_IF
-            END_IF
-            // 停车边界=p+v*|v|/(2*d)+v*dt，负速度对应负向制动距离。
-            // 最后一项是一拍余量；此估算未包含跟随误差、驱动通信延迟和安全余量。
-            lrStopPosition := Point.lrPosition + Point.lrVelocity * ABS(Point.lrVelocity)
-                / (2 * aConfig[i].lrStopDeceleration) + Point.lrVelocity * cDt;
-            IF (lrStopPosition < aConfig[i].lrMinPosition) OR (lrStopPosition > aConfig[i].lrMaxPosition) THEN
-                GVL_motion.udiErrorId := 1003; EXIT;
-            END_IF
-        END_FOR
-        IF GVL_motion.udiErrorId <> 0 THEN EXIT; END_IF
-        nCheckPoint := nCheckPoint + 1;
+10: // 单扫描检查配置与轴就绪；整表数值已由上位机在发送前预检。
+    // PLC 不再遍历点位表；保留锁存配置检查，供首点定位、运行及停车使用。
+    FOR i := 1 TO 4 DO
+        xValid := (aConfig[i].lrMinPosition >= -1.0E12) AND (aConfig[i].lrMaxPosition <= 1.0E12)
+            AND (aConfig[i].lrMinPosition < aConfig[i].lrMaxPosition)
+            AND (aConfig[i].lrMaxVelocity > 0) AND (aConfig[i].lrMaxVelocity < 1.0E12)
+            AND (aConfig[i].lrMaxAcceleration > 0) AND (aConfig[i].lrMaxAcceleration < 1.0E12)
+            AND (aConfig[i].lrStopDeceleration > 0)
+            AND (aConfig[i].lrStopDeceleration <= aConfig[i].lrMaxAcceleration)
+            AND (aConfig[i].lrStartTolerance > 0) AND (aConfig[i].lrStartTolerance < 1.0E6)
+            AND (aConfig[i].lrInitVelocity > 0) AND (aConfig[i].lrInitVelocity <= aConfig[i].lrMaxVelocity);
+        IF NOT xValid THEN GVL_motion.udiErrorId := 1002; EXIT; END_IF
     END_FOR
     IF GVL_motion.udiErrorId <> 0 THEN
         GVL_motion.xError := TRUE;
         nState := 90;
-    // 全部点通过后再确认轴就绪。校验与实际运行共用 F_TrajectoryPoint，
-    // 保证相同位置表使用相同差分公式，不出现校验与送点两套计算。
-    ELSIF nCheckPoint = nCount THEN
-        IF NOT xAxesReady THEN
-            GVL_motion.xError := TRUE;
-            GVL_motion.udiErrorId := 1004;
-            nState := 90;
-        ELSE
-            FOR i := 1 TO 4 DO
-                aSet[i].lrPosition := aPosition[i, 0];
-                aSet[i].lrVelocity := 0;
-                aSet[i].lrAcceleration := 0;
-            END_FOR
-            // 此处消费轨迹序号；随后首点定位即使失败，也须换新序号才能再次执行。
-            // aSet 已准备为四轴首点的静止给定，状态 15 开始内部定位。
-            GVL_motion.udiAcceptedSequence := udiSequence;
-            nSendPoint := 0;
-            nState := 15;
-        END_IF
+    ELSIF NOT xAxesReady THEN
+        GVL_motion.xError := TRUE;
+        GVL_motion.udiErrorId := 1004;
+        nState := 90;
+    ELSE
+        FOR i := 1 TO 4 DO
+            aSet[i].lrPosition := aPosition[i, 0];
+            aSet[i].lrVelocity := 0;
+            aSet[i].lrAcceleration := 0;
+        END_FOR
+        // 启动检查通过后消费序号；首点定位即使失败，也须换新序号重发。
+        GVL_motion.udiAcceptedSequence := udiSequence;
+        nSendPoint := 0;
+        nState := 15;
     END_IF
 
 15: // 参考旧工程 move_init：四轴各自定位到首点，全部完成才激活外部给定。
@@ -543,7 +493,7 @@ IF tmExit.Q AND ((nState = 60) OR (nState = 70)) THEN
     GVL_motion.xError := TRUE;
     GVL_motion.udiErrorId := 1009;
 END_IF
-// 6. 已接收和已拼接分开发布；只有 xDataReady 才表示完整表可进入启动校验。
+// 6. 已接收和已拼接分开发布；只有 xDataReady 才表示完整表可进入启动检查。
 GVL_motion.nReceivedCount := nReceived;
 GVL_motion.udiReceivedSequence := udiSequence;
 GVL_motion.nLoadedCount := nLoaded;

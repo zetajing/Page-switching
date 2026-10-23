@@ -13,7 +13,8 @@ class WaveServiceChecks(unittest.TestCase):
                    "Axis/PointUpload/WaveTransferChunks.cs", "Axis/ControlAuthority/AxisService.Authority.cs", "Axis/Trajectory/AxisService.Trajectory.cs",
                    "Axis/ManualControl/Axis.cs", "Axis/AxisServiceOptions.cs",
                    "Axis/Feedback/AxisSnapshot.cs", "Axis/Feedback/PlcMachineMonitor.cs", "Axis/Feedback/MachineMonitorSnapshot.cs",
-                   "Wave/Legacy/WaveTrajectoryFile.cs"]
+                   "Axis/Feedback/PlcWaveDiagnostics.cs", "Infrastructure/AdsDiagnostics.cs",
+                   "Wave/Legacy/WaveTrajectoryFile.cs", "Wave/Legacy/WavePointValidator.cs"]
         with tempfile.TemporaryDirectory(prefix="TwinCAT_WaveService_") as directory:
             folder = Path(directory)
             links = "".join(f'<Compile Include="{escape(str(SWITCH / name))}" />' for name in sources)

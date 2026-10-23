@@ -48,7 +48,10 @@ public sealed partial class AxisService : IDisposable
     public string Unit => _options.Unit;
     public double MinimumPosition => _options.MinimumPosition;
     public double MaximumPosition => _options.MaximumPosition;
-    public string? LastError => _lastError;
+    public string? LastError
+    {
+        get { lock (_stateSync) return _lastError; }
+    }
 
     public bool IsConnected
     {
@@ -65,13 +68,16 @@ public sealed partial class AxisService : IDisposable
     {
         get
         {
+            // ADS 连接成功仍可能读不到反馈；保留具体变量和底层错误，方便直接查问题。
+            string? error = LastError;
             if (IsConnected)
             {
+                if (!string.IsNullOrWhiteSpace(error)) return "ADS 已连接；" + error;
                 if (ControlStationCode == 0) return "ADS 已连接，未配置本站身份";
                 return HasControlAuthority ? "ADS 已连接，本站已授权" : "ADS 已连接，本站未授权";
             }
 
-            return string.IsNullOrWhiteSpace(_lastError) ? "ADS 未连接" : "ADS 连接失败";
+            return string.IsNullOrWhiteSpace(error) ? "ADS 未连接" : "ADS 未连接；" + error;
         }
     }
 

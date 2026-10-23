@@ -16,6 +16,9 @@ SOURCE = re.sub(r"//[^\n]*", "", POU.findtext(".//ST"))
 class StBranch:
     """执行受测源码的 IF、FOR、赋值及注入的函数调用；不支持的语法直接失败。"""
 
+    class LoopExit(Exception):
+        """ST 的 EXIT 只退出最近一层 FOR，供启动配置检查执行真实源码。"""
+
     def __init__(self, source):
         # 数组下标后的成员访问也保留点号，例如 axis[i].Status.Disabled。
         self.tokens = re.findall(r"\w+(?:\.\w+)*|:=|<>|<=|>=|[.();,\[\]<>=+*/\-]", source)
@@ -64,6 +67,9 @@ class StBranch:
                 body = self.block({"END_FOR"})
                 self.take("END_FOR")
                 statements.append(("for", variable, start, end, body))
+            elif token == "EXIT":
+                self.take(";")
+                statements.append(("exit",))
             else:
                 target = token
                 # 完整控制权扫描还会写数组成员并调用 TON，保留实际源码调用顺序。
@@ -106,7 +112,12 @@ class StBranch:
                     _, variable, start, end, body = statement
                     for index in range(self.value(start, values), self.value(end, values) + 1):
                         values[variable] = index
-                        execute(body)
+                        try:
+                            execute(body)
+                        except self.LoopExit:
+                            break
+                elif statement[0] == "exit":
+                    raise self.LoopExit()
                 elif statement[0] == "call":
                     self.value(statement[1], values)
                 else:

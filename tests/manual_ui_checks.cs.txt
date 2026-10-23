@@ -140,6 +140,20 @@ internal static class Program
         PumpUntil(() => !Field<bool>(page, "_commandInProgress"));
         Check(!buttons["homeAllButton"].Loading, "取消结束后必须恢复 Loading。");
 
+        // 通信连接尚在时也要显示真实读取失败；诊断只改变反馈显示，不改变原有命令许可。
+        service.LastError = "读取 GVL_HMI.stMonitor 失败：DeviceSymbolNotFound";
+        Invoke(page, "UpdateConnectionState");
+        var connection = Field<AntdUI.Label>(page, "connectionStateLabel");
+        Check(connection.Text?.Contains("GVL_HMI.stMonitor") == true
+            && connection.Text.Contains("DeviceSymbolNotFound"), "连接栏须保留失败变量和原始原因。");
+        Check(connection.ForeColor == UiPalette.Danger, "ADS 仍连接但反馈读取失败时不能显示绿色。");
+        Check(connection.AutoEllipsis && connection.ShowTooltip, "连接栏须允许悬停查看完整错误。");
+        Check(buttons.Values.All(button => button.Enabled), "反馈显示错误不能替代已有控制权和命令互锁。");
+        service.LastError = null;
+        Invoke(page, "UpdateConnectionState");
+        Check(connection.ForeColor == UiPalette.Success
+            && connection.Text?.Contains("DeviceSymbolNotFound") != true, "反馈恢复后须清除旧错误提示。");
+
         // 避免把防闪烁修复变成无条件启用：连接/控制权条件仍须生效。
         var permissionChange = Pending();
         service.CommandTask = permissionChange.Task;
@@ -209,8 +223,9 @@ namespace Page_switching
         public AxisService(AxisServiceOptions options) => _axes = Enumerable.Range(1, 4).Select(number => new Axis(this, number)).ToArray();
         public bool IsConnected { get; set; } = true;
         public bool HasControlAuthority { get; set; } = true;
+        public string? LastError { get; set; }
         public bool CanControlAll => IsConnected && HasControlAuthority;
-        public string ConnectionStateText => IsConnected ? "离线替身已连接" : "离线替身未连接";
+        public string ConnectionStateText => LastError ?? (IsConnected ? "离线替身已连接" : "离线替身未连接");
         public int RefreshIntervalMilliseconds => 1000000;
         public double MinimumPosition => -20;
         public double MaximumPosition => 20;

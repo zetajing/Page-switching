@@ -95,7 +95,11 @@ namespace Page_switching
                 : HasValue(snapshot.WaveFaultCode) ? UiPalette.Muted : UnavailableColor(faultText);
             // 故障码独立于运行枚举：保留 PLC 状态文字，同时突出当前故障。
             if (hasCurrentFault) _runStateLabel.ForeColor = UiPalette.Danger;
-            faultCodeLabel.AccessibleDescription = snapshot.WaveFaultCode.ErrorMessage;
+            if (snapshot.Frame is { Error: true } faultFrame)
+                faultCodeLabel.AccessibleDescription = PlcWaveDiagnostics.DescribeFault(faultFrame.TrajectoryErrorId);
+            else faultCodeLabel.AccessibleDescription = hasCurrentFault
+                ? $"PLC 轴故障码 {faultText}；请检查 GVL_HMI.nFaultAxis 和 GVL_HMI.udiDetailedFaultCode。"
+                : snapshot.WaveFaultCode.ErrorMessage;
         }
 
         // ADS 已连接与 PLC 反馈有效分别显示，心跳停滞不能显示为正常。
@@ -155,11 +159,16 @@ namespace Page_switching
                 snapshot.ControlOwner.ToDisplayText(), snapshot.ControlMode.ToDisplayText(),
                 snapshot.WaveState.ToDisplayText(), snapshot.WaveFaultCode.ToDisplayText());
             if (_lastMonitorStateKey != null && _lastMonitorStateKey != stateKey)
+            {
                 AddLog($"监控状态：{(snapshot.IsConnected ? "ADS 已连接" : "ADS 未连接")}；" +
                     $"控制端：{FormatMonitorField(snapshot.ControlOwner, FormatControlOwner)}；" +
                     $"模式：{FormatMonitorField(snapshot.ControlMode, FormatControlMode)}；" +
                     $"造波：{FormatMonitorField(snapshot.WaveState, FormatWaveState)}；" +
                     $"故障码：{FormatMonitorField(snapshot.WaveFaultCode)}；{snapshot.QualityText}");
+            }
+            // 首次打开就有故障也要留存；位置和心跳刷新不会反复写同一故障。
+            if (_lastMonitorStateKey != stateKey && snapshot.Frame is { Error: true } frame)
+                AddLog(PlcWaveDiagnostics.DescribeFault(frame.TrajectoryErrorId) + " " + PlcWaveDiagnostics.DescribeFrame(frame));
             _lastMonitorStateKey = stateKey;
         }
 

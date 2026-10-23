@@ -2,6 +2,29 @@
 
 [返回文档导航](README.md)
 
+## 遇到问题从这里看
+
+先看页面详情和主窗体操作日志，确认失败发生在哪一步，再进入对应方法打断点。读取成功、命令写入成功、PLC 实际执行完成是不同的反馈，不用一个“已连接”或“请求已发送”判断设备正常。
+
+| 现象 | 代码入口和断点 | 重点观察 |
+| --- | --- | --- |
+| 已连接但四轴读不到 | `Axis/Feedback/AxisService.Feedback.cs`：`ReadSnapshotAsync`、`ReadAdsSnapshotsAsync` | `LastError`、监控变量地址、结构体 Version/Size；连接栏显示原始读取错误 |
+| 不能申请或释放控制权 | `Axis/ControlAuthority/AxisService.Authority.cs`：`ChangeControlAuthorityAsync` | `AuthorityStatus` 的持有者、锁、同序号应答及反馈错误 |
+| 手动按钮或点动异常 | `panel/manual.cs`：`RunCommandAsync`、`RunStopCommandAsync`、`StartJogAsync` | 所选轴、按下时保存的 `_jogAxis`、控制权和实际轴反馈 |
+| 点位检查不合格 | `Wave/Legacy/WavePointValidator.cs`：`Validate` | 轴号、点号（从 0 起）、时间、失败项目、实际值和限值；尚未清表或写入点位 |
+| 点位发送或拼接失败 | `Axis/PointUpload/AxisService.PointUpload.cs`：`UploadWaveCoreAsync` | 读取的四轴参数、当前段、轴、段内点及 PLC 接收/拼接点数、上传序号 |
+| 开始按钮不可用 | `panel/auto.Wave.cs`：`GetWaveStartBlockReasons` | 页面“暂不能开始”的全部缺项，与按钮启用共用同一次判断 |
+| 开始后失败、超时 | `Axis/Trajectory/AxisService.Trajectory.cs`：`StartWaveCoreAsync`、`PrepareWaveAxesAsync`、`ExecuteWaveAsync`、`WaitWaveFrameAsync` | 日志的失败阶段、故障说明、PLC 状态、执行点数、使能轴和已回原轴 |
+| PLC 轴配置有问题 | 实际 TwinCAT 工程的 `POUs/AxisConfig_轴配置/FB_AxisConfig` | 配置统一在该块填写；确认运行中实际值，源码保存不等于 PLC 已更新 |
+
+启动入口现在直接调用具名方法：`StartWaveAsync → RunWaveOperationAsync → StartWaveCoreAsync → PrepareWaveAxesAsync → ExecuteWaveAsync`。上传在调用线程复制输入数组，再进入 `UploadWaveCoreAsync` 读取 PLC 参数并检查整表。检查合格才清表、下发、拼表。只保留一份四轴参数快照用于启动核对，不保留第二份执行点位表；没有新增 PLC 变量或会话层。
+
+整表数值检查已移到上位机，PLC 删除了 `nCheckPoint` 等五项专用变量/常量，状态 10 只检查配置有效和轴就绪。上位机按 PLC 实际参数检查首尾静止、有限数值、位置/速度/加速度、相邻点增量和停车空间，直接报出具体失败项目。准备前和发启动沿前都会重读参数，变化时要求重新下发。
+
+故障码和轨迹状态的中文说明集中在 `Axis/Feedback/PlcWaveDiagnostics.cs`，页面和服务共用。1003/1005 的说明保留兼容旧 PLC；新版 PLC 不再生成这两个整表校验码。监控的“执行点”是当前准备发送的轨迹点，不代表轴已经到位。PLC 的控制权、接收完整性、轴配置有效性、就绪、心跳、运行限位、停止和原始 MC 错误处理仍保留。
+
+服务在失败时保存当时的有效监控帧文字，再走原有停止清理。停止确认后页面保留原始故障；停止未确认时继续显示停止未确认状态。操作日志同时保留原始异常链和具名方法调用位置，默认位于 `%LOCALAPPDATA%/PageSwitching/Operations/`，按小时保存。同一个手动读取错误不随定时刷新重复记日志，恢复时记录一次。
+
 ## 调试时的写法约定
 
 主窗体的控件类型分派和页面名称使用 `switch` 语句，每个 `case` 中保留直白的判断和局部变量，方便打断点。其他流程优先使用普通 `if/else`、`for`、`foreach` 和有名称的方法。复杂条件拆成局部变量，关键分支使用大括号；配置默认值和信号灯状态保持这种写法。轴命令符号读取使用普通私有方法，不使用捕获局部变量的局部函数。

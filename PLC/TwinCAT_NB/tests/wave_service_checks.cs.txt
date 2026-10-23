@@ -6,10 +6,10 @@ internal static class Program
 {
     static int assertions;
     static void Check(bool value, string message) { assertions++; if (!value) throw new Exception(message); }
-    static async Task Reject(Func<Task> action, string name)
+    static async Task<Exception> Reject(Func<Task> action, string name)
     {
         try { await action(); throw new Exception("未拒绝：" + name); }
-        catch (Exception ex) when (ex is InvalidOperationException or InvalidDataException or OperationCanceledException or TimeoutException) { assertions++; }
+        catch (Exception ex) when (ex is InvalidOperationException or InvalidDataException or OperationCanceledException or TimeoutException) { assertions++; return ex; }
     }
     static async Task Until(Func<bool> ready)
     {
@@ -78,6 +78,17 @@ internal static class Program
                 AdsClient.Model.Frame.Version = 0;
                 snapshots = await service.ReadSnapshotAsync(CancellationToken.None);
                 Check(snapshots.All(s => s.ActualPosition is null), "invalid frame never retains valid display");
+                Check(service.LastError!.Contains("GVL_HMI.stMonitor") && service.LastError.Contains("布局不匹配"), "read failure keeps symbol and original layout reason");
+                Check(service.ConnectionStateText.Contains(service.LastError), "connected display includes actual read error");
+                int logCount = OperationJournal.Entries.Count;
+                await service.ReadSnapshotAsync(CancellationToken.None);
+                Check(OperationJournal.Entries.Count == logCount, "same read error does not flood operation log");
+                AdsClient.Model.Frame.Version = PlcMachineMonitor.LayoutVersion;
+                await service.ReadSnapshotAsync(CancellationToken.None);
+                Check(service.LastError is null, "successful read clears old error");
+                Check(OperationJournal.Entries.Count == logCount + 1, "read recovery recorded once");
+                await service.ReadSnapshotAsync(CancellationToken.None);
+                Check(OperationJournal.Entries.Count == logCount + 1, "normal refresh does not repeat recovery log");
                 Check(AdsClient.Model.TotalWrites == 0, "read failure never attempts reset or reconnect write");
             }
             AdsClient.Model = new FakePlc();
@@ -123,8 +134,54 @@ internal static class Program
             {
                 await service.ConnectAsync(CancellationToken.None);
                 await Until(() => service.HasControlAuthority);
-                await Reject(() => service.UploadWaveAsync(signal), "write failure");
+                var failure = await Reject(() => service.UploadWaveAsync(signal), "write failure");
+                Check(failure.Message.Contains("GVL_motion.aUpload") && failure.Message.Contains("轴 1"), "array write failure identifies symbol and axis");
+                Check(failure.InnerException?.Message == "模拟 ADS 写入失败", "array write keeps original cause");
+                Check(service.WaveStatus.Error == failure.Message && !service.WaveOperationActive, "cleanup retains original failure on page");
                 Check(!service.WaveStatus.Ready && AdsClient.Model.StartWrites == 0, "failed transfer not ready");
+            }
+            AdsClient.Model = new FakePlc();
+            using (var service = new AxisService(Options()))
+            {
+                await service.ConnectAsync(CancellationToken.None);
+                await Until(() => service.HasControlAuthority);
+                var failure = await Reject(() => service.UploadWaveAsync(new("invalid.csv", new[] { 0d, 0, 1000, 1000 })), "preflight rejects unsafe points");
+                Check(failure.Message.Contains("轴") && failure.Message.Contains("点"), "preflight failure identifies axis and point");
+                Check(AdsClient.Model.ArrayWrites == 0 && AdsClient.Model.PointMetadataWrites == 0
+                    && AdsClient.Model.ClearWrites == 0 && AdsClient.Model.StartWrites == 0, "rejected points never clear old table or write point metadata/data/start");
+                Check(!service.WaveStatus.Ready && service.WaveStatus.Error == failure.Message, "preflight failure remains visible");
+                Check(!AdsClient.Model.Session, "preflight failure releases session without stop command");
+                using var cancelledPreflight = new CancellationTokenSource();
+                cancelledPreflight.Cancel();
+                await Reject(() => service.UploadWaveAsync(signal, cancelledPreflight.Token), "preflight cancelled");
+                Check(!service.WaveStatus.Active && !service.WaveOperationActive
+                    && service.WaveStatus.Stage.Contains("已取消"), "preflight cancellation leaves a final inactive state");
+                Check(AdsClient.Model.ArrayWrites == 0 && AdsClient.Model.ClearWrites == 0, "cancelled preflight never writes or clears points");
+                await service.UploadWaveAsync(signal);
+                AdsClient.Model.AxisLimits[2][2] = 999;
+                int startWrites = AdsClient.Model.StartWrites;
+                failure = await Reject(() => service.StartWaveAsync(), "parameters changed after upload");
+                Check(failure.Message.Contains("参数") && failure.Message.Contains("重新发送"), "changed parameters require a new preflight");
+                Check(AdsClient.Model.StartWrites == startWrites, "changed parameters cannot send start");
+            }
+            AdsClient.Model = new FakePlc { InvalidConfigRead = true };
+            using (var service = new AxisService(Options()))
+            {
+                await service.ConnectAsync(CancellationToken.None);
+                await Until(() => service.HasControlAuthority);
+                var failure = await Reject(() => service.UploadWaveAsync(signal), "config read invalid");
+                Check(failure.Message.Contains("GVL_motion.aConfig[1].lrMinPosition"), "config failure identifies exact parameter");
+                Check(AdsClient.Model.ArrayWrites == 0 && AdsClient.Model.ClearWrites == 0, "missing config cannot use defaults or send points");
+            }
+            AdsClient.Model = new FakePlc { ChangeConfigOnHome = true };
+            using (var service = new AxisService(Options()))
+            {
+                await service.ConnectAsync(CancellationToken.None);
+                await Until(() => service.HasControlAuthority);
+                await service.UploadWaveAsync(signal);
+                var failure = await Reject(() => service.StartWaveAsync(), "parameters changed during preparation");
+                Check(failure.Message.Contains("参数") && failure.Message.Contains("重新发送"), "parameters are rechecked after homing");
+                Check(AdsClient.Model.StartWrites == 0 && AdsClient.Model.StopReleaseWrites > 0, "changed preparation parameters stop safely before start pulse");
             }
             AdsClient.Model = new FakePlc { HoldHoming = true };
             using (var service = new AxisService(Options()))
@@ -146,7 +203,9 @@ internal static class Program
             {
                 await service.ConnectAsync(CancellationToken.None);
                 await Until(() => service.HasControlAuthority);
-                await Reject(() => service.UploadWaveAsync(signal), "ack timeout");
+                var failure = await Reject(() => service.UploadWaveAsync(signal), "ack timeout");
+                Check(failure is TimeoutException && failure.Message.Contains("等待本段接收确认")
+                    && failure.Message.Contains("接收=0/4") && failure.Message.Contains("PLC 状态=0"), "timeout includes operation and last valid frame");
                 Check(!service.WaveStatus.Ready && AdsClient.Model.StartWrites == 0, "unconfirmed segment never ready");
             }
             AdsClient.Model = new FakePlc { FreezeAfterArray = true, HoldAcknowledgement = true };
@@ -171,6 +230,46 @@ internal static class Program
                 Check(AdsClient.Model.AuthorityOwner == 0 && !service.HasControlAuthority, "release waits for PLC ack and owner zero");
                 Check(service.AuthorityStatus.FeedbackInvalid, "release does not pretend I/O fault cleared");
             }
+            // 故障快照必须来自失败当时，不能用安全停止后的状态冒充故障现场。
+            AdsClient.Model = new FakePlc { FailWriteSymbol = "GVL_motion.nPointCount" };
+            using (var service = new AxisService(Options()))
+            {
+                await service.ConnectAsync(CancellationToken.None);
+                await Until(() => service.HasControlAuthority);
+                var failure = await Reject(() => service.UploadWaveAsync(signal), "scalar write failure");
+                Check(failure.Message.Contains("GVL_motion.nPointCount") && failure.InnerException?.Message == "模拟标量写入失败", "write diagnostic retains exact symbol and cause");
+                Check(AdsClient.Model.StartWrites == 0, "write diagnostic never retries or starts trajectory");
+            }
+            AdsClient.Model = new FakePlc { FailFrameRead = true };
+            using (var service = new AxisService(Options()))
+            {
+                await service.ConnectAsync(CancellationToken.None);
+                await Until(() => service.HasControlAuthority);
+                var failure = await Reject(() => service.UploadWaveAsync(signal), "frame read failure");
+                Check(failure.Message.Contains("GVL_HMI.stMonitor") && failure.InnerException?.Message == "模拟监控读取失败", "read diagnostic retains exact symbol and cause");
+                Check(AdsClient.Model.StartWrites == 0, "read diagnostic never starts trajectory");
+            }
+            AdsClient.Model = new FakePlc { StartFaultCode = 1003 };
+            using (var service = new AxisService(Options()))
+            {
+                await service.ConnectAsync(CancellationToken.None);
+                await Until(() => service.HasControlAuthority);
+                await service.UploadWaveAsync(signal);
+                var failure = await Reject(() => service.StartWaveAsync(), "trajectory validation fault");
+                foreach (var text in new[] { "轨迹启动确认", "1003", "首尾静止", "加速度", "停车空间", "PLC 状态=90", "执行点=0/4" })
+                    Check(failure.Message.Contains(text), "fault context includes " + text);
+                Check(failure.InnerException is not null, "fault keeps original exception chain");
+                Check(!failure.Message.Contains("校验点=0"), "execution point is never presented as validation point");
+                Check(service.WaveStatus.Error == failure.Message && service.WaveStatus.Stage == "造波操作失败", "confirmed cleanup cannot erase original fault");
+                Check(AdsClient.Model.StartWrites == 1 && !service.WaveStatus.Ready, "fault never retries start or reuses table");
+                Check(OperationJournal.Entries.Any(e => e.Contains("StartWaveCoreAsync"))
+                    && OperationJournal.Entries.Any(e => e.Contains("1003")), "operation journal retains fault and call stack");
+            }
+            foreach (uint code in Enumerable.Range(1001, 12).Select(i => (uint)i))
+                Check(PlcWaveDiagnostics.DescribeFault(code).Contains(code.ToString()), "known code preserved " + code);
+            Check(PlcWaveDiagnostics.DescribeFault(0x4000).Contains("16384")
+                && PlcWaveDiagnostics.DescribeFault(0x4000).Contains("0x4000"), "unmapped MC error retains decimal and hex");
+            Check(PlcWaveDiagnostics.DescribeState(30) == "执行轨迹", "PLC state is distinct from page state");
             Console.WriteLine($"Wave service: {assertions} assertions passed (fake ADS only).");
         }
         finally { File.Delete(temp); }
@@ -189,8 +288,11 @@ namespace InduLink.Abstractions
 }
 namespace Page_switching
 {
-    internal static class OperationJournal { public static void Record(string category, string message) { } }
-    internal static class AdsDiagnostics { public static string DescribeException(Exception ex) => ex.Message; }
+    internal static class OperationJournal
+    {
+        public static readonly System.Collections.Concurrent.ConcurrentQueue<string> Entries = new();
+        public static void Record(string category, string message) => Entries.Enqueue(category + ":" + message);
+    }
     internal static class AdsConnectionSettings { public static NameValueCollection GetSettings() => new(); }
     internal static class ControlStationIdentity
     {
@@ -228,6 +330,12 @@ namespace InduLink.Protocols.Ads
         { foreach (var request in requests) await WriteAsync(request, token); }
         public Task<ReadResult> ReadManyAsync(IReadOnlyCollection<ReadRequest> requests, CancellationToken token)
         {
+            if (requests.First().Address.StartsWith("GVL_motion.aConfig["))
+            {
+                var values = Model.AxisLimits.SelectMany(axis => axis).Select(value => new ReadValue(value)).ToArray();
+                if (Model.InvalidConfigRead) values[0] = new ReadValue("invalid");
+                return Task.FromResult(new ReadResult(values));
+            }
             lock (Model) return Task.FromResult(new ReadResult(new[] { new ReadValue(Model.AuthorityOwner),
                 new ReadValue(Model.Session || !Model.ReleaseAllowed), new ReadValue(Model.AuthorityOwner == 1), new ReadValue(Model.AuthorityAck),
                 new ReadValue((ushort)1), new ReadValue(Model.FeedbackInvalid) }));
@@ -235,6 +343,7 @@ namespace InduLink.Protocols.Ads
         public Task<T> ReadAnyAsync<T>(string symbol, int[]? args = null, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            if (Model.FailFrameRead) throw new InvalidOperationException("模拟监控读取失败");
             lock (Model) return Task.FromResult((T)(object)Model.Read());
         }
         public void Dispose() { IsConnected = false; }
@@ -256,6 +365,13 @@ namespace InduLink.Protocols.Ads
             Axis1 = new() { Homed = true }, Axis3 = new() { Homed = true }, Axis4 = new() { Homed = true }
         };
         public bool Session, HoldHoming, FailArrayWrite, HoldAcknowledgement, FrozenHeartbeat, FreezeAfterArray;
+        public uint StartFaultCode;
+        public string? FailWriteSymbol;
+        public bool FailFrameRead;
+        public bool InvalidConfigRead;
+        public bool ChangeConfigOnHome;
+        public double[][] AxisLimits = Enumerable.Range(1, 4).Select(_ => new[] { -200d, 200, 1000, 1e6, 1000, 10, 10 }).ToArray();
+        public int PointMetadataWrites, ClearWrites;
         public int ArrayWrites, StartWrites, StopReleaseWrites, WaveHeartbeatWrites;
         public Dictionary<int, List<double>> ValuesByAxis = new();
         public List<int> HomedAxes = new();
@@ -266,6 +382,7 @@ namespace InduLink.Protocols.Ads
             TotalWrites++;
             if (request.Address.EndsWith(".reset") && request.Value is true) ResetWrites++;
             string address = request.Address;
+            if (address == FailWriteSymbol) throw new InvalidOperationException("模拟标量写入失败");
             if (address.EndsWith(".nAction")) authorityAction = (ushort)request.Value;
             if (address.EndsWith(".udiRequestSequence"))
             {
@@ -276,12 +393,13 @@ namespace InduLink.Protocols.Ads
             }
             if (address.EndsWith("xWaveSession")) Session = (bool)request.Value;
             if (address == "GVL_motion.udiHeartbeat") WaveHeartbeatWrites++;
-            if (address == "GVL_motion.nPointCount") Frame.PointCount = (uint)request.Value;
+            if (address == "GVL_motion.nPointCount") { Frame.PointCount = (uint)request.Value; PointMetadataWrites++; }
             if (address == "GVL_motion.udiUploadSequence") sequence = (uint)request.Value;
             if (address == "GVL_motion.nUploadOffset") offset = (uint)request.Value;
             if (address == "GVL_motion.nUploadCount") size = (uint)request.Value;
             if (address == "GVL_motion.xClear" && (bool)request.Value)
             {
+                ClearWrites++;
                 Frame.ReceivedCount = Frame.LoadedCount = 0; Frame.DataReady = false; Frame.UploadStation = 1;
                 Frame.Error = false; Frame.Stopped = Frame.Done = false; ValuesByAxis.Clear();
             }
@@ -301,6 +419,11 @@ namespace InduLink.Protocols.Ads
             {
                 StartWrites++; Frame.AcceptedSequence = sequence; Frame.TrajectoryBusy = true;
                 Frame.Done = false; Frame.AxesIdle = false; runReads = 0;
+                if (StartFaultCode != 0)
+                {
+                    Frame.Error = true; Frame.TrajectoryErrorId = StartFaultCode;
+                    Frame.TrajectoryState = 90; Frame.TrajectoryBusy = false;
+                }
             }
             if (address.Contains(".aAxis[") && address.EndsWith(".xStart") && (bool)request.Value)
                 Frame.Axis1.Enabled = Frame.Axis2.Enabled = Frame.Axis3.Enabled = Frame.Axis4.Enabled = true;
@@ -308,6 +431,7 @@ namespace InduLink.Protocols.Ads
             {
                 int axis = int.Parse(address.Split(".aAxis[")[1].Split(']')[0]);
                 HomedAxes.Add(axis); Frame.AxesIdle = false;
+                if (ChangeConfigOnHome) AxisLimits[3][0] = -201;
                 if (!HoldHoming) { Frame.Axis2.Homed = true; Frame.AxesIdle = true; }
             }
             if (address == "GVL_motion.xStop" && (bool)request.Value)

@@ -14,7 +14,7 @@ class WaveStartUiChecks(unittest.TestCase):
         packages = Path(os.environ.get("NUGET_PACKAGES", Path.home() / ".nuget/packages"))
         antdui = packages / "antdui/2.4.12/lib/net8.0-windows7.0/AntdUI.dll"
         self.assertTrue(antdui.is_file(), f"缺少本地 AntdUI 2.4.12：{antdui}")
-        sources = ["panel/auto.Wave.cs", "Axis/Feedback/PlcMachineMonitor.cs",
+        sources = ["panel/auto.Wave.cs", "Axis/Feedback/PlcMachineMonitor.cs", "Axis/Feedback/PlcWaveDiagnostics.cs",
                    "Axis/Feedback/MachineMonitorSnapshot.cs", "Axis/Feedback/AxisSnapshot.cs",
                    "Wave/Legacy/WaveTrajectoryFile.cs"]
         with tempfile.TemporaryDirectory(prefix="PageSwitching_WaveStartUI_") as directory:

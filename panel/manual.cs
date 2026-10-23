@@ -40,6 +40,9 @@ namespace Page_switching
             _ownsAxisService = ownsAxisService;
 
             InitializeComponent();
+            // 连接栏空间有限；读取错误显示省略号，悬停可查看完整变量和原因。
+            connectionStateLabel.AutoEllipsis = true;
+            connectionStateLabel.ShowTooltip = true;
 
             _positionIndicators =
             [
@@ -222,7 +225,7 @@ namespace Page_switching
         private void UpdateConnectionState()
         {
             connectionStateLabel.Text = _axisService.ConnectionStateText;
-            connectionStateLabel.ForeColor = _axisService.IsConnected
+            connectionStateLabel.ForeColor = _axisService.IsConnected && string.IsNullOrWhiteSpace(_axisService.LastError)
                 ? UiPalette.Success
                 : UiPalette.Danger;
 

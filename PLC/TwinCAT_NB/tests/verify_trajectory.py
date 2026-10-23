@@ -2,11 +2,13 @@
 
 from array import array
 from pathlib import Path
+from types import SimpleNamespace as NS
 import math
 import random
 import re
 import unittest
 import xml.etree.ElementTree as ET
+from verify_upload_assembly import StBranch
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -18,7 +20,85 @@ def st_source(name):
         ET.parse(next((PLC / "POUs").rglob(name))).findall(".//ST"))
 
 
+class StartCheckFixture:
+    """直接执行状态10；位置表只提供四轴首点，越界或遍历读取会立即失败。"""
+    def __init__(self):
+        source = re.sub(r"//[^\n]*", "", st_source("FB_FourAxisTrajectory.TcPOU"))
+        branch = re.search(r"\n10:(.*?)(?=\n15:)", source, re.S)[1]
+        # 轻量 ST 执行器按标点分词，先将指数常量绑定为同值变量。
+        branch = branch.replace("1.0E12", "cPositionLimit").replace("1.0E6", "cToleranceLimit")
+        self.program = StBranch(branch)
+        self.motion = NS(udiErrorId=0, xError=False, udiAcceptedSequence=3)
+        self.config = [None] + [NS(lrMinPosition=-200, lrMaxPosition=200,
+                                   lrMaxVelocity=200, lrMaxAcceleration=12000,
+                                   lrStopDeceleration=100, lrStartTolerance=10,
+                                   lrInitVelocity=10) for _ in range(4)]
+        self.values = dict(GVL_motion=self.motion, aConfig=self.config, nState=10,
+                           xAxesReady=True, xValid=False, udiSequence=7, nSendPoint=99,
+                           cPositionLimit=1.0E12, cToleranceLimit=1.0E6,
+                           nCount=2100000, aPosition={(axis, 0): axis * 2.5 for axis in range(1, 5)},
+                           aSet=[None] + [NS(lrPosition=-1, lrVelocity=-1, lrAcceleration=-1)
+                                          for _ in range(4)])
+
+    def scan(self):
+        self.program.run(self.values)
+
+
 class TrajectoryChecks(unittest.TestCase):
+    def test_start_check_does_not_scan_the_table(self):
+        fixture = StartCheckFixture()
+        fixture.scan()
+        self.assertEqual(fixture.values["nState"], 15)
+        self.assertEqual(fixture.values["nSendPoint"], 0)
+        self.assertEqual(fixture.motion.udiAcceptedSequence, 7)
+        self.assertFalse(fixture.motion.xError)
+        for axis in range(1, 5):
+            point = fixture.values["aSet"][axis]
+            self.assertEqual((point.lrPosition, point.lrVelocity, point.lrAcceleration),
+                             (axis * 2.5, 0, 0))
+
+    def test_invalid_axis_configuration_still_blocks_start(self):
+        for axis in range(1, 5):
+            for field, invalid in (("lrMinPosition", 200), ("lrMaxPosition", -200),
+                                   ("lrMaxVelocity", 0), ("lrMaxAcceleration", 0),
+                                   ("lrStopDeceleration", 0), ("lrStopDeceleration", 12001),
+                                   ("lrStartTolerance", 0), ("lrStartTolerance", 1.0E6),
+                                   ("lrInitVelocity", 0), ("lrInitVelocity", 201),
+                                   ("lrMaxVelocity", float("nan")),
+                                   ("lrMaxAcceleration", float("inf"))):
+                with self.subTest(axis=axis, field=field, invalid=invalid):
+                    fixture = StartCheckFixture()
+                    setattr(fixture.config[axis], field, invalid)
+                    fixture.scan()
+                    self.assertEqual(fixture.values["nState"], 90)
+                    self.assertEqual(fixture.motion.udiErrorId, 1002)
+                    self.assertTrue(fixture.motion.xError)
+                    self.assertEqual(fixture.motion.udiAcceptedSequence, 3)
+                    self.assertEqual(fixture.values["nSendPoint"], 99)
+
+    def test_axes_must_still_be_ready_before_initial_positioning(self):
+        fixture = StartCheckFixture()
+        fixture.values["xAxesReady"] = False
+        fixture.scan()
+        self.assertEqual(fixture.values["nState"], 90)
+        self.assertEqual(fixture.motion.udiErrorId, 1004)
+        self.assertTrue(fixture.motion.xError)
+        self.assertEqual(fixture.motion.udiAcceptedSequence, 3)
+
+    def test_numeric_scan_locals_and_fault_assignments_are_removed(self):
+        path = PLC / "POUs/Trajectory_点位与轨迹/FB_FourAxisTrajectory.TcPOU"
+        pou = ET.parse(path)
+        declaration = pou.findtext(".//Declaration")
+        source = re.sub(r"//[^\n]*", "", pou.findtext(".//ST"))
+        for name in ("nCheckPoint", "nBatch", "Point", "lrStopPosition", "cPointsPerScan"):
+            self.assertNotRegex(declaration, r"\b" + name + r"\s*:")
+            self.assertNotRegex(source, r"\b" + name + r"\b")
+        self.assertNotRegex(source, r"udiErrorId\s*:=\s*(?:1003|1005)\b")
+        # 差分函数只用于状态30送点，停车仍使用原配置减速度和2 ms积分。
+        self.assertEqual(source.count("F_TrajectoryPoint("), 1)
+        self.assertIn("aSet[i].lrVelocity - aConfig[i].lrStopDeceleration * cDt", source)
+        self.assertIn("aSet[i].lrVelocity + aConfig[i].lrStopDeceleration * cDt", source)
+
     def test_project_files_and_task(self):
         # 校验工程实际引用的所有文件，避免新增程序漏加进项目。
         ns = {"p": "http://schemas.microsoft.com/developer/msbuild/2003"}

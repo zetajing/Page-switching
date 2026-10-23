@@ -75,12 +75,7 @@ public partial class Auto
         bool active = _waveService.WaveOperationActive || _waveStopping;
         bool authorized = _waveService.IsConnected && _waveService.HasControlAuthority;
         // 上传只要求有效控制权和空闲轴；使能、回原及运动许可在开始阶段检查。
-        string? sendBlockReason = !authorized ? "本站未取得有效控制权。"
-            : _waveFrame is not { } ? "等待有效 PLC 反馈。"
-            : _waveFrame.Value.UploadBusy ? "PLC 正在拼接轨迹。"
-            : _waveFrame.Value.TrajectoryBusy ? "PLC 轨迹任务尚未退出。"
-            : !_waveFrame.Value.AxesIdle ? "PLC 未确认四轴空闲，请检查轴忙状态和 NC 反馈。"
-            : null;
+        string? sendBlockReason = GetWaveSendBlockReason(authorized);
         importWaveButton.Enabled = !active && !_waveImporting && _waveFrame is not { TrajectoryBusy: true };
         sendWaveButton.Enabled = sendBlockReason is null && !active && !_waveImporting && _waveSignal is not null;
         // 启用条件与提示共用同一份判断，避免按钮变灰却看不到缺少哪项条件。
@@ -91,19 +86,38 @@ public partial class Auto
         waveStageLabel.Text = _waveImporting ? "正在导入文件…" : status.Stage;
         waveProgressBar.Value = (int)Math.Clamp(status.Fraction * 1000, 0, 1000);
         waveStageLabel.AccessibleDescription = status.Error;
+        string detail = BuildWaveDetail(active, sendBlockReason, startBlockReasons);
+        // 完整文字只更新一次；相同反馈不反复清除、追加，避免定时刷新闪动。
+        if (waveDetailLabel.Text != detail) waveDetailLabel.Text = detail;
+    }
+
+    private string? GetWaveSendBlockReason(bool authorized)
+    {
+        if (!authorized) return "本站未取得有效控制权。";
+        if (_waveFrame is not { } frame) return "等待有效 PLC 反馈。";
+        if (frame.UploadBusy) return "PLC 正在拼接轨迹。";
+        if (frame.TrajectoryBusy) return "PLC 轨迹任务尚未退出。";
+        if (!frame.AxesIdle) return "PLC 未确认四轴空闲，请检查轴忙状态和 NC 反馈。";
+        return null;
+    }
+
+    // 只组装本次反馈文字，与按钮启用判断共用原因；不产生通信和命令。
+    private string BuildWaveDetail(bool active, string? sendBlockReason, List<string> startBlockReasons)
+    {
         string detail;
         if (_waveFrame is { } feedback)
             detail = $"PLC 接收：{feedback.ReceivedCount:N0} / {feedback.PointCount:N0}\r\n"
                 + $"PLC 拼接：{feedback.LoadedCount:N0} / {feedback.PointCount:N0}\r\n"
-                + $"执行点号：{feedback.CurrentPoint:N0}　轨迹状态：{feedback.TrajectoryState}\r\n"
-                + (feedback.Error ? $"轨迹故障码：{feedback.TrajectoryErrorId}" : "发送完成不会自动开始运动。")
+                + $"执行点号：{feedback.CurrentPoint:N0}　轨迹状态：{feedback.TrajectoryState}（{PlcWaveDiagnostics.DescribeState(feedback.TrajectoryState)}）\r\n"
+                + (feedback.Error ? PlcWaveDiagnostics.DescribeFault(feedback.TrajectoryErrorId) : "发送完成不会自动开始运动。")
                 + (!active && _waveSignal is not null && sendBlockReason is not null
                     ? "\r\n暂不能发送：" + sendBlockReason : "");
         else detail = "等待有效 PLC 反馈；请确认配套结构体版本已部署。";
+        if (_waveService?.WaveStatus.Error is { Length: > 0 } error)
+            detail += "\r\n最近操作失败：" + error;
         if (startBlockReasons.Count > 0)
             detail += "\r\n暂不能开始：\r\n" + string.Join("\r\n", startBlockReasons);
-        // 完整文字只更新一次，状态未变时不反复清除、追加原因，避免定时刷新闪动。
-        if (waveDetailLabel.Text != detail) waveDetailLabel.Text = detail;
+        return detail;
     }
 
     // 保留原有启动门槛；这里只说明缺项，不发送命令、不自动复位或放宽 PLC 联锁。

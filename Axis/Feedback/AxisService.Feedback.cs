@@ -23,16 +23,14 @@ public sealed partial class AxisService
             else
             {
                 snapshots = await ReadAdsSnapshotsAsync(client, cancellationToken).ConfigureAwait(false);
+                SetFeedbackError(null);
             }
             UpdateAxisSnapshots(snapshots);
             return snapshots;
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            lock (_stateSync)
-            {
-                _lastError = ex.Message;
-            }
+            SetFeedbackError($"读取 {_options.SnapshotSymbol} 失败：{AdsDiagnostics.DescribeException(ex)}", ex);
 
             var snapshots = CreateUnavailableSnapshots("读取失败");
             UpdateAxisSnapshots(snapshots);
@@ -42,6 +40,18 @@ public sealed partial class AxisService
         {
             _operationGate.Release();
         }
+    }
+
+    // 只在失败原因变化或恢复时记录一次；轮询同一故障不刷屏，原始异常和调用位置仍保留。
+    private void SetFeedbackError(string? error, Exception? exception = null)
+    {
+        lock (_stateSync)
+        {
+            if (_lastError == error) return;
+            _lastError = error;
+        }
+        if (exception is not null) AdsDiagnostics.RecordException(error!, exception);
+        else OperationJournal.Record("手动反馈", "四轴反馈读取已恢复。");
     }
 
     // 使用现有 DLL 一次读取四轴反馈，布局校验通过后才更新手动页。

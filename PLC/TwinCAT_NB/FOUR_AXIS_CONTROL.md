@@ -1,6 +1,6 @@
 # 四轴基础控制与整条位置表执行
 
-当前实现参考 `PLC-2M-20241113（60分钟）\PLC-2M-20241113（60分钟）\TwinCAT Project1\setpositionGen` 的位置表、首点定位及 2 ms 外部给定流程。参考工程未修改。PC 先将四轴位置点的所有段下发到独立接收区，全部段确认后单独请求 PLC 统一拼接，完整表拼好后才允许启动。
+当前实现参考 `PLC-2M-20241113（60分钟）\PLC-2M-20241113（60分钟）\TwinCAT Project1\setpositionGen` 的位置表、首点定位及 2 ms 外部给定流程。参考工程未修改。PC 先读取四轴实际配置并预检整表，合格后才将四轴位置点的所有段下发到独立接收区，全部段确认后单独请求 PLC 统一拼接，完整表拼好后才允许启动。
 
 ## 代码分工
 
@@ -11,7 +11,7 @@
 | `Feedback_反馈` | `FB_HmiFeedback` | 发布实际位置、使能、故障等只读反馈，不发运动命令 |
 | `ControlAuthority_控制权` | `FB_ControlAuthority`、`F_ControlDecision` | 处理申请、释放、心跳、优先级及统一交接锁 |
 | `ManualControl_手动控制` | `FB_AxisCommandGate`、`FB_AxisControl` | 转交授权站手动命令；逐轴执行 Power、Reset、Jog、Home、Stop |
-| `Trajectory_点位与轨迹` | `FB_FourAxisTrajectory`、`F_TrajectoryPoint` | 收段、拼表、整表校验、首点定位、外部给定、联停及退出 |
+| `Trajectory_点位与轨迹` | `FB_FourAxisTrajectory`、`F_TrajectoryPoint` | 收段、拼表、配置及启动就绪检查、首点定位、外部给定、联停及退出 |
 
 在 TwinCAT 中展开 `MAIN` 可进入以下动作，每扫描按表中顺序执行：
 
@@ -26,7 +26,7 @@
 
 手动命令转交放在轨迹调用之前，基础轴块放在轨迹调用之后，保持同扫描的命令冲突和组占用联锁。各实例名称、NC 映射、2 ms 周期及原有条件保持不变。
 
-本轮只整理目录和调用入口。收段、拼表与轨迹执行仍在 `FB_FourAxisTrajectory` 内，自动轨迹状态机没有拆改；`F_TrajectoryPoint` 继续由校验与执行共用。
+收段、拼表与轨迹执行仍在 `FB_FourAxisTrajectory` 内。整表数值预检已迁移到上位机 `WavePointValidator.Validate`；PLC 状态 10 仅检查配置和轴就绪，`F_TrajectoryPoint` 用于运行送点。
 
 ## 上位机功能入口与读写方向
 
@@ -49,7 +49,7 @@
 | `yusuanwancheng` | `GVL_motion.xDataReady`，所有段拼接完后由 PLC 置 TRUE；下载完成不会自动置 TRUE |
 | `move_init()` 移到首点 | 四个 MC_MoveAbsolute 全部完成并检查到位偏差 |
 | `Table[t]` 每 2 ms 送点 | 四轴共用 `nSendPoint`，每 2 ms 各取自己的位置点 |
-| 固定 Velocity=0、Acceleration=2000 | 相邻位置点差分得到速度和加速度，先整表校验再执行 |
+| 固定 Velocity=0、Acceleration=2000 | 上位机按相同差分公式预检，PLC 运行时计算速度和加速度给定 |
 
 没有移植旧项目的主动吸收递推、水位采集、驱动器状态位地址或自定义回零寻边过程。基础回零采用 MC_Home，按当前设备的 NC 回零配置和原点输入执行。
 
@@ -62,7 +62,7 @@
 - 完整表与独立接收区各占 67.2 MB，合计 **134.4 MB（128.17 MiB）**，不含其它运行时开销。相对原来的单段复用方案增加 64 MB，以保留整条待拼接轨迹；目标 PLC 的可用内存和长时间运行能力仍需验证。
 - PLC 与 NC SAF 周期均为 2 ms。PLC 优先级 7，NC SAF 优先级 4、NC SVB 优先级 8。
 - 拼表按段、按轴调用有界 `MEMCPY`，每扫描最多复制 1024 点/轴，即四轴合计 32 KiB；批次不会跨过段尾。2100000 点需 2058 次拼接扫描，按 2 ms 名义约 4.116 秒，不含请求/反馈及调度开销。
-- 整表数值校验仍为每扫描 128 点/轴，最大表名义约 32.814 秒。复制和校验都需实测 2 ms 任务时间，不能将名义扫描次数当作实时性能证明。
+- 整表数值检查由上位机在下发前完成；PLC 不再逐点扫描，状态 10 在一个扫描内检查四轴配置和启动就绪。拼表和运行仍需实测 2 ms 任务时间。
 
 ## 基础轴接口
 
@@ -112,14 +112,14 @@ ST_AxisAds 末尾增加了反馈字段。上位机按符号分别访问；如整
 
 本版替换上一版“复用单段接收区、边收边拼”的协议。接收数组改为三维，并增加 `xAssemble`、`nReceivedCount` 和 `udiReceivedSequence`，PC 必须同步更新下发地址和握手。反馈字段均由 PLC 写，PC 只读。
 
-1. 确认 `xBusy=FALSE`、`xUploadBusy=FALSE`。有故障先复位，再将 xClear 给一个上升沿，确认 nReceivedCount=0、nLoadedCount=0、udiReceivedSequence=0、xDataReady=FALSE。
+1. 上位机先读取 `GVL_motion.aConfig[1..4]` 的七项实际参数，按各轴限制预检首尾、数值、位置/速度/加速度、相邻点差和停车空间，合格才下发。确认 `xBusy=FALSE`、`xUploadBusy=FALSE`。有故障先复位，再将 xClear 给一个上升沿，确认 nReceivedCount=0、nLoadedCount=0、udiReceivedSequence=0、xDataReady=FALSE。
 2. 设置新的非零 `udiUploadSequence`，与 udiAcceptedSequence 不同；设置整条轨迹总点数 `nPointCount` 和 `nSampleTimeUs=2000`。整条轨迹所有上传段共用这些元数据。
 3. 按 `段号=nUploadOffset/100000` 写该段四轴的全部位置数据：`aUpload[段号,1..4,0..本段点数-1]`。非末段必须 100000 点/轴；末段只写剩余点。四轴写入均成功后，设置 nUploadOffset、nUploadCount，给 xUpload 一个上升沿。
 4. 等待 `udiReceivedSequence=本次轨迹序号`、`nReceivedCount=nUploadOffset+nUploadCount` 且无故障，再写下一独立段。`xUploadBusy=FALSE` 不表示段请求已确认；已确认段禁止覆盖。xUpload 回 FALSE 并至少保持一个 PLC 扫描后才能提交下一段。
 5. 下一段 nUploadOffset 必须等于当前 nReceivedCount。不能漏段、重复段或超出总点数；总点数、采样周期和整表序号必须保持一致。下载期间 nLoadedCount 始终为 0，xDataReady 为 FALSE。
 6. 全部段确认后，PC 单独给 `xAssemble` 一个上升沿，通知 PLC 下发完成。PLC 进入状态 5，xUploadBusy=TRUE，统一拼接到内部四轴连续表。等待 `nLoadedCount=nPointCount`、`xDataReady=TRUE`、`xUploadBusy=FALSE` 且无故障，才算拼表完成。拼接期间不得写任何接收段或改变整表元数据；完成后也不会自动启动运动。
-7. 开始独立的心跳通信循环，每 100~200 ms 改变 `udiHeartbeat`。校验和运动期间超过 1 秒不变化会联停；上传阶段不要求心跳。
-8. 四轴就绪、xStop=FALSE 时，给 xStart 一个上升沿。PLC 先校验整表，再自动将四轴移到各自首点；全部完成后才激活四轴外部给定并推进共同点号。
+7. 开始独立的心跳通信循环，每 100~200 ms 改变 `udiHeartbeat`。启动检查和运动期间超过 1 秒不变化会联停；上传阶段不要求心跳。
+8. 上位机准备前及发启动沿前重读参数，与本次预检快照逐项比较；改变时拒绝启动并要求重新发送。四轴就绪、xStop=FALSE 时，给 xStart 一个上升沿。PLC 检查表完整性、配置及就绪后自动移到首点，不再逐点检查整表；全部到位后才激活外部给定并推进共同点号。
 9. 监视 xBusy、xRunning、xDone、xError、udiErrorId、nState、nCurrentPoint。xRunning 只表示正在推进位置表，不包括首点定位和停止阶段。
 10. 正常结束保持末点，不自动返回零位。xDone 保持到清表、复位或下次启动。再次执行需清表并使用新序号重新上传，避免旧启动沿重放。
 
@@ -135,9 +135,9 @@ PC 使用 ADS 原始块写入时，先解析 aUpload 的实际 IndexGroup/IndexO
 
 - `v[k]=(p[k+1]-p[k-1])/(2×0.002)`
 - `a[k]=(p[k+1]-2p[k]+p[k-1])/0.002²`
-- 首末点 v、a 为零。位置量化噪声会被二阶差分放大，超加速度的表会被拒绝。
+- 首末点 v、a 为零。位置量化噪声会被二阶差分放大，超加速度的表由上位机在下发前拒绝。
 
-启动检查位置范围、差分速度、差分加速度、相邻点位置增量和停车空间。停车边界估计为 `p+v×|v|/(2d)+v×0.002`，不包含驱动通信延迟、实际跟随误差和额外安全余量，不能代替设备软硬限位。
+上位机发送前检查位置范围、差分速度、差分加速度、相邻点位置增量和停车空间；PLC 运行联锁、心跳和停止流程仍保留。停车边界估计为 `p+v×|v|/(2d)+v×0.002`，不包含驱动通信延迟、实际跟随误差和额外安全余量，不能代替设备软硬限位。
 
 首点定位最多等待 60 秒。任一轴异常、限位、撤使能、撤许可、手动命令冲突、停止或心跳超时均联停。定位阶段用 MC_Stop；轨迹阶段从最后送出的速度按配置减速度停车，再退出外部给定并确认静止。减速未做 jerk 平滑，各轴停稳时刻、距离可能不同，不保持四轴路径比例。实际故障轴由 NC/驱动器保护决定停机行为，普通 PLC 联停不能代替安全停机。
 
@@ -145,7 +145,7 @@ PC 使用 ADS 原始块写入时，先解析 aUpload 的实际 IndexGroup/IndexO
 | --- | --- |
 | 0 | 空闲/等待下一段 |
 | 5 | 全部段下发后统一分周期拼表，仅 xUploadBusy 为 TRUE，不占用基础轴控制 |
-| 10 | 整表校验，xBusy=TRUE |
+| 10 | 单扫描检查配置有效与轴就绪，xBusy=TRUE |
 | 15 | 四轴自动定位到各自轨迹首点 |
 | 20 | 等待外部给定全部激活，5 秒超时 |
 | 30 | 每 2 ms 同步取点 |
@@ -159,9 +159,9 @@ PC 使用 ADS 原始块写入时，先解析 aUpload 的实际 IndexGroup/IndexO
 | --- | --- |
 | 1001 | 上传元数据、段偏移、数量、采样周期或序号错误，或整表未到齐 |
 | 1002 | 轴参数无效 |
-| 1003 | 非有限数据、位置/差分速度/加速度、首尾或停车空间不合格 |
+| 1003 | 旧版整表数值校验故障；新版由上位机预检报告具体项目，不再生成此码 |
 | 1004 | 四轴未就绪或首点定位偏差过大 |
-| 1005 | 相邻位置点跳变超限 |
+| 1005 | 旧版相邻点跳变故障；新版由上位机预检，不再生成此码 |
 | 1006 | 心跳超时 |
 | 1007 | 联锁、命令冲突或外部给定意外退出（正常人工停止独立处理） |
 | 1008 | 外部给定激活超时 |
@@ -175,7 +175,7 @@ PC 使用 ADS 原始块写入时，先解析 aUpload 的实际 IndexGroup/IndexO
 
 ## 当前验证边界
 
-离线检查脚本使用 Python 标准库运行。`tests/verify_trajectory.py` 检查项目 XML、文件引用、ST 控制块结构、数组边界、位置差分、平滑位置表及 1000 组停车数值；`tests/verify_upload_assembly.py` 直接解释实际 ST 的状态 0/5，检查整表完成请求、所有容量边界、四轴复制范围、错段/漏段/序号变化、提前启动、复制失败和重拼。内存复制由受检模拟器替代；测试不执行完整 PLC/NC 状态机，也不验证 ADS 数据传输或实机运动。
+离线检查脚本使用 Python 标准库运行。`tests/verify_trajectory.py` 检查项目 XML、文件引用、ST 控制块结构、数组边界、位置差分、平滑位置表及 1000 组停车数值；`tests/verify_upload_assembly.py` 直接解释实际 ST 的状态 0/5/10，检查整表完成请求、所有容量边界、四轴复制范围、错段/漏段/序号变化、提前启动、复制失败和重拼。内存复制由受检模拟器替代；测试不执行完整 PLC/NC 状态机，也不验证 ADS 数据传输或实机运动。
 
 本次 27 项离线检查通过。已检测到本机安装的 XAE，并在临时工程副本尝试离线自动化编译，但构建调用返回 `HRESULT E_FAIL`，未取得 TwinCAT 编译通过的结果。未做 PLC 下载、在线激活、实机运动、60 分钟连续运行或 2 ms 实时性能测试。
 

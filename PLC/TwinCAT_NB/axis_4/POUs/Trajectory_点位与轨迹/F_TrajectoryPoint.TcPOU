@@ -2,7 +2,7 @@
 <TcPlcObject Version="1.1.0.1">
   <POU Name="F_TrajectoryPoint" Id="{2AC080BD-46AE-48E6-9326-C977DE86915B}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION F_TrajectoryPoint : ST_TrajectoryPoint
-// 无状态位置差分函数：整表校验和实际送点共用，不修改位置表或推进点号。
+// 无状态位置差分函数：运行时计算给定，不修改位置表或推进点号。
 VAR_INPUT
     lrPrevious : LREAL; // 前一点绝对位置 p[k-1]，单位跟随 NC；边界索引由调用方夹紧。
     lrCurrent : LREAL; // 当前点绝对位置 p[k]，单位跟随 NC，未经角度或丝杆换算。
@@ -13,7 +13,7 @@ VAR CONSTANT
     cDt : LREAL := 0.002; // 差分采样周期 0.002 秒（2 ms），必须与 PLC/NC SAF 周期一致。
 END_VAR]]></Declaration>
     <Implementation><ST><![CDATA[F_TrajectoryPoint.lrPosition := lrCurrent;
-// 首尾静止；调用方校验首两点、末两点分别相等。
+// 首尾静止；上位机预检首两点、末两点分别相等。
 IF xEndpoint THEN
     F_TrajectoryPoint.lrVelocity := 0;
     F_TrajectoryPoint.lrAcceleration := 0;

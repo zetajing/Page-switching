@@ -110,6 +110,18 @@ internal static class Program
         Reset();
         Refresh();
         Check(start.Enabled && !detail.Text.Contains("暂不能开始"), "条件恢复后必须移除旧原因并恢复开始按钮。");
+        missing = good;
+        missing.Error = true;
+        missing.TrajectoryErrorId = 1003;
+        missing.TrajectoryState = 90;
+        Set(page, "_waveFrame", missing);
+        service.WaveStatus = new("造波操作失败", 0, false, false, "轨迹启动确认失败：PLC 轨迹故障 1003");
+        Refresh();
+        foreach (var text in new[] { "1003", "首尾静止", "加速度", "停车空间", "故障等待复位", "最近操作失败", "轨迹启动确认" })
+            Check(detail.Text.Contains(text), "实际页面显示故障含义和原始失败阶段：" + text);
+        Reset();
+        Refresh();
+        Check(!detail.Text.Contains("最近操作失败") && !detail.Text.Contains("1003"), "新操作状态清除后不遗留旧故障详情。");
         Check(service.CommandCalls == 0, "更新按钮和原因不能调用启动、停止或上传命令。");
         Console.WriteLine($"Wave start UI checks: {_checks} assertions passed; actual auto.Wave.cs, no PLC access.");
     }
