@@ -31,12 +31,14 @@ public partial class Auto
         UpdateWaveControls();
         try
         {
+            var elapsed = System.Diagnostics.Stopwatch.StartNew();
             var signal = await Task.Run(() => WaveTrajectoryFile.Read(dialog.FileName));
             if (IsDisposed || Disposing) return;
             _waveService.ForgetWaveSignal();
             _waveSignal = signal; // 全部解析成功后才替换，失败保留原文件。
             waveFileLabel.Text = $"文件：{signal.FileName}\r\n点数：{signal.Positions.Length:N0}　周期：2 ms\r\n预计时长：{signal.DurationSeconds:F3} 秒\r\n按最终 PLC 点位发送，四轴共用；不使用主动吸收列。";
             AddLog("导入造波信号：" + signal.FileName + $"，{signal.Positions.Length} 点，四轴共用。");
+            AddLog($"文件读取及解析耗时：{elapsed.Elapsed.TotalMilliseconds:F1} ms。");
         }
         catch (Exception ex) { AddLog("导入失败，保留原信号：" + ex.Message); }
         finally { _waveImporting = false; if (!IsDisposed) UpdateWaveControls(); }
@@ -115,6 +117,9 @@ public partial class Auto
         if (!active && sendBlockReason is not null) detail += "\r\n暂不能发送：" + sendBlockReason;
         if (_waveService?.WaveStatus.Error is { Length: > 0 } error)
             detail += "\r\n最近操作失败：" + error;
+        // 停止或重新导入会更新当前阶段，但不能让先前的原始失败在页面上消失。
+        if (_waveService?.LastWaveFailure is { Length: > 0 } previousError && previousError != _waveService.WaveStatus.Error)
+            detail += "\r\n最近一次失败记录（历史，当前状态见上方）：" + previousError;
         if (startBlockReasons.Count > 0)
             detail += "\r\n暂不能开始：\r\n" + string.Join("\r\n", startBlockReasons.Select(reason => "• " + reason));
         return detail;

@@ -8,7 +8,7 @@ public sealed class ServoPositionIndicator : Control
     private double _minimumPosition = -20;
     private double _maximumPosition = 20;
     private double? _actualPosition;
-    private string _unitText = "°";
+    private string _unitText = "原始单位";
     private bool _isConnected;
     private bool _hasAlarm;
     private bool _positiveLimit;
@@ -178,7 +178,7 @@ public sealed class ServoPositionIndicator : Control
                 Font,
                 actualTextBrush,
                 actualX,
-                Height - 20);
+                6); // 实际值放在轨道上方，避免与两端显示刻度重叠。
         }
         else
         {
@@ -205,11 +205,12 @@ public sealed class ServoPositionIndicator : Control
         return UiPalette.Primary;
     }
 
-    // 以指定横坐标为中心绘制文字。
-    private static void DrawCenteredString(Graphics graphics, string text, Font font, Brush brush, float centerX, float y)
+    // 尽量跟随当前位置，靠近两端时把文字留在控件内，长单位也不会被裁掉。
+    private void DrawCenteredString(Graphics graphics, string text, Font font, Brush brush, float centerX, float y)
     {
         var size = graphics.MeasureString(text, font);
-        graphics.DrawString(text, font, brush, centerX - size.Width / 2, y);
+        float x = Math.Clamp(centerX - size.Width / 2, 4, Math.Max(4, Width - size.Width - 4));
+        graphics.DrawString(text, font, brush, x, y);
     }
 
     // 按左对齐或右对齐方式绘制文字。

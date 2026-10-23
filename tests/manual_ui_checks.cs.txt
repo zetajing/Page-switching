@@ -29,6 +29,9 @@ internal static class Program
         form.Show();
         Application.DoEvents();
         Field<System.Windows.Forms.Timer>(page, "_refreshTimer").Stop();
+        Check(Field<AntdUI.Label>(page, "overviewGroupCaption").Text!.Contains("非运动限值"), "本地位置条必须明确不是 PLC 运动限值。");
+        Check(Field<ServoPositionIndicator>(page, "axis1PositionIndicator").UnitText == service.Unit,
+            "位置条使用配置的显示单位，不私自把原始反馈标成角度。");
 
         var names = new[] { "enableAllButton", "disableAllButton", "resetAlarmButton", "homeAllButton",
                             "stopAllButton", "jogNegativeButton", "jogPositiveButton", "homeSelectedButton", "stopSelectedButton" };
@@ -41,6 +44,12 @@ internal static class Program
             Check(pair.Value.Enabled, name + " 应在有权限时可用。");
         }
         SaveImage(form, "manual-idle.png");
+        // 数值超出本地刻度仍显示真实原始值，不改成刻度端值或角度。
+        var indicator = Field<ServoPositionIndicator>(page, "axis1PositionIndicator");
+        indicator.ActualPosition = 200;
+        Check(indicator.ActualPosition == 200 && indicator.MaximumPosition == 20, "显示范围不能截断实际反馈数值。");
+        SaveImage(form, "manual-outside-display-scale.png");
+        indicator.ActualPosition = 0;
 
         // 真实 Click 处理器必须把 Loading 限定在触发按钮，不让其他按钮一起变灰。
         var ordinary = new[]
@@ -229,7 +238,7 @@ namespace Page_switching
         public int RefreshIntervalMilliseconds => 1000000;
         public double MinimumPosition => -20;
         public double MaximumPosition => 20;
-        public string Unit => "NC";
+        public string Unit => "原始单位";
         public int CommandCalls { get; private set; }
         public int JogStarts { get; private set; }
         public int JogStops { get; private set; }

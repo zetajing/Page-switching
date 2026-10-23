@@ -35,6 +35,7 @@ internal static class Program
             service.HasControlAuthority = true;
             service.WaveOperationActive = false;
             service.WaveStatus = new("已发送，等待开始", 1, false, true);
+            service.LastWaveFailure = null;
             Set(page, "_waveFrame", good);
             Set(page, "_waveImporting", false);
             Set(page, "_waveStopping", false);
@@ -161,6 +162,18 @@ internal static class Program
         Reset();
         Refresh();
         Check(!detail.Text.Contains("最近操作失败") && !detail.Text.Contains("1003"), "新操作状态清除后不遗留旧故障详情。");
+        service.LastWaveFailure = "首点定位失败：轴 2，原始错误 16384";
+        service.WaveStatus = new("已停止，再次运行请重新发送", 0, false, false);
+        Refresh();
+        Check(detail.Text.Contains("历史") && detail.Text.Contains("轴 2") && detail.Text.Contains("16384"),
+            "成功停止后仍展示历史原始失败，不能误认为当前仍在报同一故障。");
+        Check(stage.Text.StartsWith("已停止") && stop.Enabled, "历史记录不能覆盖当前停车阶段或禁用停止。");
+        service.WaveStatus = new("已发送，等待开始", 1, false, true);
+        Refresh();
+        Check(start.Enabled && detail.Text.Contains("16384"), "历史失败仅供追溯，不作为新的启动门槛。");
+        service.WaveStatus = new("造波操作失败", 0, false, false, service.LastWaveFailure);
+        Refresh();
+        Check(detail.Text.IndexOf("16384") == detail.Text.LastIndexOf("16384"), "同一失败不在当前和历史区重复展示。");
         Check(service.CommandCalls == 0, "更新按钮和原因不能调用启动、停止或上传命令。");
         Console.WriteLine($"Wave start UI checks: {_checks} assertions passed; actual auto.Wave.cs, no PLC access.");
     }
@@ -208,6 +221,7 @@ namespace Page_switching
         public ushort ControlStationCode => 2;
         public bool WaveOperationActive { get; set; }
         public WaveOperationStatus WaveStatus { get; set; } = new("未导入", 0, false, false);
+        public string? LastWaveFailure { get; set; }
         public int CommandCalls { get; private set; }
         internal List<string> GetWaveStartBlockReasons(PlcMachineMonitor frame) =>
             WaveCommandChecks.ForStart(frame, ControlStationCode, WaveStatus.Ready ? 7u : 0u);

@@ -70,6 +70,22 @@ internal static class Program
         Check(grid.Rows.Count == 0, "failed read removes old parameters instead of displaying zero or stale rows");
         text = (string)Call(form, "BuildDiagnosticText")!;
         Check(text.Contains("读取失败") && !text.Contains("12003"), "failure can be copied without stale parameter values");
+        // 服务是失败记录的唯一来源；复制必须保持屏幕这一次诊断，不读后来发生的错误。
+        var options = Create("AxisServiceOptions");
+        var maps = Array.CreateInstance(Type("AxisSymbolMap"), 4);
+        for (int i = 0; i < 4; i++) maps.SetValue(Create("AxisSymbolMap"), i);
+        options.GetType().GetProperty("AxisSymbols")!.SetValue(options, maps);
+        using var service = (IDisposable)Create("AxisService", options); // 不 Connect，不创建网络请求。
+        Set(service, "_lastWaveFailure", "第一次失败：轴 2，错误 16384");
+        using var withService = (Form)Create("MachineDiagnosticsForm", service);
+        Call(withService, "ApplySnapshot", snapshot);
+        string first = (string)Call(withService, "BuildDiagnosticText")!;
+        Check(first.Contains("第一次失败"), "diagnostic obtains saved failure directly from service");
+        Set(service, "_lastWaveFailure", "第二次失败：轴 4");
+        Check((string)Call(withService, "BuildDiagnosticText")! == first, "copy stays on displayed snapshot until refresh");
+        Call(withService, "ApplySnapshot", snapshot);
+        text = (string)Call(withService, "BuildDiagnosticText")!;
+        Check(text.Contains("第二次失败") && !text.Contains("第一次失败"), "refresh uses latest service failure without duplicate cached state");
         using var authority = (UserControl)Create("ControlAuthority");
         using var host = new Form { ClientSize = new System.Drawing.Size(1100, 850), ShowInTaskbar = false, Opacity = 0 };
         host.Controls.Add(authority);

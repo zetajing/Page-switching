@@ -1,0 +1,113 @@
+{
+  "measured_at": "2026-10-24T06:59:37.2730981+08:00",
+  "runtime": "8.0.30",
+  "os": "Microsoft Windows NT 10.0.19045.0",
+  "processor_count": 12,
+  "scope": "Offline zero-point fixtures; warm file cache; four-axis precheck; no ADS or PLC execution",
+  "configs": [
+    {
+      "MinPosition": -200,
+      "MaxPosition": 200,
+      "MaxVelocity": 200,
+      "MaxAcceleration": 12000,
+      "StopDeceleration": 100,
+      "StartTolerance": 10,
+      "InitVelocity": 10
+    },
+    {
+      "MinPosition": -200,
+      "MaxPosition": 200,
+      "MaxVelocity": 200,
+      "MaxAcceleration": 12000,
+      "StopDeceleration": 100,
+      "StartTolerance": 10,
+      "InitVelocity": 10
+    },
+    {
+      "MinPosition": -200,
+      "MaxPosition": 200,
+      "MaxVelocity": 200,
+      "MaxAcceleration": 12000,
+      "StopDeceleration": 100,
+      "StartTolerance": 10,
+      "InitVelocity": 10
+    },
+    {
+      "MinPosition": -200,
+      "MaxPosition": 200,
+      "MaxVelocity": 200,
+      "MaxAcceleration": 12000,
+      "StopDeceleration": 100,
+      "StartTolerance": 10,
+      "InitVelocity": 10
+    }
+  ],
+  "peak_process_working_set_bytes": 53739520,
+  "memory_note": "Peak is for the whole benchmark process, not per case; allocations are process-wide deltas, not retained memory.",
+  "cases": [
+    {
+      "points": 163831,
+      "file_bytes": 491544,
+      "median_read_ms": 11.6495,
+      "median_precheck_ms": 2.9067,
+      "samples": [
+        {
+          "run": 1,
+          "read_ms": 16.8651,
+          "precheck_ms": 6.4537,
+          "read_allocated_bytes": 15800520,
+          "precheck_allocated_bytes": 0
+        },
+        {
+          "run": 2,
+          "read_ms": 11.6495,
+          "precheck_ms": 2.8784,
+          "read_allocated_bytes": 15800520,
+          "precheck_allocated_bytes": 0
+        },
+        {
+          "run": 3,
+          "read_ms": 11.2339,
+          "precheck_ms": 2.9067,
+          "read_allocated_bytes": 15800520,
+          "precheck_allocated_bytes": 0
+        }
+      ]
+    },
+    {
+      "points": 2100000,
+      "file_bytes": 6300052,
+      "median_read_ms": 174.948,
+      "median_precheck_ms": 55.8093,
+      "samples": [
+        {
+          "run": 1,
+          "read_ms": 373.4214,
+          "precheck_ms": 62.6245,
+          "read_allocated_bytes": 201676456,
+          "precheck_allocated_bytes": 0
+        },
+        {
+          "run": 2,
+          "read_ms": 174.948,
+          "precheck_ms": 40.758,
+          "read_allocated_bytes": 201673096,
+          "precheck_allocated_bytes": 0
+        },
+        {
+          "run": 3,
+          "read_ms": 167.5255,
+          "precheck_ms": 55.8093,
+          "read_allocated_bytes": 201609208,
+          "precheck_allocated_bytes": 0
+        }
+      ]
+    }
+  ],
+  "source_sha256": {
+    "Wave/Legacy/WaveTrajectoryFile.cs": "19c682c4cd409a8a4c6266ca50b3e8929adffd38f4bba7ed3c3dbb8584240c81",
+    "Wave/Legacy/WavePointValidator.cs": "4af910f3e5624d3bc6237c64f422d864ec14331cdd59af387f6d4c7fdcca7527"
+  },
+  "git_head_at_measurement": "15e76ca146d8be52a5d15c25ceefd9a11bf9a3a9",
+  "working_tree_was_dirty": true
+}

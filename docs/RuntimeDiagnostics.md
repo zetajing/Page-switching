@@ -57,3 +57,5 @@ python PLC/TwinCAT_NB/tests/check_source_copy.py --actual 'C:\Users\75881\Deskto
 本机另外尝试独立隐藏XAE实例，能够打开实际解决方案，但取得的系统工程对象没有有效FullName，且无法设置ConfigurationManager.ActiveTargetPlatform，尚未进入PLC编译。采用的构建入口参考[Beckhoff官方Automation Interface文档](https://infosys.beckhoff.com/content/1033/tc3_automationinterface/21842451979.html)。这不等于PLC源码编译失败，也不能视为编译通过。本轮没有激活配置、下载PLC或发送在线运动命令。
 
 下一步需在正常加载TwinCAT系统工程的XAE中完成实际编译，再按路线完成虚拟轴正常结束、不同阶段停止、断线恢复及参数变化验收。当前运行许可和配置仍用于虚拟调试，现场参数与继电器接入另行确认。
+
+2026-10-24 后续安排：按用户要求，不再自动尝试 XAE 编译或下载，改由用户执行。验收记录、固定虚拟点位及源码哈希报告入口见[优化交付与虚拟轴验收](OptimizationAcceptance.md)。造波页面在成功停车后仍显示服务保存的最近原始失败，标为历史记录；当前阶段和停车确认仍单独显示。诊断窗口不再缓存第二份失败记录；刷新时从服务取值，复制时使用屏幕这一份文字，不读取后来发生的新错误。

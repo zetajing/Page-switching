@@ -8,6 +8,7 @@ from xml.sax.saxutils import escape
 
 ROOT = Path(__file__).resolve().parents[1]
 LOCAL_FILE = None
+VIRTUAL_FIXTURE = None
 
 
 class WavePointValidatorChecks(unittest.TestCase):
@@ -28,6 +29,8 @@ class WavePointValidatorChecks(unittest.TestCase):
             command = ["dotnet", "run", "--project", str(folder / "Probe.csproj"), "-c", "Release", "-v", "quiet"]
             if LOCAL_FILE is not None:
                 command += ["--", str(LOCAL_FILE)]
+            elif VIRTUAL_FIXTURE is not None:
+                command += ["--", "--fixture", str(VIRTUAL_FIXTURE)]
             result = subprocess.run(command,
                 capture_output=True, text=True, encoding="utf-8", timeout=120)
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
@@ -37,6 +40,9 @@ class WavePointValidatorChecks(unittest.TestCase):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--file", type=Path, help="可选：只读检查本机已确认的 163831 点调试文件，不作为 CI 依赖。")
+    parser.add_argument("--fixture", type=Path, help="可选：只读验证 create_virtual_axis_fixture.py 生成的固定验收文件。")
     options = parser.parse_args()
     LOCAL_FILE = options.file.resolve() if options.file else None
+    VIRTUAL_FIXTURE = options.fixture.resolve() if options.fixture else None
+    if LOCAL_FILE and VIRTUAL_FIXTURE: parser.error('--file 和 --fixture 只能选择一项')
     unittest.main(argv=[__file__], verbosity=2)

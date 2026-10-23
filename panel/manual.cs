@@ -40,6 +40,8 @@ namespace Page_switching
             _ownsAxisService = ownsAxisService;
 
             InitializeComponent();
+            // 本地刻度只影响绘图；PLC 真实限值在“运行诊断 / 轴参数”中读取。
+            overviewGroupCaption.Text = "四轴位置（本地刻度，非运动限值）";
             // 连接栏空间有限；读取错误显示省略号，悬停可查看完整变量和原因。
             connectionStateLabel.AutoEllipsis = true;
             connectionStateLabel.ShowTooltip = true;
@@ -434,6 +436,7 @@ namespace Page_switching
             }
             catch (Exception ex)
             {
+                AdsDiagnostics.RecordException("手动命令", ex);
                 if (CanUpdateCommandStatus(stopRequestVersion)) ShowCommandResult("操作失败：" + ex.Message);
             }
             finally
@@ -474,6 +477,7 @@ namespace Page_switching
             }
             catch (Exception ex)
             {
+                AdsDiagnostics.RecordException("手动停止", ex);
                 var message = "停止命令发送失败：" + ex.Message + "；" + requestMessage;
                 if (CanUpdateCommandStatus(stopRequestVersion)) ShowCommandResult(message);
                 else OperationJournal.Record("手动控制", message);

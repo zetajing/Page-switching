@@ -40,8 +40,13 @@ public sealed partial class AxisService
         var frame = await ReadWaveFrameAsync(token);
         WaveCommandChecks.ThrowIfBlocked(WaveCommandChecks.ForUpload(frame));
         _waveStatus = new("正在读取轴参数并检查点位", 0, true, false);
+        // 各段只计真实耗时，不加等待、不改批次；后续按现场日志定位性能瓶颈。
+        var elapsed = System.Diagnostics.Stopwatch.StartNew();
         var limits = await ReadWaveAxisLimitsAsync(token);
+        OperationJournal.Record("造波耗时", $"读取四轴参数：{elapsed.Elapsed.TotalMilliseconds:F1} ms。");
+        elapsed.Restart();
         WavePointValidator.Validate(points, limits, token);
+        OperationJournal.Record("造波耗时", $"整表预检：{elapsed.Elapsed.TotalMilliseconds:F1} ms，四轴共用 {points.Length} 点。");
         OperationJournal.Record("点位预检", $"四轴点位预检通过，共 {points.Length} 点，周期 2 ms，开始下发。");
         _waveNeedsStop = true;
         await WaveWriteAsync("GVL_motion.xStop", DataType.Bool, false, token);
@@ -53,6 +58,7 @@ public sealed partial class AxisService
         _waveSequence = Math.Max(_waveSequence, Math.Max(frame.AcceptedSequence, frame.ReceivedSequence));
         do { _waveSequence = unchecked(_waveSequence + 1); }
         while (_waveSequence == 0 || _waveSequence == frame.AcceptedSequence || _waveSequence == frame.ReceivedSequence);
+        elapsed.Restart();
         await WaveWriteAsync("GVL_motion.nPointCount", DataType.UInt32, (uint)points.Length, token);
         await WaveWriteAsync("GVL_motion.nSampleTimeUs", DataType.UInt16, (ushort)2000, token);
         await WaveWriteAsync("GVL_motion.udiUploadSequence", DataType.UInt32, _waveSequence, token);
@@ -86,6 +92,8 @@ public sealed partial class AxisService
             await WaitWaveFrameAsync(f => f.ReceivedSequence == _waveSequence && f.ReceivedCount == expected,
                 5000, "等待本段接收确认", token);
         }
+        OperationJournal.Record("造波耗时", $"点位传输及分段确认：{elapsed.Elapsed.TotalMilliseconds:F1} ms，上传序号 {_waveSequence}。");
+        elapsed.Restart();
         _waveStatus = new("PLC 正在拼接", 0, true, false);
         await PulseWaveAsync("xAssemble", token);
         await WaitWaveFrameAsync(f =>
@@ -94,6 +102,7 @@ public sealed partial class AxisService
             return f.DataReady && !f.UploadBusy && f.LoadedCount == points.Length
                 && f.ReceivedSequence == _waveSequence && f.UploadStation == ControlStationCode;
         }, 30000, "PLC 拼接", token);
+        OperationJournal.Record("造波耗时", $"请求拼表至就绪确认：{elapsed.Elapsed.TotalMilliseconds:F1} ms，上传序号 {_waveSequence}。");
         _waveReadySequence = _waveSequence;
         _waveValidatedLimits = limits;
         _waveStatus = new("已发送，等待开始", 1, false, true);

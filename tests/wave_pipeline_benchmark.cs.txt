@@ -1,0 +1,55 @@
+using System.Diagnostics;
+using System.Text.Json;
+using Page_switching;
+
+// 只用零位置构造解析/预检负载；不生成设备轨迹、不使用 ADS、不证明现场运行能力。
+var configs = Enumerable.Range(0, 4).Select(_ => new AxisTrajectoryLimits(-200, 200, 200, 12000, 100, 10, 10)).ToArray();
+WavePointValidator.Validate(new double[64], configs, CancellationToken.None); // 预热 JIT。
+var cases = new List<object>();
+foreach (int count in new[] { 163831, 2100000 })
+{
+    string file = Path.Combine(args[0], "zero-points.csv");
+    using (var writer = new StreamWriter(file))
+    {
+        writer.WriteLine("OfflineBenchmark");
+        foreach (string line in new[] { count.ToString(), "0.002", "1", "1", "1", "0", "0", "0" }) writer.WriteLine(line);
+        for (int i = 0; i < count; i++) writer.WriteLine("0");
+    }
+    WaveTrajectoryFile.Read(file); // 预热解析和文件缓存；下面结果是热缓存，不是冷盘性能。
+    var samples = new List<object>();
+    var readTimes = new List<double>();
+    var checkTimes = new List<double>();
+    for (int run = 0; run < 3; run++)
+    {
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        long allocated = GC.GetTotalAllocatedBytes(true);
+        var elapsed = Stopwatch.StartNew();
+        var signal = WaveTrajectoryFile.Read(file);
+        double readMs = elapsed.Elapsed.TotalMilliseconds;
+        long readAllocated = GC.GetTotalAllocatedBytes(true) - allocated;
+        elapsed.Restart();
+        allocated = GC.GetTotalAllocatedBytes(true);
+        WavePointValidator.Validate(signal.Positions, configs, CancellationToken.None);
+        double checkMs = elapsed.Elapsed.TotalMilliseconds;
+        long checkAllocated = GC.GetTotalAllocatedBytes(true) - allocated;
+        if (signal.Positions.Length != count) throw new InvalidDataException("Benchmark point count mismatch");
+        readTimes.Add(readMs);
+        checkTimes.Add(checkMs);
+        samples.Add(new { run = run + 1, read_ms = readMs, precheck_ms = checkMs,
+            read_allocated_bytes = readAllocated, precheck_allocated_bytes = checkAllocated });
+    }
+    readTimes.Sort();
+    checkTimes.Sort();
+    cases.Add(new { points = count, file_bytes = new FileInfo(file).Length,
+        median_read_ms = readTimes[1], median_precheck_ms = checkTimes[1], samples });
+    Console.WriteLine($"{count} points: read median={readTimes[1]:F2} ms, precheck median={checkTimes[1]:F2} ms");
+}
+using var process = Process.GetCurrentProcess();
+process.Refresh();
+var report = new { measured_at = DateTimeOffset.Now, runtime = Environment.Version.ToString(),
+    os = Environment.OSVersion.VersionString, processor_count = Environment.ProcessorCount,
+    scope = "Offline zero-point fixtures; warm file cache; four-axis precheck; no ADS or PLC execution",
+    configs, peak_process_working_set_bytes = process.PeakWorkingSet64,
+    memory_note = "Peak is for the whole benchmark process, not per case; allocations are process-wide deltas, not retained memory.", cases };
+File.WriteAllText(Path.Combine(args[0], "result.json"), JsonSerializer.Serialize(report, new JsonSerializerOptions { WriteIndented = true }));

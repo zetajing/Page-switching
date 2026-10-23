@@ -162,15 +162,32 @@ public sealed partial class AxisService
             if (WaveOperationActive) throw new InvalidOperationException("造波会话进行中，请先停止造波再手动操作。");
             var setRequests = CreateWriteRequests(client, symbols, true);
             var resetRequests = CreateWriteRequests(client, symbols, false);
+            Exception? commandError = null; // 撤销也失败时，仍须保留最初的提交或取消原因。
             try
             {
                 await client.WriteManyAsync(setRequests, cancellationToken).ConfigureAwait(false);
                 await Task.Delay(50, cancellationToken).ConfigureAwait(false);
             }
+            catch (Exception ex)
+            {
+                commandError = ex;
+                if (ex is OperationCanceledException) throw;
+                commandError = new InvalidOperationException(
+                    $"手动命令提交失败（{string.Join(", ", symbols)}）：{AdsDiagnostics.DescribeException(ex)}", ex);
+                throw commandError;
+            }
             finally
             {
                 // 置位可能部分成功；即使取消，也按原轴顺序尝试复位，超时由 ADS 客户端控制。
-                await client.WriteManyAsync(resetRequests, CancellationToken.None).ConfigureAwait(false);
+                try { await client.WriteManyAsync(resetRequests, CancellationToken.None).ConfigureAwait(false); }
+                catch (Exception ex)
+                {
+                    var resetError = new InvalidOperationException(
+                        $"撤销手动命令失败（{string.Join(", ", symbols)}）：{AdsDiagnostics.DescribeException(ex)}；请核对 PLC 请求位和轴状态。", ex);
+                    if (commandError is not null)
+                        throw new AggregateException(commandError.Message + "；" + resetError.Message, commandError, resetError);
+                    throw resetError;
+                }
             }
         }
         finally
@@ -179,44 +196,19 @@ public sealed partial class AxisService
         }
     }
 
-    // 将指定轴的命令变量置位 50 毫秒，再复位。
-    private async Task PulseAxisAsync(
+    // 单轴只提交一个符号，其余置位、50 ms 等待、取消和撤销流程与全轴共用。
+    private Task PulseAxisAsync(
         int axisNumber,
         string symbol,
         CancellationToken cancellationToken)
     {
         ThrowIfDisposed();
         ValidateAxisNumber(axisNumber);
-        await _operationGate.WaitAsync(cancellationToken).ConfigureAwait(false);
-        try
+        if (string.IsNullOrWhiteSpace(symbol))
         {
-            var client = GetConnectedClient() ?? throw new InvalidOperationException("ADS 尚未连接。");
-            if (string.IsNullOrWhiteSpace(symbol))
-            {
-                throw new InvalidOperationException($"轴 {axisNumber} 尚未配置 ADS 控制符号。");
-            }
-
-            RequireControlAuthority();
-            if (WaveOperationActive) throw new InvalidOperationException("造波会话进行中，请先停止造波再手动操作。");
-            try
-            {
-                await client.WriteAsync(
-                    new WriteRequest(client.DeviceId, symbol, DataType.Bool, true), cancellationToken)
-                    .ConfigureAwait(false);
-                await Task.Delay(50, cancellationToken).ConfigureAwait(false);
-            }
-            finally
-            {
-                // 页面取消不应跳过复位；断线时仍会向调用方报告写入失败。
-                await client.WriteAsync(
-                    new WriteRequest(client.DeviceId, symbol, DataType.Bool, false), CancellationToken.None)
-                    .ConfigureAwait(false);
-            }
+            throw new InvalidOperationException($"轴 {axisNumber} 尚未配置 ADS 控制符号。");
         }
-        finally
-        {
-            _operationGate.Release();
-        }
+        return PulseAllAsync(new[] { symbol }, cancellationToken);
     }
 
     // 把变量地址和值转换成 ADS 批量写请求。

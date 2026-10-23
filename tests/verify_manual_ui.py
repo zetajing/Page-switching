@@ -17,7 +17,7 @@ class ManualUiChecks(unittest.TestCase):
         antdui = packages / "antdui/2.4.12/lib/net8.0-windows7.0/AntdUI.dll"
         self.assertTrue(antdui.is_file(), f"缺少本地 AntdUI 2.4.12：{antdui}")
         sources = ["panel/manual.cs", "panel/manual.Designer.cs", "Controls/ServoPositionIndicator.cs",
-                   "Controls/UiPalette.cs", "Axis/Feedback/AxisSnapshot.cs"]
+                   "Controls/UiPalette.cs", "Axis/Feedback/AxisSnapshot.cs", "Infrastructure/AdsDiagnostics.cs"]
         with tempfile.TemporaryDirectory(prefix="PageSwitching_ManualUI_") as directory:
             folder = Path(directory)
             links = "".join(f'<Compile Include="{escape(str(ROOT / name))}" />' for name in sources)

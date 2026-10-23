@@ -9,7 +9,7 @@ internal static class Program
     static async Task<Exception> Reject(Func<Task> action, string name)
     {
         try { await action(); throw new Exception("未拒绝：" + name); }
-        catch (Exception ex) when (ex is InvalidOperationException or InvalidDataException or OperationCanceledException or TimeoutException) { assertions++; return ex; }
+        catch (Exception ex) when (ex is InvalidOperationException or InvalidDataException or OperationCanceledException or TimeoutException or AggregateException) { assertions++; return ex; }
     }
     static async Task Until(Func<bool> ready)
     {
@@ -175,6 +175,56 @@ internal static class Program
                 model.Frame.Axis4.Alarm = true;
                 await service.UploadWaveAsync(signal);
                 Check(service.WaveStatus.Ready && model.MotionWrites == 0, "upload remains separate from motion preparation");
+            }
+            // 单轴与全轴共用脉冲实现：保持轴映射，取消后清零，双重故障保留原始异常。
+            AdsClient.Model = new FakePlc();
+            using (var service = new AxisService(Options()))
+            {
+                await service.ConnectAsync(CancellationToken.None);
+                await Until(() => service.HasControlAuthority);
+                var model = AdsClient.Model;
+                await service.ResetAxisAlarmAsync(4, CancellationToken.None);
+                Check(model.PulseWrites.TakeLast(2).SequenceEqual(new[] { "GVL_control.aStation[1].aAxis[4].reset=True", "GVL_control.aStation[1].aAxis[4].reset=False" }),
+                    "axis four pulse keeps exact mailbox and true/false order");
+                await service.ResetAlarmsAsync(CancellationToken.None);
+                var expected = Enumerable.Range(1, 4).Select(i => $"GVL_control.aStation[1].aAxis[{i}].reset=True")
+                    .Concat(Enumerable.Range(1, 4).Select(i => $"GVL_control.aStation[1].aAxis[{i}].reset=False"));
+                Check(model.PulseWrites.TakeLast(8).SequenceEqual(expected), "all-axis pulse preserves write order");
+                using var cancel = new CancellationTokenSource();
+                model.CancelPulseOnSet = cancel;
+                var cancelled = await Reject(() => service.ResetAxisAlarmAsync(3, cancel.Token), "cancel pulse after set");
+                Check(cancelled is OperationCanceledException && model.PulseWrites.Last().EndsWith("aAxis[3].reset=False"), "cancellation still clears original axis");
+                model.CancelPulseOnSet = null;
+                foreach (var mode in new[] { "set", "reset", "both" })
+                {
+                    model.FailPulseSet = mode != "reset";
+                    model.FailPulseReset = mode != "set";
+                    var failure = await Reject(() => service.ResetAxisAlarmAsync(2, CancellationToken.None), "pulse failure " + mode);
+                    Check(failure.Message.Contains("aAxis[2].reset"), "manual failure contains exact command symbol");
+                    Check(model.PulseWrites.Last().EndsWith("aAxis[2].reset=False"), "failed set still attempts reset");
+                    if (mode == "both")
+                    {
+                        Check(failure is AggregateException aggregate && aggregate.InnerExceptions.Count == 2,
+                            "set and reset failures remain separate exceptions");
+                        Check(failure.ToString().Contains("模拟置位失败") && failure.ToString().Contains("模拟撤销失败"),
+                            "cleanup cannot overwrite original set failure");
+                    }
+                }
+                model.FailPulseSet = model.FailPulseReset = false;
+                using var cancelWithResetFailure = new CancellationTokenSource();
+                model.CancelPulseOnSet = cancelWithResetFailure;
+                model.FailPulseReset = true;
+                var both = await Reject(() => service.ResetAxisAlarmAsync(4, cancelWithResetFailure.Token), "cancel and reset failure");
+                Check(both is AggregateException cancelledAndReset
+                    && cancelledAndReset.InnerExceptions[0] is OperationCanceledException,
+                    "failed cancellation cleanup cannot be silently treated as normal cancellation");
+                Check(both.Message.Contains("撤销手动命令失败") && both.Message.Contains("aAxis[4].reset"), "cancel cleanup identifies uncertain request bit");
+                model.CancelPulseOnSet = null;
+                model.FailPulseReset = false;
+                await service.ResetAxisAlarmAsync(1, CancellationToken.None);
+                Check(model.PulseWrites.Last().EndsWith("aAxis[1].reset=False"), "failed pulse always releases service gate");
+                var defaults = AxisServiceOptions.FromConfiguration(new NameValueCollection());
+                Check(defaults.Unit == "原始单位", "unknown PLC axis unit is not assumed to be degrees");
             }
             AdsClient.Model = new FakePlc { FailArrayWrite = true };
             using (var service = new AxisService(Options()))
@@ -453,6 +503,9 @@ namespace InduLink.Protocols.Ads
         public int PointMetadataWrites, ClearWrites;
         public int ArrayWrites, StartWrites, StopReleaseWrites, WaveHeartbeatWrites;
         public int MotionWrites;
+        public readonly List<string> PulseWrites = new();
+        public bool FailPulseSet, FailPulseReset;
+        public CancellationTokenSource? CancelPulseOnSet;
         public Dictionary<int, List<double>> ValuesByAxis = new();
         public List<int> HomedAxes = new();
         private uint sequence, offset, size;
@@ -462,6 +515,13 @@ namespace InduLink.Protocols.Ads
             TotalWrites++;
             if (request.Address.EndsWith(".reset") && request.Value is true) ResetWrites++;
             string address = request.Address;
+            if (address.Contains(".aAxis[") && address.EndsWith(".reset"))
+            {
+                PulseWrites.Add(address + "=" + request.Value);
+                if (request.Value is true && FailPulseSet) throw new InvalidOperationException("模拟置位失败");
+                if (request.Value is false && FailPulseReset) throw new InvalidOperationException("模拟撤销失败");
+                if (request.Value is true) CancelPulseOnSet?.Cancel();
+            }
             if (request.Value is true && (address == "GVL_motion.xStart" || address == "GVL_motion.xStop"
                 || address.Contains(".aAxis[") && (address.EndsWith(".xStart") || address.EndsWith(".gohome") || address.EndsWith(".xStop"))))
                 MotionWrites++;

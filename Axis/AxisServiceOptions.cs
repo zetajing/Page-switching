@@ -23,7 +23,8 @@ public sealed class AxisServiceOptions
     public int RefreshIntervalMilliseconds { get; init; } = 100;
     public ushort ControlStationCode { get; init; } // 0 未配置；1 中心；2 本地；3 远程。
     public string SnapshotSymbol { get; init; } = "GVL_HMI.stMonitor"; // 与机器监控共用反馈结构体地址。
-    public string Unit { get; init; } = "°";
+    public string Unit { get; init; } = "原始单位"; // 未确认机械换算，显示原始反馈，不标成角度。
+    // 仅用于位置条刻度；真实运动限值读取 PLC aConfig，不使用这里的显示范围。
     public double MinimumPosition { get; init; } = -20;
     public double MaximumPosition { get; init; } = 20;
     public IReadOnlyList<AxisSymbolMap> AxisSymbols { get; init; } = Array.Empty<AxisSymbolMap>();
@@ -61,7 +62,7 @@ public sealed class AxisServiceOptions
             ConnectTimeoutMilliseconds = Convert.ToInt32(settings["AdsConnectTimeoutMs"] ?? "10000"),
             OperationTimeoutMilliseconds = Convert.ToInt32(settings["AdsOperationTimeoutMs"] ?? "5000"),
             RefreshIntervalMilliseconds = Convert.ToInt32(settings["AdsRefreshIntervalMs"] ?? "100"),
-            Unit = settings["AxisUnit"] ?? "°",
+            Unit = settings["AxisUnit"] ?? "原始单位",
             MinimumPosition = Convert.ToDouble(settings["AxisMinimum"] ?? "-20",
                 System.Globalization.CultureInfo.InvariantCulture),
             MaximumPosition = Convert.ToDouble(settings["AxisMaximum"] ?? "20",

@@ -8,6 +8,7 @@
 2. 操作造波页：先读[造波页操作与通信](WaveOperation.md)，再核对[三站控制权与运行锁](ControlAuthorityRules.md)。
 3. 连接或部署 PLC：依次读 [ADS 连接](AdsConnectionGuide.md)、[TwinCAT 对接](TwinCAT_NB_Integration.md)和[PLC 只读监控接口](PlcMonitoringContract.md)。
 4. 调整造波计算或机械转换：先读[造波计算讨论记录](WaveGenerationNotes.md)，区分设备资料、理论示例及待确认参数。
+5. 本轮交付及在线验收：见[优化交付与虚拟轴验收](OptimizationAcceptance.md)，包含版本记录、固定点位、逐项验收表和性能基线。
 
 ## 开发与界面
 
