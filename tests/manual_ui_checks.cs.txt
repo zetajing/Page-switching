@@ -1,0 +1,273 @@
+using System.Diagnostics;
+using System.Drawing.Imaging;
+using System.Reflection;
+using Page_switching;
+
+internal static class Program
+{
+    private static int _checks;
+    private static string? _images;
+    private static readonly BindingFlags Private = BindingFlags.Instance | BindingFlags.NonPublic;
+
+    [STAThread]
+    private static void Main(string[] args)
+    {
+        Application.SetHighDpiMode(HighDpiMode.PerMonitorV2);
+        Application.EnableVisualStyles();
+        AntdUI.Config.Mode = AntdUI.TMode.Light;
+        _images = args.Length == 0 ? null : args[0];
+        if (_images is not null) Directory.CreateDirectory(_images);
+
+        using var service = new AxisService(new AxisServiceOptions());
+        using var form = new Form
+        {
+            ClientSize = new Size(1460, 900), StartPosition = FormStartPosition.Manual,
+            Location = new Point(-20000, -20000), ShowInTaskbar = false, Opacity = 0
+        };
+        using var page = new Manual(service) { Dock = DockStyle.Fill };
+        form.Controls.Add(page);
+        form.Show();
+        Application.DoEvents();
+        Field<System.Windows.Forms.Timer>(page, "_refreshTimer").Stop();
+
+        var names = new[] { "enableAllButton", "disableAllButton", "resetAlarmButton", "homeAllButton",
+                            "stopAllButton", "jogNegativeButton", "jogPositiveButton", "homeSelectedButton", "stopSelectedButton" };
+        var buttons = names.ToDictionary(name => name, name => Field<AntdUI.Button>(page, name));
+        var changes = names.ToDictionary(name => name, _ => 0);
+        foreach (var pair in buttons)
+        {
+            string name = pair.Key;
+            pair.Value.EnabledChanged += (_, _) => changes[name]++;
+            Check(pair.Value.Enabled, name + " 应在有权限时可用。");
+        }
+        SaveImage(form, "manual-idle.png");
+
+        // 真实 Click 处理器必须把 Loading 限定在触发按钮，不让其他按钮一起变灰。
+        var ordinary = new[]
+        {
+            ("enableAllButton", "EnableAllButton_Click"), ("disableAllButton", "DisableAllButton_Click"),
+            ("resetAlarmButton", "ResetAlarmButton_Click"), ("homeAllButton", "HomeAllButton_Click"),
+            ("homeSelectedButton", "HomeSelectedButton_Click")
+        };
+        foreach (var (name, handler) in ordinary)
+        {
+            var gate = Pending();
+            service.CommandTask = gate.Task;
+            Invoke(page, handler, buttons[name], EventArgs.Empty);
+            Check(buttons[name].Loading, name + " 等待期间应显示 Loading。");
+            foreach (var other in buttons.Where(pair => pair.Key != name))
+            {
+                Check(!other.Value.Loading, other.Key + " 不应随其他请求显示 Loading。");
+                Check(other.Value.Enabled, other.Key + " 不应随其他请求被禁用。");
+            }
+            if (name == "enableAllButton")
+            {
+                SaveImage(form, "manual-command-waiting.png");
+                int accepted = service.CommandCalls;
+                Invoke(page, "HomeAllButton_Click", buttons["homeAllButton"], EventArgs.Empty);
+                Pump((Task)Invoke(page, "StartJogAsync", true)!);
+                Check(service.CommandCalls == accepted, "普通命令等待时，重复普通请求必须被拦截。");
+                Check(service.JogStarts == 0, "普通命令等待时，新的点动必须被拦截。");
+                Check(!buttons["homeAllButton"].Loading, "被拦截的按钮不能出现 Loading。");
+
+                // 停止仍能追加：先单轴停止，再全停；旧命令不能覆盖最新停止提示。
+                var selectedStop = Pending();
+                var allStop = Pending();
+                service.SelectedStopTask = selectedStop.Task;
+                service.AllStopTask = allStop.Task;
+                Invoke(page, "StopSelectedButton_Click", buttons["stopSelectedButton"], EventArgs.Empty);
+                Invoke(page, "StopAllButton_Click", buttons["stopAllButton"], EventArgs.Empty);
+                Check(service.SelectedStopCalls == 1 && service.AllStopCalls == 1,
+                    "停止必须能在普通命令等待时受理，且允许单轴停止后追加全停。");
+                Check(Field<int>(page, "_stopRequestsInProgress") == 2, "两个停止请求必须分别计数。");
+                Check(buttons["stopSelectedButton"].Enabled && buttons["stopAllButton"].Enabled,
+                    "停止等待期间仍应允许追加停止。");
+                string latestStop = Field<AntdUI.Label>(page, "helperLabel").Text ?? string.Empty;
+                SaveImage(form, "manual-stops-waiting.png");
+                int reads = service.ReadCalls;
+                Pump((Task)Invoke(page, "RefreshValuesAsync")!);
+                Check(service.ReadCalls == reads, "停止等待期间不能追加反馈读取。");
+
+                gate.SetResult();
+                PumpUntil(() => !Field<bool>(page, "_commandInProgress"));
+                Check(!buttons[name].Loading, "普通命令完成后必须恢复触发按钮 Loading。");
+                Check(Field<AntdUI.Label>(page, "helperLabel").Text == latestStop,
+                    "迟到的普通命令成功不能覆盖最新停止提示。");
+                Invoke(page, "HomeAllButton_Click", buttons["homeAllButton"], EventArgs.Empty);
+                Pump((Task)Invoke(page, "StartJogAsync", true)!);
+                Check(service.CommandCalls == accepted && service.JogStarts == 0,
+                    "普通命令结束但停止仍在等待时，普通命令和点动仍必须被拦截。");
+
+                selectedStop.SetResult();
+                PumpUntil(() => Field<int>(page, "_stopRequestsInProgress") == 1);
+                Check(Field<AntdUI.Label>(page, "helperLabel").Text == latestStop,
+                    "较早单轴停止的完成不能覆盖较新的全停提示。");
+                allStop.SetResult();
+                PumpUntil(() => Field<int>(page, "_stopRequestsInProgress") == 0);
+                Check(Field<AntdUI.Label>(page, "helperLabel").Text == "全部轴停止命令已发送",
+                    "最后一条全停应显示自己的发送结果。");
+            }
+            else
+            {
+                gate.SetResult();
+                PumpUntil(() => !Field<bool>(page, "_commandInProgress"));
+            }
+            Check(buttons.Values.All(button => !button.Loading), "完成后所有普通按钮应退出 Loading。");
+        }
+        Check(changes.Values.All(count => count == 0), "命令和停止往返不能触发其他按钮 Enabled 变更。");
+
+        // 松开时必须清按下时保存的轴，而不是后来选择的另一根轴。
+        Pump((Task)Invoke(page, "StartJogAsync", true)!);
+        Check(service.JogStarts == 1 && Field<bool>(page, "_jogActive"), "空闲时应允许按下点动。");
+        Field<AntdUI.Select>(page, "axisSelector").SelectedIndex = 1;
+        Pump((Task)Invoke(page, "StopActiveJogAsync")!);
+        Check(service.LastJogAxis == 1 && service.JogStops == 1, "切换选轴后，松开仍须清原点动轴。");
+        Check(!Field<bool>(page, "_jogActive"), "点动松开后必须清理本次活动状态。");
+
+        // 异常与取消都必须进入 finally，恢复同一个触发按钮。
+        var error = Pending();
+        service.CommandTask = error.Task;
+        Invoke(page, "ResetAlarmButton_Click", buttons["resetAlarmButton"], EventArgs.Empty);
+        error.SetException(new InvalidOperationException("离线测试故障"));
+        PumpUntil(() => !Field<bool>(page, "_commandInProgress"));
+        Check(!buttons["resetAlarmButton"].Loading, "错误结束后必须恢复 Loading。");
+        Check(Field<AntdUI.Label>(page, "helperLabel").Text?.Contains("操作失败：离线测试故障") == true,
+            "错误应通过现有结果标签显示。");
+        var cancelled = Pending();
+        service.CommandTask = cancelled.Task;
+        Invoke(page, "HomeAllButton_Click", buttons["homeAllButton"], EventArgs.Empty);
+        cancelled.SetCanceled();
+        PumpUntil(() => !Field<bool>(page, "_commandInProgress"));
+        Check(!buttons["homeAllButton"].Loading, "取消结束后必须恢复 Loading。");
+
+        // 避免把防闪烁修复变成无条件启用：连接/控制权条件仍须生效。
+        var permissionChange = Pending();
+        service.CommandTask = permissionChange.Task;
+        Invoke(page, "EnableAllButton_Click", buttons["enableAllButton"], EventArgs.Empty);
+        service.HasControlAuthority = false;
+        Invoke(page, "UpdateConnectionState");
+        Check(buttons.Values.All(button => !button.Enabled), "控制权丢失时所有命令按钮仍必须禁用。");
+        SaveImage(form, "manual-no-authority.png");
+        permissionChange.SetResult();
+        PumpUntil(() => !Field<bool>(page, "_commandInProgress"));
+        Check(!buttons["enableAllButton"].Loading && buttons.Values.All(button => !button.Enabled),
+            "请求结束不能重新启用失去控制权的按钮。");
+        service.HasControlAuthority = true;
+        service.IsConnected = false;
+        Invoke(page, "UpdateConnectionState");
+        Check(buttons.Values.All(button => !button.Enabled), "ADS 断开时按钮仍必须禁用。");
+        Console.WriteLine($"Manual UI checks: {_checks} assertions passed; fake service only, no PLC connection.");
+    }
+
+    private static TaskCompletionSource Pending() => new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private static T Field<T>(object target, string name) =>
+        (T)(target.GetType().GetField(name, Private)?.GetValue(target)
+            ?? throw new Exception("找不到字段：" + name));
+    private static object? Invoke(object target, string name, params object[] arguments) =>
+        (target.GetType().GetMethod(name, Private) ?? throw new Exception("找不到方法：" + name)).Invoke(target, arguments);
+    private static void Check(bool condition, string message)
+    {
+        if (!condition) throw new Exception(message);
+        _checks++;
+    }
+    private static void Pump(Task task)
+    {
+        PumpUntil(() => task.IsCompleted);
+        task.GetAwaiter().GetResult();
+    }
+    private static void PumpUntil(Func<bool> finished)
+    {
+        var watch = Stopwatch.StartNew();
+        while (!finished())
+        {
+            if (watch.ElapsedMilliseconds > 10000) throw new TimeoutException("离线 UI 检查等待超时。");
+            Application.DoEvents();
+            Thread.Sleep(1);
+        }
+        Application.DoEvents();
+    }
+    private static void SaveImage(Form form, string name)
+    {
+        if (_images is null) return;
+        using var bitmap = new Bitmap(form.ClientSize.Width, form.ClientSize.Height);
+        form.DrawToBitmap(bitmap, new Rectangle(Point.Empty, form.ClientSize));
+        bitmap.Save(Path.Combine(_images, name), ImageFormat.Png);
+    }
+}
+
+namespace Page_switching
+{
+    // 测试替身只有内存计数和受控任务，不含 ADS 客户端或网络连接。
+    public sealed class AxisServiceOptions
+    {
+        public static AxisServiceOptions FromConfiguration() => new();
+    }
+
+    public sealed class AxisService : IDisposable
+    {
+        private readonly Axis[] _axes;
+        public AxisService(AxisServiceOptions options) => _axes = Enumerable.Range(1, 4).Select(number => new Axis(this, number)).ToArray();
+        public bool IsConnected { get; set; } = true;
+        public bool HasControlAuthority { get; set; } = true;
+        public bool CanControlAll => IsConnected && HasControlAuthority;
+        public string ConnectionStateText => IsConnected ? "离线替身已连接" : "离线替身未连接";
+        public int RefreshIntervalMilliseconds => 1000000;
+        public double MinimumPosition => -20;
+        public double MaximumPosition => 20;
+        public string Unit => "NC";
+        public int CommandCalls { get; private set; }
+        public int JogStarts { get; private set; }
+        public int JogStops { get; private set; }
+        public int LastJogAxis { get; private set; }
+        public int SelectedStopCalls { get; private set; }
+        public int AllStopCalls { get; private set; }
+        public int ReadCalls { get; private set; }
+        public Task CommandTask { get; set; } = Task.CompletedTask;
+        public Task SelectedStopTask { get; set; } = Task.CompletedTask;
+        public Task AllStopTask { get; set; } = Task.CompletedTask;
+        public Axis GetAxis(int number) => _axes[number - 1];
+        public Task<IReadOnlyList<AxisSnapshot>> ReadSnapshotAsync(CancellationToken token)
+        {
+            ReadCalls++;
+            return Task.FromResult<IReadOnlyList<AxisSnapshot>>(_axes.Select(axis => axis.Snapshot).ToArray());
+        }
+        public Task EnableAllAsync(CancellationToken token) => AcceptCommand();
+        public Task DisableAllAsync(CancellationToken token) => AcceptCommand();
+        public Task ResetAlarmsAsync(CancellationToken token) => AcceptCommand();
+        public Task HomeAllAsync(CancellationToken token) => AcceptCommand();
+        internal Task AcceptCommand() { CommandCalls++; return CommandTask; }
+        public Task StopAllAsync(CancellationToken token) { AllStopCalls++; return AllStopTask; }
+        internal Task StopAxis() { SelectedStopCalls++; return SelectedStopTask; }
+        internal Task Jog(int axisNumber, bool start)
+        {
+            LastJogAxis = axisNumber;
+            if (start) JogStarts++; else JogStops++;
+            return Task.CompletedTask;
+        }
+        public void Dispose() { }
+    }
+
+    public sealed class Axis
+    {
+        private readonly AxisService _service;
+        public Axis(AxisService service, int number)
+        {
+            _service = service;
+            AxisNumber = number;
+            Snapshot = new AxisSnapshot(number) { StatusText = "就绪", ActualPosition = 0, Speed = 0, IsEnabled = true,
+                IsHomed = true, PositiveLimitAvailable = true, NegativeLimitAvailable = true, OriginSignal = false };
+        }
+        public int AxisNumber { get; }
+        public AxisSnapshot Snapshot { get; }
+        public bool CanControl => _service.CanControlAll;
+        public Task HomeAsync(CancellationToken token) => _service.AcceptCommand();
+        public Task StopAsync(CancellationToken token) => _service.StopAxis();
+        public Task JogAsync(bool positive, bool start, double speed, CancellationToken token) => _service.Jog(AxisNumber, start);
+    }
+
+    internal static class OperationJournal
+    {
+        public static readonly List<string> Entries = new();
+        public static void Record(string category, string message) => Entries.Add(category + ": " + message);
+    }
+}

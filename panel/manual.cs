@@ -13,7 +13,7 @@ namespace Page_switching
         private readonly AntdUI.Label[] _positiveLimitLamps;
         private bool _refreshInProgress;
         private bool _commandInProgress;
-        // 停止可以在普通命令等待时继续受理；计数控制按钮，版本防止旧结果覆盖新提示。
+        // 停止可以在普通命令等待时继续受理；计数拦截普通命令，版本防止旧结果覆盖新提示。
         private int _stopRequestsInProgress;
         private long _stopRequestVersion;
         private bool _jogActive;
@@ -235,15 +235,12 @@ namespace Page_switching
             UpdateSelectedAxisDetails();
         }
 
-        // 普通命令执行中禁用普通按钮；停止按钮始终可受理新的停止请求。
-        private void SetCommandButtonEnabled(AntdUI.Button button, bool canControl)
+        // 按钮只跟随服务的操作许可；命令忙状态在事件入口检查，避免整排按钮闪动。
+        private static void SetCommandButtonEnabled(AntdUI.Button button, bool canControl)
         {
-            var isStopButton = ReferenceEquals(button, stopAllButton) || ReferenceEquals(button, stopSelectedButton);
-            var ordinaryCommandsAvailable = !_commandInProgress && _stopRequestsInProgress == 0;
-            var enabled = canControl && (isStopButton || ordinaryCommandsAvailable);
-            if (button.Enabled != enabled)
+            if (button.Enabled != canControl)
             {
-                button.Enabled = enabled;
+                button.Enabled = canControl;
             }
         }
 
@@ -258,28 +255,28 @@ namespace Page_switching
         private async void EnableAllButton_Click(object? sender, EventArgs e)
         {
             await RunCommandAsync(
-                token => _axisService.EnableAllAsync(token), "全部轴使能请求已发送，请查看各轴实际状态");
+                enableAllButton, token => _axisService.EnableAllAsync(token), "全部轴使能请求已发送，请查看各轴实际状态");
         }
 
         // 点击后将四根轴的使能变量全部写为 false。
         private async void DisableAllButton_Click(object? sender, EventArgs e)
         {
             await RunCommandAsync(
-                token => _axisService.DisableAllAsync(token), "全部轴取消使能请求已发送，请查看各轴实际状态");
+                disableAllButton, token => _axisService.DisableAllAsync(token), "全部轴取消使能请求已发送，请查看各轴实际状态");
         }
 
         // 点击后触发四根轴的报警复位变量。
         private async void ResetAlarmButton_Click(object? sender, EventArgs e)
         {
             await RunCommandAsync(
-                token => _axisService.ResetAlarmsAsync(token), "报警复位请求已发送");
+                resetAlarmButton, token => _axisService.ResetAlarmsAsync(token), "报警复位请求已发送");
         }
 
         // 点击后触发四根轴的回零变量。
         private async void HomeAllButton_Click(object? sender, EventArgs e)
         {
             await RunCommandAsync(
-                token => _axisService.HomeAllAsync(token), "全部轴回零请求已发送");
+                homeAllButton, token => _axisService.HomeAllAsync(token), "全部轴回零请求已发送");
         }
 
         // 点击后触发四根轴的停止变量。
@@ -294,7 +291,7 @@ namespace Page_switching
         {
             Axis axis = SelectedAxis;
             await RunCommandAsync(
-                token => axis.HomeAsync(token),
+                homeSelectedButton, token => axis.HomeAsync(token),
                 $"轴 {axis.AxisNumber} 回零请求已发送");
         }
 
@@ -404,6 +401,7 @@ namespace Page_switching
 
         // 显示命令提交结果，再刷新 PLC 实际状态；提交成功不等于动作已经完成。
         private async Task RunCommandAsync(
+            AntdUI.Button button,
             Func<CancellationToken, Task> action,
             string successMessage)
         {
@@ -414,6 +412,8 @@ namespace Page_switching
 
             _commandInProgress = true;
             var stopRequestVersion = _stopRequestVersion;
+            // 仅当前按钮显示发送中；停止按钮不进入 Loading，仍可追加停止请求。
+            button.Loading = true;
             UpdateConnectionState();
             try
             {
@@ -438,6 +438,7 @@ namespace Page_switching
                 _commandInProgress = false;
                 if (!IsDisposed)
                 {
+                    button.Loading = false;
                     UpdateConnectionState();
                 }
             }
