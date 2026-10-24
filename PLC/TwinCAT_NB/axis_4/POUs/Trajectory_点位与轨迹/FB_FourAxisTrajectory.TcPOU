@@ -80,7 +80,25 @@ VAR CONSTANT
     cCopyPointsPerScan : UDINT := 1024; // 每扫描每轴最多复制 8 KiB；需在目标 PLC 实测任务时间。
 END_VAR]]></Declaration>
     <Implementation>
-      <ST><![CDATA[// 无故障时准备本扫描的诊断位置；故障置位后保持首因，直到有效复位。
+      <ST><![CDATA[// 各 Action 共用本实例变量；运行参数锁存和四轴 MC 实例保持原位。
+A01_RequestsAndTimers();
+A02_ReadAxisStatus();
+A03_ResetAndInterlocks();
+// 单一分派：阶段改变后留到下一扫描处理，不能顺序调用三个阶段 Action。
+CASE nState OF
+0, 5: A04_ReceiveAndAssemble();
+10, 15, 20, 30: A05_PrepareAndRun();
+40, 50, 60, 70: A06_StopAndExit();
+END_CASE
+// MC 块仍每扫描调用一次，状态发布保持在最后。
+A07_CallMotionBlocks();
+A08_PublishFeedback();
+]]></ST>
+    </Implementation>
+    <Action Name="A01_RequestsAndTimers" Id="{332b3d73-5f1e-53b4-bfd7-3498fa26ebc9}">
+      <Implementation>
+        <ST><![CDATA[// 请求、来源站和定时器；写请求沿、诊断首因准备及超时实例。
+// 无故障时准备本扫描的诊断位置；故障置位后保持首因，直到有效复位。
 IF NOT GVL_motion.xError THEN
     GVL_motion.nFaultAxis := 0;
     GVL_motion.nFaultSource := 0;
@@ -121,6 +139,12 @@ tmEnable(IN := nState = 20, PT := T#5S);
 tmMoveInit(IN := nState = 15, PT := T#60S);
 tmExit(IN := (nState = 60) OR (nState = 70), PT := T#5S);
 IF nState <> 50 THEN nStopCycles := 0; END_IF
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A02_ReadAxisStatus" Id="{3309f391-5387-5da0-bdd1-bf0a7f5a76a5}">
+      <Implementation>
+        <ST><![CDATA[// 汇总四轴 NC 状态及 MC 上扫描输出；写六项汇总条件。
 // 2. 汇总四轴反馈：AND 从 TRUE 开始，OR 从 FALSE 开始。
 // Axis.Status 来自 MAIN 本扫描开头的 ReadStatus。
 // 各 MC 块在本块末尾调用，因此这里读到的是它们上一扫描的输出。
@@ -141,7 +165,12 @@ FOR i := 1 TO 4 DO
     xMovesIdle := xMovesIdle AND NOT aMoveInit[i].Busy;
     xEnablePending := xEnablePending OR aEnable[i].Busy;
 END_FOR
-
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A03_ResetAndInterlocks" Id="{6e12063d-0d55-579e-87d7-4b0052990f27}">
+      <Implementation>
+        <ST><![CDATA[// 先复位和判断联停，再进入状态机；写首因、停止状态及表资格。
 // 复位只清故障；上传完整的位置表保留，新运行仍需使用新的轨迹序号。
 // 组复位只清本块故障；各 NC 轴故障仍需通过 Axis1..4.reset 复位。
 // 必须已静止、外部给定关闭且相关命令释放，才允许重新进入空闲。
@@ -203,9 +232,14 @@ IF xStopCommand AND NOT GVL_motion.xError THEN
         nState := 50;
     END_IF
 END_IF
-
-// 4. 状态机准备本周期给定和阶段；实际 MC 功能块统一在末尾每扫描调用。
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A04_ReceiveAndAssemble" Id="{d38f3d56-ae53-5674-96cb-a2428028aced}">
+      <Implementation>
+        <ST><![CDATA[// 状态 0/5：收段、清表、拼表和启动请求登记；不推进运动点。
 CASE nState OF
+
 0: // 空闲：先接收所有独立段，再统一拼表；拼接完成后才允许启动。
     // 清表只清计数和就绪状态，不遍历清零约 134.4 MB 的接收区和执行表。
     // 新轨迹必须从偏移 0 连续覆盖所有有效点，旧数据不会在未收齐时被执行。
@@ -333,6 +367,15 @@ CASE nState OF
         END_IF
     END_IF
 
+END_CASE
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A05_PrepareAndRun" Id="{3069ae07-2eca-5a5e-ab04-53abc58ef09f}">
+      <Implementation>
+        <ST><![CDATA[// 状态 10/15/20/30：检查配置、首点、开启、同步取点；一次只执行当前分支。
+CASE nState OF
+
 10: // 单扫描检查配置与轴就绪；整表数值已由上位机在发送前预检。
     // PLC 不再遍历点位表；保留锁存配置检查，供首点定位、运行及停车使用。
     FOR i := 1 TO 4 DO
@@ -428,6 +471,15 @@ CASE nState OF
     ELSE nSendPoint := nSendPoint + 1;
     END_IF
 
+END_CASE
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A06_StopAndExit" Id="{d1256174-2d27-54a4-9857-8a726236adaa}">
+      <Implementation>
+        <ST><![CDATA[// 状态 40/50/60/70：保持、减速、关闭和退出；故障 90 等待有效复位。
+CASE nState OF
+
 40: // 末点静止给定保持两个周期，随后关闭外部给定，不强制跳回零位。
     // 正常末点和减速终点都到这里；设定速度已经为 0。
     // 静止点多保持两拍，给 NC 消费最后给定留出时间，再发关闭命令。
@@ -471,8 +523,14 @@ CASE nState OF
         ELSE GVL_motion.xDone := TRUE; nState := 0;
         END_IF
     END_IF
-END_CASE
 
+END_CASE
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A07_CallMotionBlocks" Id="{385add14-f0d7-5c01-a475-a0408dc09db6}">
+      <Implementation>
+        <ST><![CDATA[// 每扫描调用四轴 MC 实例，循环结束统一处理错误；写 MC 输出及清理错误。
 // 功能块每周期调用；禁止在四轴循环中途改变公共状态。
 // 5. 外部给定实际入口：下面的 Feed、Enable、Disable。
 // 状态 20 等开启、30 取点、40 保持、50 减速、60 等关闭，都需要持续更新给定。
@@ -570,6 +628,12 @@ IF tmExit.Q AND ((nState = 60) OR (nState = 70)) THEN
         GVL_motion.xError := TRUE;
     END_IF
 END_IF
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A08_PublishFeedback" Id="{57401618-0d32-59ac-acf9-fa630b378184}">
+      <Implementation>
+        <ST><![CDATA[// 最后发布接收、拼接、状态和占用反馈；不写运动命令。
 // 6. 已接收和已拼接分开发布；只有 xDataReady 才表示完整表可进入启动检查。
 GVL_motion.nReceivedCount := nReceived;
 GVL_motion.udiReceivedSequence := udiSequence;
@@ -579,6 +643,7 @@ GVL_motion.xUploadBusy := nState = 5;
 GVL_motion.xBusy := (nState >= 10) AND (nState <= 70);
 GVL_motion.xRunning := nState = 30;
 ]]></ST>
-    </Implementation>
+      </Implementation>
+    </Action>
   </POU>
 </TcPlcObject>

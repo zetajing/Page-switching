@@ -11,6 +11,7 @@ class WaveServiceChecks(unittest.TestCase):
         sources = ["Axis/AxisService.cs", "Axis/ManualControl/AxisService.Manual.cs",
                    "Axis/Feedback/AxisService.Feedback.cs", "Axis/PointUpload/AxisService.PointUpload.cs",
                    "Axis/PointUpload/WaveTransferChunks.cs", "Axis/ControlAuthority/AxisService.Authority.cs", "Axis/Trajectory/AxisService.Trajectory.cs",
+                   "Axis/Trajectory/AxisService.WaveSession.cs", "Axis/Trajectory/AxisService.WaveStop.cs", "Axis/Trajectory/AxisService.WaveCommunication.cs",
                    "Axis/ManualControl/Axis.cs", "Axis/AxisServiceOptions.cs",
                    "Axis/Feedback/AxisSnapshot.cs", "Axis/Feedback/PlcMachineMonitor.cs", "Axis/Feedback/MachineMonitorSnapshot.cs",
                    "Axis/Feedback/PlcWaveDiagnostics.cs", "Axis/Feedback/AxisService.Diagnostics.cs", "Infrastructure/AdsDiagnostics.cs",

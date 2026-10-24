@@ -5,10 +5,11 @@ import random
 import re
 import unittest
 import xml.etree.ElementTree as ET
+from plc_source import pou_source
 from verify_upload_assembly import StBranch
 
 ROOT = Path(__file__).resolve().parents[1]
-RAW = ET.parse(ROOT / 'axis_4/POUs/Trajectory_点位与轨迹/FB_FourAxisTrajectory.TcPOU').findtext('.//ST')
+RAW = pou_source(ROOT / 'axis_4/POUs/Trajectory_点位与轨迹/FB_FourAxisTrajectory.TcPOU')
 
 def branch(start, end):
     code = RAW[RAW.index(start):RAW.index(end, RAW.index(start))]

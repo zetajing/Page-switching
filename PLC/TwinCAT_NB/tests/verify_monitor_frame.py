@@ -29,6 +29,7 @@ class MonitorFrameChecks(unittest.TestCase):
             for member, _ in axis:
                 self.assertIn(f"GVL_HMI.stMonitor.Axis{i}.{member} := GVL_axis.Axis{i}.{member};", source)
         self.assertIn("GVL_HMI.stMonitor.nVersion := 4;", source)
+        self.assertIn("GVL_HMI.stMonitor.udiProgramVersion := 2026102401;", source)
         self.assertIn("nByteSize := SIZEOF(GVL_HMI.stMonitor)", source)
         project = ET.parse(ROOT / "axis_4/axis_4.plcproj")
         includes = [n.get("Include") for n in project.findall(".//{*}Compile")]

@@ -226,6 +226,26 @@ internal static class Program
                 var defaults = AxisServiceOptions.FromConfiguration(new NameValueCollection());
                 Check(defaults.Unit == "原始单位", "unknown PLC axis unit is not assumed to be degrees");
             }
+            // 拆分会话方法后，取消等待 PLC 会话锁仍不能越过握手直接进入清表/下发。
+            AdsClient.Model = new FakePlc { HoldSessionLock = true };
+            using (var service = new AxisService(Options()))
+            {
+                await service.ConnectAsync(CancellationToken.None);
+                await Until(() => service.HasControlAuthority);
+                using var cancelHandshake = new CancellationTokenSource();
+                var pending = service.UploadWaveAsync(signal, cancelHandshake.Token);
+                await Until(() => AdsClient.Model.Session);
+                Check(AdsClient.Model.ArrayWrites == 0 && AdsClient.Model.ClearWrites == 0, "session lock confirmation precedes table changes");
+                cancelHandshake.Cancel();
+                var failure = await Reject(() => pending, "cancel during session lock handshake");
+                Check(failure is OperationCanceledException, "handshake cancellation keeps original cancellation kind");
+                Check(!service.WaveOperationActive && !AdsClient.Model.Session, "cancelled handshake completes cleanup before releasing task busy");
+                Check(AdsClient.Model.MotionWrites == 0 && AdsClient.Model.ArrayWrites == 0 && AdsClient.Model.ClearWrites == 0,
+                    "cancelled handshake cannot produce late motion, clear or point writes");
+                AdsClient.Model.HoldSessionLock = false;
+                await service.UploadWaveAsync(signal);
+                Check(service.WaveStatus.Ready && !AdsClient.Model.Session, "new operation can complete after cancelled handshake");
+            }
             AdsClient.Model = new FakePlc { FailArrayWrite = true };
             using (var service = new AxisService(Options()))
             {
@@ -465,7 +485,7 @@ namespace InduLink.Protocols.Ads
                 return Task.FromResult(new ReadResult(values));
             }
             lock (Model) return Task.FromResult(new ReadResult(new[] { new ReadValue(Model.AuthorityOwner),
-                new ReadValue(Model.Session || !Model.ReleaseAllowed), new ReadValue(Model.AuthorityOwner == 1), new ReadValue(Model.AuthorityAck),
+                new ReadValue(Model.Session && !Model.HoldSessionLock || !Model.ReleaseAllowed), new ReadValue(Model.AuthorityOwner == 1), new ReadValue(Model.AuthorityAck),
                 new ReadValue((ushort)1), new ReadValue(Model.FeedbackInvalid) }));
         }
         public Task<T> ReadAnyAsync<T>(string symbol, int[]? args = null, CancellationToken cancellationToken = default)
@@ -494,6 +514,7 @@ namespace InduLink.Protocols.Ads
             Axis1 = new() { Homed = true }, Axis3 = new() { Homed = true }, Axis4 = new() { Homed = true }
         };
         public bool Session, HoldHoming, FailArrayWrite, HoldAcknowledgement, FrozenHeartbeat, FreezeAfterArray;
+        public bool HoldSessionLock;
         public uint StartFaultCode;
         public string? FailWriteSymbol;
         public bool FailFrameRead;

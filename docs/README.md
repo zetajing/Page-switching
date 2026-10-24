@@ -1,6 +1,6 @@
 # 项目文档导航
 
-整理日期：2026-10-21。按用途归类现有文档，文件名和设备图片路径保持不变。
+更新日期：2026-10-24。按用途归类现有文档，文件名和设备图片路径保持不变。
 
 ## 建议阅读顺序
 
@@ -9,6 +9,7 @@
 3. 连接或部署 PLC：依次读 [ADS 连接](AdsConnectionGuide.md)、[TwinCAT 对接](TwinCAT_NB_Integration.md)和[PLC 只读监控接口](PlcMonitoringContract.md)。
 4. 调整造波计算或机械转换：先读[造波计算讨论记录](WaveGenerationNotes.md)，区分设备资料、理论示例及待确认参数。
 5. 本轮交付及在线验收：见[优化交付与虚拟轴验收](OptimizationAcceptance.md)，包含版本记录、固定点位、逐项验收表和性能基线。
+6. 查找本轮精简后的代码：见[第五项整理记录](Step5CodeMap.md)，包含轨迹 Action、上位机四条入口和变量核查结果。
 
 ## 开发与界面
 

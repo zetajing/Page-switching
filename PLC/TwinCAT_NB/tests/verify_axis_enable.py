@@ -4,6 +4,7 @@ from pathlib import Path
 from types import SimpleNamespace as NS
 import re
 import unittest
+from plc_source import pou_source
 import xml.etree.ElementTree as ET
 from verify_upload_assembly import StBranch
 from verify_virtual_config import AxisConfigFixture
@@ -67,7 +68,7 @@ class AxisEnableChecks(unittest.TestCase):
         feedback = ET.parse(ROOT / 'axis_4/POUs/Feedback_反馈/FB_HmiFeedback.TcPOU').findtext('.//ST')
         monitor_check = re.search(r'GVL_HMI.stMonitor.xConfigValid\s*:=\s*'
                                   r'(GVL_HMI.stMonitor.xConfigValid\s+AND.*?);', feedback, re.S)[1]
-        trajectory = ET.parse(ROOT / 'axis_4/POUs/Trajectory_点位与轨迹/FB_FourAxisTrajectory.TcPOU').findtext('.//ST')
+        trajectory = pou_source(ROOT / 'axis_4/POUs/Trajectory_点位与轨迹/FB_FourAxisTrajectory.TcPOU')
         trajectory_check = re.search(r'xValid\s*:=\s*(\(aConfig\[i\].lrMinPosition.*?);', trajectory, re.S)[1]
         for config in configs:
             values = self.fixture()

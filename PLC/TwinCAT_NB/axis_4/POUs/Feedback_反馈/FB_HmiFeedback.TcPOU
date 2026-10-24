@@ -86,7 +86,7 @@ GVL_HMI.xTrajectoryBusy := GVL_motion.xBusy;
 // 6. 整块接口固定布局，轴反馈从本扫描实际结果集中发布。
 // 普通 ADS 读取不声明为跨任务原子快照。
 GVL_HMI.stMonitor.nVersion := 4;
-GVL_HMI.stMonitor.udiProgramVersion := 2026102301;
+GVL_HMI.stMonitor.udiProgramVersion := 2026102401;
 GVL_HMI.stMonitor.nBehaviorVersion := 1;
 GVL_HMI.stMonitor.nFaultAxis := GVL_motion.nFaultAxis;
 GVL_HMI.stMonitor.nFaultSource := GVL_motion.nFaultSource;

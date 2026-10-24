@@ -29,7 +29,7 @@ PLC `ST_MachineMonitor` 和 C# `PlcMachineMonitor` 均明确采用 1 字节对�
 
 | 字段 | PLC 类型 | 字节偏移 |
 | --- | --- | --- |
-| udiProgramVersion | UDINT，当前2026102301 | 148 |
+| udiProgramVersion | UDINT，当前2026102401 | 148 |
 | nBehaviorVersion | UINT，当前1 | 152 |
 | nFaultAxis | UINT，0为组条件，1..4为轴号 | 154 |
 | nFaultSource | UINT，首次故障来源 | 156 |

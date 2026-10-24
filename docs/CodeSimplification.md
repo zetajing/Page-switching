@@ -2,6 +2,8 @@
 
 [返回文档导航](README.md)
 
+第五项内部整理已补齐：轨迹块八个 Action、上位机会话/运行/停止/通信入口和变量核查见[第五项整理记录](Step5CodeMap.md)。下方保留此前各轮记录，当前 PLC 发布号为2026102401。
+
 ## 遇到问题从这里看
 
 先看页面详情和主窗体操作日志，确认失败发生在哪一步，再进入对应方法打断点。读取成功、命令写入成功、PLC 实际执行完成是不同的反馈，不用一个“已连接”或“请求已发送”判断设备正常。
@@ -14,7 +16,7 @@
 | 点位检查不合格 | `Wave/Legacy/WavePointValidator.cs`：`Validate` | 轴号、点号（从 0 起）、时间、失败项目、实际值和限值；尚未清表或写入点位 |
 | 点位发送或拼接失败 | `Axis/PointUpload/AxisService.PointUpload.cs`：`UploadWaveCoreAsync` | 读取的四轴参数、当前段、轴、段内点及 PLC 接收/拼接点数、上传序号 |
 | 发送或开始按钮不可用 | `panel/auto.Wave.cs` → `Axis/Trajectory/WaveCommandChecks.cs` | 页面“暂不能发送 / 开始”的缺项；实际执行也使用同一组 PLC 条件 |
-| 开始后失败、超时 | `Axis/Trajectory/AxisService.Trajectory.cs`：`StartWaveCoreAsync`、`PrepareWaveAxesAsync`、`ExecuteWaveAsync`、`WaitWaveFrameAsync` | 日志的失败阶段、故障说明、PLC 状态、执行点数、使能轴和已回原轴 |
+| 开始后失败、超时 | `AxisService.Trajectory.cs` 的启动/准备/执行；`AxisService.WaveCommunication.cs` 的 `WaitWaveFrameAsync` | 日志的失败阶段、故障说明、PLC 状态、执行点数、使能轴和已回原轴 |
 | PLC 轴配置有问题 | 实际 TwinCAT 工程的 `POUs/AxisConfig_轴配置/FB_AxisConfig` | 配置统一在该块填写；确认运行中实际值，源码保存不等于 PLC 已更新 |
 
 启动入口现在直接调用具名方法：`StartWaveAsync → RunWaveOperationAsync → StartWaveCoreAsync → PrepareWaveAxesAsync → ExecuteWaveAsync`。上传在调用线程复制输入数组，再进入 `UploadWaveCoreAsync` 读取 PLC 参数并检查整表。检查合格才清表、下发、拼表。只保留一份四轴参数快照用于启动核对，不保留第二份执行点位表；没有新增 PLC 变量或会话层。

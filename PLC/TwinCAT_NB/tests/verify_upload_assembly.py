@@ -6,11 +6,12 @@ import re
 import unittest
 import xml.etree.ElementTree as ET
 from copy import deepcopy
+from plc_source import pou_source
 
 
 ROOT = Path(__file__).resolve().parents[1]
 POU = ET.parse(ROOT / "axis_4/POUs/Trajectory_点位与轨迹/FB_FourAxisTrajectory.TcPOU")
-SOURCE = re.sub(r"//[^\n]*", "", POU.findtext(".//ST"))
+SOURCE = re.sub(r"//[^\n]*", "", pou_source(ROOT / "axis_4/POUs/Trajectory_点位与轨迹/FB_FourAxisTrajectory.TcPOU"))
 
 
 class StBranch:

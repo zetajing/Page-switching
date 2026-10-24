@@ -9,6 +9,7 @@ import re
 import unittest
 import xml.etree.ElementTree as ET
 from verify_upload_assembly import StBranch
+from plc_source import pou_source
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -16,8 +17,7 @@ PLC = ROOT / "axis_4"
 
 
 def st_source(name):
-    return "\n".join(node.text or "" for node in
-        ET.parse(next((PLC / "POUs").rglob(name))).findall(".//ST"))
+    return pou_source(next((PLC / "POUs").rglob(name)))
 
 
 class StartCheckFixture:
@@ -91,7 +91,7 @@ class TrajectoryChecks(unittest.TestCase):
         path = PLC / "POUs/Trajectory_点位与轨迹/FB_FourAxisTrajectory.TcPOU"
         pou = ET.parse(path)
         declaration = pou.findtext(".//Declaration")
-        source = re.sub(r"//[^\n]*", "", pou.findtext(".//ST"))
+        source = re.sub(r"//[^\n]*", "", pou_source(path))
         for name in ("nCheckPoint", "nBatch", "Point", "lrStopPosition", "cPointsPerScan"):
             self.assertNotRegex(declaration, r"\b" + name + r"\s*:")
             self.assertNotRegex(source, r"\b" + name + r"\b")
