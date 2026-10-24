@@ -8,6 +8,7 @@ public sealed partial class AxisService
     public async Task StopWaveAsync()
     {
         RequireControlAuthority();
+        _runtimeMonitoring?.NoteEnding("人工停止");
         Task pending;
         lock (_waveSync)
         {

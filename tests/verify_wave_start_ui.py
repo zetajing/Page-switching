@@ -16,7 +16,9 @@ class WaveStartUiChecks(unittest.TestCase):
         self.assertTrue(antdui.is_file(), f"缺少本地 AntdUI 2.4.12：{antdui}")
         sources = ["panel/auto.Wave.cs", "Axis/Feedback/PlcMachineMonitor.cs", "Axis/Feedback/PlcWaveDiagnostics.cs",
                    "Axis/Feedback/MachineMonitorSnapshot.cs", "Axis/Feedback/AxisSnapshot.cs",
-                   "Wave/Legacy/WaveTrajectoryFile.cs", "Axis/Trajectory/WaveCommandChecks.cs"]
+                   "Wave/Legacy/WaveTrajectoryFile.cs", "Axis/Trajectory/WaveCommandChecks.cs",
+                   "Controls/AxisMonitoringSummaryControl.cs", "Controls/AxisMonitoringSummaryControl.Designer.cs",
+                   "Axis/Monitoring/AxisMonitoringSettings.cs", "Axis/Monitoring/AxisMonitoringReport.cs", "Infrastructure/LoginUser.cs"]
         with tempfile.TemporaryDirectory(prefix="PageSwitching_WaveStartUI_") as directory:
             folder = Path(directory)
             links = "".join(f'<Compile Include="{escape(str(ROOT / name))}" />' for name in sources)

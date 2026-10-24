@@ -56,9 +56,11 @@ public sealed partial class AxisService
 
     private async Task ExecuteWaveAsync(uint pointCount, CancellationToken token)
     {
-        (await ReadWaveFrameAsync(token)).ValidateWaveContract();
+        var frame = await ReadWaveFrameAsync(token);
+        frame.ValidateWaveContract();
         await VerifyWaveAxisLimitsAsync(token); // 回原可能耗时，再核对一次，参数相同才发启动沿。
         _waveStatus = new("PLC 检查启动条件并定位到首点", 0, true, false);
+        StartRuntimeMonitoring(_waveReadySequence, frame.Heartbeat); // 只读后台任务，不增加运动启动条件。
         await PulseWaveAsync("xStart", token);
         await WaitWaveFrameAsync(f => f.AcceptedSequence == _waveReadySequence && f.TrajectoryBusy,
             120000, "轨迹启动确认", token);

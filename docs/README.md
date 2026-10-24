@@ -26,6 +26,7 @@
 | [造波页操作与通信](WaveOperation.md) | 导入、发送、开始、停止，四轴共用最终点位及 2 ms 周期 |
 | [三站控制权与运行锁](ControlAuthorityRules.md) | 站点优先级、申请与应答、运行期间禁止交接 |
 | [运行诊断与轴参数](RuntimeDiagnostics.md) | 首次故障、只读参数、复制诊断、配套版本和源码核对 |
+| [运行实测超限统计](AxisRuntimeMonitoring.md) | 独立100 ms只读采样、四轴位置/速度阈值、去重占比及CSV/JSON报告 |
 | [PLC 只读监控接口](PlcMonitoringContract.md) | 版本 4 / 164 字节反馈布局、数据质量、异常与部署验证 |
 | [TwinCAT 对接](TwinCAT_NB_Integration.md) | 配套 PLC 源码、手动映射、轨迹下发与接口演进 |
 | [ADS 连接](AdsConnectionGuide.md) | 73 / 113 两台电脑的 Router 配置、回程路由与超时排查 |

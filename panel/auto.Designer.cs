@@ -39,6 +39,7 @@ namespace Page_switching
         private Label waveFileLabel;
         private Label waveStageLabel;
         private Label waveDetailLabel;
+        private AxisMonitoringSummaryControl runtimeMonitoringSummary;
         private ProgressBar waveProgressBar;
         private TableLayoutPanel rightLayout;
         private AntdUI.Panel axisGroup;
@@ -100,6 +101,8 @@ namespace Page_switching
             waveStageLabel = new Label();
             waveProgressBar = new ProgressBar();
             waveDetailLabel = new Label();
+            runtimeMonitoringSummary = new AxisMonitoringSummaryControl();
+            runtimeMonitoringSummary.Dock = DockStyle.Fill;
             progressGroupCaption = new AntdUI.Label();
             rightLayout = new TableLayoutPanel();
             axisGroup = new AntdUI.Panel();
@@ -156,7 +159,7 @@ namespace Page_switching
             pagePanel.Dock = DockStyle.Fill;
             pagePanel.Location = new Point(0, 0);
             pagePanel.Margin = new Padding(4, 4, 4, 4);
-            pagePanel.MinimumSize = new Size(1255, 905);
+            pagePanel.MinimumSize = new Size(1255, 1100);
             pagePanel.Name = "pagePanel";
             pagePanel.Size = new Size(1359, 905);
             pagePanel.TabIndex = 0;
@@ -538,16 +541,18 @@ namespace Page_switching
             waveLayout.Controls.Add(waveStageLabel, 0, 2);
             waveLayout.Controls.Add(waveProgressBar, 0, 3);
             waveLayout.Controls.Add(waveDetailLabel, 0, 4);
+            waveLayout.Controls.Add(runtimeMonitoringSummary, 0, 5);
             waveLayout.Dock = DockStyle.Fill;
             waveLayout.Location = new Point(20, 42);
             waveLayout.Margin = new Padding(4, 4, 4, 4);
             waveLayout.Name = "waveLayout";
-            waveLayout.RowCount = 5;
+            waveLayout.RowCount = 6;
             waveLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 120F));
             waveLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 140F));
             waveLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 50F));
             waveLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 35F));
             waveLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            waveLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 195F));
             waveLayout.Size = new Size(414, 586);
             waveLayout.TabIndex = 0;
             // 

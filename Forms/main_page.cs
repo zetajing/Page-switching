@@ -70,7 +70,7 @@ namespace Page_switching
             });
             _manualPage = new Manual(_axisService);
             _controlAuthorityPage = new ControlAuthority(_axisService);
-            _configPage = new Config();
+            _configPage = new Config(_currentUser);
             _waveformPage = new WaveformPage();
             _waveHeightMeterPage = new Wave_Height_Meter();
             _dataPage = new Data();
@@ -299,7 +299,9 @@ namespace Page_switching
             }
             try
             {
-                await _axisService.ShutdownWaveAsync().ConfigureAwait(false);
+                try { await _axisService.ShutdownWaveAsync().ConfigureAwait(false); }
+                // 停车异常也要结束独立采样；统计清理有界，不改变停车结果。
+                finally { await _axisService.ShutdownRuntimeMonitoringAsync().ConfigureAwait(false); }
                 // WhenAll 等待所有任务退出；某个任务取消也不能提前释放 Router。
                 await Task.WhenAll(DisposeMonitorAsync(), _monitorRefreshTask, _startupTask).ConfigureAwait(false);
             }

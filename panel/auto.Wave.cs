@@ -74,6 +74,7 @@ public partial class Auto
     private void UpdateWaveControls()
     {
         if (IsDisposed || _waveService is null) return;
+        runtimeMonitoringSummary.ApplyReport(_waveService.RuntimeMonitoringReport);
         bool active = _waveService.WaveOperationActive || _waveStopping;
         bool authorized = _waveService.IsConnected && _waveService.HasControlAuthority;
         // 上传只要求有效控制权和空闲轴；使能、回原及运动许可在开始阶段检查。

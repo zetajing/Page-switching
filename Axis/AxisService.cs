@@ -37,6 +37,12 @@ public sealed partial class AxisService : IDisposable
 
     public IReadOnlyList<Axis> Axes { get; }
 
+    // 离线验证可传入不联网的统计服务；生产入口仍使用上面的原构造函数。
+    internal AxisService(AxisServiceOptions options, AxisRuntimeMonitoringService monitoring) : this(options)
+    {
+        _runtimeMonitoring = monitoring;
+    }
+
     // 外部使用 1～4 的轴号，内部集合下标从 0 开始。
     public Axis GetAxis(int axisNumber)
     {
@@ -219,6 +225,7 @@ public sealed partial class AxisService : IDisposable
         }
 
         _disposed = true;
+        EndRuntimeMonitoring("轴服务释放");
         _waveCancellation?.Dispose();
         _waveStopGate.Dispose();
         _operationGate.Dispose();

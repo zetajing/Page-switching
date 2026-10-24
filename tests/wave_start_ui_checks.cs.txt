@@ -65,6 +65,18 @@ internal static class Program
             "场景必须包含四轴尚未回原。");
         Check(start.Enabled, "使能和必要回原由开始流程完成，不能提前用它们禁用开始按钮。");
         Check(good.ControlMode == 1 && start.Enabled, "开始前显示手动模式不能形成自动模式循环门槛。");
+        var statistics = Field<AxisMonitoringSummaryControl>(page, "runtimeMonitoringSummary");
+        var unconfigured = new AxisMonitoringCounter(7, 2, 123, DateTimeOffset.UtcNow, null, "监测阈值未配置，未统计");
+        service.RuntimeMonitoringReport = unconfigured.Snapshot(); Refresh();
+        Check(start.Enabled && send.Enabled && stop.Enabled, "监测未配置不参与运动按钮条件。");
+        Check(statistics.BuildReportText().Contains("未统计") && statistics.BuildReportText().Contains("未取得有效样本"), "未配置不能显示0%合格。");
+        var monitor = new AxisMonitoringCounter(7, 2, 123, DateTimeOffset.UtcNow, new(1, "test", DateTimeOffset.UtcNow,
+            Enumerable.Range(0, 4).Select(_ => new AxisMonitoringThreshold(-10, 10, 5)).ToArray()));
+        monitor.Fail("模拟统计读取失败"); monitor.Finish(DateTimeOffset.UtcNow, "统计任务结束", true);
+        service.RuntimeMonitoringReport = monitor.Snapshot(); Refresh();
+        Check(start.Enabled && stop.Enabled && stage.Text == "已发送，等待开始", "统计失败不覆盖运动阶段、不禁用开始停止。");
+        Check(statistics.BuildReportText().Contains("统计不完整"), "报告说明统计缺失。");
+        service.RuntimeMonitoringReport = null;
 
         // 每次只打破一个原有门槛，直接观察真实控件 Enabled 和详情 Text。
         Blocked(() => service.IsConnected = false, "控制权", stopAvailable: false);
@@ -201,6 +213,7 @@ namespace Page_switching
         private readonly Label waveFileLabel = new();
         private readonly Label waveStageLabel = new();
         private readonly Label waveDetailLabel = new();
+        private readonly AxisMonitoringSummaryControl runtimeMonitoringSummary = new();
         private readonly ProgressBar waveProgressBar = new() { Maximum = 1000 };
         public Auto()
         {
@@ -222,6 +235,7 @@ namespace Page_switching
         public bool WaveOperationActive { get; set; }
         public WaveOperationStatus WaveStatus { get; set; } = new("未导入", 0, false, false);
         public string? LastWaveFailure { get; set; }
+        internal AxisMonitoringReport? RuntimeMonitoringReport { get; set; }
         public int CommandCalls { get; private set; }
         internal List<string> GetWaveStartBlockReasons(PlcMachineMonitor frame) =>
             WaveCommandChecks.ForStart(frame, ControlStationCode, WaveStatus.Ready ? 7u : 0u);
@@ -229,4 +243,6 @@ namespace Page_switching
         public Task StartWaveAsync() { CommandCalls++; return Task.CompletedTask; }
         public Task StopWaveAsync() { CommandCalls++; return Task.CompletedTask; }
     }
+
+    internal static class OperationJournal { internal static void Record(string page, string message) { } }
 }

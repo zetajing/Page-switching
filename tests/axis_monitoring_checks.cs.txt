@@ -1,0 +1,297 @@
+using System.Collections.Specialized;
+using System.Text.Json;
+using Page_switching;
+using InduLink.Abstractions;
+using InduLink.Protocols.Ads;
+
+internal static class Program
+{
+    private static int checks;
+    private static void Check(bool value, string message) { checks++; if (!value) throw new Exception(message); }
+    private static readonly DateTimeOffset Epoch = DateTimeOffset.Parse("2026-10-24T00:00:00Z");
+    private static AxisMonitoringProfile Profile() => new(1, "test-version", Epoch,
+        Enumerable.Range(0, 4).Select(_ => new AxisMonitoringThreshold(-10, 10, 5)).ToArray());
+    private static PlcMachineMonitor Frame(uint heartbeat = 1, bool running = true) => new()
+    {
+        Version = 4, Size = 164, Heartbeat = heartbeat, ControlOwner = 1, AcceptedSequence = 7,
+        Running = running, TrajectoryState = (ushort)(running ? 30 : 40)
+    };
+    private static AxisMonitoringCounter Counter(AxisMonitoringProfile? profile = null) => new(7, 1, 0, Epoch, profile ?? Profile());
+    private static string Observe(AxisMonitoringCounter counter, PlcMachineMonitor frame, bool invalid = false, List<string>? transitions = null)
+        => counter.Observe(frame, invalid, Epoch.AddMilliseconds(frame.Heartbeat * 100), 1, transitions ?? new(), null);
+    private static async Task Done(AxisRuntimeMonitoringService service)
+    {
+        using var timeout = new CancellationTokenSource(10000);
+        while (service.Latest?.EndedAt is null) await Task.Delay(1, timeout.Token);
+        await service.StopAsync();
+    }
+
+    static async Task Main(string[] args)
+    {
+        string root = args[0];
+        string settings = Path.Combine(root, "settings.json");
+        Check(AxisMonitoringSettings.Load(settings).Profile is null, "missing configuration has no defaults");
+        try { AxisMonitoringSettings.Save(Profile().Axes, new("operator", UserRole.Operator), settings); throw new Exception("operator saved"); }
+        catch (UnauthorizedAccessException) { checks++; }
+        Check(!File.Exists(settings), "unauthorized save creates no file");
+        var saved = AxisMonitoringSettings.Save(Profile().Axes, new("admin", UserRole.Administrator), settings);
+        Check(AxisMonitoringSettings.Load(settings).Profile?.Version == saved.Version, "saved profile roundtrips");
+        string original = File.ReadAllText(settings);
+        File.WriteAllText(settings, original.Replace("\"MinPosition\": -10,", ""));
+        Check(AxisMonitoringSettings.Load(settings).Profile is null, "missing scalar cannot silently become zero threshold");
+        File.WriteAllText(settings, original);
+        foreach (var invalid in new[] { new AxisMonitoringThreshold(10, 10, 5), new(-10, 10, 0), new(double.NaN, 10, 5), new(-10, double.PositiveInfinity, 5) })
+        {
+            var axes = Profile().Axes; axes[2] = invalid;
+            try { AxisMonitoringSettings.Save(axes, new("admin", UserRole.Administrator), settings); throw new Exception("invalid profile saved"); }
+            catch (InvalidDataException) { checks++; }
+            Check(File.ReadAllText(settings) == original, "invalid save preserves existing file");
+        }
+        File.WriteAllText(settings, "{broken");
+        Check(AxisMonitoringSettings.Load(settings).Profile is null && AxisMonitoringSettings.Load(settings).Error!.Contains("不可用"), "corrupt profile is unavailable");
+
+        var profile = Profile(); var counter = Counter(profile);
+        profile.Axes[0] = new(-100, 100, 100); // 后续配置不能更改本场阈值。
+        var frame = Frame(); frame.Axis1.ActualPosition = 11; frame.Axis1.Speed = 6; frame.Axis2.Speed = -6;
+        var transitions = new List<string>();
+        Observe(counter, frame, transitions: transitions);
+        var report = counter.Snapshot();
+        Check(report.Any == new AxisMonitoringCount(1, 1), "multi-axis multi-metric overall union counts once");
+        Check(report.Axes[0].Any == new AxisMonitoringCount(1, 1), "axis union counts once");
+        Check(report.Axes[0].Position.Exceeded == 1 && report.Axes[0].Speed.Exceeded == 1 && report.Axes[1].Speed.Exceeded == 1, "category counts independent and negative speed uses magnitude");
+        Check(transitions.Count == 3, "one entry log for each new exceeded metric");
+        frame.Heartbeat = 2; Observe(counter, frame, transitions: transitions);
+        Check(transitions.Count == 3, "sustained exceed does not flood log");
+        frame = Frame(3); frame.Axis1.ActualPosition = 10; frame.Axis1.Speed = 5; frame.Axis2.Speed = -5;
+        Observe(counter, frame, transitions: transitions);
+        Check(transitions.Count == 6, "recovery logged once");
+        report = counter.Snapshot();
+        Check(report.Any == new AxisMonitoringCount(3, 2), "exact boundary is allowed");
+        var before = report.Any;
+        Observe(counter, frame);
+        Check(counter.Snapshot().Any == before && counter.Snapshot().DuplicateFrames == 1, "duplicate heartbeat is excluded");
+        frame = Frame(4); Observe(counter, frame, true);
+        Check(counter.Snapshot().Any == before && counter.Snapshot().NcInvalidFrames == 1, "NC invalid never counts as zero normal");
+        frame = Frame(5); frame.Axis1.ActualPosition = double.NaN;
+        Observe(counter, frame);
+        report = counter.Snapshot();
+        Check(report.Any == before && report.Axes[0].Position.Valid == 3 && report.Axes[0].Speed.Valid == 4 && report.Axes[1].Any.Valid == 4,
+            "invalid scalar excluded per metric; complete overall sample excluded");
+        Check(report.Incomplete && report.InvalidValues == 1, "partial coverage reported");
+        Check(report.Thresholds!.Axes[0].MaxPosition == 10, "threshold snapshot frozen");
+        report.Thresholds.Axes[0] = new(-999, 999, 999);
+        Check(counter.Snapshot().Thresholds!.Axes[0].MaxPosition == 10, "consumer cannot mutate counter thresholds");
+        Observe(counter, Frame(6, false));
+        Check(counter.Finished && counter.Snapshot().EndReason!.Contains("离开轨迹执行"), "exit stops execution-only counting");
+        Check(counter.Snapshot().Format().Contains("角加速度：未评估") && counter.Snapshot().Format().Contains("输出扭矩：未评估"), "unsupported values never fabricated");
+        Check(new AxisMonitoringCount().Text.Contains("未取得有效样本"), "no samples is not zero percent");
+        Check(!new AxisMonitoringCount(2100000, 1).Text.StartsWith("0%"), "small positive percentage not rounded to zero");
+        var prep = Counter(); Observe(prep, Frame(1, false));
+        Check(!prep.Finished && prep.Snapshot().Any.Valid == 0, "preparation is not execution");
+        var running = Frame(2); running.CurrentPoint = 200; Observe(prep, running);
+        Check(prep.Snapshot().Incomplete, "late observation marked incomplete");
+        running.Heartbeat = 3; running.AcceptedSequence = 8; Observe(prep, running);
+        Check(prep.Finished && prep.Snapshot().EndReason == "轨迹序号改变", "sequence change ends own report");
+        var owner = Counter(); frame = Frame(); frame.ControlOwner = 2; Observe(owner, frame);
+        Check(owner.Finished && owner.Snapshot().Incomplete, "other station excluded");
+        var changed = Counter(); Observe(changed, Frame()); frame = Frame(); frame.AcceptedSequence = 8; Observe(changed, frame);
+        Check(changed.Finished && changed.Snapshot().EndReason == "轨迹序号改变", "sequence change ends even before next heartbeat");
+        var shortRun = Counter(); Observe(shortRun, Frame(1, false)); shortRun.Finish(Epoch, "短轨迹已结束", false);
+        Check(shortRun.Snapshot().Incomplete && shortRun.Snapshot().Any.Percent is null, "short unseen execution never reports zero percent passed");
+        var scalar = Counter(); frame = Frame(); frame.Axis3.ActualPosition = -10; frame.Axis3.Speed = double.NegativeInfinity;
+        Observe(scalar, frame);
+        Check(scalar.Snapshot().Axes[2].Position == new AxisMonitoringCount(1, 0) && scalar.Snapshot().Axes[2].Any.Valid == 0,
+            "lower boundary allowed; infinite speed excludes its metric and axis union");
+        var fault = Counter(); Observe(fault, Frame()); frame = Frame(2, false); frame.Error = true; frame.TrajectoryErrorId = 1003;
+        fault.Observe(frame, false, Epoch, 1, new(), "人工停止");
+        Check(fault.Snapshot().EndReason!.Contains("1003"), "fault exit retains original PLC error over requested stop reason");
+
+        var clock = new FakeClock(); var source = new SequenceSource(clock, 2) { FirstCost = 425 };
+        var logs = new List<string>();
+        var service = new AxisRuntimeMonitoringService(() => source, clock, () => (Profile(), null), Path.Combine(root, "timing"), logs.Add);
+        service.Start(7, 1, 0); await Done(service);
+        report = service.Latest!;
+        Check(source.Times.SequenceEqual(new long[] { 0, 500, 600 }), "late read skips expired opportunities without burst catchup");
+        Check(report.SkippedSlots == 4 && report.MaxReadMilliseconds == 425 && report.Any.Valid == 2, "timing and skipped coverage exact");
+        Check(File.Exists(Path.Combine(report.DirectoryPath!, "summary.json")), "summary saved");
+        Check(File.ReadLines(Path.Combine(report.DirectoryPath!, "samples.csv")).Count() == 4, "streamed rows include explicit exit record");
+        using (var json = JsonDocument.Parse(File.ReadAllText(Path.Combine(report.DirectoryPath!, "summary.json"))))
+            Check(json.RootElement.GetProperty("Thresholds").GetProperty("Version").GetString() == "test-version", "saved report contains frozen thresholds");
+        Check(source.MaxConcurrent == 1 && source.Disposed, "single reader and orderly source disposal");
+
+        clock = new(); source = new(clock, 2) { FailFirst = true };
+        service = new(() => source, clock, () => (Profile(), null), Path.Combine(root, "retry"), logs.Add);
+        service.Start(7, 1, 0); await Done(service);
+        Check(source.Times[1] == 1000 && service.Latest!.ReadFailures == 1, "read failure backs off one second");
+        Check(service.Latest!.Incomplete, "recovery does not erase missing coverage");
+        string retryCsv = File.ReadAllText(Path.Combine(service.Latest.DirectoryPath!, "samples.csv"));
+        Check(retryCsv.Contains("read, \"\"failure\"\""), "CSV escapes error quotes and commas");
+        clock = new(); source = new(clock, 2) { InvalidFirst = true };
+        service = new(() => source, clock, () => (Profile(), null), Path.Combine(root, "raw-invalid"), logs.Add);
+        service.Start(7, 1, 0); await Done(service);
+        Check(service.Latest!.InvalidValues == 1 && service.Latest.Any.Valid == 1
+            && File.ReadAllText(Path.Combine(service.Latest.DirectoryPath!, "samples.csv")).Contains("\"NaN\""),
+            "raw CSV retains nonfinite marker but counts never treat it as zero");
+
+        int created = 0;
+        service = new(() => { created++; throw new Exception("should not connect"); }, new FakeClock(), () => (null, "监测阈值未配置"), Path.Combine(root, "unconfigured"), logs.Add);
+        service.Start(7, 1, 0); await Done(service);
+        Check(created == 0 && service.Latest!.Status == "未统计" && service.Latest.Any.Percent is null, "missing thresholds cause no ADS and no fake zero");
+        Check(File.Exists(Path.Combine(service.Latest!.DirectoryPath!, "summary.json")), "unconfigured run also has an explicit summary");
+
+        string fileInsteadOfFolder = Path.Combine(root, "file"); File.WriteAllText(fileInsteadOfFolder, "test");
+        clock = new(); source = new(clock, 2);
+        service = new(() => source, clock, () => (Profile(), null), fileInsteadOfFolder, _ => throw new IOException("log failure"));
+        service.Start(7, 1, 0); await Done(service);
+        Check(service.Latest!.Any.Valid == 2 && service.Latest.Incomplete && service.Latest.Error!.Contains("保存失败"), "storage and log failure never stop observation");
+
+        clock = new(); source = new(clock, 10000);
+        service = new(() => source, clock, () => (Profile(), null), Path.Combine(root, "long"), logs.Add);
+        service.Start(7, 1, 0); await Done(service);
+        Check(service.Latest!.Any.Valid == 10000 && service.Latest.Axes.Length == 4, "long run keeps fixed-size counters");
+        Check(File.ReadLines(Path.Combine(service.Latest.DirectoryPath!, "samples.csv")).Count() == 10002, "long run streams all records");
+
+        var held = new HeldSource(); int instances = 0;
+        service = new(() => { instances++; return held; }, new AxisMonitoringClock(), () => (Profile(), null), Path.Combine(root, "late"), logs.Add);
+        service.Start(7, 1, 0); await held.Entered.Task.WaitAsync(TimeSpan.FromSeconds(3));
+        await service.StopAsync();
+        Check(service.Latest!.Incomplete, "uncooperative read cleanup is bounded and marked incomplete");
+        service.Start(8, 1, 0);
+        Check(service.Latest!.Status == "未统计" && instances == 1, "new session cannot overlap outstanding read");
+        held.Release.SetResult(new(Frame(), false));
+        await service.StopAsync();
+        Check(service.Latest!.Any.Valid == 0 && held.Disposed, "late cancelled sample cannot replace new report or count");
+
+        // 保存新版本不改变正在运行的一场；结束保留一次独立读取机会，不阻塞运动调用。
+        var configured = Profile(); var boundary = new BoundarySource();
+        service = new(() => boundary, new AxisMonitoringClock(), () => (configured, null), Path.Combine(root, "freeze"), logs.Add);
+        service.Start(7, 1, 0); await boundary.Entered.Task.WaitAsync(TimeSpan.FromSeconds(3));
+        configured = Profile() with { Version = "next-version" };
+        boundary.Release.SetResult(); await Until(() => service.Latest!.Any.Valid == 1);
+        service.Complete("正常结束"); await Done(service);
+        Check(service.Latest!.Thresholds!.Version == "test-version" && !service.Latest.Incomplete, "frozen version and independently observed exit remain complete");
+        boundary = new BoundarySource(); service.Start(7, 1, 0); await boundary.Entered.Task.WaitAsync(TimeSpan.FromSeconds(3));
+        boundary.Release.SetResult(); await Done(service);
+        Check(service.Latest!.Thresholds!.Version == "next-version", "saved version takes effect only on next run");
+
+        // 真实 ADS 适配器链接只读替身：不提供 Write API，误写将直接编译失败。
+        AdsClient.BadQuality = false; AdsClient.Reads = AdsClient.Connections = 0;
+        using (var actualSource = new AdsAxisMonitoringSource(new AxisServiceOptions()))
+        {
+            var read = await actualSource.ReadAsync(CancellationToken.None);
+            Check(read.Frame.Version == 4 && !read.FeedbackInvalid, "actual adapter reads monitor and NC-valid flag");
+            Check(AdsClient.LastOptions!.ConnectTimeoutMilliseconds == 1000 && AdsClient.LastOptions.OperationTimeoutMilliseconds == 500, "adapter timeouts fixed");
+            AdsClient.BadQuality = true;
+            try { await actualSource.ReadAsync(CancellationToken.None); throw new Exception("bad quality accepted"); }
+            catch (InvalidDataException) { checks++; }
+            AdsClient.BadQuality = false;
+            await actualSource.ReadAsync(CancellationToken.None);
+            Check(AdsClient.Connections == 2, "adapter reconnects after quality failure");
+            AdsClient.HoldRead = true; var watch = System.Diagnostics.Stopwatch.StartNew();
+            try { await actualSource.ReadAsync(CancellationToken.None); throw new Exception("read never timed out"); }
+            catch (OperationCanceledException) { Check(watch.ElapsedMilliseconds is >= 400 and < 2000, "actual adapter enforces 500ms read cancellation"); }
+            AdsClient.HoldRead = false; AdsClient.HoldConnect = true; watch.Restart();
+            try { await actualSource.ReadAsync(CancellationToken.None); throw new Exception("connection never timed out"); }
+            catch (OperationCanceledException) { Check(watch.ElapsedMilliseconds is >= 850 and < 2500, "actual adapter enforces 1s connect cancellation"); }
+            AdsClient.HoldConnect = false;
+        }
+        Console.WriteLine($"Axis runtime monitoring: {checks} assertions passed; controlled clock/fake ADS only, no device writes.");
+    }
+    private static async Task Until(Func<bool> ready)
+    {
+        using var timeout = new CancellationTokenSource(3000);
+        while (!ready()) await Task.Delay(1, timeout.Token);
+    }
+    private sealed class BoundarySource : IAxisMonitoringSource
+    {
+        public readonly TaskCompletionSource Entered = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public readonly TaskCompletionSource Release = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private uint calls;
+        public async Task<AxisMonitoringReading> ReadAsync(CancellationToken token)
+        {
+            calls++; if (calls == 1) { Entered.SetResult(); await Release.Task.WaitAsync(token); }
+            return new(Frame(calls, calls == 1), false);
+        }
+        public void Dispose() { }
+    }
+
+    private sealed class FakeClock : IAxisMonitoringClock
+    {
+        public long Now;
+        public long Milliseconds => Now;
+        public DateTimeOffset UtcNow => Epoch.AddMilliseconds(Now);
+        public Task DelayAsync(int milliseconds, CancellationToken token) { token.ThrowIfCancellationRequested(); Now += milliseconds; return Task.CompletedTask; }
+    }
+    private sealed class SequenceSource(FakeClock clock, int samples) : IAxisMonitoringSource
+    {
+        public readonly List<long> Times = new();
+        public int FirstCost, MaxConcurrent;
+        public bool FailFirst, InvalidFirst, Disposed;
+        private int calls, active, successes;
+        public Task<AxisMonitoringReading> ReadAsync(CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested(); Times.Add(clock.Now); calls++; active++; MaxConcurrent = Math.Max(MaxConcurrent, active);
+            try
+            {
+                if (calls == 1) { clock.Now += FirstCost; if (FailFirst) throw new IOException("read, \"failure\""); }
+                successes++;
+                var frame = Frame((uint)calls, successes <= samples);
+                if (InvalidFirst && successes == 1) frame.Axis1.ActualPosition = double.NaN;
+                return Task.FromResult(new AxisMonitoringReading(frame, false));
+            }
+            finally { active--; }
+        }
+        public void Dispose() { Disposed = true; }
+    }
+    private sealed class HeldSource : IAxisMonitoringSource
+    {
+        public readonly TaskCompletionSource Entered = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public readonly TaskCompletionSource<AxisMonitoringReading> Release = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public bool Disposed;
+        public Task<AxisMonitoringReading> ReadAsync(CancellationToken token) { Entered.SetResult(); return Release.Task; }
+        public void Dispose() { Disposed = true; }
+    }
+}
+
+namespace Page_switching
+{
+    internal static class OperationJournal { public static void Record(string page, string message) { } }
+    internal static class AdsConnectionSettings { public static NameValueCollection GetSettings() => new(); }
+    internal static class ControlStationIdentity { public static string? Parse(string? value) => value; public static ushort GetPlcCode(string? value) => 1; }
+}
+namespace InduLink.Abstractions
+{
+    public enum DataType { Bool }
+    public enum QualityStatus { Good, Bad }
+    public record ReadRequest(string DeviceId, string Address, DataType DataType);
+    public record ReadValue(object Value, QualityStatus Quality = QualityStatus.Good);
+    public record ReadResult(IReadOnlyList<ReadValue> Values);
+}
+namespace InduLink.Protocols.Ads
+{
+    public sealed class AdsClientOptions
+    {
+        public string DeviceId { get; set; } = ""; public string AmsNetId { get; set; } = ""; public int Port { get; set; }
+        public int ConnectTimeoutMilliseconds { get; set; } public int OperationTimeoutMilliseconds { get; set; }
+        public bool ValidateTargetStateOnConnect { get; set; }
+    }
+    public sealed class AdsClient(AdsClientOptions options) : IDisposable
+    {
+        public static AdsClientOptions? LastOptions;
+        public static bool BadQuality, HoldRead, HoldConnect;
+        public static int Reads, Connections;
+        public bool IsConnected { get; private set; }
+        public string DeviceId => options.DeviceId;
+        public async Task ConnectAsync(CancellationToken token)
+        { token.ThrowIfCancellationRequested(); LastOptions = options; Connections++; if (HoldConnect) await Task.Delay(Timeout.Infinite, token); IsConnected = true; }
+        public async Task<T> ReadAnyAsync<T>(string symbol, int[]? args = null, CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested(); Reads++;
+            if (HoldRead) await Task.Delay(Timeout.Infinite, cancellationToken);
+            return (T)(object)new PlcMachineMonitor { Version = 4, Size = 164, Heartbeat = (uint)Reads };
+        }
+        public Task<ReadResult> ReadManyAsync(IReadOnlyCollection<ReadRequest> requests, CancellationToken token)
+            => Task.FromResult(new ReadResult(new[] { new ReadValue(false, BadQuality ? QualityStatus.Bad : QualityStatus.Good) }));
+        public void Dispose() { IsConnected = false; }
+    }
+}

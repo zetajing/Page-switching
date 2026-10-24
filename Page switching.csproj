@@ -14,6 +14,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Update="Controls\AxisMonitoringSummaryControl.cs"><SubType>UserControl</SubType></Compile>
+    <Compile Update="Controls\AxisMonitoringSummaryControl.Designer.cs"><SubType>Code</SubType><DependentUpon>AxisMonitoringSummaryControl.cs</DependentUpon></Compile>
+    <Compile Update="Forms\AxisMonitoringSettingsForm.Designer.cs"><SubType>Code</SubType><DependentUpon>AxisMonitoringSettingsForm.cs</DependentUpon></Compile>
     <!-- 对比曲线也保持可编辑的 UserControl Designer 结构。 -->
     <Compile Update="Controls\ComparisonPlotControl.cs">
       <SubType>UserControl</SubType>

@@ -1,0 +1,115 @@
+using System.ComponentModel;
+using System.ComponentModel.Design;
+using System.Reflection;
+using System.Runtime.Loader;
+using System.Runtime.InteropServices;
+using System.Windows.Forms;
+
+internal static class Program
+{
+    const BindingFlags Members = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+    static int checks;
+    static void Check(bool value, string message) { checks++; if (!value) throw new Exception(message); }
+    [STAThread]
+    static void Main(string[] args)
+    {
+        Application.SetHighDpiMode(HighDpiMode.DpiUnaware); Application.EnableVisualStyles();
+        LicenseManager.CurrentContext = new DesigntimeLicenseContext();
+        string dll = Path.GetFullPath(args[0]), output = Path.GetFullPath(args[1]); Directory.CreateDirectory(output);
+        AssemblyLoadContext.Default.Resolving += (_, name) =>
+        {
+            string path = Path.Combine(Path.GetDirectoryName(dll)!, name.Name + ".dll");
+            return File.Exists(path) ? AssemblyLoadContext.Default.LoadFromAssemblyPath(path) : null;
+        };
+        string native = Path.Combine(Path.GetDirectoryName(dll)!, "runtimes", "win-" + RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant(), "native");
+        foreach (string path in Directory.GetFiles(native, "*.dll")) NativeLibrary.Load(path);
+        var app = Assembly.LoadFrom(dll);
+        Type Type(string name) => app.GetType("Page_switching." + name)!;
+        object Create(string name, params object?[] values) => Activator.CreateInstance(Type(name), Members, null, values, null)!;
+        object? Call(object target, string name, params object?[] values) => target.GetType().GetMethod(name, Members)!.Invoke(target, values);
+        object Value(object target, string name) => target.GetType().GetField(name, Members)!.GetValue(target)!;
+        Control Field(object target, string name) => (Control)Value(target, name);
+        void Render(Form form, string name)
+        {
+            form.ShowInTaskbar = false; form.Opacity = 0; form.Show(); Application.DoEvents();
+            using var bitmap = new System.Drawing.Bitmap(form.Width, form.Height);
+            form.DrawToBitmap(bitmap, new System.Drawing.Rectangle(System.Drawing.Point.Empty, bitmap.Size));
+            bitmap.Save(Path.Combine(output, name));
+        }
+        var admin = Create("LoginUser", "test-admin", Enum.Parse(Type("UserRole"), "Administrator"));
+        var op = Create("LoginUser", "test-operator", Enum.Parse(Type("UserRole"), "Operator"));
+        using (var settings = (Form)Create("AxisMonitoringSettingsForm", op))
+        {
+            Check(((DataGridView)Field(settings, "thresholdsGrid")).ReadOnly && !Field(settings, "saveButton").Enabled, "operator cannot edit or save thresholds");
+        }
+        using (var settings = (Form)Create("AxisMonitoringSettingsForm", admin))
+        {
+            var grid = (DataGridView)Field(settings, "thresholdsGrid");
+            Check(!grid.ReadOnly && Field(settings, "saveButton").Enabled && grid.Rows.Count == 4 && grid.Columns.Count == 4, "administrator has four-axis table");
+            Check(grid.Columns[0].ReadOnly && !grid.AllowUserToAddRows && !grid.AllowUserToDeleteRows, "axis identity and row count fixed");
+            Check(grid.Columns.Cast<DataGridViewColumn>().All(c => c.SortMode == DataGridViewColumnSortMode.NotSortable), "sorting cannot remap physical axis thresholds");
+            // 仅填写窗体显示，不调用保存，避免碰用户本机 JSON。
+            for (int i = 0; i < 4; i++) { grid.Rows[i].Cells[1].Value = -10 - i; grid.Rows[i].Cells[2].Value = 10 + i; grid.Rows[i].Cells[3].Value = 5 + i; }
+            foreach (var size in new[] { new System.Drawing.Size(850, 400), new System.Drawing.Size(720, 390) })
+            {
+                settings.ClientSize = size; Render(settings, $"monitoring-settings-{size.Width}.png");
+                foreach (string field in new[] { "noticeLabel", "thresholdsGrid", "stateLabel", "saveButton" })
+                {
+                    var control = Field(settings, field);
+                    Check(control.Parent!.ClientRectangle.Contains(control.Bounds) && control.Width > 100 && control.Height >= 25, "settings layout " + field);
+                }
+            }
+        }
+        using (var config = (Control)Create("panel.Config", op)) Check(!Field(config, "monitoringSettingsButton").Enabled, "configuration entry admin only");
+        using (var host = new Form { ClientSize = new System.Drawing.Size(1060, 800), ShowInTaskbar = false, Opacity = 0 })
+        using (var config = (Control)Create("panel.Config", admin))
+        {
+            host.Controls.Add(config); config.Dock = DockStyle.Fill; host.Show();
+            Call(config, "MonitoringSettingsButton_Click", null, EventArgs.Empty); Application.DoEvents();
+            var first = (Form)Value(config, "_monitoringForm");
+            Check(first.Visible && !first.Modal && host.Enabled, "settings modeless; main stop remains accessible");
+            Call(config, "MonitoringSettingsButton_Click", null, EventArgs.Empty);
+            Check(ReferenceEquals(first, Value(config, "_monitoringForm")), "reopen reuses one settings form");
+            config.Dispose(); Check(first.IsDisposed, "settings form disposed with page");
+        }
+        var now = DateTimeOffset.UtcNow;
+        Array axes = Array.CreateInstance(Type("AxisMonitoringThreshold"), 4);
+        for (int i = 0; i < 4; i++) axes.SetValue(Create("AxisMonitoringThreshold", -10d, 10d, 5d), i);
+        var profile = Create("AxisMonitoringProfile", 1, "UI-test-version", now, axes);
+        var counter = Create("AxisMonitoringCounter", 7u, (ushort)1, 0u, now, profile, null);
+        object frame = Create("PlcMachineMonitor");
+        void Set(string name, object value) => Type("PlcMachineMonitor").GetField(name)!.SetValue(frame, value);
+        Set("ControlOwner", (ushort)1); Set("AcceptedSequence", 7u); Set("Heartbeat", 1u); Set("Running", true);
+        var axis = Type("PlcMachineMonitor").GetField("Axis1")!.GetValue(frame)!;
+        axis.GetType().GetField("ActualPosition")!.SetValue(axis, 11d); Type("PlcMachineMonitor").GetField("Axis1")!.SetValue(frame, axis);
+        Call(counter, "Observe", frame, false, now, 3d, new List<string>(), null);
+        using (var summary = (Control)Create("AxisMonitoringSummaryControl"))
+        {
+            Call(summary, "ApplyReport", Call(counter, "Snapshot"));
+            string text = (string)Call(summary, "BuildReportText")!;
+            Check(text.Contains("100%（1/1）") && text.Contains("正在统计") && text.Contains("角加速度：未评估"), "copy text includes counts and unsupported metrics");
+            int changes = 0; Field(summary, "reportTextBox").TextChanged += (_, _) => changes++;
+            Call(summary, "ApplyReport", Call(counter, "Snapshot")); Check(changes == 0, "unchanged report does not flicker");
+            Check(((TextBox)Field(summary, "reportTextBox")).ReadOnly && Field(summary, "copyButton").Enabled, "readonly and copy available");
+            Call(counter, "NoteIncomplete", "模拟读取失败"); Call(counter, "Finish", now, "人工停止", true);
+            Call(summary, "ApplyReport", Call(counter, "Snapshot")); text = (string)Call(summary, "BuildReportText")!;
+            Check(text.Contains("已结束") && text.Contains("统计不完整") && text.Contains("人工停止"), "finished incomplete report distinguished");
+            Call(summary, "ApplyReport", new object?[] { null }); Check(!Field(summary, "copyButton").Enabled, "no report cannot copy");
+        }
+        using (var host = new Form { ClientSize = new System.Drawing.Size(1060, 820) })
+        using (var page = (Control)Create("Auto"))
+        {
+            host.Controls.Add(page); page.Dock = DockStyle.Fill;
+            var summary = Field(page, "runtimeMonitoringSummary"); Call(summary, "ApplyReport", Call(counter, "Snapshot"));
+            Render(host, "wave-monitoring-summary.png");
+            var parent = (TableLayoutPanel)summary.Parent!;
+            // 仓库 Designer 为120 DPI，用户未提交布局为96 DPI；按实际缩放后行高检查。
+            Check(parent.GetRow(summary) == 5 && summary.Height >= parent.RowStyles[5].Height - summary.Margin.Vertical - 2
+                && summary.Height >= 130 && summary.Width > 300, "wave page report has dedicated scaled row");
+            Check(parent.ClientRectangle.Contains(summary.Bounds), "report within wave layout");
+            ((ScrollableControl)page).ScrollControlIntoView(summary); Application.DoEvents();
+            Render(host, "wave-monitoring-summary-scrolled.png");
+        }
+        Console.WriteLine($"Axis monitoring UI: {checks} assertions passed; real forms, no PLC, no settings saved.");
+    }
+}

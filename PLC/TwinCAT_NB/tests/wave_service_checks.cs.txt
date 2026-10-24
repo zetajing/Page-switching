@@ -16,6 +16,10 @@ internal static class Program
         using var limit = new CancellationTokenSource(5000);
         while (!ready()) await Task.Delay(20, limit.Token);
     }
+    // 原有运动回归不读取用户监测配置，也不创建真实监测连接。
+    static AxisService NewService(AxisServiceOptions options) => new(options, new AxisRuntimeMonitoringService(
+        () => throw new Exception("离线回归不允许创建监测来源"), new AxisMonitoringClock(),
+        () => (null, "离线监测阈值未配置"), Path.Combine(AppContext.BaseDirectory, "monitoring"), _ => { }));
     static AxisServiceOptions Options(ushort station = 1) => new()
     {
         ControlStationCode = station,
@@ -63,7 +67,7 @@ internal static class Program
             }
             // 只读连接不需要站点身份或控制权；读取不会触发申请、心跳或运动写入。
             AdsClient.Model = new FakePlc { AuthorityOwner = 0 };
-            using (var service = new AxisService(Options(station: 0)))
+            using (var service = NewService(Options(station: 0)))
             {
                 var disconnected = await service.ReadSnapshotAsync(CancellationToken.None);
                 Check(disconnected.Count == 4 && disconnected.All(s => s.ActualPosition is null), "disconnected read is unavailable");
@@ -101,7 +105,7 @@ internal static class Program
                 Check(AdsClient.Model.TotalWrites == 0, "read failure never attempts reset or reconnect write");
             }
             AdsClient.Model = new FakePlc();
-            using (var service = new AxisService(Options()))
+            using (var service = NewService(Options()))
             {
                 await Reject(() => service.UploadWaveAsync(signal), "no authority");
                 await service.ConnectAsync(CancellationToken.None);
@@ -138,9 +142,28 @@ internal static class Program
                 Check(!model.Session && !model.Frame.TrajectoryBusy, "stop releases session");
                 Check(model.StopReleaseWrites > 0, "stop latch released before idle confirmation");
             }
+            // 统计来源/日志异常不改变真实启动、运动结果或停止入口；不连接第二个真实 ADS。
+            AdsClient.Model = new FakePlc();
+            var monitoring = new AxisRuntimeMonitoringService(() => throw new IOException("模拟只读采样连接失败"),
+                new AxisMonitoringClock(), () => (new AxisMonitoringProfile(1, "integration", DateTimeOffset.UtcNow,
+                    Enumerable.Range(0, 4).Select(_ => new AxisMonitoringThreshold(-10, 10, 5)).ToArray()), null),
+                Path.Combine(AppContext.BaseDirectory, "monitoring-error"), _ => throw new IOException("模拟统计日志失败"));
+            using (var service = new AxisService(Options(), monitoring))
+            {
+                await service.ConnectAsync(CancellationToken.None); await Until(() => service.HasControlAuthority);
+                await service.UploadWaveAsync(signal); await service.StartWaveAsync();
+                await Until(() => service.RuntimeMonitoringReport?.ReadFailures > 0);
+                Check(service.WaveStatus.Stage.StartsWith("造波完成") && service.LastWaveFailure is null,
+                    "monitoring failure cannot overwrite motion success or fault field");
+                Check(AdsClient.Model.StartWrites == 1, "monitoring never adds start, replay or other motion writes");
+                await service.StopWaveAsync();
+                Check(service.WaveStatus.Stage.StartsWith("已停止") && service.LastWaveFailure is null,
+                    "monitoring failure cannot block stop or replace stop confirmation");
+                await service.ShutdownRuntimeMonitoringAsync();
+            }
             // 页面与真实服务必须解释同一份启动条件；拒绝时不能抢先使能、回原或发启动沿。
             AdsClient.Model = new FakePlc();
-            using (var service = new AxisService(Options()))
+            using (var service = NewService(Options()))
             {
                 await service.ConnectAsync(CancellationToken.None);
                 await Until(() => service.HasControlAuthority);
@@ -178,7 +201,7 @@ internal static class Program
             }
             // 单轴与全轴共用脉冲实现：保持轴映射，取消后清零，双重故障保留原始异常。
             AdsClient.Model = new FakePlc();
-            using (var service = new AxisService(Options()))
+            using (var service = NewService(Options()))
             {
                 await service.ConnectAsync(CancellationToken.None);
                 await Until(() => service.HasControlAuthority);
@@ -228,7 +251,7 @@ internal static class Program
             }
             // 拆分会话方法后，取消等待 PLC 会话锁仍不能越过握手直接进入清表/下发。
             AdsClient.Model = new FakePlc { HoldSessionLock = true };
-            using (var service = new AxisService(Options()))
+            using (var service = NewService(Options()))
             {
                 await service.ConnectAsync(CancellationToken.None);
                 await Until(() => service.HasControlAuthority);
@@ -247,7 +270,7 @@ internal static class Program
                 Check(service.WaveStatus.Ready && !AdsClient.Model.Session, "new operation can complete after cancelled handshake");
             }
             AdsClient.Model = new FakePlc { FailArrayWrite = true };
-            using (var service = new AxisService(Options()))
+            using (var service = NewService(Options()))
             {
                 await service.ConnectAsync(CancellationToken.None);
                 await Until(() => service.HasControlAuthority);
@@ -258,7 +281,7 @@ internal static class Program
                 Check(!service.WaveStatus.Ready && AdsClient.Model.StartWrites == 0, "failed transfer not ready");
             }
             AdsClient.Model = new FakePlc();
-            using (var service = new AxisService(Options()))
+            using (var service = NewService(Options()))
             {
                 await service.ConnectAsync(CancellationToken.None);
                 await Until(() => service.HasControlAuthority);
@@ -282,7 +305,7 @@ internal static class Program
                 Check(AdsClient.Model.StartWrites == startWrites, "changed parameters cannot send start");
             }
             AdsClient.Model = new FakePlc { InvalidConfigRead = true };
-            using (var service = new AxisService(Options()))
+            using (var service = NewService(Options()))
             {
                 await service.ConnectAsync(CancellationToken.None);
                 await Until(() => service.HasControlAuthority);
@@ -291,7 +314,7 @@ internal static class Program
                 Check(AdsClient.Model.ArrayWrites == 0 && AdsClient.Model.ClearWrites == 0, "missing config cannot use defaults or send points");
             }
             AdsClient.Model = new FakePlc { ChangeConfigOnHome = true };
-            using (var service = new AxisService(Options()))
+            using (var service = NewService(Options()))
             {
                 await service.ConnectAsync(CancellationToken.None);
                 await Until(() => service.HasControlAuthority);
@@ -301,7 +324,7 @@ internal static class Program
                 Check(AdsClient.Model.StartWrites == 0 && AdsClient.Model.StopReleaseWrites > 0, "changed preparation parameters stop safely before start pulse");
             }
             AdsClient.Model = new FakePlc { HoldHoming = true };
-            using (var service = new AxisService(Options()))
+            using (var service = NewService(Options()))
             {
                 await service.ConnectAsync(CancellationToken.None);
                 await Until(() => service.HasControlAuthority);
@@ -316,7 +339,7 @@ internal static class Program
                 Check(!service.HasControlAuthority, "failed stop cannot auto restore control");
             }
             AdsClient.Model = new FakePlc { HoldAcknowledgement = true };
-            using (var service = new AxisService(Options()))
+            using (var service = NewService(Options()))
             {
                 await service.ConnectAsync(CancellationToken.None);
                 await Until(() => service.HasControlAuthority);
@@ -326,7 +349,7 @@ internal static class Program
                 Check(!service.WaveStatus.Ready && AdsClient.Model.StartWrites == 0, "unconfirmed segment never ready");
             }
             AdsClient.Model = new FakePlc { FreezeAfterArray = true, HoldAcknowledgement = true };
-            using (var service = new AxisService(Options()))
+            using (var service = NewService(Options()))
             {
                 await service.ConnectAsync(CancellationToken.None);
                 await Until(() => service.HasControlAuthority);
@@ -334,7 +357,7 @@ internal static class Program
                 Check(!service.HasControlAuthority && AdsClient.Model.StartWrites == 0, "uncertain stop suspends authorization");
             }
             AdsClient.Model = new FakePlc { FeedbackInvalid = true, ReleaseAllowed = false };
-            using (var service = new AxisService(Options()))
+            using (var service = NewService(Options()))
             {
                 await service.ConnectAsync(CancellationToken.None);
                 await Until(() => service.HasControlAuthority);
@@ -349,7 +372,7 @@ internal static class Program
             }
             // 故障快照必须来自失败当时，不能用安全停止后的状态冒充故障现场。
             AdsClient.Model = new FakePlc { FailWriteSymbol = "GVL_motion.nPointCount" };
-            using (var service = new AxisService(Options()))
+            using (var service = NewService(Options()))
             {
                 await service.ConnectAsync(CancellationToken.None);
                 await Until(() => service.HasControlAuthority);
@@ -358,7 +381,7 @@ internal static class Program
                 Check(AdsClient.Model.StartWrites == 0, "write diagnostic never retries or starts trajectory");
             }
             AdsClient.Model = new FakePlc { FailFrameRead = true };
-            using (var service = new AxisService(Options()))
+            using (var service = NewService(Options()))
             {
                 await service.ConnectAsync(CancellationToken.None);
                 await Until(() => service.HasControlAuthority);
@@ -367,7 +390,7 @@ internal static class Program
                 Check(AdsClient.Model.StartWrites == 0, "read diagnostic never starts trajectory");
             }
             AdsClient.Model = new FakePlc { StartFaultCode = 1003 };
-            using (var service = new AxisService(Options()))
+            using (var service = NewService(Options()))
             {
                 await service.ConnectAsync(CancellationToken.None);
                 await Until(() => service.HasControlAuthority);
@@ -385,7 +408,7 @@ internal static class Program
             // 配套错误不能清表、写点位或自动使能；停止仍保留独立入口。
             AdsClient.Model = new FakePlc();
             AdsClient.Model.Frame.BehaviorVersion = 0;
-            using (var service = new AxisService(Options()))
+            using (var service = NewService(Options()))
             {
                 await service.ConnectAsync(CancellationToken.None);
                 await Until(() => service.HasControlAuthority);
@@ -396,7 +419,7 @@ internal static class Program
                 Check(service.LastWaveFailure == failure.Message, "original failure retained independently of operation status");
             }
             AdsClient.Model = new FakePlc();
-            using (var service = new AxisService(Options()))
+            using (var service = NewService(Options()))
             {
                 await service.ConnectAsync(CancellationToken.None);
                 await Until(() => service.HasControlAuthority);

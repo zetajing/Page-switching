@@ -3,6 +3,7 @@ namespace Page_switching.panel;
 partial class Config
 {
     private Panel pagePanel;
+    private Button monitoringSettingsButton;
     private AntdUI.Panel controlStationGroup;
         private AntdUI.Label controlStationGroupCaption;
     private TableLayoutPanel controlStationLayout;
@@ -190,6 +191,10 @@ partial class Config
             _saveDatabaseButton.Radius = 6;
         _databaseStateLabel = new AntdUI.Label();
         pagePanel.SuspendLayout();
+        monitoringSettingsButton = new Button();
+        monitoringSettingsButton.Text = "配置运行监测阈值（分析用，不修改PLC）";
+        monitoringSettingsButton.Dock = DockStyle.Fill;
+        monitoringSettingsButton.Click += MonitoringSettingsButton_Click;
         rootLayout.SuspendLayout();
         controlStationGroup.SuspendLayout();
         controlStationLayout.SuspendLayout();
@@ -227,12 +232,13 @@ partial class Config
         rootLayout.Controls.Add(routerGroup, 0, 4);
         rootLayout.Controls.Add(waveGeneratorGroup, 0, 5);
         rootLayout.Controls.Add(_databaseGroup, 0, 6);
+        rootLayout.Controls.Add(monitoringSettingsButton, 0, 7);
         rootLayout.Dock = DockStyle.Top;
         rootLayout.Location = new Point(0, 0);
         rootLayout.Margin = new Padding(2, 3, 2, 3);
         rootLayout.Name = "rootLayout";
         rootLayout.Padding = new Padding(16);
-        rootLayout.RowCount = 7;
+        rootLayout.RowCount = 8;
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 42F));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 26F));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 120F));
@@ -240,6 +246,7 @@ partial class Config
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 292F));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 172F));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 156F));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 52F));
         rootLayout.Size = new Size(843, 956);
         rootLayout.TabIndex = 0;
         //

@@ -105,6 +105,10 @@ public sealed partial class AxisService
             _waveStatus = new("停止未确认，等待 PLC 失联停车", 0, false, false, ex.Message);
             OperationJournal.Record("造波", _waveStatus.Stage + "：" + ex.Message);
         }
-        finally { _waveActive = false; }
+        finally
+        {
+            EndRuntimeMonitoring(failure is null ? "本次造波操作结束" : failure is OperationCanceledException ? "造波已取消" : "运动故障：" + failure.Message);
+            _waveActive = false;
+        }
     }
 }
