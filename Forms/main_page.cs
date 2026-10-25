@@ -21,6 +21,12 @@ namespace Page_switching
         private readonly WaveBatchCalibrationPage _batchCalibrationPage;
         private readonly WaveAnalysisPage _analysisPage;
         private readonly SignalCorrectionPage _correctionPage;
+        private readonly AccountManagementPage _accountManagementPage;
+        private readonly AxisMonitoringSettingsPage _monitoringSettingsPage;
+        private readonly MachineDiagnosticsPage _diagnosticsPage;
+        private UserControl? _accountReturnPage;
+        private AntdUI.Button? _accountReturnButton;
+        private AntdUI.Button? _activeNavigationButton;
         private readonly UserControl[] _pages;
         private readonly AdsTcpRouterRuntime _router;
         private readonly System.Windows.Forms.Timer _headerStatusTimer = new() { Interval = 500 };
@@ -78,11 +84,16 @@ namespace Page_switching
             _batchCalibrationPage = new WaveBatchCalibrationPage();
             _analysisPage = new WaveAnalysisPage();
             _correctionPage = new SignalCorrectionPage();
+            // 功能页全部放入 panelswitch，复用同一份服务和页面生命周期。
+            _accountManagementPage = new AccountManagementPage(new LoginService(), _currentUser);
+            _monitoringSettingsPage = new AxisMonitoringSettingsPage(_currentUser);
+            _diagnosticsPage = new MachineDiagnosticsPage(_axisService);
             // 页面集合统一用于日志注册和退出释放，不再维护两份清单。
             _pages = new UserControl[]
             {
                 _autoPage, _manualPage, _configPage, _waveformPage, _waveHeightMeterPage,
-                _dataPage, _calibrationPage, _batchCalibrationPage, _analysisPage, _correctionPage, _controlAuthorityPage
+                _dataPage, _calibrationPage, _batchCalibrationPage, _analysisPage, _correctionPage, _controlAuthorityPage,
+                _accountManagementPage, _monitoringSettingsPage, _diagnosticsPage
             };
             ConnectPageEvents();
             RegisterPageLogging();
@@ -102,8 +113,13 @@ namespace Page_switching
         private void ManageAccountsButton_Click(object? sender, EventArgs e)
         {
             if (_currentUser?.IsAdministrator != true) return;
-            using var dialog = new AccountManagementForm(new LoginService(), _currentUser);
-            dialog.ShowDialog(this);
+            // 记录进入前的页面，返回时保留原来的输入和导航位置。
+            if (!ReferenceEquals(_currentPage, _accountManagementPage))
+            {
+                _accountReturnPage = _currentPage;
+                _accountReturnButton = _activeNavigationButton;
+            }
+            NavigateTo(_accountManagementPage, manageAccountsButton);
         }
 
         // 先接入日志通知，后续服务和页面初始化产生的记录也能被主窗体接收。
@@ -119,6 +135,12 @@ namespace Page_switching
         private void ConnectPageEvents()
         {
             _controlAuthorityPage.RefreshRequested += async (_, _) => await RefreshMonitorAsync();
+            _controlAuthorityPage.DiagnosticsRequested += (_, _) => NavigateTo(_diagnosticsPage, controlAuthorityButton);
+            _diagnosticsPage.BackRequested += (_, _) => NavigateTo(_controlAuthorityPage, controlAuthorityButton);
+            _configPage.MonitoringSettingsRequested += (_, _) => NavigateTo(_monitoringSettingsPage, bu_Configuration);
+            _monitoringSettingsPage.BackRequested += (_, _) => NavigateTo(_configPage, bu_Configuration);
+            _accountManagementPage.BackRequested += (_, _) =>
+                NavigateTo(_accountReturnPage ?? _autoPage, _accountReturnButton ?? Bu_auto);
             // 批量标定由主窗体管理，使用同一个 panelswitch 显示和返回。
             _calibrationPage.BatchCalibrationRequested += (_, _) => NavigateTo(_batchCalibrationPage, Bu_Calibration);
             _batchCalibrationPage.BackRequested += (_, _) => NavigateTo(_calibrationPage, Bu_Calibration);
@@ -286,6 +308,7 @@ namespace Page_switching
             // 等待后台任务期间先停止手动页刷新和按钮请求，轴客户端仍留到最后释放。
             if (!IsDisposed && !Disposing) Enabled = false;
             _controlAuthorityPage?.CancelRequests();
+            _diagnosticsPage?.CancelRequests();
             _manualPage?.Dispose();
             _shutdownTask = CleanupServicesAsync();
             return _shutdownTask;
@@ -375,6 +398,7 @@ namespace Page_switching
             // 切页时共用同一份反馈，保持顶部与控制权页显示一致。
             var snapshot = _monitorService.LatestSnapshot;
             SetActiveNavigation(button, snapshot);
+            _activeNavigationButton = button;
             if (ReferenceEquals(page, _autoPage) || ReferenceEquals(page, _controlAuthorityPage))
             {
                 _controlAuthorityPage.ApplyMonitorSnapshot(snapshot);
@@ -387,6 +411,8 @@ namespace Page_switching
             switch (page)
             {
                 case Config:
+                case AccountManagementPage:
+                case AxisMonitoringSettingsPage:
                 case Calibration:
                 case WaveBatchCalibrationPage:
                     return _currentUser?.IsAdministrator == true;
@@ -539,7 +565,7 @@ namespace Page_switching
         private void SetActiveNavigation(AntdUI.Button activeButton, MachineMonitorSnapshot snapshot)
         {
             foreach (var button in new[] { Bu_auto, Bu_manual, Bu_Calibration, Bu_data, button2, button5,
-                         analysisButton, correctionButton, bu_Configuration, controlAuthorityButton })
+                         analysisButton, correctionButton, bu_Configuration, controlAuthorityButton, manageAccountsButton })
             {
                 var isActive = ReferenceEquals(button, activeButton);
                 button.DefaultBack = isActive ? UiPalette.Primary : UiPalette.Surface;
@@ -549,8 +575,13 @@ namespace Page_switching
                 button.BackActive = isActive ? UiPalette.PrimaryHover : UiPalette.SecondaryButton;
             }
 
-            navigationMarker.Top = activeButton.Top;
-            navigationMarker.Height = activeButton.Height;
+            // 账号入口在顶部，左侧标记仅跟随左侧导航按钮。
+            navigationMarker.Visible = !ReferenceEquals(activeButton, manageAccountsButton);
+            if (navigationMarker.Visible)
+            {
+                navigationMarker.Top = activeButton.Top;
+                navigationMarker.Height = activeButton.Height;
+            }
 
             UpdateHeaderStatus(snapshot);
         }
@@ -621,6 +652,12 @@ namespace Page_switching
                     return "波形生成";
                 case Config:
                     return "系统配置";
+                case AccountManagementPage:
+                    return "账号管理";
+                case AxisMonitoringSettingsPage:
+                    return "轴运行监测配置";
+                case MachineDiagnosticsPage:
+                    return "运行诊断";
                 case Wave_Height_Meter:
                     return "浪高监测";
                 case WaveAnalysisPage:

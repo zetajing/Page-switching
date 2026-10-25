@@ -39,25 +39,27 @@ internal static class Program
         for (int axis = 0; axis < 4; axis++)
             limits.SetValue(Create("AxisTrajectoryLimits", -200d-axis, 200d+axis, 200d+axis, 12000d+axis, 100d+axis, 10d+axis, 10d+axis), axis);
         object snapshot = Create("MachineDiagnosticsSnapshot", frame, limits, DateTimeOffset.Now, null);
-        using var form = (Form)Create("MachineDiagnosticsForm"); // 无服务，不建立 ADS，也不触发任何控制请求。
+        using var page = (UserControl)Create("panel.MachineDiagnosticsPage");
+        using var form = new Form { ClientSize = page.Size };
+        form.Controls.Add(page); page.Dock = DockStyle.Fill; // 无服务，不建立 ADS，也不触发任何控制请求。
         form.ShowInTaskbar = false;
         form.Opacity = 0;
         form.Show();
-        Call(form, "ApplySnapshot", snapshot);
-        var grid = (DataGridView)Field(form, "parametersGrid");
+        Call(page, "ApplySnapshot", snapshot);
+        var grid = (DataGridView)Field(page, "parametersGrid");
         Check(grid.ReadOnly && !grid.AllowUserToAddRows && !grid.AllowUserToDeleteRows, "parameters remain read-only");
         Check(grid.Rows.Count == 4 && grid.Columns.Count == 8, "four independent parameter rows");
         Check(grid.Rows[3].Cells[1].Value?.ToString() == "-203", "axis four configuration not copied from axis one");
-        string text = (string)Call(form, "BuildDiagnosticText")!;
+        string text = (string)Call(page, "BuildDiagnosticText")!;
         foreach (string expected in new[] { "2026102301", "4/164", "轴 2", "MC_MoveAbsolute", "定位到首点", "16384", "1009", "原始单位", "12003" })
             Check(text.Contains(expected), "copied diagnostic includes " + expected);
         foreach (var size in new[] { new System.Drawing.Size(1060, 700), new System.Drawing.Size(860, 600) })
         {
             form.ClientSize = size;
             Application.DoEvents();
-            foreach (string field in new[] { "parametersGrid", "diagnosticTextBox", "refreshButton", "copyButton" })
+            foreach (string field in new[] { "parametersGrid", "diagnosticTextBox", "refreshButton", "copyButton", "backButton" })
             {
-                Control control = Field(form, field);
+                Control control = Field(page, field);
                 Check(control.Parent!.ClientRectangle.Contains(control.Bounds), "control within parent: " + field);
                 Check(control.Width > 0 && control.Height > 20, "visible size: " + field);
             }
@@ -66,9 +68,9 @@ internal static class Program
             bitmap.Save(Path.Combine(output, $"diagnostics-{size.Width}x{size.Height}.png"));
         }
         snapshot = Create("MachineDiagnosticsSnapshot", frame, null, DateTimeOffset.Now, "模拟 aConfig 读取失败");
-        Call(form, "ApplySnapshot", snapshot);
+        Call(page, "ApplySnapshot", snapshot);
         Check(grid.Rows.Count == 0, "failed read removes old parameters instead of displaying zero or stale rows");
-        text = (string)Call(form, "BuildDiagnosticText")!;
+        text = (string)Call(page, "BuildDiagnosticText")!;
         Check(text.Contains("读取失败") && !text.Contains("12003"), "failure can be copied without stale parameter values");
         // 服务是失败记录的唯一来源；复制必须保持屏幕这一次诊断，不读后来发生的错误。
         var options = Create("AxisServiceOptions");
@@ -77,7 +79,7 @@ internal static class Program
         options.GetType().GetProperty("AxisSymbols")!.SetValue(options, maps);
         using var service = (IDisposable)Create("AxisService", options); // 不 Connect，不创建网络请求。
         Set(service, "_lastWaveFailure", "第一次失败：轴 2，错误 16384");
-        using var withService = (Form)Create("MachineDiagnosticsForm", service);
+        using var withService = (UserControl)Create("panel.MachineDiagnosticsPage", service);
         Call(withService, "ApplySnapshot", snapshot);
         string first = (string)Call(withService, "BuildDiagnosticText")!;
         Check(first.Contains("第一次失败"), "diagnostic obtains saved failure directly from service");
@@ -95,13 +97,13 @@ internal static class Program
         var diagnosticsButton = Field(authority, "diagnosticsButton");
         Check(diagnosticsButton.Enabled, "read-only diagnostic entry available without a service or control authority");
         Check(diagnosticsButton.Parent!.ClientRectangle.Contains(diagnosticsButton.Bounds), "diagnostic entry fits authority action row");
+        int requests = 0;
+        EventHandler handler = (_, _) => requests++;
+        authority.GetType().GetEvent("DiagnosticsRequested", Members)!.GetAddMethod(true)!.Invoke(authority, new object[] { handler });
+        int windows = Application.OpenForms.Count;
         Call(authority, "DiagnosticsButton_Click", null, EventArgs.Empty);
-        object opened = authority.GetType().GetField("_diagnosticsForm", Members)!.GetValue(authority)!;
-        Check(((Form)opened).Visible && ((Form)opened).Owner == host, "modeless diagnostic window keeps main window available");
         Call(authority, "DiagnosticsButton_Click", null, EventArgs.Empty);
-        Check(ReferenceEquals(opened, authority.GetType().GetField("_diagnosticsForm", Members)!.GetValue(authority)), "reopening reuses one diagnostic window");
-        authority.Dispose();
-        Check(((Form)opened).IsDisposed, "owner disposal closes diagnostic window");
+        Check(requests == 2 && Application.OpenForms.Count == windows, "diagnostic entry only requests main-page navigation");
         Console.WriteLine($"Diagnostics UI: {checks} assertions passed; no ADS connection or clipboard write.");
     }
 }

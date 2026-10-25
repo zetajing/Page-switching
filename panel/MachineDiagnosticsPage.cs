@@ -2,28 +2,38 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Text;
 
-namespace Page_switching;
+namespace Page_switching.panel;
 
 // 查看参数和复制诊断不改变控制权，也不向 PLC 写入配置或运动命令。
-public partial class MachineDiagnosticsForm : Form
+public partial class MachineDiagnosticsPage : UserControl
 {
     private readonly AxisService? _axisService;
     private readonly CancellationTokenSource _lifetime = new();
 
-    public MachineDiagnosticsForm() : this(null) { }
+    public MachineDiagnosticsPage() : this(null) { }
 
-    public MachineDiagnosticsForm(AxisService? axisService)
+    public MachineDiagnosticsPage(AxisService? axisService)
     {
         InitializeComponent();
         _axisService = axisService;
         diagnosticTextBox.Text = $"上位机版本：{MachineDiagnosticsSnapshot.SoftwareVersion}\r\n尚未读取 PLC 诊断。";
     }
 
-    protected override async void OnShown(EventArgs e)
+    // 缓存页面每次显示时读取一次；隐藏页面不主动发起诊断请求。
+    protected override async void OnVisibleChanged(EventArgs e)
     {
-        base.OnShown(e);
-        if (LicenseManager.UsageMode != LicenseUsageMode.Designtime && !DesignMode && _axisService is not null)
+        base.OnVisibleChanged(e);
+        if (Visible && LicenseManager.UsageMode != LicenseUsageMode.Designtime && !DesignMode && _axisService is not null)
             await RefreshDiagnosticsAsync();
+    }
+
+    internal event EventHandler? BackRequested;
+    private void BackButton_Click(object? sender, EventArgs e) => BackRequested?.Invoke(this, e);
+
+    // 主窗体退出时先取消只读请求，再释放共享轴服务。
+    internal void CancelRequests()
+    {
+        if (!_lifetime.IsCancellationRequested) _lifetime.Cancel();
     }
 
     private async void RefreshButton_Click(object? sender, EventArgs e) => await RefreshDiagnosticsAsync();

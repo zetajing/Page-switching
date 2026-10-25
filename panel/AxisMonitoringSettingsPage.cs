@@ -1,13 +1,13 @@
 using System.Globalization;
 
-namespace Page_switching;
+namespace Page_switching.panel;
 
 // 独立分析阈值；管理员保存，运行中保存的版本仅供下一场使用。
-public partial class AxisMonitoringSettingsForm : Form
+public partial class AxisMonitoringSettingsPage : UserControl
 {
     private readonly LoginUser? _user;
-    public AxisMonitoringSettingsForm() : this(null) { }
-    internal AxisMonitoringSettingsForm(LoginUser? user)
+    public AxisMonitoringSettingsPage() : this(null) { }
+    internal AxisMonitoringSettingsPage(LoginUser? user)
     {
         _user = user;
         InitializeComponent();
@@ -22,6 +22,10 @@ public partial class AxisMonitoringSettingsForm : Form
         stateLabel.Text = loaded.Error ?? "当前监测阈值版本：" + loaded.Profile!.Version;
     }
     private static string Number(double? value) => value?.ToString("G17", CultureInfo.InvariantCulture) ?? "";
+
+    // 返回系统配置仍由主窗体切换，不创建额外窗口。
+    internal event EventHandler? BackRequested;
+    private void BackButton_Click(object? sender, EventArgs e) => BackRequested?.Invoke(this, e);
     private void SaveButton_Click(object? sender, EventArgs e)
     {
         try

@@ -12,7 +12,6 @@ namespace Page_switching
         private readonly AxisService? _axisService;
         private readonly CancellationTokenSource _requestsCancellation = new();
         private bool _requestPending;
-        private MachineDiagnosticsForm? _diagnosticsForm; // 只保留一个只读窗口，随所属页面释放。
 
         public ControlAuthority() : this(null) { }
 
@@ -24,7 +23,7 @@ namespace Page_switching
             if (IsDesignSurface) return;
             ApplyMonitorSnapshot(new MachineMonitorSnapshot());
             // 主窗体和控件可能重复释放；统一走可重复调用的取消入口。
-            Disposed += (_, _) => { _diagnosticsForm?.Dispose(); CancelRequests(); _requestsCancellation.Dispose(); };
+            Disposed += (_, _) => { CancelRequests(); _requestsCancellation.Dispose(); };
         }
 
         protected override void OnLayout(LayoutEventArgs e)
@@ -148,15 +147,13 @@ namespace Page_switching
             RefreshRequested?.Invoke(this, EventArgs.Empty);
         }
 
-        // 不要求持有控制权；窗口仅调用只读诊断方法，主窗口仍可操作停止按钮。
+        // 不要求持有控制权；只提出页面请求，由主窗体通过统一入口切换。
         private void DiagnosticsButton_Click(object? sender, EventArgs e)
         {
-            if (_diagnosticsForm is null || _diagnosticsForm.IsDisposed)
-                _diagnosticsForm = new MachineDiagnosticsForm(_axisService);
-            if (!_diagnosticsForm.Visible) _diagnosticsForm.Show(FindForm());
-            else _diagnosticsForm.Activate();
+            DiagnosticsRequested?.Invoke(this, e);
         }
 
+        internal event EventHandler? DiagnosticsRequested;
         internal event EventHandler? RefreshRequested;
     }
 }

@@ -63,7 +63,7 @@ CSV 逐行流式写入，不在内存积累整场采样；只有固定四轴计�
 | `Axis/Monitoring/AxisRuntimeMonitoringService.cs` | 单循环调度、重试、跳过、CSV及有界退出 |
 | `Axis/Monitoring/AxisMonitoringReport.cs` | 阶段和序号过滤、去重计数、报告显示 |
 | `Axis/Monitoring/AxisService.Monitoring.cs` | 原启动/结束流程的观测挂接，不增加运动条件 |
-| `Forms/AxisMonitoringSettingsForm*` / `Controls/AxisMonitoringSummaryControl*` | Designer可编辑配置和报告 |
+| `panel/AxisMonitoringSettingsPage*` / `Controls/AxisMonitoringSummaryControl*` | Designer可编辑配置和报告 |
 
 离线验证命令（使用可用的 Python 3）：
 
@@ -76,3 +76,5 @@ dotnet build 'Page switching.csproj' -c Release
 ```
 
 受控时钟、只读ADS替身和真实窗体验证覆盖迟到跳过、超时、断线恢复、重复帧、NC无效、单项无效、重叠去重、配置快照、零样本、10,000行流式记录、保存失败及关闭清理。真实运动服务回归注入采样/日志异常，核对启动、停车及原始故障字段不受影响。它们不代表现场100 ms节拍、PLC在线状态或实机运动已验收；本次不尝试XAE编译下载或在线运动。
+
+监测配置现在是 `panel/AxisMonitoringSettingsPage`，从系统配置进入、返回系统配置；页面由主窗体缓存并统一释放，保留独立 Designer 文件。运行诊断同样使用 `panel/MachineDiagnosticsPage`，从控制权页进入并返回。两个入口均不再创建独立 Form。

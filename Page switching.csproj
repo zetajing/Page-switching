@@ -16,7 +16,6 @@
   <ItemGroup>
     <Compile Update="Controls\AxisMonitoringSummaryControl.cs"><SubType>UserControl</SubType></Compile>
     <Compile Update="Controls\AxisMonitoringSummaryControl.Designer.cs"><SubType>Code</SubType><DependentUpon>AxisMonitoringSummaryControl.cs</DependentUpon></Compile>
-    <Compile Update="Forms\AxisMonitoringSettingsForm.Designer.cs"><SubType>Code</SubType><DependentUpon>AxisMonitoringSettingsForm.cs</DependentUpon></Compile>
     <!-- 对比曲线也保持可编辑的 UserControl Designer 结构。 -->
     <Compile Update="Controls\ComparisonPlotControl.cs">
       <SubType>UserControl</SubType>
@@ -37,6 +36,10 @@
     <Compile Update="panel\*.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Update="panel\AxisMonitoringSettingsPage.Designer.cs">
+      <SubType>Code</SubType>
+      <DependentUpon>AxisMonitoringSettingsPage.cs</DependentUpon>
+    </Compile>
     <!-- 使用明确的父文件名，让 Visual Studio 和命令行构建采用同一份 Designer 关联。 -->
     <Compile Update="Controls\WaveformPreviewControl.Designer.cs">
       <SubType>Code</SubType>
@@ -50,13 +53,13 @@
       <SubType>Code</SubType>
       <DependentUpon>LoginForm.cs</DependentUpon>
     </Compile>
-    <Compile Update="Forms\AccountManagementForm.Designer.cs">
+    <Compile Update="panel\AccountManagementPage.Designer.cs">
       <SubType>Code</SubType>
-      <DependentUpon>AccountManagementForm.cs</DependentUpon>
+      <DependentUpon>AccountManagementPage.cs</DependentUpon>
     </Compile>
-    <Compile Update="Forms\MachineDiagnosticsForm.Designer.cs">
+    <Compile Update="panel\MachineDiagnosticsPage.Designer.cs">
       <SubType>Code</SubType>
-      <DependentUpon>MachineDiagnosticsForm.cs</DependentUpon>
+      <DependentUpon>MachineDiagnosticsPage.cs</DependentUpon>
     </Compile>
     <EmbeddedResource Update="Forms\main_page.resx">
       <DependentUpon>main_page.cs</DependentUpon>

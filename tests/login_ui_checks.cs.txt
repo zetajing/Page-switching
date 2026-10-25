@@ -37,8 +37,18 @@ internal static class Program
         task.GetAwaiter().GetResult();
     }
 
-    static void Render(Form form, string output)
+    static void Render(Control control, string output)
     {
+        if (control is not Form)
+        {
+            using var host = new Form { ClientSize = control.Size, ShowInTaskbar = false, Opacity = 0 };
+            host.Controls.Add(control);
+            control.Dock = DockStyle.Fill;
+            Render(host, output);
+            host.Controls.Remove(control);
+            return;
+        }
+        var form = (Form)control;
         form.ShowInTaskbar = false;
         form.Opacity = 0;
         form.Show();
@@ -49,7 +59,7 @@ internal static class Program
         form.Hide();
     }
 
-    static void CheckLayout(Form form, params string[] names)
+    static void CheckLayout(Control form, params string[] names)
     {
         foreach (string name in names)
         {
@@ -114,10 +124,13 @@ internal static class Program
                 Complete((Task)Call(login, "SubmitAsync")!);
                 Check(login.DialogResult == DialogResult.OK && !(bool)Property(Property(login, "User")!, "IsAdministrator")!, "操作员按真实角色登录");
             }
-            using (var manager = (Form)Create("AccountManagementForm", service, admin))
+            using (var manager = (UserControl)Create("panel.AccountManagementPage", service, admin))
             {
-                Call(manager, "ReloadUsers");
-                Render(manager, Path.Combine(output, "account-management.png"));
+                // 单独使用临时账号库验证运行时显示事件；主窗体仍在设计上下文运行。
+                var designContext = LicenseManager.CurrentContext;
+                LicenseManager.CurrentContext = new LicenseContext();
+                try { Render(manager, Path.Combine(output, "account-management.png")); }
+                finally { LicenseManager.CurrentContext = designContext; }
                 Check(((DataGridView)Field(manager, "accountGrid")).Rows.Count == 2, "账号列表显示两种角色");
                 CheckLayout(manager, "accountGrid", "userNameInput", "passwordInput", "confirmPasswordInput", "addButton", "resetButton", "deleteButton");
             }
@@ -128,10 +141,77 @@ internal static class Program
                 Check(Field(main, "manageAccountsButton").Enabled == entry.Admin, "账号管理按钮权限");
                 Check(Field(main, "bu_Configuration").Enabled == entry.Admin, "配置按钮权限");
                 Check(Field(main, "Bu_Calibration").Enabled == entry.Admin, "标定按钮权限");
-                foreach (string page in new[] { "_configPage", "_calibrationPage", "_batchCalibrationPage" })
+                foreach (string page in new[] { "_configPage", "_calibrationPage", "_batchCalibrationPage", "_accountManagementPage", "_monitoringSettingsPage" })
                     Check((bool)Call(main, "CanOpenPage", main.GetType().GetField(page, Members)!.GetValue(main))! == entry.Admin, "统一页面入口权限：" + page);
-                foreach (string page in new[] { "_autoPage", "_manualPage", "_dataPage", "_controlAuthorityPage" })
+                foreach (string page in new[] { "_autoPage", "_manualPage", "_dataPage", "_controlAuthorityPage", "_diagnosticsPage" })
                     Check((bool)Call(main, "CanOpenPage", main.GetType().GetField(page, Members)!.GetValue(main))!, "保留操作员功能：" + page);
+                // 通过真实入口跳转，检查父容器、返回路径、缓存复用和权限拦截。
+                main.Show();
+                int windows = Application.OpenForms.Count;
+                var container = Field(main, "panelswitch");
+                Control Page(string name) => Field(main, name);
+                void Current(Control expected, string message)
+                {
+                    Check(container.Controls.Count == 1 && ReferenceEquals(container.Controls[0], expected), message);
+                    Check(expected.Dock == DockStyle.Fill && !expected.IsDisposed, "页面铺满并保留实例");
+                    Check(Application.OpenForms.Count == windows, "功能入口不创建独立窗口");
+                }
+                var authority = Page("_controlAuthorityPage");
+                Call(main, "ControlAuthorityButton_Click", null, EventArgs.Empty);
+                Call(authority, "DiagnosticsButton_Click", null, EventArgs.Empty);
+                var diagnostics = Page("_diagnosticsPage");
+                Current(diagnostics, "诊断使用主窗体容器");
+                Check(Field(main, "controlStatusLabel").Text.Contains("运行诊断"), "顶部显示诊断页面名");
+                Call(diagnostics, "BackButton_Click", null, EventArgs.Empty);
+                Current(authority, "诊断返回控制权页");
+                Call(authority, "DiagnosticsButton_Click", null, EventArgs.Empty);
+                Current(diagnostics, "再次进入复用诊断页");
+                if (entry.Admin)
+                {
+                    Call(main, "bu_Configuration_Click", null, EventArgs.Empty);
+                    var config = Page("_configPage");
+                    Call(config, "MonitoringSettingsButton_Click", null, EventArgs.Empty);
+                    var settings = Page("_monitoringSettingsPage");
+                    Current(settings, "监测配置使用主窗体容器");
+                    Call(settings, "BackButton_Click", null, EventArgs.Empty);
+                    Current(config, "监测配置返回系统配置");
+                    Call(config, "MonitoringSettingsButton_Click", null, EventArgs.Empty);
+                    Current(settings, "再次进入复用配置页");
+                    Call(main, "ManageAccountsButton_Click", null, EventArgs.Empty);
+                    var accounts = Page("_accountManagementPage");
+                    Current(accounts, "账号管理使用主窗体容器");
+                    Check(!Field(main, "navigationMarker").Visible, "账号入口使用顶部按钮高亮");
+                    Call(main, "ManageAccountsButton_Click", null, EventArgs.Empty);
+                    Field(accounts, "passwordInput").Text = "temporary-password";
+                    Call(accounts, "CloseButton_Click", null, EventArgs.Empty);
+                    Current(settings, "重复点击账号入口仍返回进入前页面");
+                    Check(Field(accounts, "passwordInput").Text.Length == 0, "离开账号页清除密码");
+                    Check(Field(main, "navigationMarker").Visible, "返回后恢复左侧导航标记");
+                }
+                else
+                {
+                    Call(main, "ManageAccountsButton_Click", null, EventArgs.Empty);
+                    Current(diagnostics, "操作员账号入口无效");
+                    Call(main, "NavigateTo", Page("_accountManagementPage"), Field(main, "manageAccountsButton"));
+                    Current(diagnostics, "统一入口拦截操作员账号页");
+                    Call(main, "NavigateTo", Page("_monitoringSettingsPage"), Field(main, "bu_Configuration"));
+                    Current(diagnostics, "统一入口拦截操作员监测配置页");
+                }
+                foreach (var size in new[] { new System.Drawing.Size(1200, 800), new System.Drawing.Size(1500, 1000) })
+                {
+                    main.ClientSize = size;
+                    foreach (string page in entry.Admin
+                        ? new[] { "_accountManagementPage", "_monitoringSettingsPage", "_diagnosticsPage" }
+                        : new[] { "_diagnosticsPage" })
+                    {
+                        Call(main, "NavigateTo", Page(page), Field(main, page == "_accountManagementPage" ? "manageAccountsButton"
+                            : page == "_monitoringSettingsPage" ? "bu_Configuration" : "controlAuthorityButton"));
+                        Render(main, Path.Combine(output, $"unified-{entry.Admin}-{page}-{size.Width}.png"));
+                        main.Show();
+                        Current(Page(page), "调整大小后页面仍在统一容器");
+                    }
+                }
+                main.Hide();
                 CheckLayout(main, "currentUserLabel", "manageAccountsButton");
                 Check(!Field(main, "accountPanel").Bounds.IntersectsWith(Field(main, "headerStatusPanel").Bounds), "账号区与设备状态区不重叠");
             }

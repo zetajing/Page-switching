@@ -1,6 +1,6 @@
-namespace Page_switching
+namespace Page_switching.panel
 {
-    partial class AccountManagementForm
+    partial class AccountManagementPage
     {
         private System.ComponentModel.IContainer components = null;
 
@@ -150,7 +150,7 @@ namespace Page_switching
             closeButton.Location = new Point(753, 513);
             closeButton.Name = "closeButton";
             closeButton.Size = new Size(120, 42);
-            closeButton.Text = "关闭";
+            closeButton.Text = "返回";
             closeButton.TabIndex = 8;
             closeButton.Click += CloseButton_Click;
             messageLabel.ForeColor = Color.FromArgb(185, 28, 28);
@@ -161,7 +161,9 @@ namespace Page_switching
             AutoScaleDimensions = new SizeF(96F, 96F);
             AutoScaleMode = AutoScaleMode.Dpi;
             BackColor = Color.White;
-            ClientSize = new Size(910, 585);
+            AutoScroll = true;
+            AutoScrollMinSize = new Size(910, 585);
+            Size = new Size(910, 585);
             Controls.Add(titleLabel);
             Controls.Add(descriptionLabel);
             Controls.Add(accountGrid);
@@ -180,12 +182,7 @@ namespace Page_switching
             Controls.Add(closeButton);
             Controls.Add(messageLabel);
             Font = new Font("Microsoft YaHei UI", 10F);
-            FormBorderStyle = FormBorderStyle.FixedDialog;
-            MaximizeBox = false;
-            MinimizeBox = false;
-            Name = "AccountManagementForm";
-            ShowIcon = false;
-            StartPosition = FormStartPosition.CenterParent;
+            Name = "AccountManagementPage";
             Text = "账号管理";
             ((System.ComponentModel.ISupportInitialize)accountGrid).EndInit();
             ResumeLayout(false);

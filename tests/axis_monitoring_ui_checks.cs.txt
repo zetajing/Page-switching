@@ -38,11 +38,11 @@ internal static class Program
         }
         var admin = Create("LoginUser", "test-admin", Enum.Parse(Type("UserRole"), "Administrator"));
         var op = Create("LoginUser", "test-operator", Enum.Parse(Type("UserRole"), "Operator"));
-        using (var settings = (Form)Create("AxisMonitoringSettingsForm", op))
+        using (var settings = (UserControl)Create("panel.AxisMonitoringSettingsPage", op))
         {
             Check(((DataGridView)Field(settings, "thresholdsGrid")).ReadOnly && !Field(settings, "saveButton").Enabled, "operator cannot edit or save thresholds");
         }
-        using (var settings = (Form)Create("AxisMonitoringSettingsForm", admin))
+        using (var settings = (UserControl)Create("panel.AxisMonitoringSettingsPage", admin))
         {
             var grid = (DataGridView)Field(settings, "thresholdsGrid");
             Check(!grid.ReadOnly && Field(settings, "saveButton").Enabled && grid.Rows.Count == 4 && grid.Columns.Count == 4, "administrator has four-axis table");
@@ -52,25 +52,29 @@ internal static class Program
             for (int i = 0; i < 4; i++) { grid.Rows[i].Cells[1].Value = -10 - i; grid.Rows[i].Cells[2].Value = 10 + i; grid.Rows[i].Cells[3].Value = 5 + i; }
             foreach (var size in new[] { new System.Drawing.Size(850, 400), new System.Drawing.Size(720, 390) })
             {
-                settings.ClientSize = size; Render(settings, $"monitoring-settings-{size.Width}.png");
-                foreach (string field in new[] { "noticeLabel", "thresholdsGrid", "stateLabel", "saveButton" })
+                settings.Size = size;
+                using var settingsHost = new Form { ClientSize = size };
+                settingsHost.Controls.Add(settings); settings.Dock = DockStyle.Fill;
+                Render(settingsHost, $"monitoring-settings-{size.Width}.png");
+                foreach (string field in new[] { "noticeLabel", "thresholdsGrid", "stateLabel", "saveButton", "backButton" })
                 {
                     var control = Field(settings, field);
                     Check(control.Parent!.ClientRectangle.Contains(control.Bounds) && control.Width > 100 && control.Height >= 25, "settings layout " + field);
                 }
+                settingsHost.Controls.Remove(settings);
             }
         }
         using (var config = (Control)Create("panel.Config", op)) Check(!Field(config, "monitoringSettingsButton").Enabled, "configuration entry admin only");
-        using (var host = new Form { ClientSize = new System.Drawing.Size(1060, 800), ShowInTaskbar = false, Opacity = 0 })
         using (var config = (Control)Create("panel.Config", admin))
         {
-            host.Controls.Add(config); config.Dock = DockStyle.Fill; host.Show();
-            Call(config, "MonitoringSettingsButton_Click", null, EventArgs.Empty); Application.DoEvents();
-            var first = (Form)Value(config, "_monitoringForm");
-            Check(first.Visible && !first.Modal && host.Enabled, "settings modeless; main stop remains accessible");
+            var requested = config.GetType().GetEvent("MonitoringSettingsRequested", Members)!;
+            int requests = 0;
+            EventHandler handler = (_, _) => requests++;
+            requested.GetAddMethod(true)!.Invoke(config, new object[] { handler });
+            int windows = Application.OpenForms.Count;
             Call(config, "MonitoringSettingsButton_Click", null, EventArgs.Empty);
-            Check(ReferenceEquals(first, Value(config, "_monitoringForm")), "reopen reuses one settings form");
-            config.Dispose(); Check(first.IsDisposed, "settings form disposed with page");
+            Call(config, "MonitoringSettingsButton_Click", null, EventArgs.Empty);
+            Check(requests == 2 && Application.OpenForms.Count == windows, "configuration requests navigation without opening windows");
         }
         var now = DateTimeOffset.UtcNow;
         Array axes = Array.CreateInstance(Type("AxisMonitoringThreshold"), 4);
@@ -110,6 +114,6 @@ internal static class Program
             ((ScrollableControl)page).ScrollControlIntoView(summary); Application.DoEvents();
             Render(host, "wave-monitoring-summary-scrolled.png");
         }
-        Console.WriteLine($"Axis monitoring UI: {checks} assertions passed; real forms, no PLC, no settings saved.");
+        Console.WriteLine($"Axis monitoring UI: {checks} assertions passed; real pages, no PLC, no settings saved.");
     }
 }

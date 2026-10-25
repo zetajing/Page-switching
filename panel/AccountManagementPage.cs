@@ -1,14 +1,14 @@
-namespace Page_switching;
+namespace Page_switching.panel;
 
-public partial class AccountManagementForm : Form
+public partial class AccountManagementPage : UserControl
 {
     private readonly LoginService _loginService;
     private readonly LoginUser? _currentUser;
     private bool _busy;
 
-    public AccountManagementForm() : this(new LoginService(), null) { }
+    public AccountManagementPage() : this(new LoginService(), null) { }
 
-    internal AccountManagementForm(LoginService loginService, LoginUser? currentUser)
+    internal AccountManagementPage(LoginService loginService, LoginUser? currentUser)
     {
         _loginService = loginService;
         _currentUser = currentUser;
@@ -16,9 +16,18 @@ public partial class AccountManagementForm : Form
         roleComboBox.SelectedIndex = 0;
     }
 
-    protected override void OnShown(EventArgs e)
+    // 每次回到账号页重新读取列表；隐藏时清除密码，不在页面缓存中保留明文。
+    protected override void OnVisibleChanged(EventArgs e)
     {
-        base.OnShown(e);
+        base.OnVisibleChanged(e);
+        if (!Visible)
+        {
+            passwordInput.Clear();
+            confirmPasswordInput.Clear();
+            return;
+        }
+        if (System.ComponentModel.LicenseManager.UsageMode == System.ComponentModel.LicenseUsageMode.Designtime
+            || DesignMode || _busy) return;
         try { ReloadUsers(); }
         catch (Exception ex) when (ex is IOException or InvalidDataException or UnauthorizedAccessException)
         {
@@ -36,6 +45,7 @@ public partial class AccountManagementForm : Form
         foreach (var user in users)
             accountGrid.Rows.Add(user.UserName, user.IsAdministrator ? "管理员" : "操作员");
         accountGrid.ClearSelection();
+        addButton.Enabled = !_busy;
         UpdateSelection();
     }
 
@@ -116,6 +126,7 @@ public partial class AccountManagementForm : Form
                                    or UnauthorizedAccessException or System.Security.Cryptography.CryptographicException)
         {
             if (!IsDisposed && !Disposing) messageLabel.Text = ex.Message;
+            OperationJournal.Record("账号管理", "操作失败：" + ex.Message);
         }
         finally
         {
@@ -133,11 +144,11 @@ public partial class AccountManagementForm : Form
         UpdateSelection();
     }
 
-    private void CloseButton_Click(object? sender, EventArgs e) => Close();
+    internal event EventHandler? BackRequested;
 
-    protected override void OnFormClosing(FormClosingEventArgs e)
+    // 返回也由主窗体切页；账号写入期间等待这次提交完成。
+    private void CloseButton_Click(object? sender, EventArgs e)
     {
-        if (_busy) e.Cancel = true;
-        base.OnFormClosing(e);
+        if (!_busy) BackRequested?.Invoke(this, e);
     }
 }

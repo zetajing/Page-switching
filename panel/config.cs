@@ -7,7 +7,7 @@ namespace Page_switching.panel;
 public partial class Config : UserControl
 {
     private readonly LoginUser? _currentUser;
-    private AxisMonitoringSettingsForm? _monitoringForm;
+    internal event EventHandler? MonitoringSettingsRequested;
     // 初始化配置页面并加载当前 App.config 设置。
     public Config() : this(null) { }
 
@@ -16,7 +16,6 @@ public partial class Config : UserControl
         _currentUser = user;
         InitializeComponent();
         monitoringSettingsButton.Enabled = user?.IsAdministrator == true;
-        Disposed += (_, _) => _monitoringForm?.Dispose();
         controlStationComboBox.SelectedIndex = (int)ControlStationIdentity.Current;
         controlStationStateLabel.Text = "当前配置：" + ControlStationIdentity.Format(ControlStationIdentity.Current)
             + "；控制权由 PLC 统一管理。";
@@ -27,9 +26,8 @@ public partial class Config : UserControl
     private void MonitoringSettingsButton_Click(object? sender, EventArgs e)
     {
         if (_currentUser?.IsAdministrator != true) return;
-        if (_monitoringForm is null || _monitoringForm.IsDisposed) _monitoringForm = new AxisMonitoringSettingsForm(_currentUser);
-        if (!_monitoringForm.Visible) _monitoringForm.Show(FindForm()); // 非模态，主窗体停止入口仍可操作。
-        else _monitoringForm.Activate();
+        // 配置页只提出跳转请求，页面实例和权限统一由主窗体管理。
+        MonitoringSettingsRequested?.Invoke(this, e);
     }
 
     // 本站身份只保存软件部署位置，不申请、释放或改变 PLC 控制权。
