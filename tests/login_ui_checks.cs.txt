@@ -23,6 +23,8 @@ internal static class Program
         target.GetType().GetMethod(name, Members)!.Invoke(target, arguments);
     static Control Field(object target, string name) =>
         (Control)target.GetType().GetField(name, Members)!.GetValue(target)!;
+    static object Value(object target, string name) =>
+        target.GetType().GetField(name, Members)!.GetValue(target)!;
     static object? Property(object target, string name) => target.GetType().GetProperty(name, Members)!.GetValue(target);
 
     static void Complete(Task task)
@@ -66,6 +68,62 @@ internal static class Program
             Control control = Field(form, name);
             Check(control.Parent!.ClientRectangle.Contains(control.Bounds), name + " 越出父容器");
             Check(control.Width > 0 && control.Height >= 25, name + " 尺寸无效");
+        }
+    }
+
+    // 用真实事件与临时日志核对拆分后的页面归属和过滤规则，不启动通信。
+    static void CheckPageLogging()
+    {
+        const BindingFlags StaticMembers = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
+        var journal = app.GetType("Page_switching.OperationJournal")!;
+        string logDirectory = (string)journal.GetProperty("DirectoryPath", StaticMembers)!.GetValue(null)!;
+        Check(logDirectory.StartsWith(Path.GetTempPath(), StringComparison.OrdinalIgnoreCase), "日志检查使用临时配置目录");
+        var journalEvent = journal.GetEvent("EntryAdded", StaticMembers)!;
+        var entries = new List<string>();
+        Action<string> capture = entry => entries.Add(entry);
+        try
+        {
+            journalEvent.GetAddMethod(true)!.Invoke(null, new object[] { capture });
+            using var page = (UserControl)Create("panel.Data");
+            var container = new Panel();
+            page.Controls.Add(container);
+            var controls = Assembly.Load("AntdUI");
+            Control Add(string type, string name, string text)
+            {
+                var control = (Control)Activator.CreateInstance(controls.GetType("AntdUI." + type)!)!;
+                control.Name = name;
+                control.Text = text;
+                container.Controls.Add(control);
+                return control;
+            }
+            var button = Add("Button", "testButton", "调试\r\n操作");
+            var jogButton = Add("Button", "jogPositiveButton", "点动");
+            var checkBox = Add("Checkbox", "testCheckBox", "测试开关");
+            var autoScale = Add("Checkbox", "autoScaleCheckBox", "自动跟随");
+            var result = Add("Label", "status", "初始状态");
+            var untrackedLabel = Add("Label", "titleLabel", "标题");
+            app.GetType("Page_switching.Mainpage")!.GetMethod("TrackActions", StaticMembers)!
+                .Invoke(null, new object[] { page, container });
+
+            Call(button, "OnClick", EventArgs.Empty);
+            Check(entries.Count == 1 && entries[0].EndsWith("[数据管理] 点击调试  操作"), "按钮日志只记录一次并保留原有换行处理");
+            Call(jogButton, "OnClick", EventArgs.Empty);
+            Check(entries.Count == 1, "点动按钮仍由原操作流程记录，不重复注册");
+            checkBox.GetType().GetProperty("Checked")!.SetValue(checkBox, true);
+            Check(entries.Count == 2 && entries[^1].EndsWith("[数据管理] 测试开关：选中"), "复选框变更进入具名日志方法");
+            autoScale.GetType().GetProperty("Checked")!.SetValue(autoScale, true);
+            Check(entries.Count == 2, "自动跟随仍不记录操作日志");
+            page.Visible = false;
+            result.Text = "隐藏页结果";
+            Check(entries.Count == 3 && entries[^1].EndsWith("[数据管理] 隐藏页结果"), "隐藏页结果保留原页面归属");
+            untrackedLabel.Text = "新标题";
+            Check(entries.Count == 3, "普通标题变化不产生结果日志");
+            string saved = string.Join("\n", Directory.GetFiles(logDirectory, "*.log").Select(File.ReadAllText));
+            Check(saved.Contains("[数据管理] 隐藏页结果") && !saved.Contains("写入日志失败"), "日志实际写入临时目录");
+        }
+        finally
+        {
+            journalEvent.GetRemoveMethod(true)!.Invoke(null, new object[] { capture });
         }
     }
 
@@ -137,6 +195,19 @@ internal static class Program
             foreach (var entry in new[] { (User: admin, Admin: true), (User: operatorUser, Admin: false) })
             {
                 using var main = (Form)Create("Mainpage", entry.User);
+                // 检查真实对象引用，防止目录拆分后为每个页面或每根轴重复创建控制服务。
+                object sharedAxisService = Value(main, "_axisService");
+                foreach (var binding in new[] { ("_autoPage", "_waveService"), ("_manualPage", "_axisService"),
+                             ("_controlAuthorityPage", "_axisService"), ("_diagnosticsPage", "_axisService") })
+                    Check(ReferenceEquals(sharedAxisService, Value(Value(main, binding.Item1), binding.Item2)),
+                        "页面共用主窗体轴服务：" + binding.Item1);
+                Check(!(bool)Value(Value(main, "_manualPage"), "_ownsAxisService"), "手动页不释放主窗体共享服务");
+                foreach (object axis in (System.Collections.IEnumerable)Property(sharedAxisService, "Axes")!)
+                {
+                    Check(ReferenceEquals(sharedAxisService, Value(axis, "_axisService")), "四轴对象共用同一轴服务");
+                    Check(ReferenceEquals(axis, Call(sharedAxisService, "GetAxis", Property(axis, "AxisNumber"))),
+                        "GetAxis 返回缓存轴对象");
+                }
                 Render(main, Path.Combine(output, entry.Admin ? "main-admin.png" : "main-operator.png"));
                 Check(Field(main, "manageAccountsButton").Enabled == entry.Admin, "账号管理按钮权限");
                 Check(Field(main, "bu_Configuration").Enabled == entry.Admin, "配置按钮权限");
@@ -221,6 +292,7 @@ internal static class Program
                 Render(scaled, Path.Combine(output, "login-150-percent.png"));
                 CheckLayout(scaled, "userNameInput", "passwordInput", "submitButton", "exitButton");
             }
+            CheckPageLogging();
             File.WriteAllText(Path.Combine(temporary, "users.json"), "{ damaged");
             using (var damaged = (Form)Create("LoginForm", service))
             {

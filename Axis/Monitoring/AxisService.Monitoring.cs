@@ -1,5 +1,6 @@
 namespace Page_switching;
 
+// 同一 AxisService 的统计挂接入口；统计服务使用独立只读采样，不另建运动控制服务。
 public sealed partial class AxisService
 {
     private AxisRuntimeMonitoringService? _runtimeMonitoring;

@@ -41,11 +41,6 @@ namespace Page_switching
         private readonly bool _recordOperations = LicenseManager.UsageMode != LicenseUsageMode.Designtime;
         private UserControl? _currentPage;
         private bool? _lastAdsConnected;
-        private static readonly HashSet<string> ResultLabels = new HashSet<string>
-        {
-            "regularStatusLabel", "irregularStatusLabel",
-            "result", "status", "_hintLabel", "_connectionStatusLabel"
-        };
 
         // 初始化共享轴服务和各个页面，并显示默认页面。
         public Mainpage() : this(null) { }
@@ -67,13 +62,11 @@ namespace Page_switching
             // 本次启动只读取一次 ADS 配置；保存的新参数在下次启动才应用。
             var settings = AdsConnectionSettings.GetSettings();
             var axisOptions = AxisServiceOptions.FromConfiguration(settings);
+            // 正常启动只在这里创建轴服务；下方各页面拿到同一个实例和同一组四轴对象。
             _axisService = new AxisService(axisOptions);
             _monitorService = new MachineMonitorService(MachineMonitorOptions.FromConfiguration(axisOptions, settings));
             _autoPage = new Auto(_axisService);
-            _router = new AdsTcpRouterRuntime(settings, message =>
-            {
-                if (!_closing) _autoPage.AddLog(message);
-            });
+            _router = new AdsTcpRouterRuntime(settings, Router_MessageReceived);
             _manualPage = new Manual(_axisService);
             _controlAuthorityPage = new ControlAuthority(_axisService);
             _configPage = new Config(_currentUser);
@@ -122,44 +115,82 @@ namespace Page_switching
             NavigateTo(_accountManagementPage, manageAccountsButton);
         }
 
-        // 先接入日志通知，后续服务和页面初始化产生的记录也能被主窗体接收。
-        private void InitializeOperationJournal()
-        {
-            if (!_recordOperations) return;
-            operationPathLabel.Text = "日志保存位置：" + OperationJournal.DirectoryPath;
-            OperationJournal.EntryAdded += AddOperationEntry;
-            OperationJournal.Record("系统", "程序启动");
-        }
-
         // 页面只提出请求，由主窗体统一安排跳转、刷新和返回。
         private void ConnectPageEvents()
         {
-            _controlAuthorityPage.RefreshRequested += async (_, _) => await RefreshMonitorAsync();
-            _controlAuthorityPage.DiagnosticsRequested += (_, _) => NavigateTo(_diagnosticsPage, controlAuthorityButton);
-            _diagnosticsPage.BackRequested += (_, _) => NavigateTo(_controlAuthorityPage, controlAuthorityButton);
-            _configPage.MonitoringSettingsRequested += (_, _) => NavigateTo(_monitoringSettingsPage, bu_Configuration);
-            _monitoringSettingsPage.BackRequested += (_, _) => NavigateTo(_configPage, bu_Configuration);
-            _accountManagementPage.BackRequested += (_, _) =>
-                NavigateTo(_accountReturnPage ?? _autoPage, _accountReturnButton ?? Bu_auto);
+            _controlAuthorityPage.RefreshRequested += ControlAuthorityPage_RefreshRequested;
+            _controlAuthorityPage.DiagnosticsRequested += ControlAuthorityPage_DiagnosticsRequested;
+            _diagnosticsPage.BackRequested += DiagnosticsPage_BackRequested;
+            _configPage.MonitoringSettingsRequested += ConfigPage_MonitoringSettingsRequested;
+            _monitoringSettingsPage.BackRequested += MonitoringSettingsPage_BackRequested;
+            _accountManagementPage.BackRequested += AccountManagementPage_BackRequested;
             // 批量标定由主窗体管理，使用同一个 panelswitch 显示和返回。
-            _calibrationPage.BatchCalibrationRequested += (_, _) => NavigateTo(_batchCalibrationPage, Bu_Calibration);
-            _batchCalibrationPage.BackRequested += (_, _) => NavigateTo(_calibrationPage, Bu_Calibration);
-            _batchCalibrationPage.CalibrationSaved += (_, _) => _calibrationPage.LoadChannel();
+            _calibrationPage.BatchCalibrationRequested += CalibrationPage_BatchCalibrationRequested;
+            _batchCalibrationPage.BackRequested += BatchCalibrationPage_BackRequested;
+            _batchCalibrationPage.CalibrationSaved += BatchCalibrationPage_CalibrationSaved;
             _dataPage.AnalysisRequested += OpenSessionAnalysis;
+        }
+
+        // 事件绑定处可按 F12 进入下面的处理方法，再逐步跟进刷新或页面切换。
+        private async void ControlAuthorityPage_RefreshRequested(object? sender, EventArgs e)
+        {
+            await RefreshMonitorAsync();
+        }
+
+        private void ControlAuthorityPage_DiagnosticsRequested(object? sender, EventArgs e)
+        {
+            NavigateTo(_diagnosticsPage, controlAuthorityButton);
+        }
+
+        private void DiagnosticsPage_BackRequested(object? sender, EventArgs e)
+        {
+            NavigateTo(_controlAuthorityPage, controlAuthorityButton);
+        }
+
+        private void ConfigPage_MonitoringSettingsRequested(object? sender, EventArgs e)
+        {
+            NavigateTo(_monitoringSettingsPage, bu_Configuration);
+        }
+
+        private void MonitoringSettingsPage_BackRequested(object? sender, EventArgs e)
+        {
+            NavigateTo(_configPage, bu_Configuration);
+        }
+
+        private void AccountManagementPage_BackRequested(object? sender, EventArgs e)
+        {
+            UserControl page = _accountReturnPage ?? _autoPage;
+            AntdUI.Button button = _accountReturnButton ?? Bu_auto;
+            NavigateTo(page, button);
+        }
+
+        private void CalibrationPage_BatchCalibrationRequested(object? sender, EventArgs e)
+        {
+            NavigateTo(_batchCalibrationPage, Bu_Calibration);
+        }
+
+        private void BatchCalibrationPage_BackRequested(object? sender, EventArgs e)
+        {
+            NavigateTo(_calibrationPage, Bu_Calibration);
+        }
+
+        private void BatchCalibrationPage_CalibrationSaved(object? sender, EventArgs e)
+        {
+            _calibrationPage.LoadChannel();
+        }
+
+        private void Router_MessageReceived(string message)
+        {
+            if (!_closing)
+            {
+                _autoPage.AddLog(message);
+            }
         }
 
         private void OpenSessionAnalysis(WaveCaptureManifest manifest, int? channel)
         {
             _analysisPage.OpenSession(manifest, channel);
             NavigateTo(_analysisPage, analysisButton);
-        }
-
-        // 仅在页面创建后注册一次，切页时复用原页面和事件。
-        private void RegisterPageLogging()
-        {
-            if (!_recordOperations) return;
-            foreach (var page in _pages)
-                TrackActions(page, page);
         }
 
         // 先显示默认页面，窗口真正显示后再启动通信。
@@ -419,146 +450,6 @@ namespace Page_switching
                 default:
                     return true;
             }
-        }
-
-        // 日志内容只写入文件；新记录通知仅用于同步配置后的保存目录。
-        private void AddOperationEntry(string entry)
-        {
-            if (_closing || IsDisposed || Disposing) return;
-            if (InvokeRequired)
-            {
-                PostToUi(() => AddOperationEntry(entry));
-                return;
-            }
-
-            operationPathLabel.Text = "日志保存位置：" + OperationJournal.DirectoryPath;
-        }
-
-        private void OpenOperationFolderButton_Click(object? sender, EventArgs e)
-        {
-            try
-            {
-                var directory = OperationJournal.DirectoryPath;
-                Directory.CreateDirectory(directory);
-                Process.Start(new ProcessStartInfo(directory) { UseShellExecute = true });
-                OperationJournal.Record("操作记录", "已打开日志目录");
-            }
-            catch (Exception ex)
-            {
-                OperationJournal.Record("操作记录", "打开目录失败：" + ex.Message);
-            }
-        }
-
-        // 按控件类型分派日志注册，每个 case 内保留独立步骤，方便打断点。
-        private static void TrackActions(UserControl page, Control parent)
-        {
-            foreach (Control control in parent.Controls)
-            {
-                string pageName = GetPageName(page);
-                switch (control)
-                {
-                    case AntdUI.Button button:
-                        if (button.Name == "jogNegativeButton" || button.Name == "jogPositiveButton"
-                            || button.Name == "clearLogButton" || button.Name == "resetViewButton")
-                        {
-                            break;
-                        }
-                        button.Click += (_, _) =>
-                        {
-                            string text = (button.Text ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
-                            OperationJournal.Record(pageName, "点击" + text);
-                        };
-                        break;
-
-                    case AntdUI.Checkbox checkBox:
-                        if (checkBox.Name == "autoScaleCheckBox" || page is WaveBatchCalibrationPage)
-                        {
-                            break;
-                        }
-                        checkBox.CheckedChanged += (_, _) =>
-                        {
-                            string text = (checkBox.Text ?? "").Trim();
-                            string state = checkBox.Checked ? "选中" : "取消";
-                            OperationJournal.Record(pageName, text + "：" + state);
-                        };
-                        break;
-
-                    case AntdUI.Select comboBox:
-                        // 只记录用户正在操作的下拉框，程序加载默认值时不额外记日志。
-                        comboBox.SelectedIndexChanged += (_, _) =>
-                        {
-                            if (comboBox.HasFocus || comboBox.Expand)
-                            {
-                                OperationJournal.Record(pageName, "选择" + comboBox.Text);
-                            }
-                        };
-                        break;
-
-                    case AntdUI.Radio radioButton:
-                        radioButton.CheckedChanged += (_, _) =>
-                        {
-                            if (radioButton.Checked)
-                            {
-                                OperationJournal.Record(pageName, "选择" + radioButton.Text);
-                            }
-                        };
-                        break;
-
-                    case AntdUI.Tabs tabs:
-                        tabs.SelectedIndexChanged += (_, _) =>
-                        {
-                            OperationJournal.Record(pageName, "切换到" + tabs.SelectedTab?.Text);
-                        };
-                        break;
-
-                    case AntdUI.Table table:
-                        if (page is WaveBatchCalibrationPage)
-                        {
-                            break;
-                        }
-                        table.CellEditComplete += (_, e) =>
-                        {
-                            System.Data.DataRow? row = e.Record as System.Data.DataRow;
-                            if (row != null)
-                            {
-                                int rowNumber = row.Table.Rows.IndexOf(row) + 1;
-                                string title = table.Columns[e.ColumnIndex].Title;
-                                OperationJournal.Record(pageName, $"第{rowNumber}行{title}：{row[e.ColumnIndex]}");
-                            }
-                        };
-                        break;
-
-                    case AntdUI.Label label:
-                        if (ShouldTrackResultLabel(page, label))
-                        {
-                            label.TextChanged += (_, _) =>
-                            {
-                                OperationJournal.Record(pageName, label.Text ?? "");
-                            };
-                        }
-                        break;
-                }
-
-                TrackActions(page, control);
-            }
-        }
-
-        // 已主动记录结果的页面不再从标签变化重复推断，其他页面保留原有日志。
-        private static bool ShouldTrackResultLabel(UserControl page, AntdUI.Label label)
-        {
-            if (!ResultLabels.Contains(label.Name))
-            {
-                return false;
-            }
-            if (page is WaveAnalysisPage || page is SignalCorrectionPage || page is WaveBatchCalibrationPage)
-            {
-                return false;
-            }
-            if (page is WaveformPage && label.Name == "status")
-            {
-                return false;
-            }
-            return true;
         }
 
         // AntdUI 导航统一更新默认、悬停和按下颜色；页面切换仍使用同一个入口。

@@ -49,6 +49,11 @@
       <SubType>Code</SubType>
       <DependentUpon>main_page.cs</DependentUpon>
     </Compile>
+    <!-- 日志分部文件仍属于主窗体，按普通代码打开，不生成第二个窗体设计器。 -->
+    <Compile Update="Forms\main_page.Logging.cs">
+      <SubType>Code</SubType>
+      <DependentUpon>main_page.cs</DependentUpon>
+    </Compile>
     <Compile Update="Forms\LoginForm.Designer.cs">
       <SubType>Code</SubType>
       <DependentUpon>LoginForm.cs</DependentUpon>

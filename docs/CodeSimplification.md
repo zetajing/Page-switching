@@ -2,6 +2,25 @@
 
 [返回文档导航](README.md)
 
+## 具名事件与共享服务调试
+
+主窗体的跨页事件集中在 `Forms/main_page.cs` 的 `ConnectPageEvents`。在绑定的方法名上按 F12，先进入具名事件处理，再进入 `NavigateTo`、`RefreshMonitorAsync` 等具体步骤。例如：
+
+```text
+ControlAuthority.DiagnosticsButton_Click
+  → Mainpage.ControlAuthorityPage_DiagnosticsRequested
+  → Mainpage.NavigateTo
+  → Mainpage.ShowPage
+```
+
+主窗体的操作日志集中在 `Forms/main_page.Logging.cs`，仍是同一个 `Mainpage` 的分部代码。`TrackActions` 只绑定一次；需要保留所属页面的绑定用一句转发调用 `RecordButtonClick`、`RecordCheckboxChange`、`RecordTableEdit` 等具名方法。先看绑定，再按 F12 进入对应方法检查页面名称、行列和值；切换到别的页面后，日志仍归属于原控件所在页面。
+
+页面释放和诊断回调也使用具名入口：`ControlAuthority_Disposed`、`WaveHeightMeter_Disposed`、`Client_ProtocolDiagnostic`。它们保留原来的取消、日志和释放顺序。单句调用已有方法的简单事件继续保留，避免增加只包一层的重复方法。
+
+`Axis` 目录按手动、反馈、控制权、下发、轨迹和统计分工，文件索引见 [Axis 服务目录](../Axis/README.md)。所有 `partial AxisService` 合起来是一个类；正常启动只在 `Mainpage` 创建一个轴服务，再传给自动页、手动页、控制权页和诊断页。四个 `Axis` 也引用该实例，共用它的命令连接与串行锁。
+
+独立的 `MachineMonitorService` 和运行统计只读采样仍各用自己的读取客户端。`partial` 分文件不会创建实例，也不表示所有 ADS 读取都使用同一个客户端。页面无参构造用于 Designer；正常运行沿用主窗体传入共享服务的构造入口。
+
 第五项内部整理已补齐：轨迹块八个 Action、上位机会话/运行/停止/通信入口和变量核查见[第五项整理记录](Step5CodeMap.md)。下方保留此前各轮记录，当前 PLC 发布号为2026102401。
 
 ## 遇到问题从这里看

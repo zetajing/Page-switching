@@ -18,10 +18,13 @@ if __name__ == '__main__':
             '<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup>'
             '<OutputType>Exe</OutputType><TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>'
             '<UseWindowsForms>true</UseWindowsForms><ImplicitUsings>enable</ImplicitUsings>'
-            '<Nullable>enable</Nullable></PropertyGroup><ItemGroup>'
+            '<Nullable>enable</Nullable><AppConfig>App.config</AppConfig></PropertyGroup><ItemGroup>'
             '<FrameworkReference Include="Microsoft.AspNetCore.App" />'
             '</ItemGroup></Project>', encoding='utf-8')
         (folder / 'Program.cs').write_text((ROOT / 'tests/login_ui_checks.cs.txt').read_text(encoding='utf-8'), encoding='utf-8')
+        # 日志事件检查使用独立配置，所有记录只写入本次探针的临时目录。
+        (folder / 'App.config').write_text('<configuration><appSettings><add key="OperationLogDirectory" value="'
+            + escape(str(folder / 'operations')) + '" /></appSettings></configuration>', encoding='utf-8')
         result = subprocess.run(['dotnet', 'run', '--project', str(folder / 'Probe.csproj'), '-v', 'quiet', '--',
                                  str(args.assembly.resolve()), str(args.images.resolve())],
                                 capture_output=True, text=True, encoding='utf-8', timeout=120)

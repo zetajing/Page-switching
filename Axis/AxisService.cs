@@ -4,6 +4,7 @@ namespace Page_switching;
 
 // 共享连接与生命周期入口；读取、手动、控制权、点位下发各在对应目录。
 // 分部文件共用本连接和串行锁，避免各功能重复建立写连接。
+// 各目录中的 partial AxisService 是同一个类，不是多个服务；页面共用 Mainpage 传入的实例。
 public sealed partial class AxisService : IDisposable
 {
     private readonly AxisServiceOptions _options;

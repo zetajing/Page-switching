@@ -29,19 +29,22 @@ namespace Page_switching.panel
                 UpdateConnectionControls();
             }
 
-            Disposed += (_, _) =>
-            {
-                // Designer 和父窗体可能重复释放；会话和任务对象只清理一次。
-                if (_disposed) return;
-                _disposed = true;
-                _lifetimeCancellation.Cancel();
-                _client?.Dispose();
-                _client = null;
-                // 结束文件失败也继续释放页面资源，错误写入主窗体操作日志。
-                CompleteSession();
-                _lifetimeCancellation.Dispose();
-            };
+            Disposed += WaveHeightMeter_Disposed;
         }
+
+        // Designer 和父窗体可能重复释放；会话和任务对象只清理一次。
+        private void WaveHeightMeter_Disposed(object? sender, EventArgs e)
+        {
+            if (_disposed) return;
+            _disposed = true;
+            _lifetimeCancellation.Cancel();
+            _client?.Dispose();
+            _client = null;
+            // 结束文件失败也继续释放页面资源，错误写入主窗体操作日志。
+            CompleteSession();
+            _lifetimeCancellation.Dispose();
+        }
+
         private void LoadSettings()
         {
             _ipAddressInput.Text = ReadSetting("WaveHeightMeterIp", "192.168.0.7");
@@ -80,12 +83,7 @@ namespace Page_switching.panel
             _client = client;
             client.SampleReceived += Client_SampleReceived;
             client.ConnectionLost += Client_ConnectionLost;
-            client.ProtocolDiagnostic += (_, message) =>
-            {
-                System.Diagnostics.Debug.WriteLine("浪高仪协议：" + message);
-                try { LogDisplayHelper.ShowMsg("[浪高仪协议] " + message); }
-                catch { /* Diagnostics must not interrupt the TCP receive loop. */ }
-            };
+            client.ProtocolDiagnostic += Client_ProtocolDiagnostic;
 
             try
             {
@@ -132,6 +130,20 @@ namespace Page_switching.panel
                 {
                     UpdateConnectionControls();
                 }
+            }
+        }
+
+        // 只记录诊断；日志显示失败不能中断 TCP 接收，原有采集与协议处理保持在客户端中。
+        private void Client_ProtocolDiagnostic(object? sender, string message)
+        {
+            System.Diagnostics.Debug.WriteLine("浪高仪协议：" + message);
+            try
+            {
+                LogDisplayHelper.ShowMsg("[浪高仪协议] " + message);
+            }
+            catch
+            {
+                // 日志失败不能中断 TCP 接收。
             }
         }
 

@@ -23,7 +23,14 @@ namespace Page_switching
             if (IsDesignSurface) return;
             ApplyMonitorSnapshot(new MachineMonitorSnapshot());
             // 主窗体和控件可能重复释放；统一走可重复调用的取消入口。
-            Disposed += (_, _) => { CancelRequests(); _requestsCancellation.Dispose(); };
+            Disposed += ControlAuthority_Disposed;
+        }
+
+        // 清理入口具名，便于检查取消和释放的先后顺序；共享轴服务由主窗体释放。
+        private void ControlAuthority_Disposed(object? sender, EventArgs e)
+        {
+            CancelRequests();
+            _requestsCancellation.Dispose();
         }
 
         protected override void OnLayout(LayoutEventArgs e)

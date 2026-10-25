@@ -30,8 +30,17 @@ public partial class Data : UserControl
         syncButton.Click += async (_, _) => await SyncAsync();
         legacyExportButton.Click += async (_, _) => await ExportLegacyAsync();
         analyzeButton.Click += (_, _) => OpenSelectedAnalysis();
-        VisibleChanged += (_, _) => { if (Visible) RefreshSessions(); };
+        VisibleChanged += Data_VisibleChanged;
         RefreshSessions();
+    }
+
+    // 页面显示时再刷新列表，隐藏页面保持原有会话选择和采样内容。
+    private void Data_VisibleChanged(object? sender, EventArgs e)
+    {
+        if (Visible)
+        {
+            RefreshSessions();
+        }
     }
 
     private void InitializeTables()
