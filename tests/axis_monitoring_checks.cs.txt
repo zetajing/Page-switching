@@ -115,6 +115,12 @@ internal static class Program
         Check(report.SkippedSlots == 4 && report.MaxReadMilliseconds == 425 && report.Any.Valid == 2, "timing and skipped coverage exact");
         Check(File.Exists(Path.Combine(report.DirectoryPath!, "summary.json")), "summary saved");
         Check(File.ReadLines(Path.Combine(report.DirectoryPath!, "samples.csv")).Count() == 4, "streamed rows include explicit exit record");
+        // Excel 直接打开时用 BOM 识别 UTF-8，中文 Outcome 不能按本地代码页读取。
+        byte[] csvBytes = File.ReadAllBytes(Path.Combine(report.DirectoryPath!, "samples.csv"));
+        Check(csvBytes.AsSpan().StartsWith(new byte[] { 0xEF, 0xBB, 0xBF }), "monitoring CSV includes UTF-8 BOM for Excel");
+        string csvText = new System.Text.UTF8Encoding(false, true).GetString(csvBytes.AsSpan(3));
+        Check(csvText.StartsWith("ReadCompletedAt,") && csvText.Contains("\"有效完整样本\"")
+            && csvText.Contains("\"非执行阶段，未计数\""), "CSV header and Chinese outcomes survive UTF-8 decoding");
         using (var json = JsonDocument.Parse(File.ReadAllText(Path.Combine(report.DirectoryPath!, "summary.json"))))
             Check(json.RootElement.GetProperty("Thresholds").GetProperty("Version").GetString() == "test-version", "saved report contains frozen thresholds");
         Check(source.MaxConcurrent == 1 && source.Disposed, "single reader and orderly source disposal");

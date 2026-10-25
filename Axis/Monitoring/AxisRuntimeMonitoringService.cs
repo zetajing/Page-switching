@@ -102,7 +102,8 @@ internal sealed class AxisRuntimeMonitoringService
                 path = Path.Combine(_directory, initial.StartedAt.ToString("yyyyMMdd-HHmmss", CultureInfo.InvariantCulture) + "-" + initial.RunId.ToString("N"));
                 Directory.CreateDirectory(path);
                 lock (_gate) run.Counter.DirectoryPath = path;
-                writer = new StreamWriter(Path.Combine(path, "samples.csv"), false, new UTF8Encoding(false));
+                // 写入 UTF-8 BOM，供 Excel 直接打开时正确识别 Outcome 中的中文。
+                writer = new StreamWriter(Path.Combine(path, "samples.csv"), false, new UTF8Encoding(true));
                 await writer.WriteLineAsync("ReadCompletedAt,ReadMilliseconds,Heartbeat,AcceptedSequence,ControlOwner,Running,FeedbackInvalid,Outcome,Axis1Position,Axis1Speed,Axis2Position,Axis2Speed,Axis3Position,Axis3Speed,Axis4Position,Axis4Speed").ConfigureAwait(false);
                 // 先保存锁存阈值，异常退出时仍能识别未结束的任务；最终汇总再原子替换。
                 await SaveSummaryAsync(path, initial).ConfigureAwait(false);
