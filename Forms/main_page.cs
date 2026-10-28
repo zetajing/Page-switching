@@ -50,13 +50,13 @@ namespace Page_switching
             _currentUser = user;
             InitializeComponent();
             InitializeOperationJournal();
-            // 登录只记录软件使用者；PLC 站点身份和控制权仍走原有流程。
+            // 记录本次软件使用者（包括临时免登录身份）；PLC 站点身份和控制权仍走原有流程。
             if (user is not null)
             {
                 string role = user.IsAdministrator ? "管理员" : "操作员";
                 Text = "造波控制系统 - " + user.UserName;
                 currentUserLabel.Text = user.UserName + " · " + role;
-                if (_recordOperations) OperationJournal.Record("登录", user.UserName + "（" + role + "）登录成功");
+                if (_recordOperations) OperationJournal.Record("进入系统", user.UserName + "（" + role + "）进入系统");
             }
 
             // 本次启动只读取一次 ADS 配置；保存的新参数在下次启动才应用。
