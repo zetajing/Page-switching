@@ -40,8 +40,6 @@ namespace Page_switching
             _ownsAxisService = ownsAxisService;
 
             InitializeComponent();
-            // 本地刻度只影响绘图；PLC 真实限值在“运行诊断 / 轴参数”中读取。
-            overviewGroupCaption.Text = "四轴位置（本地刻度，非运动限值）";
             // 连接栏空间有限；读取错误显示省略号，悬停可查看完整变量和原因。
             connectionStateLabel.AutoEllipsis = true;
             connectionStateLabel.ShowTooltip = true;
@@ -65,7 +63,8 @@ namespace Page_switching
             {
                 indicator.MinimumPosition = _axisService.MinimumPosition;
                 indicator.MaximumPosition = _axisService.MaximumPosition;
-                indicator.UnitText = _axisService.Unit;
+                // 手动页只显示数值；显示范围和反馈数值仍沿用原配置。
+                indicator.UnitText = string.Empty;
             }
 
             _negativeLimitLamps = [axis1NegativeLimitLamp, axis2NegativeLimitLamp, axis3NegativeLimitLamp, axis4NegativeLimitLamp];
@@ -166,7 +165,7 @@ namespace Page_switching
                     : new AxisSnapshot(index + 1);
                 _positionIndicators[index].Update(
                     snapshot,
-                    _axisService.Unit,
+                    string.Empty,
                     _axisService.MinimumPosition,
                     _axisService.MaximumPosition,
                     _axisService.IsConnected);
@@ -216,8 +215,8 @@ namespace Page_switching
             AxisSnapshot snapshot = axis.Snapshot;
             selectedStatusLabel.Text = snapshot.StatusText;
             selectedStatusLabel.ForeColor = GetStatusColor(snapshot);
-            selectedActualLabel.Text = FormatValue(snapshot.ActualPosition, _axisService.Unit);
-            selectedSpeedLabel.Text = FormatValue(snapshot.Speed, _axisService.Unit + "/s");
+            selectedActualLabel.Text = FormatValue(snapshot.ActualPosition);
+            selectedSpeedLabel.Text = FormatValue(snapshot.Speed);
 
             bool canControlAxis = axis.CanControl;
             SetCommandButtonEnabled(jogNegativeButton, canControlAxis);
@@ -554,9 +553,9 @@ namespace Page_switching
             }
         }
 
-        // 将可空数值格式化为带单位的界面文字。
-        private static string FormatValue(double? value, string unit) =>
-            value.HasValue ? $"{value.Value:0.00} {unit}" : "--";
+        // 手动页不附加单位文字；没有有效反馈时仍显示“--”。
+        private static string FormatValue(double? value) =>
+            value.HasValue ? $"{value.Value:0.00}" : "--";
 
         // 根据报警、限位和运行状态选择状态文字颜色。
         private static Color GetStatusColor(AxisSnapshot snapshot)

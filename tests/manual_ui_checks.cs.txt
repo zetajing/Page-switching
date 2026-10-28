@@ -29,9 +29,14 @@ internal static class Program
         form.Show();
         Application.DoEvents();
         Field<System.Windows.Forms.Timer>(page, "_refreshTimer").Stop();
-        Check(Field<AntdUI.Label>(page, "overviewGroupCaption").Text!.Contains("非运动限值"), "本地位置条必须明确不是 PLC 运动限值。");
-        Check(Field<ServoPositionIndicator>(page, "axis1PositionIndicator").UnitText == service.Unit,
-            "位置条使用配置的显示单位，不私自把原始反馈标成角度。");
+        Check(Field<AntdUI.Label>(page, "overviewGroupCaption").Text == "四轴位置总览", "手动页标题不附加刻度说明。");
+        for (int axis = 1; axis <= 4; axis++)
+        {
+            Check(Field<ServoPositionIndicator>(page, $"axis{axis}PositionIndicator").UnitText == "",
+                $"轴{axis}位置及刻度仅显示数值，刷新后也不恢复单位后缀。");
+        }
+        Check(Field<AntdUI.Label>(page, "selectedActualLabel").Text == "0.00", "实际位置只显示数值。");
+        Check(Field<AntdUI.Label>(page, "selectedSpeedLabel").Text == "0.00", "实际速度不显示单位或/s后缀。");
 
         var names = new[] { "enableAllButton", "disableAllButton", "resetAlarmButton", "homeAllButton",
                             "stopAllButton", "jogNegativeButton", "jogPositiveButton", "homeSelectedButton", "stopSelectedButton" };

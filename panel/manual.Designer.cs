@@ -192,7 +192,7 @@ namespace Page_switching
             axis4PositionIndicator.Size = new Size(487, 88);
             axis4PositionIndicator.TabIndex = 13;
             axis4PositionIndicator.TabStop = false;
-            axis4PositionIndicator.UnitText = "原始单位";
+            axis4PositionIndicator.UnitText = "";
             // 
             // axis3PositionIndicator
             // 
@@ -214,7 +214,7 @@ namespace Page_switching
             axis3PositionIndicator.Size = new Size(487, 88);
             axis3PositionIndicator.TabIndex = 10;
             axis3PositionIndicator.TabStop = false;
-            axis3PositionIndicator.UnitText = "原始单位";
+            axis3PositionIndicator.UnitText = "";
             // 
             // axis2PositionIndicator
             // 
@@ -236,7 +236,7 @@ namespace Page_switching
             axis2PositionIndicator.Size = new Size(487, 88);
             axis2PositionIndicator.TabIndex = 7;
             axis2PositionIndicator.TabStop = false;
-            axis2PositionIndicator.UnitText = "原始单位";
+            axis2PositionIndicator.UnitText = "";
             // 
             // axis1PositionIndicator
             // 
@@ -258,7 +258,7 @@ namespace Page_switching
             axis1PositionIndicator.Size = new Size(487, 88);
             axis1PositionIndicator.TabIndex = 4;
             axis1PositionIndicator.TabStop = false;
-            axis1PositionIndicator.UnitText = "原始单位";
+            axis1PositionIndicator.UnitText = "";
             // 
             // pagePanel
             // 
