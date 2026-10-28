@@ -140,7 +140,10 @@ namespace Page_switching
             }
             catch (Exception ex)
             {
-                if (IsDisposed) return;
+                if (IsDisposed)
+                {
+                    return;
+                }
                 var message = "刷新失败：" + ex.Message;
                 if (CanUpdateCommandStatus(stopRequestVersion) && helperLabel.Text != message)
                     ShowCommandResult(message);
@@ -340,7 +343,9 @@ namespace Page_switching
             _jogAxis = axis;
             _jogPositive = positive;
             _jogActive = true;
-            var stopRequestVersion = _jogRequestVersion = _stopRequestVersion;
+            // 保存点动开始时的停止序号；旧点动结果不能覆盖之后的停止提示。
+            long stopRequestVersion = _stopRequestVersion;
+            _jogRequestVersion = stopRequestVersion;
             OperationJournal.Record("手动控制",
                 $"请求轴 {axis.AxisNumber} {(positive ? "正向" : "负向")}点动，速度 {jogSpeedInput.Value:0.0}");
             try
@@ -351,7 +356,9 @@ namespace Page_switching
                     decimal.ToDouble(jogSpeedInput.Value),
                     _lifetimeCancellation.Token);
                 if (CanUpdateCommandStatus(stopRequestVersion))
+                {
                     ShowCommandResult($"轴 {axis.AxisNumber} {(positive ? "正向" : "负向")}点动请求已发送");
+                }
             }
             catch (OperationCanceledException)
             {
@@ -361,7 +368,10 @@ namespace Page_switching
             catch (Exception ex)
             {
                 _jogActive = false;
-                if (CanUpdateCommandStatus(stopRequestVersion)) ShowCommandResult("点动失败：" + ex.Message);
+                if (CanUpdateCommandStatus(stopRequestVersion))
+                {
+                    ShowCommandResult("点动失败：" + ex.Message);
+                }
             }
         }
 
@@ -437,7 +447,10 @@ namespace Page_switching
             catch (Exception ex)
             {
                 AdsDiagnostics.RecordException("手动命令", ex);
-                if (CanUpdateCommandStatus(stopRequestVersion)) ShowCommandResult("操作失败：" + ex.Message);
+                if (CanUpdateCommandStatus(stopRequestVersion))
+                {
+                    ShowCommandResult("操作失败：" + ex.Message);
+                }
             }
             finally
             {
@@ -456,10 +469,15 @@ namespace Page_switching
             string requestMessage,
             string successMessage)
         {
-            if (IsDisposed) return;
+            if (IsDisposed)
+            {
+                return;
+            }
 
             _stopRequestsInProgress++;
-            var stopRequestVersion = ++_stopRequestVersion;
+            // 每次停止先递增序号，再保存本次序号，避免旧任务覆盖新的停止结果。
+            _stopRequestVersion++;
+            long stopRequestVersion = _stopRequestVersion;
             UpdateConnectionState();
             ShowCommandResult(requestMessage);
             var commandSent = false;
@@ -467,28 +485,52 @@ namespace Page_switching
             {
                 await action(_lifetimeCancellation.Token);
                 commandSent = true;
-                if (CanUpdateCommandStatus(stopRequestVersion)) ShowCommandResult(successMessage);
-                else OperationJournal.Record("手动控制", successMessage);
+                if (CanUpdateCommandStatus(stopRequestVersion))
+                {
+                    ShowCommandResult(successMessage);
+                }
+                else
+                {
+                    OperationJournal.Record("手动控制", successMessage);
+                }
             }
             catch (OperationCanceledException)
             {
-                if (CanUpdateCommandStatus(stopRequestVersion)) ShowCommandResult("停止命令已取消");
-                else OperationJournal.Record("手动控制", "停止命令已取消：" + requestMessage);
+                if (CanUpdateCommandStatus(stopRequestVersion))
+                {
+                    ShowCommandResult("停止命令已取消");
+                }
+                else
+                {
+                    OperationJournal.Record("手动控制", "停止命令已取消：" + requestMessage);
+                }
             }
             catch (Exception ex)
             {
                 AdsDiagnostics.RecordException("手动停止", ex);
                 var message = "停止命令发送失败：" + ex.Message + "；" + requestMessage;
-                if (CanUpdateCommandStatus(stopRequestVersion)) ShowCommandResult(message);
-                else OperationJournal.Record("手动控制", message);
+                if (CanUpdateCommandStatus(stopRequestVersion))
+                {
+                    ShowCommandResult(message);
+                }
+                else
+                {
+                    OperationJournal.Record("手动控制", message);
+                }
             }
             finally
             {
                 _stopRequestsInProgress--;
-                if (!IsDisposed) UpdateConnectionState();
+                if (!IsDisposed)
+                {
+                    UpdateConnectionState();
+                }
             }
 
-            if (commandSent && CanUpdateCommandStatus(stopRequestVersion)) await RefreshValuesAsync();
+            if (commandSent && CanUpdateCommandStatus(stopRequestVersion))
+            {
+                await RefreshValuesAsync();
+            }
         }
 
         // 结果明确记录一次，不再由主窗体监听标签文字变化来推断。
@@ -519,11 +561,19 @@ namespace Page_switching
         // 根据报警、限位和运行状态选择状态文字颜色。
         private static Color GetStatusColor(AxisSnapshot snapshot)
         {
-            if (snapshot.HasAlarm) return UiPalette.Danger;
-            if (snapshot.PositiveLimit || snapshot.NegativeLimit) return UiPalette.Warning;
-            return snapshot.StatusText is "就绪" or "运行中"
-                ? UiPalette.Success
-                : UiPalette.Muted;
+            if (snapshot.HasAlarm)
+            {
+                return UiPalette.Danger;
+            }
+            if (snapshot.PositiveLimit || snapshot.NegativeLimit)
+            {
+                return UiPalette.Warning;
+            }
+            if (snapshot.StatusText == "就绪" || snapshot.StatusText == "运行中")
+            {
+                return UiPalette.Success;
+            }
+            return UiPalette.Muted;
         }
 
         // 页面释放时停止定时器、取消任务并按需释放轴服务。

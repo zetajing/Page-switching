@@ -74,17 +74,39 @@ internal sealed class AxisMonitoringCounter
     internal AxisMonitoringCounter(uint sequence, ushort station, uint heartbeat, DateTimeOffset at,
         AxisMonitoringProfile? profile, string? error = null)
     {
-        _sequence = sequence; _station = station; _lastHeartbeat = heartbeat; _started = at;
-        _profile = profile?.Copy(); _error = error ?? "";
-        if (_profile is null) { _status = "未统计"; _ended = at; _endReason = error ?? "监测阈值未配置"; }
+        _sequence = sequence;
+        _station = station;
+        _lastHeartbeat = heartbeat;
+        _started = at;
+        _profile = profile?.Copy();
+        _error = error ?? "";
+        if (_profile is null)
+        {
+            _status = "未统计";
+            _ended = at;
+            _endReason = error ?? "监测阈值未配置";
+        }
     }
 
     internal void Fail(string reason)
     {
-        _failures++; _incomplete = true; _error = reason;
+        _failures++;
+        _incomplete = true;
+        _error = reason;
     }
-    internal void Skip(long count) { _skipped += count; _incomplete |= count > 0; }
-    internal void NoteIncomplete(string reason) { _error = reason; _incomplete = true; }
+    internal void Skip(long count)
+    {
+        _skipped += count;
+        if (count > 0)
+        {
+            _incomplete = true;
+        }
+    }
+    internal void NoteIncomplete(string reason)
+    {
+        _error = reason;
+        _incomplete = true;
+    }
     internal void NoteStorageFailure(string reason) => NoteIncomplete("记录保存失败：" + reason);
     internal void NoteReadTime(double milliseconds) => _maxRead = Math.Max(_maxRead, milliseconds);
 
@@ -92,12 +114,26 @@ internal sealed class AxisMonitoringCounter
         List<string> transitions, string? requestedReason)
     {
         NoteReadTime(milliseconds);
-        if (Finished) return "已结束";
-        if (frame.ControlOwner != _station) { Finish(at, "所属站改变", true); return "所属站改变"; }
-        if (_accepted && frame.AcceptedSequence != _sequence) { Finish(at, "轨迹序号改变", true); return "轨迹序号改变"; }
+        // 先检查本次运行归属和帧有效性，排除的帧不能进入下面的超限计数。
+        if (Finished)
+        {
+            return "已结束";
+        }
+        if (frame.ControlOwner != _station)
+        {
+            Finish(at, "所属站改变", true);
+            return "所属站改变";
+        }
+        if (_accepted && frame.AcceptedSequence != _sequence)
+        {
+            Finish(at, "轨迹序号改变", true);
+            return "轨迹序号改变";
+        }
         if (frame.Heartbeat == _lastHeartbeat)
         {
-            _duplicates++; _incomplete = true; return "重复心跳，未计数";
+            _duplicates++;
+            _incomplete = true;
+            return "重复心跳，未计数";
         }
         _lastHeartbeat = frame.Heartbeat;
         if (frame.AcceptedSequence != _sequence)
@@ -107,19 +143,55 @@ internal sealed class AxisMonitoringCounter
         _accepted = true;
         if (!frame.Running)
         {
-            if (_seenRunning) Finish(at, frame.Error ? $"故障退出（{frame.TrajectoryErrorId}）" : requestedReason
-                ?? (frame.Done ? "轨迹正常完成" : frame.Stopped ? "PLC已停止轨迹" : $"离开轨迹执行阶段（PLC状态{frame.TrajectoryState}）"), false);
+            if (_seenRunning)
+            {
+                // 结束原因沿用原优先级：故障、请求原因、完成、停止、其他退出。
+                string endReason;
+                if (frame.Error)
+                {
+                    endReason = $"故障退出（{frame.TrajectoryErrorId}）";
+                }
+                else if (requestedReason is not null)
+                {
+                    endReason = requestedReason;
+                }
+                else if (frame.Done)
+                {
+                    endReason = "轨迹正常完成";
+                }
+                else if (frame.Stopped)
+                {
+                    endReason = "PLC已停止轨迹";
+                }
+                else
+                {
+                    endReason = $"离开轨迹执行阶段（PLC状态{frame.TrajectoryState}）";
+                }
+                Finish(at, endReason, false);
+            }
             return "非执行阶段，未计数";
         }
-        if (!_seenRunning && frame.CurrentPoint > 50) _incomplete = true;
-        _seenRunning = true; _status = "正在统计";
-        if (ncInvalid) { _ncInvalid++; _incomplete = true; return "NC反馈无效，未计数"; }
+        if (!_seenRunning && frame.CurrentPoint > 50)
+        {
+            _incomplete = true;
+        }
+        _seenRunning = true;
+        _status = "正在统计";
+        if (ncInvalid)
+        {
+            _ncInvalid++;
+            _incomplete = true;
+            return "NC反馈无效，未计数";
+        }
         var axes = new[] { frame.Axis1, frame.Axis2, frame.Axis3, frame.Axis4 };
-        bool complete = true, any = false, hasValid = false;
+        bool complete = true;
+        bool any = false;
+        bool hasValid = false;
         for (int i = 0; i < 4; i++)
         {
             var threshold = _profile!.Axes[i];
-            bool positionValid = double.IsFinite(axes[i].ActualPosition), speedValid = double.IsFinite(axes[i].Speed);
+            bool positionValid = double.IsFinite(axes[i].ActualPosition);
+            bool speedValid = double.IsFinite(axes[i].Speed);
             bool positionExceeded = positionValid && (axes[i].ActualPosition < threshold.MinPosition || axes[i].ActualPosition > threshold.MaxPosition);
             bool speedExceeded = speedValid && Math.Abs(axes[i].Speed) > threshold.MaxSpeed;
             Update(i, 0, positionValid, positionExceeded, transitions);
@@ -127,32 +199,92 @@ internal sealed class AxisMonitoringCounter
             if (positionValid && speedValid)
             {
                 _valid[i, 2]++;
-                if (positionExceeded || speedExceeded) _exceeded[i, 2]++;
+                if (positionExceeded || speedExceeded)
+                {
+                    _exceeded[i, 2]++;
+                }
             }
-            complete &= positionValid && speedValid;
-            any |= positionExceeded || speedExceeded;
-            hasValid |= positionValid || speedValid;
+            // 这三个标记汇总四轴结果，后面的轴不能清除前面已经记录的情况。
+            if (!positionValid || !speedValid)
+            {
+                complete = false;
+            }
+            if (positionExceeded || speedExceeded)
+            {
+                any = true;
+            }
+            if (positionValid || speedValid)
+            {
+                hasValid = true;
+            }
         }
-        if (complete) { _globalValid++; if (any) _globalExceeded++; }
-        if (hasValid) { _first ??= at; _last = at; }
-        return complete ? "有效完整样本" : "部分数值无效";
+        if (complete)
+        {
+            _globalValid++;
+            if (any)
+            {
+                _globalExceeded++;
+            }
+        }
+        if (hasValid)
+        {
+            if (_first is null)
+            {
+                _first = at;
+            }
+            _last = at;
+        }
+        if (complete)
+        {
+            return "有效完整样本";
+        }
+        return "部分数值无效";
     }
 
     private void Update(int axis, int metric, bool valid, bool exceeded, List<string> transitions)
     {
-        if (!valid) { _invalidValues++; _incomplete = true; return; }
+        if (!valid)
+        {
+            _invalidValues++;
+            _incomplete = true;
+            return;
+        }
         _valid[axis, metric]++;
-        if (exceeded) _exceeded[axis, metric]++;
-        if (exceeded && _lastExceeded[axis, metric] != true || !exceeded && _lastExceeded[axis, metric] == true)
-            transitions.Add($"轴 {axis + 1} {(metric == 0 ? "位置" : "速度")}监测{(exceeded ? "超限" : "恢复")}（只记录，不发送运动命令）。");
+        if (exceeded)
+        {
+            _exceeded[axis, metric]++;
+        }
+
+        string metricName = "速度";
+        if (metric == 0)
+        {
+            metricName = "位置";
+        }
+        // 只在进入超限或恢复时记录，持续超限不会每100 ms重复刷日志。
+        if (exceeded && _lastExceeded[axis, metric] != true)
+        {
+            transitions.Add($"轴 {axis + 1} {metricName}监测超限（只记录，不发送运动命令）。");
+        }
+        else if (!exceeded && _lastExceeded[axis, metric] == true)
+        {
+            transitions.Add($"轴 {axis + 1} {metricName}监测恢复（只记录，不发送运动命令）。");
+        }
         _lastExceeded[axis, metric] = exceeded;
     }
 
     internal void Finish(DateTimeOffset at, string reason, bool incomplete)
     {
-        if (Finished) return;
-        _ended = at; _endReason = reason; _status = "已结束";
-        _incomplete |= incomplete || !_seenRunning || _globalValid == 0;
+        if (Finished)
+        {
+            return;
+        }
+        _ended = at;
+        _endReason = reason;
+        _status = "已结束";
+        if (incomplete || !_seenRunning || _globalValid == 0)
+        {
+            _incomplete = true;
+        }
     }
 
     internal AxisMonitoringReport Snapshot()

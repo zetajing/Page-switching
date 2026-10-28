@@ -65,6 +65,39 @@ internal static class Program
                 }
                 assertions++;
             }
+            // 逐轴逐字段检查：展开All/Select后，缺项判定和四轴顺序必须保持一致。
+            AxisSymbolMap MapWithout(string missing) => new()
+            {
+                EnableCommand = missing == "Enable" ? "" : "enable",
+                ResetAlarmCommand = missing == "Reset" ? "" : "reset",
+                HomeCommand = missing == "Home" ? "" : "home",
+                StopCommand = missing == "Stop" ? "" : "stop",
+                JogSpeedCommand = missing == "Speed" ? "" : "speed",
+                JogPositiveCommand = missing == "Positive" ? "" : "positive",
+                JogNegativeCommand = missing == "Negative" ? "" : "negative"
+            };
+            var maps = Enumerable.Range(1, 4).Select(_ => MapWithout("")).ToArray();
+            AdsClient.Model = new FakePlc();
+            using (var service = NewService(new AxisServiceOptions { ControlStationCode = 1, AxisSymbols = maps }))
+            {
+                Check(!service.CanControlAll && !service.CanControlAxis(1), "disconnected manual controls remain unavailable");
+                await service.ConnectAsync(CancellationToken.None);
+                await Until(() => service.HasControlAuthority);
+                Check(service.CanControlAll && service.CanControlAxis(1), "complete maps allow manual controls");
+                for (int axis = 0; axis < 4; axis++)
+                {
+                    foreach (string missing in new[] { "Enable", "Reset", "Home", "Stop", "Speed", "Positive", "Negative" })
+                    {
+                        maps[axis] = MapWithout(missing);
+                        bool blocksAll = missing is "Enable" or "Reset" or "Home" or "Stop";
+                        bool blocksAxis = missing is "Home" or "Stop" or "Speed" or "Positive" or "Negative";
+                        Check(service.CanControlAll == !blocksAll, $"all-axis map check: axis {axis + 1}, {missing}");
+                        Check(service.CanControlAxis(axis + 1) == !blocksAxis, $"single-axis map check: axis {axis + 1}, {missing}");
+                        maps[axis] = MapWithout("");
+                    }
+                }
+                Check(AdsClient.Model.StartWrites == 0, "checking availability never starts motion");
+            }
             // 只读连接不需要站点身份或控制权；读取不会触发申请、心跳或运动写入。
             AdsClient.Model = new FakePlc { AuthorityOwner = 0 };
             using (var service = NewService(Options(station: 0)))

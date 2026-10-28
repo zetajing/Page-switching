@@ -105,6 +105,20 @@ internal static class Program
         var fault = Counter(); Observe(fault, Frame()); frame = Frame(2, false); frame.Error = true; frame.TrajectoryErrorId = 1003;
         fault.Observe(frame, false, Epoch, 1, new(), "人工停止");
         Check(fault.Snapshot().EndReason!.Contains("1003"), "fault exit retains original PLC error over requested stop reason");
+        // 覆盖结束原因的组合，包括空字符串；只展开写法，不改变原来的优先级。
+        foreach (bool error in new[] { false, true })
+        foreach (bool done in new[] { false, true })
+        foreach (bool stopped in new[] { false, true })
+        foreach (string? requested in new string?[] { null, "", "人工停止" })
+        {
+            var ending = Counter(); Observe(ending, Frame());
+            var exit = Frame(2, false);
+            exit.Error = error; exit.Done = done; exit.Stopped = stopped; exit.TrajectoryErrorId = 1003;
+            ending.Observe(exit, false, Epoch, 1, new(), requested);
+            string expected = error ? "故障退出（1003）" : requested
+                ?? (done ? "轨迹正常完成" : stopped ? "PLC已停止轨迹" : $"离开轨迹执行阶段（PLC状态{exit.TrajectoryState}）");
+            Check(ending.Snapshot().EndReason == expected, "expanded ending branches retain original precedence");
+        }
 
         var clock = new FakeClock(); var source = new SequenceSource(clock, 2) { FirstCost = 425 };
         var logs = new List<string>();

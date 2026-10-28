@@ -6,34 +6,72 @@ namespace Page_switching;
 // 手动控制：只提交使能、复位、回零、停止和点动命令；执行结果由反馈读取。
 public sealed partial class AxisService
 {
-    public bool CanControlAll => !WaveOperationActive && IsConnected && HasControlAuthority && _options.AxisSymbols.All(map =>
-            !string.IsNullOrWhiteSpace(map.EnableCommand) &&
-            !string.IsNullOrWhiteSpace(map.ResetAlarmCommand) &&
-            !string.IsNullOrWhiteSpace(map.HomeCommand) &&
-            !string.IsNullOrWhiteSpace(map.StopCommand));
+    public bool CanControlAll
+    {
+        get
+        {
+            // 先检查公共条件，再逐轴检查符号；任意一项缺失都不能开放全轴操作。
+            if (WaveOperationActive || !IsConnected || !HasControlAuthority)
+            {
+                return false;
+            }
+
+            foreach (var map in _options.AxisSymbols)
+            {
+                if (string.IsNullOrWhiteSpace(map.EnableCommand) ||
+                    string.IsNullOrWhiteSpace(map.ResetAlarmCommand) ||
+                    string.IsNullOrWhiteSpace(map.HomeCommand) ||
+                    string.IsNullOrWhiteSpace(map.StopCommand))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
 
     // 判断指定轴是否已连接，并且已经配置回零、停止和点动变量。
     public bool CanControlAxis(int axisNumber)
     {
         ValidateAxisNumber(axisNumber);
         var map = _options.AxisSymbols[axisNumber - 1];
-        return !WaveOperationActive && IsConnected && HasControlAuthority &&
-            !string.IsNullOrWhiteSpace(map.HomeCommand) &&
-            !string.IsNullOrWhiteSpace(map.StopCommand) &&
-            !string.IsNullOrWhiteSpace(map.JogSpeedCommand) &&
-            !string.IsNullOrWhiteSpace(map.JogPositiveCommand) &&
-            !string.IsNullOrWhiteSpace(map.JogNegativeCommand);
+        if (WaveOperationActive || !IsConnected || !HasControlAuthority)
+        {
+            return false;
+        }
+        if (string.IsNullOrWhiteSpace(map.HomeCommand) ||
+            string.IsNullOrWhiteSpace(map.StopCommand) ||
+            string.IsNullOrWhiteSpace(map.JogSpeedCommand) ||
+            string.IsNullOrWhiteSpace(map.JogPositiveCommand) ||
+            string.IsNullOrWhiteSpace(map.JogNegativeCommand))
+        {
+            return false;
+        }
+        return true;
     }
 
     // 将四根轴的 EnableCommand 全部写为 true。
-    public Task EnableAllAsync(CancellationToken cancellationToken) =>
-        WriteAllAsync(
-            _options.AxisSymbols.Select(axis => axis.EnableCommand).ToArray(), true, cancellationToken);
+    public Task EnableAllAsync(CancellationToken cancellationToken)
+    {
+        // 数组下标与轴顺序一致，后续按原顺序写入四轴请求。
+        var symbols = new string[_options.AxisSymbols.Count];
+        for (int i = 0; i < symbols.Length; i++)
+        {
+            symbols[i] = _options.AxisSymbols[i].EnableCommand;
+        }
+        return WriteAllAsync(symbols, true, cancellationToken);
+    }
 
     // 将四根轴的 EnableCommand 全部写为 false。
-    public Task DisableAllAsync(CancellationToken cancellationToken) =>
-        WriteAllAsync(
-            _options.AxisSymbols.Select(axis => axis.EnableCommand).ToArray(), false, cancellationToken);
+    public Task DisableAllAsync(CancellationToken cancellationToken)
+    {
+        var symbols = new string[_options.AxisSymbols.Count];
+        for (int i = 0; i < symbols.Length; i++)
+        {
+            symbols[i] = _options.AxisSymbols[i].EnableCommand;
+        }
+        return WriteAllAsync(symbols, false, cancellationToken);
+    }
 
     // 单轴使能沿用批量写入的门锁、控制权和造波互锁，只提交本轴符号。
     public Task SetAxisEnabledAsync(int axisNumber, bool enabled, CancellationToken cancellationToken)
@@ -60,7 +98,10 @@ public sealed partial class AxisService
         {
             var client = GetConnectedClient() ?? throw new InvalidOperationException("ADS 尚未连接。");
             RequireControlAuthority();
-            if (WaveOperationActive) throw new InvalidOperationException("造波会话进行中，请先停止造波再手动操作。");
+            if (WaveOperationActive)
+            {
+                throw new InvalidOperationException("造波会话进行中，请先停止造波再手动操作。");
+            }
             await client.WriteManyAsync(CreateWriteRequests(client, symbols, value), cancellationToken)
                 .ConfigureAwait(false);
         }
@@ -71,9 +112,15 @@ public sealed partial class AxisService
     }
 
     // 将四根轴的 ResetAlarmCommand 置位 50 毫秒后复位。
-    public Task ResetAlarmsAsync(CancellationToken cancellationToken) =>
-        PulseAllAsync(
-            _options.AxisSymbols.Select(axis => axis.ResetAlarmCommand).ToArray(), cancellationToken);
+    public Task ResetAlarmsAsync(CancellationToken cancellationToken)
+    {
+        var symbols = new string[_options.AxisSymbols.Count];
+        for (int i = 0; i < symbols.Length; i++)
+        {
+            symbols[i] = _options.AxisSymbols[i].ResetAlarmCommand;
+        }
+        return PulseAllAsync(symbols, cancellationToken);
+    }
 
     // 本轴报警复位复用原有 50 ms 脉冲，取消时仍尝试清零。
     public Task ResetAxisAlarmAsync(int axisNumber, CancellationToken cancellationToken)
@@ -84,14 +131,26 @@ public sealed partial class AxisService
     }
 
     // 将四根轴的 HomeCommand 置位 50 毫秒后复位。
-    public Task HomeAllAsync(CancellationToken cancellationToken) =>
-        PulseAllAsync(
-            _options.AxisSymbols.Select(axis => axis.HomeCommand).ToArray(), cancellationToken);
+    public Task HomeAllAsync(CancellationToken cancellationToken)
+    {
+        var symbols = new string[_options.AxisSymbols.Count];
+        for (int i = 0; i < symbols.Length; i++)
+        {
+            symbols[i] = _options.AxisSymbols[i].HomeCommand;
+        }
+        return PulseAllAsync(symbols, cancellationToken);
+    }
 
     // 将四根轴的 StopCommand 置位 50 毫秒后复位。
-    public Task StopAllAsync(CancellationToken cancellationToken) =>
-        PulseAllAsync(
-            _options.AxisSymbols.Select(axis => axis.StopCommand).ToArray(), cancellationToken);
+    public Task StopAllAsync(CancellationToken cancellationToken)
+    {
+        var symbols = new string[_options.AxisSymbols.Count];
+        for (int i = 0; i < symbols.Length; i++)
+        {
+            symbols[i] = _options.AxisSymbols[i].StopCommand;
+        }
+        return PulseAllAsync(symbols, cancellationToken);
+    }
 
     // 触发指定轴的 HomeCommand，使该轴开始回零。
     public Task HomeAxisAsync(int axisNumber, CancellationToken cancellationToken)
@@ -132,7 +191,10 @@ public sealed partial class AxisService
             if (start)
             {
                 RequireControlAuthority();
-                if (WaveOperationActive) throw new InvalidOperationException("造波会话进行中，禁止点动。");
+                if (WaveOperationActive)
+                {
+                    throw new InvalidOperationException("造波会话进行中，禁止点动。");
+                }
                 await client.WriteAsync(
                     new WriteRequest(client.DeviceId, map.JogSpeedCommand, DataType.Double, Math.Abs(speed)),
                     cancellationToken).ConfigureAwait(false);
@@ -159,7 +221,10 @@ public sealed partial class AxisService
         {
             var client = GetConnectedClient() ?? throw new InvalidOperationException("ADS 尚未连接。");
             RequireControlAuthority();
-            if (WaveOperationActive) throw new InvalidOperationException("造波会话进行中，请先停止造波再手动操作。");
+            if (WaveOperationActive)
+            {
+                throw new InvalidOperationException("造波会话进行中，请先停止造波再手动操作。");
+            }
             var setRequests = CreateWriteRequests(client, symbols, true);
             var resetRequests = CreateWriteRequests(client, symbols, false);
             Exception? commandError = null; // 撤销也失败时，仍须保留最初的提交或取消原因。
@@ -171,7 +236,10 @@ public sealed partial class AxisService
             catch (Exception ex)
             {
                 commandError = ex;
-                if (ex is OperationCanceledException) throw;
+                if (ex is OperationCanceledException)
+                {
+                    throw;
+                }
                 commandError = new InvalidOperationException(
                     $"手动命令提交失败（{string.Join(", ", symbols)}）：{AdsDiagnostics.DescribeException(ex)}", ex);
                 throw commandError;
@@ -179,13 +247,18 @@ public sealed partial class AxisService
             finally
             {
                 // 置位可能部分成功；即使取消，也按原轴顺序尝试复位，超时由 ADS 客户端控制。
-                try { await client.WriteManyAsync(resetRequests, CancellationToken.None).ConfigureAwait(false); }
+                try
+                {
+                    await client.WriteManyAsync(resetRequests, CancellationToken.None).ConfigureAwait(false);
+                }
                 catch (Exception ex)
                 {
                     var resetError = new InvalidOperationException(
                         $"撤销手动命令失败（{string.Join(", ", symbols)}）：{AdsDiagnostics.DescribeException(ex)}；请核对 PLC 请求位和轴状态。", ex);
                     if (commandError is not null)
+                    {
                         throw new AggregateException(commandError.Message + "；" + resetError.Message, commandError, resetError);
+                    }
                     throw resetError;
                 }
             }
