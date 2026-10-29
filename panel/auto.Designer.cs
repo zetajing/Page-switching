@@ -692,15 +692,15 @@ namespace Page_switching
             rightLayout.ColumnCount = 1;
             rightLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
             rightLayout.Controls.Add(axisGroup, 0, 0);
-            rightLayout.Controls.Add(logGroup, 0, 2);
+            rightLayout.Controls.Add(logGroup, 0, 1);
             rightLayout.Dock = DockStyle.Fill;
             rightLayout.Location = new Point(469, 0);
             rightLayout.Margin = new Padding(0);
             rightLayout.Name = "rightLayout";
-            rightLayout.RowCount = 3;
+            rightLayout.RowCount = 2;
             rightLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 300F));
+            // 反馈固定高度，消息紧接下方并填满剩余空间。
             rightLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            rightLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 370F));
             rightLayout.Size = new Size(850, 645);
             rightLayout.TabIndex = 1;
             // 
@@ -743,7 +743,7 @@ namespace Page_switching
             logGroup.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
             logGroup.ForeColor = Color.FromArgb(15, 23, 42);
             logGroup.Location = new Point(0, 275);
-            logGroup.Margin = new Padding(0);
+            logGroup.Margin = new Padding(0, 10, 0, 0);
             logGroup.Name = "logGroup";
             logGroup.Padding = new Padding(18, 40, 18, 15);
             logGroup.Size = new Size(850, 370);
@@ -763,7 +763,7 @@ namespace Page_switching
             logLayout.RowCount = 3;
             logLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
             logLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            logLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 48F));
+            logLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 56F));
             logLayout.Size = new Size(810, 311);
             logLayout.TabIndex = 0;
             // 

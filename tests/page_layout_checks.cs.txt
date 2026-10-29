@@ -54,9 +54,19 @@ internal static class Program
                 Check(!Field(main, "accountPanel").Bounds.IntersectsWith(Field(main, "headerStatusPanel").Bounds), "账号与状态区重叠");
                 nav.AutoScrollPosition = System.Drawing.Point.Empty;
                 Check(!nav.VerticalScroll.Visible, "常用窗口内导航不需要多余的垂直滚动条");
-                foreach (string field in new[] { "_manualPage", "_controlAuthorityPage", "_diagnosticsPage", "_monitoringSettingsPage" })
+                foreach (string field in new[] { "_autoPage", "_manualPage", "_controlAuthorityPage", "_diagnosticsPage", "_monitoringSettingsPage" })
                 {
                     var page = Field(main, field); Call(main, "ShowPage", page); Application.DoEvents();
+                    if (field == "_autoPage")
+                    {
+                        var feedback = Field(page, "axisGroup");
+                        var messages = Field(page, "logGroup");
+                        int gap = messages.Top - feedback.Bottom;
+                        Check(gap >= 0 && gap <= Math.Ceiling(16 * scale), "自动页反馈与消息之间不应有大块空白：" + gap);
+                        Within(messages, "运行消息");
+                        Check(messages.Bottom == messages.Parent!.ClientSize.Height, "运行消息应填满剩余高度");
+                        Within(Field(page, "clearLogButton"), "清空消息按钮");
+                    }
                     if (field == "_diagnosticsPage")
                     {
                         foreach (string button in new[] { "refreshButton", "copyButton", "backButton" }) Within(Field(page, button), "诊断 " + button);
@@ -79,6 +89,6 @@ internal static class Program
                 }
             }
         }
-        Console.WriteLine($"Page layout: {checks} assertions passed; 24 offline renders, 100/125/150 percent geometry checks; no PLC.");
+        Console.WriteLine($"Page layout: {checks} assertions passed; 30 offline renders, 100/125/150 percent geometry checks; no PLC.");
     }
 }
