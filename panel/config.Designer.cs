@@ -68,6 +68,7 @@ partial class Config
     private AntdUI.Label _databasePasswordLabel;
     private AntdUI.Input _databasePasswordTextBox;
     private AntdUI.Button _saveDatabaseButton;
+    private AntdUI.Button _testDatabaseButton;
     private AntdUI.Label _databaseStateLabel;
 
     // 释放设计器创建的配置页面组件。
@@ -188,6 +189,7 @@ partial class Config
             _databasePasswordTextBox.WaveSize = 0;
             _databasePasswordTextBox.Radius = 6;
         _saveDatabaseButton = new AntdUI.Button();
+        _testDatabaseButton = new AntdUI.Button();
             _saveDatabaseButton.Radius = 6;
         _databaseStateLabel = new AntdUI.Label();
         pagePanel.SuspendLayout();
@@ -1001,7 +1003,7 @@ partial class Config
         _databaseGroup.Size = new Size(807, 150);
         _databaseGroup.TabIndex = 4;
         // AntdUI 面板用独立标题标签保留原分组标题，布局仍可在 Designer 编辑。
-            _databaseGroupCaption.Text = "SQL Server 任务索引";
+            _databaseGroupCaption.Text = "SQL Server 数据保存";
             _databaseGroupCaption.AutoSize = true;
             _databaseGroupCaption.Name = "_databaseGroupCaption";
             _databaseGroupCaption.Location = new Point(10, 2);
@@ -1027,6 +1029,13 @@ partial class Config
         _databaseLayout.Controls.Add(_databasePasswordLabel, 2, 1);
         _databaseLayout.Controls.Add(_databasePasswordTextBox, 3, 1);
         _databaseLayout.Controls.Add(_saveDatabaseButton, 4, 0);
+        _databaseLayout.Controls.Add(_testDatabaseButton, 4, 1);
+        _testDatabaseButton.Name = "_testDatabaseButton";
+        _testDatabaseButton.Text = "连接并建表";
+        _testDatabaseButton.Dock = DockStyle.Fill;
+        _testDatabaseButton.Radius = 6;
+        _testDatabaseButton.Font = new Font("Microsoft YaHei UI", 9F);
+        _testDatabaseButton.Click += TestDatabaseButton_Click;
         _databaseLayout.Controls.Add(_databaseStateLabel, 0, 2);
         _databaseLayout.Dock = DockStyle.Fill;
         _databaseLayout.Location = new Point(11, 32);

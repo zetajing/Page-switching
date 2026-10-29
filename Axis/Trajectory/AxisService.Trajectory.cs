@@ -7,6 +7,8 @@ public sealed record WaveOperationStatus(string Stage, double Fraction, bool Act
 // 运行主线：核对本次表 → 使能及必要回原 → 启动和等待执行结束。
 public sealed partial class AxisService
 {
+    private DatabaseWaveRun? _databaseRun; // 只关联本次运行的归档，不参与运动条件判断。
+
     public Task StartWaveAsync(CancellationToken cancellationToken = default) =>
         RunWaveOperationAsync(StartWaveCoreAsync, cancellationToken);
 
@@ -21,6 +23,7 @@ public sealed partial class AxisService
         WaveCommandChecks.ThrowIfBlocked(GetWaveStartBlockReasons(frame));
         // PLC 已不做整表数值检查；参数改变后必须重新预检、下发，不能沿用旧结论。
         await VerifyWaveAxisLimitsAsync(token);
+        _databaseRun = DatabaseArchive.BeginRun(_databaseDataId, null, ControlStationCode, _waveReadySequence);
         _waveNeedsStop = true;
         frame = await PrepareWaveAxesAsync(token);
         await ExecuteWaveAsync(frame.PointCount, token);
@@ -61,6 +64,9 @@ public sealed partial class AxisService
         await VerifyWaveAxisLimitsAsync(token); // 回原可能耗时，再核对一次，参数相同才发启动沿。
         _waveStatus = new("PLC 检查启动条件并定位到首点", 0, true, false);
         StartRuntimeMonitoring(_waveReadySequence, frame.Heartbeat); // 只读后台任务，不增加运动启动条件。
+        var monitor = RuntimeMonitoringReport;
+        if (monitor is not null && monitor.Sequence == _waveReadySequence)
+            _databaseRun = DatabaseArchive.AttachMonitor(_databaseRun, monitor.RunId);
         await PulseWaveAsync("xStart", token);
         await WaitWaveFrameAsync(f => f.AcceptedSequence == _waveReadySequence && f.TrajectoryBusy,
             120000, "轨迹启动确认", token);

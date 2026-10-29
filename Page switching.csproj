@@ -36,6 +36,10 @@
     <Compile Update="panel\*.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Update="panel\DatabasePage.Designer.cs">
+      <SubType>Code</SubType>
+      <DependentUpon>DatabasePage.cs</DependentUpon>
+    </Compile>
     <Compile Update="panel\AxisMonitoringSettingsPage.Designer.cs">
       <SubType>Code</SubType>
       <DependentUpon>AxisMonitoringSettingsPage.cs</DependentUpon>

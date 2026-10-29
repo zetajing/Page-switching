@@ -1,6 +1,3 @@
-using System.Configuration;
-using System.Data;
-using System.Data.SqlClient;
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
@@ -12,7 +9,6 @@ public sealed class WaveDataWorkspace : IDisposable
 {
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
     private readonly object _gate = new();
-    private readonly SemaphoreSlim _syncGate = new(1, 1);
     private readonly Dictionary<int, WaveCalibrationProfile> _profiles = new();
     private readonly int?[] _latestRaw = new int?[7];
     private StreamWriter? _activeWriter;
@@ -104,6 +100,7 @@ public sealed class WaveDataWorkspace : IDisposable
             Directory.CreateDirectory(folder);
             var manifest = new WaveCaptureManifest
             {
+                RunId = DatabaseArchive.CurrentRunId,
                 SessionId = id,
                 DeviceAddress = deviceAddress,
                 StartedAt = DateTimeOffset.Now,
@@ -376,109 +373,19 @@ public sealed class WaveDataWorkspace : IDisposable
         }
     }
 
-    // 数据库同步串行执行；单个任务失败仍保留本地记录并继续后续任务。
-    public async Task<int> SynchronizeSessionsAsync(CancellationToken cancellationToken = default)
-    {
-        await _syncGate.WaitAsync(cancellationToken);
-        try { return await SynchronizeSessionsCoreAsync(cancellationToken); }
-        finally { _syncGate.Release(); }
-    }
+    // 手动同步与后台补传共用一个入口；SQL Server实现来自Total的DLL。
+    public Task<int> SynchronizeSessionsAsync(CancellationToken cancellationToken = default) =>
+        DatabaseSyncService.Shared.SynchronizeAsync(cancellationToken);
 
-    private async Task<int> SynchronizeSessionsCoreAsync(CancellationToken cancellationToken)
+    internal void MarkDatabaseSync(WaveCaptureManifest manifest, string? error, string destination)
     {
-        if (!bool.TryParse(ConfigurationManager.AppSettings["DatabaseEnabled"], out var enabled) || !enabled)
-            return 0;
-        var connectionString = ConfigurationManager.AppSettings["DatabaseConnectionString"];
-        if (string.IsNullOrWhiteSpace(connectionString)) throw new InvalidOperationException("数据库连接字符串未配置。");
-        using var connection = new SqlConnection(connectionString);
-        await connection.OpenAsync(cancellationToken);
-        await EnsureSessionTableAsync(connection, cancellationToken);
-        var synced = 0;
-        foreach (var manifest in ListSessions().Where(x => x.EndedAt.HasValue && x.SyncStatus != "已同步"))
+        lock (_gate)
         {
-            try
-            {
-                await SaveSessionIndexAsync(connection, manifest, cancellationToken);
-                manifest.SyncStatus = "已同步";
-                manifest.SyncError = null;
-                SaveManifest(manifest);
-                synced++;
-            }
-            catch (Exception ex)
-            {
-                manifest.SyncStatus = "待同步";
-                manifest.SyncError = ex.Message;
-                SaveManifest(manifest);
-            }
-        }
-        return synced;
-    }
-
-    // 表结构保持兼容；数据库只保存会话索引，逐点采样仍保存在 CSV。
-    private static async Task EnsureSessionTableAsync(SqlConnection connection, CancellationToken cancellationToken)
-    {
-        const string schema = """
-            IF OBJECT_ID(N'dbo.WaveCaptureSessions', N'U') IS NULL
-            CREATE TABLE dbo.WaveCaptureSessions (
-                SessionId UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
-                DeviceAddress NVARCHAR(128) NOT NULL,
-                StartedAt DATETIMEOFFSET NOT NULL,
-                EndedAt DATETIMEOFFSET NULL,
-                SampleRateHz INT NOT NULL,
-                Channels NVARCHAR(64) NOT NULL,
-                SampleCount BIGINT NOT NULL,
-                CalibrationVersion NVARCHAR(64) NOT NULL,
-                CsvPath NVARCHAR(1024) NOT NULL,
-                IsLegacyImport BIT NOT NULL
-            );
-            """;
-        using (var create = new SqlCommand(schema, connection))
-            await create.ExecuteNonQueryAsync(cancellationToken);
-    }
-
-    private static async Task SaveSessionIndexAsync(
-        SqlConnection connection, WaveCaptureManifest manifest, CancellationToken cancellationToken)
-    {
-        using var command = CreateSessionIndexCommand(connection, manifest);
-        await command.ExecuteNonQueryAsync(cancellationToken);
-    }
-
-    // 单独组装参数化命令，便于检查字段、类型和长度，不把数据拼入 SQL。
-    private static SqlCommand CreateSessionIndexCommand(SqlConnection connection, WaveCaptureManifest manifest)
-    {
-        const string sql = """
-            UPDATE dbo.WaveCaptureSessions SET
-              DeviceAddress=@DeviceAddress, StartedAt=@StartedAt, EndedAt=@EndedAt,
-              SampleRateHz=@SampleRateHz, Channels=@Channels, SampleCount=@SampleCount,
-              CalibrationVersion=@CalibrationVersion, CsvPath=@CsvPath, IsLegacyImport=@IsLegacyImport
-            WHERE SessionId=@SessionId;
-            IF @@ROWCOUNT=0
-            INSERT INTO dbo.WaveCaptureSessions
-              (SessionId, DeviceAddress, StartedAt, EndedAt, SampleRateHz, Channels,
-               SampleCount, CalibrationVersion, CsvPath, IsLegacyImport)
-            VALUES (@SessionId, @DeviceAddress, @StartedAt, @EndedAt, @SampleRateHz,
-                    @Channels, @SampleCount, @CalibrationVersion, @CsvPath, @IsLegacyImport);
-            """;
-        var command = new SqlCommand(sql, connection);
-        try
-        {
-            command.Parameters.Add("@SessionId", SqlDbType.UniqueIdentifier).Value = manifest.SessionId;
-            command.Parameters.Add("@DeviceAddress", SqlDbType.NVarChar, 128).Value = manifest.DeviceAddress;
-            command.Parameters.Add("@StartedAt", SqlDbType.DateTimeOffset).Value = manifest.StartedAt;
-            command.Parameters.Add("@EndedAt", SqlDbType.DateTimeOffset).Value = manifest.EndedAt!.Value;
-            command.Parameters.Add("@SampleRateHz", SqlDbType.Int).Value = manifest.SampleRateHz;
-            command.Parameters.Add("@Channels", SqlDbType.NVarChar, 64).Value = string.Join(",", manifest.Channels);
-            command.Parameters.Add("@SampleCount", SqlDbType.BigInt).Value = manifest.SampleCount;
-            command.Parameters.Add("@CalibrationVersion", SqlDbType.NVarChar, 64).Value = manifest.CalibrationVersion;
-            command.Parameters.Add("@CsvPath", SqlDbType.NVarChar, 1024).Value = manifest.CsvPath;
-            command.Parameters.Add("@IsLegacyImport", SqlDbType.Bit).Value = manifest.IsLegacyImport;
-            return command;
-        }
-        catch
-        {
-            // 组装失败时尚未交给调用方，仍由这里释放命令。
-            command.Dispose();
-            throw;
+            manifest.SyncStatus = error is null ? "已同步" : "待同步";
+            manifest.SyncError = error;
+            manifest.DatabaseDetailVersion = error is null ? 1 : 0;
+            manifest.DatabaseTarget = destination;
+            SaveManifest(manifest);
         }
     }
 

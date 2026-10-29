@@ -108,6 +108,8 @@ public sealed partial class AxisService
         finally
         {
             EndRuntimeMonitoring(failure is null ? "本次造波操作结束" : failure is OperationCanceledException ? "造波已取消" : "运动故障：" + failure.Message);
+            DatabaseArchive.EndRun(_databaseRun, _waveStatus.Stage, failure?.Message ?? _waveStatus.Error);
+            _databaseRun = null;
             _waveActive = false;
         }
     }

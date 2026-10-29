@@ -37,6 +37,9 @@ public sealed record WaveSample(
 
 public sealed class WaveCaptureManifest
 {
+    public Guid? RunId { get; set; } // 开始采集时的本机造波任务；独立采集时为空。
+    public int DatabaseDetailVersion { get; set; } // 旧版只同步索引为0，本版逐点数据成功后为1。
+    public string DatabaseTarget { get; set; } = "";
     public Guid SessionId { get; set; }
     public string DeviceAddress { get; set; } = "";
     public DateTimeOffset StartedAt { get; set; }

@@ -10,7 +10,7 @@
 | `InduLink.Runtime.dll` | ADS 所需运行基础设施 | `InduLink.Runtime/bin/Release/net8.0/`，ADS 输出目录也包含此文件 |
 | `InduLink.Protocols.Ads.dll` | 四轴手动控制的 ADS 客户端 | `InduLink.Protocols.Ads/bin/Release/net8.0/` |
 | `InduLink.Protocols.Ads.Router.dll` | 可选独立 ADS TCP Router 的封装 | `InduLink.Protocols.Ads.Router/bin/Release/net8.0/` |
-| `InduLink.Storage.dll` | 现有日志显示组件 | `InduLink.Storage/bin/Release/net8.0/` |
+| `InduLink.Storage.dll` | 日志显示、SQL Server建表、批量写入及历史查询 | `InduLink.Storage/bin/Release/net8.0/` |
 
 目录结构应为：
 
@@ -34,8 +34,8 @@ DLL 引用不会继承原项目的 NuGet 依赖。本项目显式保留以下包
 
 | NuGet 包 | 版本 | 来源 |
 |---|---|---|
-| `Beckhoff.TwinCAT.Ads` | `7.0.317` | ADS 客户端依赖 |
-| `Beckhoff.TwinCAT.Ads.TcpRouter` | `7.0.317` | 独立 Router 依赖 |
+| `Beckhoff.TwinCAT.Ads` | `7.0.389` | ADS 客户端依赖 |
+| `Beckhoff.TwinCAT.Ads.TcpRouter` | `7.0.389` | 独立 Router 依赖 |
 | `Newtonsoft.Json` | `13.0.4` | InduLink.Runtime 依赖 |
 | `System.Security.Cryptography.ProtectedData` | `8.0.0` | InduLink.Runtime 依赖 |
 | `System.Data.SqlClient` | `4.8.6` | 原有数据库和 Storage 依赖 |
@@ -52,4 +52,10 @@ dotnet restore "Page switching.sln"
 dotnet build "Page switching.sln" -c Release
 ```
 
-缺少内部 DLL 时，NuGet 还原仍可完成；构建会直接列出缺少的 DLL 文件名及预期目录。补齐文件后重新构建即可。此目录初始仅包含说明文件，DLL 由使用者补充。
+缺少内部 DLL 时，NuGet 还原仍可完成；构建会直接列出缺少的 DLL 文件名及预期目录。补齐文件后重新构建即可。
+
+## 本次DLL来源（2026-10-29）
+
+按用户要求，五个DLL均取自 `C:\Users\75881\Desktop\total` 的.NET 8 Release构建产物。源代码提交为 `d7b82233361162d7f66e89b0c5004077330b4d1b`，分支 `codex/upgrade-net8`；没有修改Total源码。DLL随本仓库提交，部署不要求现场存在Total目录。
+
+数据库使用 `SqlServerInduLinkDataStore` 的 `InitializeAsync`、`WriteAsync`、`DeleteAsync`、`QueryAsync`，未在上位机重复编写SQL提供程序。应用只负责业务记录转换、本地归档和补传进度。详情见[数据库保存与补传](../docs/DatabasePersistence.md)。

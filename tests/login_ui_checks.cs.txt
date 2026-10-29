@@ -228,6 +228,18 @@ internal static class Program
                     Check(Application.OpenForms.Count == windows, "功能入口不创建独立窗口");
                 }
                 var authority = Page("_controlAuthorityPage");
+                Call(main, "Bu_data_Click", null, EventArgs.Empty);
+                Call(Page("_dataPage"), "DatabaseButton_Click", null, EventArgs.Empty);
+                var database = Page("_databasePage");
+                Current(database, "数据库记录使用主窗体页面，两个角色均可查看");
+                var databaseGrid = (DataGridView)Field(database, "grid");
+                Check(databaseGrid.ReadOnly && !databaseGrid.AllowUserToAddRows && !databaseGrid.AllowUserToDeleteRows, "数据库查询结果只读");
+                Check(((ComboBox)Field(database, "kindPicker")).Items.Count == 8, "八种数据库记录入口");
+                Call(database, "QueryButton_Click", null, EventArgs.Empty);
+                Application.DoEvents();
+                Check(Field(database, "resultStatus").Text.Contains("未启用"), "数据库未配置时明确提示，不尝试连接");
+                Call(database, "BackButton_Click", null, EventArgs.Empty);
+                Current(Page("_dataPage"), "数据库返回数据管理");
                 Call(main, "ControlAuthorityButton_Click", null, EventArgs.Empty);
                 Check(authority.GetType().GetField("diagnosticsButton", Members) is null, "控制权页移除诊断按钮");
                 Check(Field(main, "diagnosticsButton").Enabled, "操作员和管理员均可打开只读诊断");

@@ -126,8 +126,8 @@ public partial class Config : UserControl
         _databaseUserNameTextBox.Enabled = enabled;
         _databasePasswordTextBox.Enabled = enabled;
         _databaseStateLabel.Text = enabled
-            ? "数据库保存采集任务及文件索引，不保存逐点数据，也不参与 PLC 实时控制。"
-            : "数据库日志未启用。";
+            ? "保存操作日志、造波点位、运行及采样；后台补传不参与PLC控制。"
+            : "数据库未启用，本地归档继续保存。";
         _databaseStateLabel.ForeColor = enabled
             ? UiPalette.Success
             : UiPalette.Muted;
@@ -136,6 +136,7 @@ public partial class Config : UserControl
     // 验证并保存数据库配置到 App.config。
     private void SaveDatabaseButton_Click(object? sender, EventArgs e)
     {
+        if (_currentUser?.IsAdministrator != true) return;
         try
         {
             var connectionString = _databaseConnectionTextBox.Text.Trim();
@@ -153,13 +154,34 @@ public partial class Config : UserControl
             _databaseConnectionTextBox.Text = connectionString;
 
             _databaseStateLabel.ForeColor = UiPalette.Success;
-            _databaseStateLabel.Text = "数据库配置保存成功；采集任务索引可在数据管理页同步。";
+            _databaseStateLabel.Text = "配置已保存，后台每5秒补传；可从数据管理进入数据库记录。";
             ShowSaveResult("数据库配置保存成功。", UiPalette.Success);
         }
         catch (Exception ex)
         {
             ShowSaveResult("数据库配置保存失败：" + ex.Message, UiPalette.Danger);
         }
+    }
+
+    // 明确点击才连接服务器并建表，配置编辑和打开页面均不访问数据库。
+    private async void TestDatabaseButton_Click(object? sender, EventArgs e)
+    {
+        if (_currentUser?.IsAdministrator != true) return;
+        _testDatabaseButton.Enabled = false;
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+        try
+        {
+            string connection = ValidateDatabaseSettings(_databaseConnectionTextBox.Text.Trim(),
+                _databaseUserNameTextBox.Text.Trim(), _databasePasswordTextBox.Text);
+            await DatabaseStore.InitializeAsync(DatabaseStore.Normalize(connection), timeout.Token);
+            if (!IsDisposed) _databaseStateLabel.Text = "连接成功，8张数据表已就绪；请保存配置后启用同步。";
+            OperationJournal.Record("数据库", "连接测试及数据表初始化成功");
+        }
+        catch (Exception ex)
+        {
+            if (!IsDisposed) _databaseStateLabel.Text = "连接或初始化失败：" + ex.Message;
+        }
+        finally { if (!IsDisposed) _testDatabaseButton.Enabled = true; }
     }
 
     // 校验通过后才将页面账号密码写入连接字符串。

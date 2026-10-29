@@ -40,7 +40,7 @@ internal static class Program
             {
                 main.Scale(new System.Drawing.SizeF(scale, scale));
                 // 缓存页尚未放入主窗体，需分别缩放，避免只测到外壳尺寸。
-                foreach (string field in new[] { "_manualPage", "_controlAuthorityPage", "_diagnosticsPage", "_monitoringSettingsPage" })
+                foreach (string field in new[] { "_manualPage", "_controlAuthorityPage", "_diagnosticsPage", "_monitoringSettingsPage", "_databasePage" })
                     Field(main, field).Scale(new System.Drawing.SizeF(scale, scale));
             }
             foreach (var size in new[] { new System.Drawing.Size(1200, 800), new System.Drawing.Size(1500, 1000) })
@@ -54,9 +54,14 @@ internal static class Program
                 Check(!Field(main, "accountPanel").Bounds.IntersectsWith(Field(main, "headerStatusPanel").Bounds), "账号与状态区重叠");
                 nav.AutoScrollPosition = System.Drawing.Point.Empty;
                 Check(!nav.VerticalScroll.Visible, "常用窗口内导航不需要多余的垂直滚动条");
-                foreach (string field in new[] { "_autoPage", "_manualPage", "_controlAuthorityPage", "_diagnosticsPage", "_monitoringSettingsPage" })
+                foreach (string field in new[] { "_autoPage", "_manualPage", "_controlAuthorityPage", "_diagnosticsPage", "_monitoringSettingsPage", "_databasePage" })
                 {
                     var page = Field(main, field); Call(main, "ShowPage", page); Application.DoEvents();
+                    if (field == "_databasePage")
+                    {
+                        foreach (string name in new[] { "kindPicker", "fromDate", "toDate", "taskId", "queryButton", "syncButton", "exportButton", "backButton", "grid" }) Within(Field(page, name), "数据库 " + name);
+                        Check(Field(page, "grid").Height >= 100 * scale, "数据库表格有可用高度");
+                    }
                     if (field == "_autoPage")
                     {
                         var feedback = Field(page, "axisGroup");
@@ -89,6 +94,6 @@ internal static class Program
                 }
             }
         }
-        Console.WriteLine($"Page layout: {checks} assertions passed; 30 offline renders, 100/125/150 percent geometry checks; no PLC.");
+        Console.WriteLine($"Page layout: {checks} assertions passed; 36 offline renders, 100/125/150 percent geometry checks; no PLC or SQL.");
     }
 }

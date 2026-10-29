@@ -1,6 +1,6 @@
 # 项目文档导航
 
-更新日期：2026-10-24。按用途归类现有文档，文件名和设备图片路径保持不变。
+更新日期：2026-10-29。按用途归类现有文档，文件名和设备图片路径保持不变。
 
 ## 建议阅读顺序
 
@@ -28,6 +28,7 @@
 | [三站控制权与运行锁](ControlAuthorityRules.md) | 站点优先级、申请与应答、运行期间禁止交接 |
 | [运行诊断与轴参数](RuntimeDiagnostics.md) | 首次故障、只读参数、复制诊断、配套版本和源码核对 |
 | [运行实测超限统计](AxisRuntimeMonitoring.md) | 独立100 ms只读采样、四轴位置/速度阈值、去重占比及CSV/JSON报告 |
+| [数据库保存与补传](DatabasePersistence.md) | Total存储DLL、SQL Server配置、日志/造波/传感器归档、断线补传和查询 |
 | [PLC 只读监控接口](PlcMonitoringContract.md) | 版本 4 / 164 字节反馈布局、数据质量、异常与部署验证 |
 | [TwinCAT 对接](TwinCAT_NB_Integration.md) | 配套 PLC 源码、手动映射、轨迹下发与接口演进 |
 | [ADS 连接](AdsConnectionGuide.md) | 73 / 113 两台电脑的 Router 配置、回程路由与超时排查 |

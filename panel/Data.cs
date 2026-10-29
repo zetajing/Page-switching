@@ -10,6 +10,9 @@ public partial class Data : UserControl
     private WaveDataWorkspace? _workspace;
     private readonly Dictionary<System.Data.DataRow, WaveCaptureManifest> _sessionManifests = new();
     internal event Action<WaveCaptureManifest, int?>? AnalysisRequested;
+    internal event EventHandler? DatabaseRequested;
+
+    private void DatabaseButton_Click(object? sender, EventArgs e) => DatabaseRequested?.Invoke(this, e);
 
     public Data()
     {
@@ -212,9 +215,9 @@ public partial class Data : UserControl
         syncButton.Enabled = false;
         try
         {
-            var count = await _workspace.SynchronizeSessionsAsync();
+            await _workspace.SynchronizeSessionsAsync();
             RefreshSessions();
-            status.Text = $"数据库同步完成：{count} 个任务。数据库未启用时本地记录仍正常保存。";
+            status.Text = DatabaseSyncService.Shared.Status;
         }
         catch (Exception ex) { status.Text = "数据库同步失败，本地文件已保留：" + ex.Message; }
         finally { syncButton.Enabled = true; }

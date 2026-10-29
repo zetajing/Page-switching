@@ -1,0 +1,182 @@
+using System.Text.Json;
+using InduLink.Storage;
+using InduLink.Abstractions;
+using Page_switching;
+
+internal static class Program
+{
+    static int checks;
+    static void Check(bool condition, string message) { checks++; if (!condition) throw new Exception(message); }
+    static async Task Main(string[] args)
+    {
+        DatabaseArchive.Root = Path.Combine(args[0], "archive");
+        Check(await DatabaseArchive.SaveWaveDataAsync(new[] { 1.0 }, "disabled", default) is null, "Designer未启动归档");
+        DatabaseArchive.Start("管理员甲", 2);
+        var points = Enumerable.Range(0, 2001).Select(i => i / 100.0).ToArray();
+        string id = (await DatabaseArchive.SaveWaveDataAsync(points, "第一份.txt", default))!;
+        string metadata = Path.Combine(DatabaseArchive.Root, "waves", id + ".json");
+        string before = File.ReadAllText(metadata);
+        Check(id.Length == 64, "点位内容编号");
+        Check(await DatabaseArchive.SaveWaveDataAsync(points, "重复.txt", default) == id, "相同点位复用");
+        Check(File.ReadAllText(metadata) == before, "重复下发不重写归档时间");
+        var data = JsonSerializer.Deserialize<DatabaseWaveData>(before)!;
+        var blocks = DatabaseStore.PointBlocks(data, Path.ChangeExtension(metadata, ".bin")).ToArray();
+        Check(blocks.Length == 3 && blocks[2].RawData.Length == 8, "每块1000个double，尾块完整");
+        Check(BitConverter.ToDouble(blocks[1].RawData, 0) == 10, "点位二进制无损");
+        string archiveRoot = DatabaseArchive.Root;
+        DatabaseArchive.Root = Path.Combine(args[0], "other-station");
+        Check(await DatabaseArchive.SaveWaveDataAsync(points, "其它站.txt", default) != id, "不同归档来源不会并发覆盖同一数据库点位批次");
+        DatabaseArchive.Root = archiveRoot;
+        using (var cancelled = new CancellationTokenSource())
+        {
+            cancelled.Cancel();
+            try { await DatabaseArchive.SaveWaveDataAsync(points, "取消", cancelled.Token); throw new Exception("未取消"); }
+            catch (OperationCanceledException) { Check(true, "取消传播"); }
+        }
+        Check(!Directory.GetFiles(Path.GetDirectoryName(metadata)!, "*.tmp").Any(), "临时文件清理");
+        var run = DatabaseArchive.BeginRun(id, null, 2, 123)!;
+        Check(run.Sequence == 123 && DatabaseArchive.CurrentRunId == run.RunId, "运行关联");
+        var monitorId = Guid.NewGuid();
+        run = DatabaseArchive.AttachMonitor(run, monitorId)!;
+        var at = DateTimeOffset.UtcNow;
+        for (int i = 0; i < 201; i++) DatabaseArchive.RecordOperation(at, "手动控制", "按钮,\"文本\"\n" + i);
+        DatabaseArchive.RecordOperation(at, "数据库", "不递归入库");
+        string log = Directory.GetFiles(Path.Combine(DatabaseArchive.Root, "operations")).Single();
+        Check(DatabaseArchive.ReadOperations(log, 0, 500).Count == 201, "完整日志及递归排除");
+        Check(DatabaseArchive.ReadOperations(log, 200, 1)[0].RunId == run.RunId, "日志运行归属");
+        DatabaseArchive.EndRun(run, "造波完成", null);
+        Check(DatabaseArchive.CurrentRunId is null, "结束清除当前运行");
+        var savedRun = JsonSerializer.Deserialize<DatabaseWaveRun>(File.ReadAllText(Path.Combine(DatabaseArchive.Root, "runs", run.RunId.ToString("N") + ".json")))!;
+        Check(savedRun.EndedAt is not null && savedRun.MonitorRunId == monitorId, "运行结束和监测关联落盘");
+
+        var stores = Enumerable.Range(0, 8).Select(_ => new FakeStore()).ToArray();
+        bool enabled = false; string connection = "Server=fake;Database=Wave;Integrated Security=true";
+        int opened = 0;
+        var service = new DatabaseSyncService((kind, _) => { opened++; return stores[kind]; }, () => enabled, () => connection)
+            { MonitoringRoot = Path.Combine(args[0], "monitoring") };
+        Check(await service.SynchronizeAsync() == 0 && opened == 0, "未启用时不打开DLL存储");
+        enabled = true;
+        stores[0].FailNext = true;
+        await service.SynchronizeAsync();
+        Check(service.Status.Contains("待重试") && stores[0].Rows.Count == 0, "写入失败不推进游标");
+        Check(stores[2].Rows.Count == 3 && stores[3].Rows.Count == 1, "某文件失败不拦截其它归档");
+        await service.SynchronizeAsync();
+        Check(stores[0].Rows.Count == 201, "重试补全全部日志");
+        Check(stores[0].Rows.All(r => r.Address.Contains(run.RunId.ToString("N"))), "日志按运行号查询地址");
+        int writes = stores.Sum(s => s.Writes);
+        Check(await service.SynchronizeAsync() == 0 && writes == stores.Sum(s => s.Writes), "已确认数据不重复发送");
+        DatabaseArchive.RecordOperation(at, "手动控制", "新增");
+        await service.SynchronizeAsync();
+        Check(stores[0].Rows.Count == 202, "追加日志增量同步");
+        // 模拟游标丢失：同一来源重新构建，旧批次边界不会留下重复。
+        foreach (var path in Directory.GetFiles(Path.Combine(DatabaseArchive.Root, "sync"), "*.lines", SearchOption.AllDirectories)) File.Delete(path);
+        await service.SynchronizeAsync();
+        Check(stores[0].Rows.Count == 202, "重建游标后记录仍不重复");
+
+        string sensorPath = Path.Combine(args[0], "sensor.csv");
+        var manifest = new WaveCaptureManifest { SessionId = Guid.NewGuid(), RunId = run.RunId, StartedAt = at, EndedAt = at.AddSeconds(1), Channels = new[] { 1 }, SampleCount = 401, CsvPath = sensorPath };
+        using (var writer = new StreamWriter(sensorPath))
+        {
+            writer.WriteLine("Timestamp,Channel,RawCount,CalibratedValue,CalibrationVersion");
+            for (int i = 0; i < 401; i++) writer.WriteLine($"{at:O},1,{i},{i},v1");
+        }
+        WaveDataWorkspace.Shared.Sessions.Add(manifest);
+        // 事务提交后丢失应答：本地仍未确认，重试先删除同批再写。
+        stores[6].FailAfterCommit = true;
+        await service.SynchronizeAsync();
+        Check(manifest.SyncStatus != "已同步" && stores[6].Rows.Count == 200, "提交后断线保留待补传");
+        await service.SynchronizeAsync();
+        Check(stores[6].Rows.Count == 401 && manifest.DatabaseDetailVersion == 1, "重试不重复并补全尾批");
+        Check(manifest.DatabaseTarget.Length == 64, "同步目标指纹");
+        int sensorWrites = stores[6].Writes;
+        await service.SynchronizeAsync();
+        Check(stores[6].Writes == sensorWrites, "已同步传感器不重复写");
+        Check(stores[5].Rows[0].ValueText.Contains("DataRecorded"), "传感器索引确认逐点入库");
+        Check(stores[6].Rows.All(r => r.Protocol == ProtocolKind.TcpSocket), "传感器保留来源协议");
+        Check(File.Exists(sensorPath), "SQL成功后仍保留本地数据");
+
+        string axisFolder = Path.Combine(service.MonitoringRoot, "run"); Directory.CreateDirectory(axisFolder);
+        string axisCsv = Path.Combine(axisFolder, "samples.csv");
+        File.WriteAllText(axisCsv, "ReadCompletedAt,ReadMilliseconds,Heartbeat,AcceptedSequence,ControlOwner,Running,FeedbackInvalid,Outcome,Axis1Position,Axis1Speed,Axis2Position,Axis2Speed,Axis3Position,Axis3Speed,Axis4Position,Axis4Speed\n"
+            + $"{at:O},2,4,123,2,True,False,有效完整样本,1,2,3,4,5,6,7,8\n"
+            + $"{at:O},2,,,,,,\"错误,含\"\"引号\"\"\n换行\",NaN,Infinity,,,,,,\n");
+        var axisRecords = DatabaseStore.AxisRecords(monitorId, axisCsv).ToArray();
+        Check(axisRecords.Length == 2 && axisRecords[0].Quality == QualityStatus.Good && axisRecords[1].Quality == QualityStatus.Bad, "缺测保留质量");
+        Check(axisRecords[1].ValueText.Contains("\"Axis1Position\":null"), "无效测量值存null不伪造0");
+        string summary = Path.Combine(axisFolder, "summary.json");
+        await DatabaseArchive.SaveJsonAsync(summary, new AxisMonitoringReport(monitorId, at, null), default);
+        await service.SynchronizeAsync();
+        Check(stores[4].Rows.Count == 0, "正在运行的采样不提前标记完成");
+        await DatabaseArchive.SaveJsonAsync(summary, new AxisMonitoringReport(monitorId, at, at.AddSeconds(2)), default);
+        await service.SynchronizeAsync();
+        Check(stores[4].Rows.Count == 2 && stores[7].Rows.Count == 1, "结束后同步完整采样和报告");
+        manifest.SampleCount++;
+        try { DatabaseStore.SensorRecords(manifest).ToArray(); throw new Exception("未验证数量"); }
+        catch (InvalidDataException) { Check(true, "损坏采样不伪报成功"); }
+        manifest.SampleCount--;
+        foreach (var store in stores) store.Rows.Clear();
+        connection = "Server=fake;Database=Wave2;Integrated Security=true";
+        await service.SynchronizeAsync();
+        Check(stores[0].Rows.Count == 202 && stores[6].Rows.Count == 401, "更换数据库独立重放");
+        using (var cts = new CancellationTokenSource())
+        {
+            cts.Cancel();
+            try { await service.SynchronizeAsync(cts.Token); throw new Exception("未取消同步"); }
+            catch (OperationCanceledException) { Check(true, "取消同步可退出"); }
+        }
+        string originalRoot = DatabaseArchive.Root;
+        string fileAsDirectory = Path.Combine(args[0], "blocked"); File.WriteAllText(fileAsDirectory, "file");
+        DatabaseArchive.Root = fileAsDirectory;
+        Check(await DatabaseArchive.SaveWaveDataAsync(points, "失败", default) is null && DatabaseArchive.LastError is not null, "本地保存异常不抛入运动流程");
+        DatabaseArchive.Root = originalRoot;
+        Check(DatabaseStore.Normalize("Server=x;Database=y").Contains("Connect Timeout=3"), "连接超时有限");
+        using (var store = DatabaseStore.Open(0, connection)) Check(store is SqlServerInduLinkDataStore, "实际使用Total的SQL提供程序");
+        await service.StopAsync();
+        Console.WriteLine($"Database: {checks} assertions passed; actual archive/sync/parser and Total DLL contracts; fake store only, no SQL/PLC connection.");
+    }
+}
+
+// 用同一个DLL接口模拟事务失败与应答丢失，不模拟/拼接SQL语句。
+internal sealed class FakeStore : IInduLinkHistoryStore
+{
+    internal readonly List<InduLinkDataRecord> Rows = new();
+    internal bool FailNext, FailAfterCommit;
+    internal int Writes;
+    public Task InitializeAsync(CancellationToken token) { token.ThrowIfCancellationRequested(); return Task.CompletedTask; }
+    public Task WriteAsync(IReadOnlyCollection<InduLinkDataRecord> rows, CancellationToken token)
+    {
+        token.ThrowIfCancellationRequested(); Writes++;
+        if (FailNext) { FailNext = false; throw new IOException("模拟SQL写入失败"); }
+        Rows.AddRange(rows);
+        if (FailAfterCommit) { FailAfterCommit = false; throw new IOException("模拟提交后应答丢失"); }
+        return Task.CompletedTask;
+    }
+    public Task<int> DeleteAsync(HistoryQueryFilter filter, CancellationToken token)
+    {
+        token.ThrowIfCancellationRequested();
+        if (string.IsNullOrEmpty(filter.DeviceId)) throw new Exception("删除必须限定来源");
+        return Task.FromResult(Rows.RemoveAll(r => r.DeviceId == filter.DeviceId &&
+            (string.IsNullOrEmpty(filter.Address) || (filter.AddressMatchMode == HistoryAddressMatchMode.Contains ? r.Address.Contains(filter.Address) : r.Address == filter.Address))));
+    }
+    public Task<IReadOnlyList<InduLinkDataRecord>> QueryAsync(HistoryQueryFilter filter, CancellationToken token) => throw new NotSupportedException();
+    public Task<IReadOnlyList<InduLinkDataRecord>> ReadLatestAsync(int maxRows, CancellationToken token) => throw new NotSupportedException();
+    public Task<IReadOnlyList<InduLinkDataRecord>> ReadAfterAsync(long afterId, int maxRows, CancellationToken token) => throw new NotSupportedException();
+    public Task<HistoryPageResult> QueryPageAsync(HistoryPageRequest request, CancellationToken token) => throw new NotSupportedException();
+    public Task<HistorySummary> GetSummaryAsync(HistoryQueryFilter filter, CancellationToken token) => throw new NotSupportedException();
+    public Task<HistoryFilterOptions> GetFilterOptionsAsync(string deviceId, int maxItems, CancellationToken token) => throw new NotSupportedException();
+    public Task<IReadOnlyList<InduLinkDataRecord>> GetLatestValuesAsync(HistoryQueryFilter filter, int maxRows, CancellationToken token) => throw new NotSupportedException();
+    public void Dispose() { }
+}
+namespace Page_switching
+{
+    internal static class OperationJournal { internal static void Record(string page, string text) { } }
+    internal sealed record AxisMonitoringReport(Guid RunId, DateTimeOffset StartedAt, DateTimeOffset? EndedAt);
+    internal sealed class WaveDataWorkspace
+    {
+        internal static WaveDataWorkspace Shared { get; } = new();
+        internal readonly List<WaveCaptureManifest> Sessions = new();
+        internal IEnumerable<WaveCaptureManifest> ListSessions() => Sessions;
+        internal void MarkDatabaseSync(WaveCaptureManifest manifest, string? error, string destination)
+        { manifest.SyncStatus = error is null ? "已同步" : "待同步"; manifest.DatabaseDetailVersion = error is null ? 1 : 0; manifest.DatabaseTarget = destination; }
+    }
+}

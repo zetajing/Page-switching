@@ -42,6 +42,8 @@ internal static class OperationJournal
             entry += $"  [写入日志失败：{ex.Message}]";
         }
 
+        DatabaseArchive.RecordOperation(now, page, message);
+
         try { EntryAdded?.Invoke(entry); }
         catch (Exception ex) { System.Diagnostics.Debug.WriteLine("更新日志位置失败：" + ex); }
     }

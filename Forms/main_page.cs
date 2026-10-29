@@ -17,6 +17,7 @@ namespace Page_switching
         private readonly LoginUser? _currentUser;
         private readonly Wave_Height_Meter _waveHeightMeterPage;
         private readonly Data _dataPage;
+        private readonly DatabasePage _databasePage;
         private readonly Calibration _calibrationPage;
         private readonly WaveBatchCalibrationPage _batchCalibrationPage;
         private readonly WaveAnalysisPage _analysisPage;
@@ -49,19 +50,21 @@ namespace Page_switching
         {
             _currentUser = user;
             InitializeComponent();
-            InitializeOperationJournal();
             // 记录本次软件使用者（包括临时免登录身份）；PLC 站点身份和控制权仍走原有流程。
             if (user is not null)
             {
                 string role = user.IsAdministrator ? "管理员" : "操作员";
                 Text = "造波控制系统 - " + user.UserName;
                 currentUserLabel.Text = user.UserName + " · " + role;
-                if (_recordOperations) OperationJournal.Record("进入系统", user.UserName + "（" + role + "）进入系统");
             }
 
             // 本次启动只读取一次 ADS 配置；保存的新参数在下次启动才应用。
             var settings = AdsConnectionSettings.GetSettings();
             var axisOptions = AxisServiceOptions.FromConfiguration(settings);
+            // 本地归档先启用，后台才补传；Designer 不启动文件归档或数据库任务。
+            if (_recordOperations) DatabaseArchive.Start(user?.UserName ?? "未登录", axisOptions.ControlStationCode);
+            InitializeOperationJournal();
+            if (_recordOperations && user is not null) OperationJournal.Record("进入系统", currentUserLabel.Text + "进入系统");
             // 正常启动只在这里创建轴服务；下方各页面拿到同一个实例和同一组四轴对象。
             _axisService = new AxisService(axisOptions);
             _monitorService = new MachineMonitorService(MachineMonitorOptions.FromConfiguration(axisOptions, settings));
@@ -73,6 +76,7 @@ namespace Page_switching
             _waveformPage = new WaveformPage();
             _waveHeightMeterPage = new Wave_Height_Meter();
             _dataPage = new Data();
+            _databasePage = new DatabasePage();
             _calibrationPage = new Calibration();
             _batchCalibrationPage = new WaveBatchCalibrationPage();
             _analysisPage = new WaveAnalysisPage();
@@ -86,7 +90,7 @@ namespace Page_switching
             {
                 _autoPage, _manualPage, _configPage, _waveformPage, _waveHeightMeterPage,
                 _dataPage, _calibrationPage, _batchCalibrationPage, _analysisPage, _correctionPage, _controlAuthorityPage,
-                _accountManagementPage, _monitoringSettingsPage, _diagnosticsPage
+                _accountManagementPage, _monitoringSettingsPage, _diagnosticsPage, _databasePage
             };
             ConnectPageEvents();
             RegisterPageLogging();
@@ -128,7 +132,12 @@ namespace Page_switching
             _batchCalibrationPage.BackRequested += BatchCalibrationPage_BackRequested;
             _batchCalibrationPage.CalibrationSaved += BatchCalibrationPage_CalibrationSaved;
             _dataPage.AnalysisRequested += OpenSessionAnalysis;
+            _dataPage.DatabaseRequested += DataPage_DatabaseRequested;
+            _databasePage.BackRequested += DatabasePage_BackRequested;
         }
+
+        private void DataPage_DatabaseRequested(object? sender, EventArgs e) => NavigateTo(_databasePage, Bu_data);
+        private void DatabasePage_BackRequested(object? sender, EventArgs e) => NavigateTo(_dataPage, Bu_data);
 
         // 事件绑定处可按 F12 进入下面的处理方法，再逐步跟进刷新或页面切换。
         private async void ControlAuthorityPage_RefreshRequested(object? sender, EventArgs e)
@@ -197,6 +206,7 @@ namespace Page_switching
             NavigateTo(_autoPage, Bu_auto);
             if (_recordOperations)
             {
+                DatabaseSyncService.Shared.Start();
                 _headerStatusTimer.Start();
                 // Designer 只创建控件；实际窗口显示后才启动 Router 和两个独立 ADS 客户端。
                 Shown += Mainpage_Shown;
@@ -334,6 +344,7 @@ namespace Page_switching
             if (!IsDisposed && !Disposing) Enabled = false;
             _controlAuthorityPage?.CancelRequests();
             _diagnosticsPage?.CancelRequests();
+            _databasePage?.CancelRequests();
             _manualPage?.Dispose();
             _shutdownTask = CleanupServicesAsync();
             return _shutdownTask;
@@ -359,6 +370,7 @@ namespace Page_switching
             catch (Exception ex) { Debug.WriteLine("手动 ADS 退出失败：" + ex); }
             try { await _router.DisposeAsync().ConfigureAwait(false); }
             catch (Exception ex) { Debug.WriteLine("Router 退出失败：" + ex); }
+            if (_recordOperations) await DatabaseSyncService.Shared.StopAsync().ConfigureAwait(false);
             _lifetimeCancellation.Dispose();
         }
 
@@ -533,6 +545,8 @@ namespace Page_switching
                     return "批量标定";
                 case Data:
                     return "数据管理";
+                case DatabasePage:
+                    return "数据库记录";
                 case WaveformPage:
                     return "波形生成";
                 case Config:

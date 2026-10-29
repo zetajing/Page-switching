@@ -10,6 +10,7 @@ partial class Data
         root = new TableLayoutPanel();
         title = new AntdUI.Label();
         filters = new FlowLayoutPanel();
+        databaseButton = new AntdUI.Button();
         fromCaption = new AntdUI.Label();
         fromDate = new AntdUI.DatePicker();
             fromDate.WaveSize = 0;
@@ -95,6 +96,12 @@ partial class Data
         filters.AutoSize = true;
         filters.AutoScroll = true;
         filters.WrapContents = true;
+        databaseButton.Name = "databaseButton";
+        databaseButton.Text = "数据库记录";
+        databaseButton.Size = new Size(112, 34);
+        databaseButton.Radius = 6;
+        databaseButton.Click += DatabaseButton_Click;
+        filters.Controls.Add(databaseButton);
         root.Controls.Add(filters, 0, 1);
         fromCaption.AutoSize = true;
             fromCaption.Name = "fromCaption";
@@ -236,6 +243,7 @@ partial class Data
     private AntdUI.Button importButton;
     private AntdUI.Button exportButton;
     private AntdUI.Button syncButton;
+    private AntdUI.Button databaseButton;
     private AntdUI.Button legacyExportButton;
     private AntdUI.Button analyzeButton;
     private AntdUI.Table sessionGrid;

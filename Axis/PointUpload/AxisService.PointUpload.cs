@@ -9,6 +9,7 @@ public sealed partial class AxisService
     private uint _waveSequence;
     private volatile uint _waveReadySequence; // 上传任务写入，页面读取；只保留服务中的这一份序号。
     private AxisTrajectoryLimits[]? _waveValidatedLimits; // 已下发表使用的四轴参数；启动前核对是否变化。
+    private string? _databaseDataId; // 归档内容编号，不作为PLC启动或运动许可条件。
 
     public void ForgetWaveSignal()
     {
@@ -17,6 +18,7 @@ public sealed partial class AxisService
             if (WaveOperationActive) throw new InvalidOperationException("造波操作期间不能更换信号。");
             _waveReadySequence = 0;
             _waveValidatedLimits = null;
+            _databaseDataId = null;
             _waveStatus = new("已导入，待发送", 0, false, false);
         }
     }
@@ -29,14 +31,15 @@ public sealed partial class AxisService
         var points = signal.Positions.ToArray();
         if (points.Length is < 4 or > WaveTrajectoryFile.MaximumPoints)
             throw new InvalidDataException("点位数量必须为 4～2,100,000；数值和运动限制在下发前统一预检。");
-        return RunWaveOperationAsync(token => UploadWaveCoreAsync(points, token), cancellationToken);
+        return RunWaveOperationAsync(token => UploadWaveCoreAsync(points, signal.FileName, token), cancellationToken);
     }
 
     // 先读取真实参数、预检整表；合格后才清表及写入点位，失败不会破坏 PLC 原来的表。
-    private async Task UploadWaveCoreAsync(double[] points, CancellationToken token)
+    private async Task UploadWaveCoreAsync(double[] points, string fileName, CancellationToken token)
     {
         _waveReadySequence = 0;
         _waveValidatedLimits = null;
+        _databaseDataId = null;
         var frame = await ReadWaveFrameAsync(token);
         WaveCommandChecks.ThrowIfBlocked(WaveCommandChecks.ForUpload(frame));
         _waveStatus = new("正在读取轴参数并检查点位", 0, true, false);
@@ -47,6 +50,10 @@ public sealed partial class AxisService
         elapsed.Restart();
         WavePointValidator.Validate(points, limits, token);
         OperationJournal.Record("造波耗时", $"整表预检：{elapsed.Elapsed.TotalMilliseconds:F1} ms，四轴共用 {points.Length} 点。");
+        elapsed.Restart();
+        // 仅做可取消的本地归档，失败返回空编号并提示，不在运动锁中访问数据库。
+        _databaseDataId = await DatabaseArchive.SaveWaveDataAsync(points, fileName, token);
+        OperationJournal.Record("造波耗时", $"本地点位归档：{elapsed.Elapsed.TotalMilliseconds:F1} ms。");
         OperationJournal.Record("点位预检", $"四轴点位预检通过，共 {points.Length} 点，周期 2 ms，开始下发。");
         _waveNeedsStop = true;
         await WaveWriteAsync("GVL_motion.xStop", DataType.Bool, false, token);
