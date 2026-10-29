@@ -10,6 +10,7 @@ partial class Data
         root = new TableLayoutPanel();
         title = new AntdUI.Label();
         filters = new FlowLayoutPanel();
+        actions = new FlowLayoutPanel();
         databaseButton = new AntdUI.Button();
         fromCaption = new AntdUI.Label();
         fromDate = new AntdUI.DatePicker();
@@ -39,12 +40,14 @@ partial class Data
             analyzeButton.Radius = 6;
             analyzeButton.BorderWidth = 1F;
         sessionGrid = new AntdUI.Table();
+        sessionGrid.AutoSizeColumnsMode = AntdUI.ColumnsMode.Fill;
             sessionGrid.EmptyHeader = true;
             sessionGrid.Bordered = true;
             sessionGrid.Radius = 6;
             sessionGrid.BackColor = Color.White;
         content = new TableLayoutPanel();
         sampleGrid = new AntdUI.Table();
+        sampleGrid.AutoSizeColumnsMode = AntdUI.ColumnsMode.Fill;
             sampleGrid.EmptyHeader = true;
             sampleGrid.Bordered = true;
             sampleGrid.Radius = 6;
@@ -70,9 +73,10 @@ partial class Data
         root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
         root.Dock = DockStyle.Fill;
         root.Padding = new Padding(16);
-        root.RowCount = 5;
+        root.RowCount = 6;
 
         root.RowStyles.Add(new RowStyle(SizeType.Absolute, 48F));
+        root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         root.RowStyles.Add(new RowStyle(SizeType.Absolute, 180F));
         root.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
@@ -91,18 +95,31 @@ partial class Data
         filters.Dock = DockStyle.Fill;
         filters.Padding = new Padding(12, 10, 12, 10);
         filters.Name = "filters";
-        filters.MinimumSize = new Size(0, 58);
+        filters.MinimumSize = new Size(0, 52);
         filters.AutoSizeMode = AutoSizeMode.GrowAndShrink;
         filters.AutoSize = true;
-        filters.AutoScroll = true;
+        filters.AutoScroll = false;
         filters.WrapContents = true;
         databaseButton.Name = "databaseButton";
         databaseButton.Text = "数据库记录";
         databaseButton.Size = new Size(112, 34);
         databaseButton.Radius = 6;
+        databaseButton.BorderWidth = 1;
+        databaseButton.DefaultBorderColor = Color.FromArgb(29, 78, 216);
+        databaseButton.ForeColor = Color.FromArgb(29, 78, 216);
         databaseButton.Click += DatabaseButton_Click;
-        filters.Controls.Add(databaseButton);
+        // 筛选与任务操作各占一行，缩放时不在日期或文件按钮之间随机换行。
+        actions.Name = "actions";
+        actions.Dock = DockStyle.Top;
+        actions.AutoSize = true;
+        actions.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+        actions.WrapContents = true;
+        actions.BackColor = Color.White;
+        actions.Padding = new Padding(12, 0, 12, 8);
+        actions.Margin = new Padding(0);
+        filters.Margin = new Padding(0);
         root.Controls.Add(filters, 0, 1);
+        root.Controls.Add(actions, 0, 2);
         fromCaption.AutoSize = true;
             fromCaption.Name = "fromCaption";
         fromCaption.Margin = new Padding(0, 11, 4, 0);
@@ -154,7 +171,7 @@ partial class Data
         importButton.Cursor = Cursors.Hand;
         importButton.Size = new Size(110, 34);
         importButton.Text = "导入旧数据";
-        filters.Controls.Add(importButton);
+        actions.Controls.Add(importButton);
         exportButton.BackColor = Color.FromArgb(248, 250, 252);
             exportButton.DefaultBack = Color.FromArgb(248, 250, 252);
         exportButton.BorderWidth = 1;
@@ -165,7 +182,7 @@ partial class Data
         exportButton.Cursor = Cursors.Hand;
         exportButton.Size = new Size(96, 34);
         exportButton.Text = "导出 CSV";
-        filters.Controls.Add(exportButton);
+        actions.Controls.Add(exportButton);
         syncButton.BackColor = Color.FromArgb(248, 250, 252);
             syncButton.DefaultBack = Color.FromArgb(248, 250, 252);
         syncButton.BorderWidth = 1;
@@ -176,14 +193,15 @@ partial class Data
         syncButton.Cursor = Cursors.Hand;
         syncButton.Size = new Size(110, 34);
         syncButton.Text = "同步数据库";
-        filters.Controls.Add(syncButton);
-        filters.Controls.Add(legacyExportButton);
-        filters.Controls.Add(analyzeButton);
+        actions.Controls.Add(syncButton);
+        actions.Controls.Add(legacyExportButton);
+        actions.Controls.Add(analyzeButton);
+        actions.Controls.Add(databaseButton);
 
         sessionGrid.Dock = DockStyle.Fill;
         sessionGrid.Name = "sessionGrid";
         sessionGrid.Margin = new Padding(0, 10, 0, 8);
-        root.Controls.Add(sessionGrid, 0, 2);
+        root.Controls.Add(sessionGrid, 0, 3);
 
         content.ColumnCount = 2;
         content.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
@@ -193,7 +211,7 @@ partial class Data
         content.Margin = new Padding(0, 0, 0, 8);
         content.RowCount = 1;
         content.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-        root.Controls.Add(content, 0, 3);
+        root.Controls.Add(content, 0, 4);
 
         sampleGrid.Dock = DockStyle.Fill;
         sampleGrid.Name = "sampleGrid";
@@ -212,7 +230,7 @@ partial class Data
         status.AutoEllipsis = true;
         status.Padding = new Padding(10);
         status.Text = "选择采集任务后查看数据。";
-        root.Controls.Add(status, 0, 4);
+        root.Controls.Add(status, 0, 5);
 
         BackColor = Color.FromArgb(241, 245, 249);
         ForeColor = Color.FromArgb(15, 23, 42);
@@ -233,6 +251,7 @@ partial class Data
     private TableLayoutPanel root;
     private AntdUI.Label title;
     private FlowLayoutPanel filters;
+    private FlowLayoutPanel actions;
     private AntdUI.Label fromCaption;
     private AntdUI.DatePicker fromDate;
     private AntdUI.Label toCaption;

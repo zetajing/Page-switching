@@ -10,6 +10,8 @@ internal static class Program
     const BindingFlags Members = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
     static int checks;
     static bool baseline;
+    static readonly string[] Pages = { "_autoPage", "_manualPage", "_controlAuthorityPage", "_diagnosticsPage",
+        "_monitoringSettingsPage", "_databasePage", "_dataPage", "_configPage", "_waveHeightMeterPage" };
     static void Check(bool value, string message) { if (baseline) return; checks++; if (!value) throw new Exception(message); }
     [STAThread]
     static void Main(string[] args)
@@ -26,6 +28,9 @@ internal static class Program
         string native = Path.Combine(Path.GetDirectoryName(dll)!, "runtimes", "win-" + RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant(), "native");
         foreach (string path in Directory.GetFiles(native, "*.dll")) NativeLibrary.Load(path);
         var app = Assembly.LoadFrom(dll);
+        object administrator = Activator.CreateInstance(app.GetType("Page_switching.LoginUser")!, Members, null,
+            new object[] { "离线布局预览", Enum.Parse(app.GetType("Page_switching.UserRole")!, "Administrator") }, null)!;
+        object emptySnapshot = Activator.CreateInstance(app.GetType("Page_switching.MachineMonitorSnapshot")!)!;
         Control Field(object owner, string name) => (Control)owner.GetType().GetField(name, Members)!.GetValue(owner)!;
         object? Call(object owner, string name, params object?[] values) => owner.GetType().GetMethod(name, Members)!.Invoke(owner, values);
         void Within(Control control, string label)
@@ -34,13 +39,13 @@ internal static class Program
         }
         foreach (float scale in new[] { 1F, 1.25F, 1.5F })
         {
-            using var main = (Form)Activator.CreateInstance(app.GetType("Page_switching.Mainpage")!)!;
+            using var main = (Form)Activator.CreateInstance(app.GetType("Page_switching.Mainpage")!, Members, null, new[] { administrator }, null)!;
             main.ShowInTaskbar = false; main.Opacity = 0;
             if (scale != 1)
             {
                 main.Scale(new System.Drawing.SizeF(scale, scale));
                 // 缓存页尚未放入主窗体，需分别缩放，避免只测到外壳尺寸。
-                foreach (string field in new[] { "_manualPage", "_controlAuthorityPage", "_diagnosticsPage", "_monitoringSettingsPage", "_databasePage" })
+                foreach (string field in Pages.Where(name => name != "_autoPage"))
                     Field(main, field).Scale(new System.Drawing.SizeF(scale, scale));
             }
             foreach (var size in new[] { new System.Drawing.Size(1200, 800), new System.Drawing.Size(1500, 1000) })
@@ -54,13 +59,62 @@ internal static class Program
                 Check(!Field(main, "accountPanel").Bounds.IntersectsWith(Field(main, "headerStatusPanel").Bounds), "账号与状态区重叠");
                 nav.AutoScrollPosition = System.Drawing.Point.Empty;
                 Check(!nav.VerticalScroll.Visible, "常用窗口内导航不需要多余的垂直滚动条");
-                foreach (string field in new[] { "_autoPage", "_manualPage", "_controlAuthorityPage", "_diagnosticsPage", "_monitoringSettingsPage", "_databasePage" })
+                foreach (string field in Pages)
                 {
                     var page = Field(main, field); Call(main, "ShowPage", page); Application.DoEvents();
+                    // 只更新导航外观，不调用可能刷新ADS的NavigateTo；截图注明离线预览。
+                    string navigation = field switch
+                    {
+                        "_autoPage" => "Bu_auto", "_manualPage" => "Bu_manual",
+                        "_controlAuthorityPage" => "controlAuthorityButton", "_diagnosticsPage" => "diagnosticsButton",
+                        "_monitoringSettingsPage" or "_configPage" => "bu_Configuration",
+                        "_waveHeightMeterPage" => "button5", _ => "Bu_data"
+                    };
+                    Call(main, "SetActiveNavigation", Field(main, navigation), emptySnapshot);
+                    if (field == "_dataPage")
+                    {
+                        foreach (string name in new[] { "fromDate", "toDate", "channelPicker", "refreshButton", "importButton", "exportButton",
+                            "syncButton", "legacyExportButton", "analyzeButton", "databaseButton", "sessionGrid", "content", "sampleGrid", "preview" })
+                            Within(Field(page, name), "数据管理 " + name);
+                        Check(Field(page, "content").Height >= 150 * scale, "数据明细和波形不能被工具栏挤出页面");
+                        Check(Field(page, "filters").Height + Field(page, "actions").Height <= 130 * scale, "筛选和操作区保持紧凑");
+                        Check(Field(page, "databaseButton").Parent == Field(page, "analyzeButton").Parent
+                            && Field(page, "refreshButton").Parent != Field(page, "databaseButton").Parent, "筛选与任务操作分行");
+                    }
+                    if (field == "_configPage")
+                    {
+                        Check(!((ScrollableControl)page).AutoScroll && !((ScrollableControl)page).VerticalScroll.Visible, "系统配置不出现外层滚动条");
+                        var canvas = (ScrollableControl)Field(page, "pagePanel");
+                        Check(canvas.AutoScroll && !canvas.HorizontalScroll.Visible, "系统配置使用单一内容滚动区");
+                        canvas.ScrollControlIntoView(Field(page, "_databaseGroup")); Application.DoEvents();
+                        foreach (string name in new[] { "_databaseConnectionTextBox", "_databaseUserNameTextBox", "_databasePasswordTextBox", "_saveDatabaseButton", "_testDatabaseButton" })
+                        {
+                            var control = Field(page, name); Within(control, "数据库配置 " + name);
+                            Check(canvas.RectangleToScreen(canvas.ClientRectangle).Contains(control.RectangleToScreen(control.ClientRectangle)), "滚动后数据库配置可见：" + name);
+                        }
+                        using var settingsImage = new System.Drawing.Bitmap(main.Width, main.Height);
+                        main.DrawToBitmap(settingsImage, new System.Drawing.Rectangle(System.Drawing.Point.Empty, settingsImage.Size));
+                        settingsImage.Save(Path.Combine(output, $"config-database-{size.Width}-{scale:0.##}.png"));
+                        canvas.AutoScrollPosition = System.Drawing.Point.Empty; Application.DoEvents();
+                    }
                     if (field == "_databasePage")
                     {
                         foreach (string name in new[] { "kindPicker", "fromDate", "toDate", "taskId", "queryButton", "syncButton", "exportButton", "backButton", "grid" }) Within(Field(page, name), "数据库 " + name);
                         Check(Field(page, "grid").Height >= 100 * scale, "数据库表格有可用高度");
+                        // 用离线样例检查实际有数据时的列宽，不能只检查空白表格。
+                        var grid = (DataGridView)Field(page, "grid");
+                        using (var emptyImage = new System.Drawing.Bitmap(main.Width, main.Height))
+                        {
+                            main.DrawToBitmap(emptyImage, new System.Drawing.Rectangle(System.Drawing.Point.Empty, emptyImage.Size));
+                            emptyImage.Save(Path.Combine(output, $"database-empty-{size.Width}-{scale:0.##}.png"));
+                        }
+                        var oldRows = grid.DataSource as System.Data.DataTable;
+                        var rows = new System.Data.DataTable();
+                        foreach (string column in new[] { "时间", "任务编号", "记录地址", "质量", "内容JSON" }) rows.Columns.Add(column);
+                        rows.Rows.Add("2026-10-29 10:00:00", "离线任务样例", "metadata", "Good", "{\"操作\":\"离线布局样例\",\"轴\":1}");
+                        grid.DataSource = rows; oldRows?.Dispose(); Application.DoEvents();
+                        Check(grid.Columns.Count == 5 && grid.ReadOnly, "有数据时仍显示五列只读记录");
+                        Check(!grid.Controls.OfType<HScrollBar>().Any(bar => bar.Visible), "普通数据库记录不挤出横向滚动条");
                     }
                     if (field == "_autoPage")
                     {
@@ -94,6 +148,6 @@ internal static class Program
                 }
             }
         }
-        Console.WriteLine($"Page layout: {checks} assertions passed; 36 offline renders, 100/125/150 percent geometry checks; no PLC or SQL.");
+        Console.WriteLine($"Page layout: {checks} assertions passed; {Pages.Length * 6 + 12} offline renders, 100/125/150 percent geometry checks; no PLC or SQL.");
     }
 }

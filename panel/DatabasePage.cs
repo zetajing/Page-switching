@@ -34,6 +34,16 @@ public partial class DatabasePage : UserControl
     private void BackButton_Click(object? sender, EventArgs e) => BackRequested?.Invoke(this, e);
     internal void CancelRequests() => _requests.Cancel();
 
+    // 空表显示操作提示，避免一整块白色区域让人误以为页面没有加载。
+    private void Grid_Paint(object? sender, PaintEventArgs e)
+    {
+        if (grid.Rows.Count != 0) return;
+        string message = grid.DataSource is null ? "尚未查询，请选择条件后点击“查询”。" : "当前条件下没有记录，可调整时间或任务编号后重新查询。";
+        TextRenderer.DrawText(e.Graphics, message, grid.Font, grid.ClientRectangle, UiPalette.Muted,
+            TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine
+            | TextFormatFlags.PreserveGraphicsClipping | TextFormatFlags.PreserveGraphicsTranslateTransform);
+    }
+
     private async void QueryButton_Click(object? sender, EventArgs e)
     {
         if (_busy) return;

@@ -239,6 +239,7 @@ partial class Config
         rootLayout.Location = new Point(0, 0);
         rootLayout.Margin = new Padding(2, 3, 2, 3);
         rootLayout.Name = "rootLayout";
+        rootLayout.MinimumSize = new Size(820, 0);
         rootLayout.Padding = new Padding(16);
         rootLayout.RowCount = 8;
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 42F));
@@ -1163,8 +1164,8 @@ partial class Config
         //
         AutoScaleDimensions = new SizeF(96F, 96F);
         AutoScaleMode = AutoScaleMode.Dpi;
-        AutoScroll = true;
-        AutoScrollMinSize = new Size(860, 720);
+        // 只由内部pagePanel滚动，避免父页面与内容各出现一条滚动条。
+        AutoScroll = false;
         BackColor = Color.FromArgb(241, 245, 249);
         Controls.Add(pagePanel);
         Font = new Font("Microsoft YaHei UI", 9F);
