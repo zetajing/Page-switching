@@ -229,13 +229,22 @@ internal static class Program
                 }
                 var authority = Page("_controlAuthorityPage");
                 Call(main, "ControlAuthorityButton_Click", null, EventArgs.Empty);
-                Call(authority, "DiagnosticsButton_Click", null, EventArgs.Empty);
+                Check(authority.GetType().GetField("diagnosticsButton", Members) is null, "控制权页移除诊断按钮");
+                Check(Field(main, "diagnosticsButton").Enabled, "操作员和管理员均可打开只读诊断");
+                Check(Field(main, "diagnosticsButton").Text == "运行诊断", "独立导航显示明确标题");
+                Check(Field(main, "diagnosticsButton").Size == Field(main, "controlAuthorityButton").Size, "诊断导航尺寸与其他导航一致");
+                Check(Field(main, "diagnosticsButton").Top > Field(main, "systemSectionLabel").Bottom, "诊断位于系统导航分组");
+                // 触发真实Click事件，检查Designer绑定，不能只直接调用处理方法。
+                Call(Field(main, "diagnosticsButton"), "OnClick", EventArgs.Empty);
                 var diagnostics = Page("_diagnosticsPage");
                 Current(diagnostics, "诊断使用主窗体容器");
                 Check(Field(main, "controlStatusLabel").Text.Contains("运行诊断"), "顶部显示诊断页面名");
+                Check(ReferenceEquals(main.GetType().GetField("_activeNavigationButton", Members)!.GetValue(main), Field(main, "diagnosticsButton")), "诊断使用独立导航高亮");
+                Check(Field(main, "navigationMarker").Top == Field(main, "diagnosticsButton").Top, "诊断标记跟随独立按钮");
                 Call(diagnostics, "BackButton_Click", null, EventArgs.Empty);
-                Current(authority, "诊断返回控制权页");
-                Call(authority, "DiagnosticsButton_Click", null, EventArgs.Empty);
+                Current(Page("_autoPage"), "诊断返回自动运行页");
+                Check(ReferenceEquals(main.GetType().GetField("_activeNavigationButton", Members)!.GetValue(main), Field(main, "Bu_auto")), "返回后恢复自动页高亮");
+                Call(main, "DiagnosticsButton_Click", null, EventArgs.Empty);
                 Current(diagnostics, "再次进入复用诊断页");
                 if (entry.Admin)
                 {
@@ -276,10 +285,15 @@ internal static class Program
                         : new[] { "_diagnosticsPage" })
                     {
                         Call(main, "NavigateTo", Page(page), Field(main, page == "_accountManagementPage" ? "manageAccountsButton"
-                            : page == "_monitoringSettingsPage" ? "bu_Configuration" : "controlAuthorityButton"));
+                            : page == "_monitoringSettingsPage" ? "bu_Configuration" : "diagnosticsButton"));
                         Render(main, Path.Combine(output, $"unified-{entry.Admin}-{page}-{size.Width}.png"));
                         main.Show();
                         Current(Page(page), "调整大小后页面仍在统一容器");
+                        var navigation = (ScrollableControl)Field(main, "panel2");
+                        var diagnosticEntry = Field(main, "diagnosticsButton");
+                        navigation.ScrollControlIntoView(diagnosticEntry);
+                        Check(navigation.ClientRectangle.Contains(diagnosticEntry.Bounds), "缩小窗口后可以滚动到诊断导航");
+                        Check(!diagnosticEntry.Bounds.IntersectsWith(Field(main, "bu_Configuration").Bounds), "诊断导航与系统配置不重叠");
                     }
                 }
                 main.Hide();

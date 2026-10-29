@@ -119,7 +119,6 @@ namespace Page_switching
         private void ConnectPageEvents()
         {
             _controlAuthorityPage.RefreshRequested += ControlAuthorityPage_RefreshRequested;
-            _controlAuthorityPage.DiagnosticsRequested += ControlAuthorityPage_DiagnosticsRequested;
             _diagnosticsPage.BackRequested += DiagnosticsPage_BackRequested;
             _configPage.MonitoringSettingsRequested += ConfigPage_MonitoringSettingsRequested;
             _monitoringSettingsPage.BackRequested += MonitoringSettingsPage_BackRequested;
@@ -137,14 +136,9 @@ namespace Page_switching
             await RefreshMonitorAsync();
         }
 
-        private void ControlAuthorityPage_DiagnosticsRequested(object? sender, EventArgs e)
-        {
-            NavigateTo(_diagnosticsPage, controlAuthorityButton);
-        }
-
         private void DiagnosticsPage_BackRequested(object? sender, EventArgs e)
         {
-            NavigateTo(_controlAuthorityPage, controlAuthorityButton);
+            NavigateTo(_autoPage, Bu_auto);
         }
 
         private void ConfigPage_MonitoringSettingsRequested(object? sender, EventArgs e)
@@ -456,7 +450,7 @@ namespace Page_switching
         private void SetActiveNavigation(AntdUI.Button activeButton, MachineMonitorSnapshot snapshot)
         {
             foreach (var button in new[] { Bu_auto, Bu_manual, Bu_Calibration, Bu_data, button2, button5,
-                         analysisButton, correctionButton, bu_Configuration, controlAuthorityButton, manageAccountsButton })
+                         analysisButton, correctionButton, bu_Configuration, controlAuthorityButton, diagnosticsButton, manageAccountsButton })
             {
                 var isActive = ReferenceEquals(button, activeButton);
                 button.DefaultBack = isActive ? UiPalette.Primary : UiPalette.Surface;
@@ -576,6 +570,10 @@ namespace Page_switching
 
         private void ControlAuthorityButton_Click(object sender, EventArgs e) =>
             NavigateTo(_controlAuthorityPage, controlAuthorityButton);
+
+        // 运行诊断是独立只读页面，操作员也可通过导航进入，不申请PLC控制权。
+        private void DiagnosticsButton_Click(object sender, EventArgs e) =>
+            NavigateTo(_diagnosticsPage, diagnosticsButton);
 
         // 切换到配置页面。
         private void bu_Configuration_Click(object sender, EventArgs e) => NavigateTo(_configPage, bu_Configuration);

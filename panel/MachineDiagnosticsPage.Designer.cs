@@ -78,7 +78,7 @@ partial class MachineDiagnosticsPage
         copyButton.Text = "复制本次诊断";
         copyButton.Size = new Size(150, 36);
         copyButton.Click += CopyButton_Click;
-        backButton.Text = "返回控制权页";
+        backButton.Text = "返回自动运行";
         backButton.Size = new Size(150, 36);
         backButton.Click += BackButton_Click;
         noticeLabel.Text = "四轴参数只读，来源：PLC 的 FB_AxisConfig。位置、速度、加速度均使用 PLC/NC 原始单位。\r\n手动读取一次快照；参数与状态分次读取，时间以本次读取完成时间为准。";

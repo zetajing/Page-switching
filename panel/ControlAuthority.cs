@@ -155,12 +155,6 @@ namespace Page_switching
         }
 
         // 不要求持有控制权；只提出页面请求，由主窗体通过统一入口切换。
-        private void DiagnosticsButton_Click(object? sender, EventArgs e)
-        {
-            DiagnosticsRequested?.Invoke(this, e);
-        }
-
-        internal event EventHandler? DiagnosticsRequested;
         internal event EventHandler? RefreshRequested;
     }
 }

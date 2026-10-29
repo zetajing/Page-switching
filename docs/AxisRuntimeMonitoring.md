@@ -79,4 +79,4 @@ dotnet build 'Page switching.csproj' -c Release
 
 受控时钟、只读ADS替身和真实窗体验证覆盖迟到跳过、超时、断线恢复、重复帧、NC无效、单项无效、重叠去重、配置快照、零样本、10,000行流式记录、保存失败及关闭清理。真实运动服务回归注入采样/日志异常，核对启动、停车及原始故障字段不受影响。它们不代表现场100 ms节拍、PLC在线状态或实机运动已验收；本次不尝试XAE编译下载或在线运动。
 
-监测配置现在是 `panel/AxisMonitoringSettingsPage`，从系统配置进入、返回系统配置；页面由主窗体缓存并统一释放，保留独立 Designer 文件。运行诊断同样使用 `panel/MachineDiagnosticsPage`，从控制权页进入并返回。两个入口均不再创建独立 Form。
+监测配置现在是 `panel/AxisMonitoringSettingsPage`，从系统配置进入、返回系统配置；页面由主窗体缓存并统一释放，保留独立 Designer 文件。运行诊断使用 `panel/MachineDiagnosticsPage`，从主界面左侧“系统 → 运行诊断”进入，返回自动运行页。两个入口均不创建独立 Form，诊断导航向管理员和操作员开放。

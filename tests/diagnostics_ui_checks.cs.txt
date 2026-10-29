@@ -94,16 +94,11 @@ internal static class Program
         authority.Dock = DockStyle.Fill;
         host.Show();
         Application.DoEvents();
-        var diagnosticsButton = Field(authority, "diagnosticsButton");
-        Check(diagnosticsButton.Enabled, "read-only diagnostic entry available without a service or control authority");
-        Check(diagnosticsButton.Parent!.ClientRectangle.Contains(diagnosticsButton.Bounds), "diagnostic entry fits authority action row");
-        int requests = 0;
-        EventHandler handler = (_, _) => requests++;
-        authority.GetType().GetEvent("DiagnosticsRequested", Members)!.GetAddMethod(true)!.Invoke(authority, new object[] { handler });
-        int windows = Application.OpenForms.Count;
-        Call(authority, "DiagnosticsButton_Click", null, EventArgs.Empty);
-        Call(authority, "DiagnosticsButton_Click", null, EventArgs.Empty);
-        Check(requests == 2 && Application.OpenForms.Count == windows, "diagnostic entry only requests main-page navigation");
+        Check(authority.GetType().GetField("diagnosticsButton", Members) is null, "authority no longer contains diagnostic navigation");
+        Check(authority.GetType().GetEvent("DiagnosticsRequested", Members) is null, "authority no longer forwards diagnostic requests");
+        foreach (string name in new[] { "_requestButton", "_releaseButton", "refreshButton" })
+            Check(Field(authority, name).Parent is not null, "authority retains its own operation: " + name);
+        Check(Field(page, "backButton").Text == "返回自动运行", "independent diagnostic page returns to automatic page");
         Console.WriteLine($"Diagnostics UI: {checks} assertions passed; no ADS connection or clipboard write.");
     }
 }

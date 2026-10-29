@@ -51,7 +51,6 @@ namespace Page_switching
             rulesGroupCaption = new AntdUI.Label();
             actionButtons = new FlowLayoutPanel();
             refreshButton = new AntdUI.Button();
-            diagnosticsButton = new AntdUI.Button();
             _releaseButton = new AntdUI.Button();
             _requestButton = new AntdUI.Button();
             actionLayout = new TableLayoutPanel();
@@ -478,7 +477,6 @@ namespace Page_switching
             actionButtons.Controls.Add(_requestButton);
             actionButtons.Controls.Add(_releaseButton);
             actionButtons.Controls.Add(refreshButton);
-            actionButtons.Controls.Add(diagnosticsButton);
             actionButtons.Dock = DockStyle.Fill;
             actionButtons.Location = new Point(0, 0);
             actionButtons.Margin = new Padding(0);
@@ -503,13 +501,6 @@ namespace Page_switching
             refreshButton.TabIndex = 2;
             refreshButton.Text = "刷新状态";
             refreshButton.Click += RefreshButton_Click;
-            // 运行诊断保持只读，未申请控制权也可打开。
-            diagnosticsButton.Text = "运行诊断 / 轴参数";
-            diagnosticsButton.Name = "diagnosticsButton";
-            diagnosticsButton.Size = new Size(190, 42);
-            diagnosticsButton.Margin = new Padding(12, 0, 0, 0);
-            diagnosticsButton.TabIndex = 3;
-            diagnosticsButton.Click += DiagnosticsButton_Click;
             // 
             // _releaseButton
             // 
@@ -631,6 +622,5 @@ namespace Page_switching
         private AntdUI.Button _requestButton;
         private AntdUI.Button _releaseButton;
         private AntdUI.Button refreshButton;
-        private AntdUI.Button diagnosticsButton;
     }
 }

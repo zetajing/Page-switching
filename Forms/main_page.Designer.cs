@@ -36,6 +36,7 @@ namespace Page_switching
             analysisButton = new AntdUI.Button();
             correctionButton = new AntdUI.Button();
             controlAuthorityButton = new AntdUI.Button();
+            diagnosticsButton = new AntdUI.Button();
             panel1 = new AntdUI.Panel();
             headerStatusPanel = new AntdUI.Panel();
             accountPanel = new Panel();
@@ -127,6 +128,26 @@ namespace Page_switching
             controlAuthorityButton.TabIndex = 14;
             controlAuthorityButton.Text = "控制权申请";
             controlAuthorityButton.Click += ControlAuthorityButton_Click;
+            //
+            // diagnosticsButton
+            //
+            diagnosticsButton.BackActive = Color.FromArgb(226, 232, 240);
+            diagnosticsButton.BackColor = Color.White;
+            diagnosticsButton.BackHover = Color.FromArgb(219, 234, 254);
+            diagnosticsButton.BorderWidth = 1F;
+            diagnosticsButton.Cursor = Cursors.Hand;
+            diagnosticsButton.DefaultBack = Color.White;
+            diagnosticsButton.DefaultBorderColor = Color.FromArgb(203, 213, 225);
+            diagnosticsButton.Font = new Font("宋体", 12F, FontStyle.Bold);
+            diagnosticsButton.ForeColor = Color.FromArgb(15, 23, 42);
+            diagnosticsButton.Location = new Point(0, 715);
+            diagnosticsButton.Margin = new Padding(4);
+            diagnosticsButton.Name = "diagnosticsButton";
+            diagnosticsButton.Padding = new Padding(15, 0, 0, 0);
+            diagnosticsButton.Size = new Size(198, 60);
+            diagnosticsButton.TabIndex = 15;
+            diagnosticsButton.Text = "运行诊断";
+            diagnosticsButton.Click += DiagnosticsButton_Click;
             // 
             // panel1
             // 
@@ -216,7 +237,7 @@ namespace Page_switching
             // panel2
             // 
             panel2.AutoScroll = true;
-            panel2.AutoScrollMinSize = new Size(0, 785);
+            panel2.AutoScrollMinSize = new Size(0, 848);
             panel2.BackColor = Color.FromArgb(248, 250, 252);
             panel2.Controls.Add(systemSectionLabel);
             panel2.Controls.Add(toolsSectionLabel);
@@ -232,6 +253,7 @@ namespace Page_switching
             panel2.Controls.Add(analysisButton);
             panel2.Controls.Add(correctionButton);
             panel2.Controls.Add(controlAuthorityButton);
+            panel2.Controls.Add(diagnosticsButton);
             panel2.Dock = DockStyle.Left;
             panel2.Location = new Point(0, 75);
             panel2.Margin = new Padding(4);
@@ -287,7 +309,7 @@ namespace Page_switching
             bu_Configuration.DefaultBorderColor = Color.FromArgb(203, 213, 225);
             bu_Configuration.Font = new Font("宋体", 12F, FontStyle.Bold);
             bu_Configuration.ForeColor = Color.FromArgb(15, 23, 42);
-            bu_Configuration.Location = new Point(-2, 715);
+            bu_Configuration.Location = new Point(-2, 778);
             bu_Configuration.Margin = new Padding(4);
             bu_Configuration.Name = "bu_Configuration";
             bu_Configuration.Padding = new Padding(15, 0, 0, 0);
@@ -522,6 +544,7 @@ namespace Page_switching
         private AntdUI.Button analysisButton;
         private AntdUI.Button correctionButton;
         private AntdUI.Button controlAuthorityButton;
+        private AntdUI.Button diagnosticsButton;
         private AntdUI.Panel panel1;
         private AntdUI.Panel headerStatusPanel;
         private Panel accountPanel;

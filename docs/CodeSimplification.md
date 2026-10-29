@@ -19,8 +19,7 @@
 主窗体的跨页事件集中在 `Forms/main_page.cs` 的 `ConnectPageEvents`。在绑定的方法名上按 F12，先进入具名事件处理，再进入 `NavigateTo`、`RefreshMonitorAsync` 等具体步骤。例如：
 
 ```text
-ControlAuthority.DiagnosticsButton_Click
-  → Mainpage.ControlAuthorityPage_DiagnosticsRequested
+Mainpage.DiagnosticsButton_Click
   → Mainpage.NavigateTo
   → Mainpage.ShowPage
 ```
