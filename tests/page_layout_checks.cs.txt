@@ -1,0 +1,84 @@
+using System.ComponentModel;
+using System.ComponentModel.Design;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Runtime.Loader;
+using System.Windows.Forms;
+
+internal static class Program
+{
+    const BindingFlags Members = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+    static int checks;
+    static bool baseline;
+    static void Check(bool value, string message) { if (baseline) return; checks++; if (!value) throw new Exception(message); }
+    [STAThread]
+    static void Main(string[] args)
+    {
+        Application.SetHighDpiMode(HighDpiMode.DpiUnaware); Application.EnableVisualStyles();
+        LicenseManager.CurrentContext = new DesigntimeLicenseContext();
+        baseline = args.Length > 2;
+        string dll = Path.GetFullPath(args[0]), output = Path.GetFullPath(args[1]); Directory.CreateDirectory(output);
+        AssemblyLoadContext.Default.Resolving += (_, name) =>
+        {
+            string path = Path.Combine(Path.GetDirectoryName(dll)!, name.Name + ".dll");
+            return File.Exists(path) ? AssemblyLoadContext.Default.LoadFromAssemblyPath(path) : null;
+        };
+        string native = Path.Combine(Path.GetDirectoryName(dll)!, "runtimes", "win-" + RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant(), "native");
+        foreach (string path in Directory.GetFiles(native, "*.dll")) NativeLibrary.Load(path);
+        var app = Assembly.LoadFrom(dll);
+        Control Field(object owner, string name) => (Control)owner.GetType().GetField(name, Members)!.GetValue(owner)!;
+        object? Call(object owner, string name, params object?[] values) => owner.GetType().GetMethod(name, Members)!.Invoke(owner, values);
+        void Within(Control control, string label)
+        {
+            Check(control.Width > 0 && control.Height >= 20 && control.Parent!.ClientRectangle.Contains(control.Bounds), label + " 越界/被裁切：" + control.Bounds);
+        }
+        foreach (float scale in new[] { 1F, 1.25F, 1.5F })
+        {
+            using var main = (Form)Activator.CreateInstance(app.GetType("Page_switching.Mainpage")!)!;
+            main.ShowInTaskbar = false; main.Opacity = 0;
+            if (scale != 1)
+            {
+                main.Scale(new System.Drawing.SizeF(scale, scale));
+                // 缓存页尚未放入主窗体，需分别缩放，避免只测到外壳尺寸。
+                foreach (string field in new[] { "_manualPage", "_controlAuthorityPage", "_diagnosticsPage", "_monitoringSettingsPage" })
+                    Field(main, field).Scale(new System.Drawing.SizeF(scale, scale));
+            }
+            foreach (var size in new[] { new System.Drawing.Size(1200, 800), new System.Drawing.Size(1500, 1000) })
+            {
+                main.ClientSize = new System.Drawing.Size((int)(size.Width * scale), (int)(size.Height * scale)); main.Show(); Application.DoEvents();
+                var nav = (ScrollableControl)Field(main, "panel2");
+                foreach (string button in new[] { "Bu_auto", "Bu_manual", "controlAuthorityButton", "Bu_Calibration", "Bu_data", "button2", "button5", "analysisButton", "correctionButton", "diagnosticsButton", "bu_Configuration" })
+                {
+                    nav.ScrollControlIntoView(Field(main, button)); Application.DoEvents(); Within(Field(main, button), button);
+                }
+                Check(!Field(main, "accountPanel").Bounds.IntersectsWith(Field(main, "headerStatusPanel").Bounds), "账号与状态区重叠");
+                nav.AutoScrollPosition = System.Drawing.Point.Empty;
+                Check(!nav.VerticalScroll.Visible, "常用窗口内导航不需要多余的垂直滚动条");
+                foreach (string field in new[] { "_manualPage", "_controlAuthorityPage", "_diagnosticsPage", "_monitoringSettingsPage" })
+                {
+                    var page = Field(main, field); Call(main, "ShowPage", page); Application.DoEvents();
+                    if (field == "_diagnosticsPage")
+                    {
+                        foreach (string button in new[] { "refreshButton", "copyButton", "backButton" }) Within(Field(page, button), "诊断 " + button);
+                        Within(Field(page, "parametersGrid"), "诊断参数表"); Within(Field(page, "diagnosticTextBox"), "诊断结果");
+                        Within(Field(page, "titleLabel"), "诊断标题");
+                    }
+                    if (field == "_monitoringSettingsPage")
+                    {
+                        foreach (string name in new[] { "saveButton", "backButton", "thresholdsGrid" }) Within(Field(page, name), "阈值 " + name);
+                        Check(Field(page, "thresholdsGrid").Height <= 180 * scale, "四轴表格保持紧凑");
+                        Within(Field(page, "titleLabel"), "阈值标题");
+                    }
+                    if (field == "_controlAuthorityPage")
+                    {
+                        foreach (string button in new[] { "_requestButton", "_releaseButton", "refreshButton" }) Within(Field(page, button), "控制权 " + button);
+                    }
+                    using var bitmap = new System.Drawing.Bitmap(main.Width, main.Height);
+                    main.DrawToBitmap(bitmap, new System.Drawing.Rectangle(System.Drawing.Point.Empty, bitmap.Size));
+                    bitmap.Save(Path.Combine(output, $"{field}-{size.Width}-{scale:0.##}.png"));
+                }
+            }
+        }
+        Console.WriteLine($"Page layout: {checks} assertions passed; 24 offline renders, 100/125/150 percent geometry checks; no PLC.");
+    }
+}

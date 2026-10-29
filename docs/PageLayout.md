@@ -1,0 +1,24 @@
+# 页面布局与验证
+
+更新日期：2026-10-29。此次调整主导航、手动页、控制权页、运行诊断和监测阈值页的布局，保持原有命令、权限、数据读取与保存流程。
+
+- 主导航统一左边距、宽度、字体和行距；设备控制、数据工具、系统仍按原分组排列。滚动范围由内容计算，小窗口不会因固定大画布出现多余滚动条。
+- 手动页压缩标题、全轴按钮区的留白，略收窄右侧标签列，为输入和数值留出空间。四轴映射、显示范围、按钮事件和单位隐藏方式保持原样。
+- 控制权页为操作按钮增加行空间，保留用户已修改的按钮尺寸；滚动画布由已有最小尺寸和布局逻辑管理。此次未覆盖用户原有的字体、DPI、尺寸等调整。
+- 运行诊断新增页面标题，使用统一圆角按钮、浅色表头和白色正文区域；四轴参数表保持紧凑，主要空间用于诊断内容。
+- 监测阈值页新增标题，四轴表格使用固定高度，保存和返回按钮紧跟配置与状态说明。管理员保存、操作员只读、下次运行生效的逻辑保持不变。
+
+所有可见布局继续保存在各页 `.Designer.cs` 中。设计尺寸会跟随 DPI 缩放，不需要在代码中再次乘缩放比例。自动页及与此次修改无关的本地布局、配置和资源改动保留在工作区。
+
+离线检查：
+
+```powershell
+dotnet build 'Page switching.csproj' -c Release
+python tests/verify_page_layout.py 'bin/Release/net8.0-windows10.0.19041.0/Page switching.dll' artifacts/layout-check
+python tests/verify_manual_ui.py --images artifacts/manual-layout
+python tests/verify_login_ui.py 'bin/Release/net8.0-windows10.0.19041.0/Page switching.dll' artifacts/login-layout
+python tests/verify_diagnostics_ui.py 'bin/Release/net8.0-windows10.0.19041.0/Page switching.dll' artifacts/diagnostics-layout
+python tests/verify_axis_monitoring_ui.py 'bin/Release/net8.0-windows10.0.19041.0/Page switching.dll' artifacts/threshold-layout
+```
+
+布局检查覆盖1200×800和1500×1000基准客户区，以及100%、125%、150%的几何缩放，共24张页面截图；缓存页也独立缩放后检查。验证导航与按钮边界、标题、参数表、诊断正文和顶部区域。几何缩放用于离线回归，不等于在Windows中切换实际显示器DPI后的现场验收。工具不建立ADS连接，不保存用户配置，不执行运动。

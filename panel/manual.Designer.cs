@@ -266,7 +266,7 @@ namespace Page_switching
             pagePanel.Dock = DockStyle.Fill;
             pagePanel.Location = new Point(0, 0);
             pagePanel.Margin = new Padding(2);
-            pagePanel.MinimumSize = new Size(1080, 780);
+            pagePanel.MinimumSize = new Size(1080, 760);
             pagePanel.Name = "pagePanel";
             pagePanel.Size = new Size(1232, 780);
             pagePanel.TabIndex = 0;
@@ -285,8 +285,8 @@ namespace Page_switching
             rootLayout.Name = "rootLayout";
             rootLayout.Padding = new Padding(20);
             rootLayout.RowCount = 3;
-            rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 60F));
-            rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 88F));
+            rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 52F));
+            rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 76F));
             rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             rootLayout.Size = new Size(1232, 780);
             rootLayout.TabIndex = 0;
@@ -918,8 +918,8 @@ namespace Page_switching
             // controlLayout
             // 
             controlLayout.ColumnCount = 2;
-            controlLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 42F));
-            controlLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 58F));
+            controlLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 38F));
+            controlLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 62F));
             controlLayout.Controls.Add(selectedAxisCaptionLabel, 0, 0);
             controlLayout.Controls.Add(axisSelector, 1, 0);
             controlLayout.Controls.Add(selectedStatusCaptionLabel, 0, 1);

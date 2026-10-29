@@ -78,13 +78,13 @@ namespace Page_switching
             analysisButton.Cursor = Cursors.Hand;
             analysisButton.DefaultBack = Color.White;
             analysisButton.DefaultBorderColor = Color.FromArgb(203, 213, 225);
-            analysisButton.Font = new Font("宋体", 12F, FontStyle.Bold);
+            analysisButton.Font = new Font("Microsoft YaHei UI", 10.5F);
             analysisButton.ForeColor = Color.FromArgb(15, 23, 42);
-            analysisButton.Location = new Point(-2, 545);
+            analysisButton.Location = new Point(10, 476);
             analysisButton.Margin = new Padding(4);
             analysisButton.Name = "analysisButton";
             analysisButton.Padding = new Padding(15, 0, 0, 0);
-            analysisButton.Size = new Size(198, 60);
+            analysisButton.Size = new Size(180, 50);
             analysisButton.TabIndex = 12;
             analysisButton.Text = "波浪分析";
             analysisButton.Click += AnalysisButton_Click;
@@ -98,13 +98,13 @@ namespace Page_switching
             correctionButton.Cursor = Cursors.Hand;
             correctionButton.DefaultBack = Color.White;
             correctionButton.DefaultBorderColor = Color.FromArgb(203, 213, 225);
-            correctionButton.Font = new Font("宋体", 12F, FontStyle.Bold);
+            correctionButton.Font = new Font("Microsoft YaHei UI", 10.5F);
             correctionButton.ForeColor = Color.FromArgb(15, 23, 42);
-            correctionButton.Location = new Point(-2, 608);
+            correctionButton.Location = new Point(10, 530);
             correctionButton.Margin = new Padding(4);
             correctionButton.Name = "correctionButton";
             correctionButton.Padding = new Padding(15, 0, 0, 0);
-            correctionButton.Size = new Size(198, 60);
+            correctionButton.Size = new Size(180, 50);
             correctionButton.TabIndex = 13;
             correctionButton.Text = "信号修正";
             correctionButton.Click += CorrectionButton_Click;
@@ -118,13 +118,13 @@ namespace Page_switching
             controlAuthorityButton.Cursor = Cursors.Hand;
             controlAuthorityButton.DefaultBack = Color.White;
             controlAuthorityButton.DefaultBorderColor = Color.FromArgb(203, 213, 225);
-            controlAuthorityButton.Font = new Font("宋体", 12F, FontStyle.Bold);
+            controlAuthorityButton.Font = new Font("Microsoft YaHei UI", 10.5F);
             controlAuthorityButton.ForeColor = Color.FromArgb(15, 23, 42);
-            controlAuthorityButton.Location = new Point(-2, 181);
+            controlAuthorityButton.Location = new Point(10, 160);
             controlAuthorityButton.Margin = new Padding(4);
             controlAuthorityButton.Name = "controlAuthorityButton";
             controlAuthorityButton.Padding = new Padding(15, 0, 0, 0);
-            controlAuthorityButton.Size = new Size(198, 60);
+            controlAuthorityButton.Size = new Size(180, 50);
             controlAuthorityButton.TabIndex = 14;
             controlAuthorityButton.Text = "控制权申请";
             controlAuthorityButton.Click += ControlAuthorityButton_Click;
@@ -138,13 +138,13 @@ namespace Page_switching
             diagnosticsButton.Cursor = Cursors.Hand;
             diagnosticsButton.DefaultBack = Color.White;
             diagnosticsButton.DefaultBorderColor = Color.FromArgb(203, 213, 225);
-            diagnosticsButton.Font = new Font("宋体", 12F, FontStyle.Bold);
+            diagnosticsButton.Font = new Font("Microsoft YaHei UI", 10.5F);
             diagnosticsButton.ForeColor = Color.FromArgb(15, 23, 42);
-            diagnosticsButton.Location = new Point(0, 715);
+            diagnosticsButton.Location = new Point(10, 630);
             diagnosticsButton.Margin = new Padding(4);
             diagnosticsButton.Name = "diagnosticsButton";
             diagnosticsButton.Padding = new Padding(15, 0, 0, 0);
-            diagnosticsButton.Size = new Size(198, 60);
+            diagnosticsButton.Size = new Size(180, 50);
             diagnosticsButton.TabIndex = 15;
             diagnosticsButton.Text = "运行诊断";
             diagnosticsButton.Click += DiagnosticsButton_Click;
@@ -199,7 +199,7 @@ namespace Page_switching
             // 
             controlStatusLabel.AutoEllipsis = true;
             controlStatusLabel.Dock = DockStyle.Fill;
-            controlStatusLabel.Font = new Font("Microsoft YaHei UI", 7.8F, FontStyle.Regular, GraphicsUnit.Point, 134);
+            controlStatusLabel.Font = new Font("Microsoft YaHei UI", 9F);
             controlStatusLabel.ForeColor = Color.FromArgb(100, 116, 139);
             controlStatusLabel.Location = new Point(15, 39);
             controlStatusLabel.Margin = new Padding(4, 0, 4, 0);
@@ -225,7 +225,7 @@ namespace Page_switching
             // appTitleLabel
             // 
             appTitleLabel.AutoSizeMode = AntdUI.TAutoSize.Auto;
-            appTitleLabel.Font = new Font("幼圆", 13.8F, FontStyle.Bold, GraphicsUnit.Point, 134);
+            appTitleLabel.Font = new Font("Microsoft YaHei UI", 15F, FontStyle.Bold);
             appTitleLabel.ForeColor = Color.FromArgb(15, 23, 42);
             appTitleLabel.Location = new Point(25, 19);
             appTitleLabel.Margin = new Padding(4, 0, 4, 0);
@@ -237,7 +237,6 @@ namespace Page_switching
             // panel2
             // 
             panel2.AutoScroll = true;
-            panel2.AutoScrollMinSize = new Size(0, 848);
             panel2.BackColor = Color.FromArgb(248, 250, 252);
             panel2.Controls.Add(systemSectionLabel);
             panel2.Controls.Add(toolsSectionLabel);
@@ -264,36 +263,36 @@ namespace Page_switching
             // 
             // systemSectionLabel
             // 
-            systemSectionLabel.Font = new Font("Microsoft YaHei UI", 10.2F, FontStyle.Bold, GraphicsUnit.Point, 134);
+            systemSectionLabel.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
             systemSectionLabel.ForeColor = Color.FromArgb(100, 116, 139);
-            systemSectionLabel.Location = new Point(22, 681);
+            systemSectionLabel.Location = new Point(12, 594);
             systemSectionLabel.Margin = new Padding(4, 0, 4, 0);
             systemSectionLabel.Name = "systemSectionLabel";
-            systemSectionLabel.Size = new Size(169, 25);
+            systemSectionLabel.Size = new Size(180, 26);
             systemSectionLabel.TabIndex = 10;
             systemSectionLabel.Text = "系统";
             systemSectionLabel.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // toolsSectionLabel
             // 
-            toolsSectionLabel.Font = new Font("Microsoft YaHei UI", 10.8F, FontStyle.Bold, GraphicsUnit.Point, 134);
+            toolsSectionLabel.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
             toolsSectionLabel.ForeColor = Color.FromArgb(100, 116, 139);
-            toolsSectionLabel.Location = new Point(19, 261);
+            toolsSectionLabel.Location = new Point(12, 224);
             toolsSectionLabel.Margin = new Padding(4, 0, 4, 0);
             toolsSectionLabel.Name = "toolsSectionLabel";
-            toolsSectionLabel.Size = new Size(169, 25);
+            toolsSectionLabel.Size = new Size(180, 26);
             toolsSectionLabel.TabIndex = 9;
             toolsSectionLabel.Text = "数据工具";
             toolsSectionLabel.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // controlSectionLabel
             // 
-            controlSectionLabel.Font = new Font("Microsoft YaHei UI", 10.8F, FontStyle.Bold, GraphicsUnit.Point, 134);
+            controlSectionLabel.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
             controlSectionLabel.ForeColor = Color.FromArgb(100, 116, 139);
-            controlSectionLabel.Location = new Point(23, 20);
+            controlSectionLabel.Location = new Point(12, 14);
             controlSectionLabel.Margin = new Padding(4, 0, 4, 0);
             controlSectionLabel.Name = "controlSectionLabel";
-            controlSectionLabel.Size = new Size(169, 25);
+            controlSectionLabel.Size = new Size(180, 26);
             controlSectionLabel.TabIndex = 8;
             controlSectionLabel.Text = "设备控制";
             controlSectionLabel.TextAlign = ContentAlignment.MiddleCenter;
@@ -307,13 +306,13 @@ namespace Page_switching
             bu_Configuration.Cursor = Cursors.Hand;
             bu_Configuration.DefaultBack = Color.White;
             bu_Configuration.DefaultBorderColor = Color.FromArgb(203, 213, 225);
-            bu_Configuration.Font = new Font("宋体", 12F, FontStyle.Bold);
+            bu_Configuration.Font = new Font("Microsoft YaHei UI", 10.5F);
             bu_Configuration.ForeColor = Color.FromArgb(15, 23, 42);
-            bu_Configuration.Location = new Point(-2, 778);
+            bu_Configuration.Location = new Point(10, 684);
             bu_Configuration.Margin = new Padding(4);
             bu_Configuration.Name = "bu_Configuration";
             bu_Configuration.Padding = new Padding(15, 0, 0, 0);
-            bu_Configuration.Size = new Size(198, 60);
+            bu_Configuration.Size = new Size(180, 50);
             bu_Configuration.TabIndex = 7;
             bu_Configuration.Text = "系统配置";
             bu_Configuration.Click += bu_Configuration_Click;
@@ -327,13 +326,13 @@ namespace Page_switching
             button5.Cursor = Cursors.Hand;
             button5.DefaultBack = Color.White;
             button5.DefaultBorderColor = Color.FromArgb(203, 213, 225);
-            button5.Font = new Font("宋体", 12F, FontStyle.Bold);
+            button5.Font = new Font("Microsoft YaHei UI", 10.5F);
             button5.ForeColor = Color.FromArgb(15, 23, 42);
-            button5.Location = new Point(-2, 483);
+            button5.Location = new Point(10, 422);
             button5.Margin = new Padding(4);
             button5.Name = "button5";
             button5.Padding = new Padding(15, 0, 0, 0);
-            button5.Size = new Size(198, 60);
+            button5.Size = new Size(180, 50);
             button5.TabIndex = 6;
             button5.Text = "浪高监测";
             button5.Click += button5_Click;
@@ -347,13 +346,13 @@ namespace Page_switching
             button2.Cursor = Cursors.Hand;
             button2.DefaultBack = Color.White;
             button2.DefaultBorderColor = Color.FromArgb(203, 213, 225);
-            button2.Font = new Font("宋体", 12F, FontStyle.Bold);
+            button2.Font = new Font("Microsoft YaHei UI", 10.5F);
             button2.ForeColor = Color.FromArgb(15, 23, 42);
-            button2.Location = new Point(-2, 421);
+            button2.Location = new Point(10, 368);
             button2.Margin = new Padding(4);
             button2.Name = "button2";
             button2.Padding = new Padding(15, 0, 0, 0);
-            button2.Size = new Size(198, 60);
+            button2.Size = new Size(180, 50);
             button2.TabIndex = 5;
             button2.Text = "波形生成";
             button2.Click += WaveformButton_Click;
@@ -367,13 +366,13 @@ namespace Page_switching
             Bu_data.Cursor = Cursors.Hand;
             Bu_data.DefaultBack = Color.White;
             Bu_data.DefaultBorderColor = Color.FromArgb(203, 213, 225);
-            Bu_data.Font = new Font("宋体", 12F, FontStyle.Bold);
+            Bu_data.Font = new Font("Microsoft YaHei UI", 10.5F);
             Bu_data.ForeColor = Color.FromArgb(15, 23, 42);
-            Bu_data.Location = new Point(-2, 358);
+            Bu_data.Location = new Point(10, 314);
             Bu_data.Margin = new Padding(4);
             Bu_data.Name = "Bu_data";
             Bu_data.Padding = new Padding(15, 0, 0, 0);
-            Bu_data.Size = new Size(198, 60);
+            Bu_data.Size = new Size(180, 50);
             Bu_data.TabIndex = 4;
             Bu_data.Text = "数据管理";
             Bu_data.Click += Bu_data_Click;
@@ -387,13 +386,13 @@ namespace Page_switching
             Bu_Calibration.Cursor = Cursors.Hand;
             Bu_Calibration.DefaultBack = Color.White;
             Bu_Calibration.DefaultBorderColor = Color.FromArgb(203, 213, 225);
-            Bu_Calibration.Font = new Font("宋体", 12F, FontStyle.Bold);
+            Bu_Calibration.Font = new Font("Microsoft YaHei UI", 10.5F);
             Bu_Calibration.ForeColor = Color.FromArgb(15, 23, 42);
-            Bu_Calibration.Location = new Point(-2, 295);
+            Bu_Calibration.Location = new Point(10, 260);
             Bu_Calibration.Margin = new Padding(4);
             Bu_Calibration.Name = "Bu_Calibration";
             Bu_Calibration.Padding = new Padding(15, 0, 0, 0);
-            Bu_Calibration.Size = new Size(198, 60);
+            Bu_Calibration.Size = new Size(180, 50);
             Bu_Calibration.TabIndex = 3;
             Bu_Calibration.Text = "标定管理";
             Bu_Calibration.Click += Bu_Calibration_Click;
@@ -407,13 +406,13 @@ namespace Page_switching
             Bu_manual.Cursor = Cursors.Hand;
             Bu_manual.DefaultBack = Color.White;
             Bu_manual.DefaultBorderColor = Color.FromArgb(203, 213, 225);
-            Bu_manual.Font = new Font("宋体", 12F, FontStyle.Bold);
+            Bu_manual.Font = new Font("Microsoft YaHei UI", 10.5F);
             Bu_manual.ForeColor = Color.FromArgb(15, 23, 42);
-            Bu_manual.Location = new Point(-2, 118);
+            Bu_manual.Location = new Point(10, 106);
             Bu_manual.Margin = new Padding(4);
             Bu_manual.Name = "Bu_manual";
             Bu_manual.Padding = new Padding(15, 0, 0, 0);
-            Bu_manual.Size = new Size(198, 60);
+            Bu_manual.Size = new Size(180, 50);
             Bu_manual.TabIndex = 1;
             Bu_manual.Text = "手动控制";
             Bu_manual.Click += Bu_manual_Click;
@@ -427,13 +426,13 @@ namespace Page_switching
             Bu_auto.Cursor = Cursors.Hand;
             Bu_auto.DefaultBack = Color.FromArgb(29, 78, 216);
             Bu_auto.DefaultBorderColor = Color.FromArgb(29, 78, 216);
-            Bu_auto.Font = new Font("宋体", 12F, FontStyle.Bold);
+            Bu_auto.Font = new Font("Microsoft YaHei UI", 10.5F);
             Bu_auto.ForeColor = Color.White;
-            Bu_auto.Location = new Point(-2, 55);
+            Bu_auto.Location = new Point(10, 52);
             Bu_auto.Margin = new Padding(4);
             Bu_auto.Name = "Bu_auto";
             Bu_auto.Padding = new Padding(15, 0, 0, 0);
-            Bu_auto.Size = new Size(198, 60);
+            Bu_auto.Size = new Size(180, 50);
             Bu_auto.TabIndex = 0;
             Bu_auto.Text = "自动运行";
             Bu_auto.Click += Bu_auto_Click;
@@ -441,10 +440,10 @@ namespace Page_switching
             // navigationMarker
             // 
             navigationMarker.BackColor = Color.FromArgb(29, 78, 216);
-            navigationMarker.Location = new Point(0, 55);
+            navigationMarker.Location = new Point(0, 52);
             navigationMarker.Margin = new Padding(4);
             navigationMarker.Name = "navigationMarker";
-            navigationMarker.Size = new Size(4, 55);
+            navigationMarker.Size = new Size(4, 50);
             navigationMarker.TabIndex = 11;
             // 
             // contentPanel

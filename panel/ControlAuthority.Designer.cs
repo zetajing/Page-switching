@@ -94,7 +94,7 @@ namespace Page_switching
             rootLayout.RowCount = 4;
             rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 70F));
             rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 190F));
-            rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 160F));
+            rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 180F));
             rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             rootLayout.Size = new Size(1380, 925);
             rootLayout.TabIndex = 0;
@@ -547,7 +547,7 @@ namespace Page_switching
             actionLayout.Margin = new Padding(0);
             actionLayout.Name = "actionLayout";
             actionLayout.RowCount = 1;
-            actionLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 55F));
+            actionLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 60F));
             actionLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             actionLayout.Size = new Size(1296, 97);
             actionLayout.TabIndex = 0;
@@ -557,7 +557,6 @@ namespace Page_switching
             AutoScaleDimensions = new SizeF(120F, 120F);
             AutoScaleMode = AutoScaleMode.Dpi;
             AutoScroll = true;
-            AutoScrollMinSize = new Size(1100, 850);
             BackColor = Color.FromArgb(241, 245, 249);
             Controls.Add(pagePanel);
             Font = new Font("Microsoft YaHei UI", 9F);
