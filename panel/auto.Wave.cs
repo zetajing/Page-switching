@@ -47,6 +47,17 @@ public partial class Auto
     private async void StartWaveButton_Click(object? sender, EventArgs e)
     {
         if (_waveService is null) return;
+        // 人工确认只代表提交启动请求，不代表PLC已允许运动；取消不进入启动流程。
+        var result = MessageBox.Show(this,
+            "确认开始造波吗？\r\n\r\n确认后将按现有流程自动使能、必要时回原，并请求启动造波。\r\n最终是否开始造波，仍由PLC检查运行条件和运动联锁。",
+            "开始造波确认", MessageBoxButtons.OKCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2);
+        if (result != DialogResult.OK)
+        {
+            AddLog("已取消开始造波，未发送启动请求。");
+            return;
+        }
+        if (IsDisposed || Disposing) return;
+        // 确认后仍由原服务读取最新PLC反馈并检查，不能沿用弹窗前的条件直接启动。
         await RunWaveUiAsync("开始造波（自动使能及必要回原）", () => _waveService.StartWaveAsync());
     }
 

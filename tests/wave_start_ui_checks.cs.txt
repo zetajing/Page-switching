@@ -1,4 +1,6 @@
 using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Text;
 using Page_switching;
 
 internal static class Program
@@ -36,6 +38,8 @@ internal static class Program
             service.WaveOperationActive = false;
             service.WaveStatus = new("已发送，等待开始", 1, false, true);
             service.LastWaveFailure = null;
+            service.StartFailure = null;
+            page.Logs.Clear();
             Set(page, "_waveFrame", good);
             Set(page, "_waveImporting", false);
             Set(page, "_waveStopping", false);
@@ -187,6 +191,54 @@ internal static class Program
         Refresh();
         Check(detail.Text.IndexOf("16384") == detail.Text.LastIndexOf("16384"), "同一失败不在当前和历史区重复展示。");
         Check(service.CommandCalls == 0, "更新按钮和原因不能调用启动、停止或上传命令。");
+
+        // 弹出真实确认框，只操作本探针UI线程的窗口，不连接PLC或操作用户的窗口。
+        using var host = new Form { ShowInTaskbar = false, Opacity = 0, ClientSize = new System.Drawing.Size(500, 300) };
+        host.Controls.Add(page); host.Show(); Application.DoEvents();
+        void Confirm(int response, Action? beforeChoice = null)
+        {
+            int callsBefore = service.CommandCalls;
+            bool found = false, defaultCancel = false, noEarlyCommand = false;
+            string prompt = "";
+            using var timer = new System.Windows.Forms.Timer { Interval = 20 };
+            timer.Tick += (_, _) => EnumThreadWindows(GetCurrentThreadId(), (window, _) =>
+            {
+                var title = new StringBuilder(256); GetWindowText(window, title, title.Capacity);
+                if (title.ToString() != "开始造波确认") return true;
+                timer.Stop(); found = true;
+                noEarlyCommand = service.CommandCalls == callsBefore;
+                defaultCancel = ((long)SendMessage(window, 0x0400, 0, 0) & 0xFFFF) == 2; // DM_GETDEFID
+                EnumChildWindows(window, (child, _) =>
+                {
+                    var text = new StringBuilder(2048); GetWindowText(child, text, text.Capacity);
+                    prompt += text + "\n"; return true;
+                }, 0);
+                beforeChoice?.Invoke();
+                if (response == 0) SendMessage(window, 0x0010, 0, 0); // 关闭等同取消
+                else SendMessage(window, 0x0111, response, GetDlgItem(window, response)); // WM_COMMAND: 确定1、取消2
+                return false;
+            }, 0);
+            timer.Start();
+            page.GetType().GetMethod("StartWaveButton_Click", Private)!.Invoke(page, new object?[] { null, EventArgs.Empty });
+            Application.DoEvents();
+            Check(found, "点击开始先弹出人工确认框。");
+            Check(defaultCancel, "默认选择取消，不能按回车直接启动。");
+            Check(noEarlyCommand, "弹窗未确认之前不得调用任何设备命令。");
+            Check(prompt.Contains("PLC") && prompt.Contains("运动联锁") && prompt.Contains("自动使能"), "确认文字说明准备动作和PLC最终联锁。");
+        }
+        Reset();
+        Confirm(2);
+        Check(service.CommandCalls == 0 && page.Logs.Any(log => log.Contains("未发送启动请求")), "取消不启动并记录结果。");
+        Confirm(0);
+        Check(service.CommandCalls == 0, "关闭确认框不发送启动请求。");
+        Confirm(1);
+        Check(service.CommandCalls == 1, "明确确认后仅调用一次原启动服务。");
+        Confirm(1, () => service.StartFailure = "PLC运行许可丢失，拒绝开始造波");
+        Check(service.CommandCalls == 2 && page.Logs.Any(log => log.Contains("失败") && log.Contains("PLC运行许可丢失")),
+            "确认过程中条件改变，仍显示原服务拒绝结果，不将人工确认视为启动成功。");
+        Reset();
+        page.GetType().GetMethod("StopWaveButton_Click", Private)!.Invoke(page, new object?[] { null, EventArgs.Empty });
+        Check(service.CommandCalls == 3, "停止保留直接入口，不等待开始确认。");
         Console.WriteLine($"Wave start UI checks: {_checks} assertions passed; actual auto.Wave.cs, no PLC access.");
     }
 
@@ -199,6 +251,14 @@ internal static class Program
         if (!condition) throw new Exception(message);
         _checks++;
     }
+
+    private delegate bool WindowCallback(nint window, nint parameter);
+    [DllImport("kernel32.dll")] private static extern uint GetCurrentThreadId();
+    [DllImport("user32.dll")] private static extern bool EnumThreadWindows(uint threadId, WindowCallback callback, nint parameter);
+    [DllImport("user32.dll")] private static extern bool EnumChildWindows(nint parent, WindowCallback callback, nint parameter);
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)] private static extern int GetWindowText(nint window, StringBuilder text, int capacity);
+    [DllImport("user32.dll")] private static extern nint GetDlgItem(nint parent, int id);
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)] private static extern nint SendMessage(nint window, uint message, nint wParam, nint lParam);
 }
 
 namespace Page_switching
@@ -221,7 +281,8 @@ namespace Page_switching
             Controls.AddRange(new Control[] { importWaveButton, sendWaveButton, startWaveButton,
                 stopWaveButton, waveFileLabel, waveStageLabel, waveDetailLabel, waveProgressBar });
         }
-        public void AddLog(string message) { }
+        internal readonly List<string> Logs = new();
+        public void AddLog(string message) => Logs.Add(message);
     }
 
     public sealed record WaveOperationStatus(string Stage, double Fraction, bool Active, bool Ready, string? Error = null);
@@ -237,10 +298,15 @@ namespace Page_switching
         public string? LastWaveFailure { get; set; }
         internal AxisMonitoringReport? RuntimeMonitoringReport { get; set; }
         public int CommandCalls { get; private set; }
+        internal string? StartFailure { get; set; }
         internal List<string> GetWaveStartBlockReasons(PlcMachineMonitor frame) =>
             WaveCommandChecks.ForStart(frame, ControlStationCode, WaveStatus.Ready ? 7u : 0u);
         public void ForgetWaveSignal() => CommandCalls++;
-        public Task StartWaveAsync() { CommandCalls++; return Task.CompletedTask; }
+        public Task StartWaveAsync()
+        {
+            CommandCalls++;
+            return StartFailure is null ? Task.CompletedTask : Task.FromException(new InvalidOperationException(StartFailure));
+        }
         public Task StopWaveAsync() { CommandCalls++; return Task.CompletedTask; }
     }
 
