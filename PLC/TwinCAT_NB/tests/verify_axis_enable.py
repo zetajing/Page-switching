@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 class AxisEnableChecks(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        source = ET.parse(ROOT / 'axis_4/POUs/ManualControl_手动控制/FB_AxisControl.TcPOU').findtext('.//ST')
+        source = pou_source(ROOT / 'axis_4/POUs/ManualControl_手动控制/FB_AxisControl.TcPOU')
         source = re.sub(r'//[^\n]*', '', source).replace('1.0E12', 'cLimit')
 
         def assignment(name):
@@ -65,7 +65,7 @@ class AxisEnableChecks(unittest.TestCase):
         fixture.scan()
         configs = fixture.motion.aConfig[1:]
         self.assertEqual(len(configs), 4)
-        feedback = ET.parse(ROOT / 'axis_4/POUs/Feedback_反馈/FB_HmiFeedback.TcPOU').findtext('.//ST')
+        feedback = pou_source(ROOT / 'axis_4/POUs/Feedback_反馈/FB_HmiFeedback.TcPOU')
         monitor_check = re.search(r'GVL_HMI.stMonitor.xConfigValid\s*:=\s*'
                                   r'(GVL_HMI.stMonitor.xConfigValid\s+AND.*?);', feedback, re.S)[1]
         trajectory = pou_source(ROOT / 'axis_4/POUs/Trajectory_点位与轨迹/FB_FourAxisTrajectory.TcPOU')

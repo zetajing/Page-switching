@@ -156,11 +156,7 @@ GVL_HMI.stMonitor.xAxisFault := GVL_axis.Axis1.xError OR GVL_axis.Axis2.xError
 FOR i := 1 TO 4 DO
     Config := GVL_motion.aConfig[i];
     GVL_HMI.stMonitor.xConfigValid := GVL_HMI.stMonitor.xConfigValid
-        AND (Config.lrMinPosition >= -1.0E12) AND (Config.lrMaxPosition <= 1.0E12)
-        AND (Config.lrMinPosition < Config.lrMaxPosition)
-        AND (Config.lrMaxVelocity > 0) AND (Config.lrMaxVelocity < 1.0E12)
-        AND (Config.lrMaxAcceleration > 0) AND (Config.lrMaxAcceleration < 1.0E12)
-        AND (Config.lrStopDeceleration > 0) AND (Config.lrStopDeceleration <= Config.lrMaxAcceleration)
+        AND F_AxisConfigValid(Config)
         AND (Config.lrInitVelocity > 0) AND (Config.lrInitVelocity <= Config.lrMaxVelocity)
         AND (Config.lrStartTolerance >= 0) AND (Config.lrStartTolerance < 1.0E12);
     GVL_HMI.stMonitor.xAxesIdle := GVL_HMI.stMonitor.xAxesIdle

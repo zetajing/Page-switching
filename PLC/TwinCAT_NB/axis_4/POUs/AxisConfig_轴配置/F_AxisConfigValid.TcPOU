@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="F_AxisConfigValid" Id="{83448338-C1FC-41E8-BC9C-A6A68A9AFD09}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION F_AxisConfigValid : BOOL
+VAR_INPUT
+    Config : ST_AxisConfig; // 本轴参数，只读取调用方传入的值。
+END_VAR]]></Declaration>
+    <Implementation><ST><![CDATA[// 基础运动参数共用规则；首点速度和到位容差由调用方按用途检查。
+F_AxisConfigValid := F_AxisPositionValid(Config)
+    AND (Config.lrMaxVelocity > 0) AND (Config.lrMaxVelocity < 1.0E12)
+    AND (Config.lrMaxAcceleration > 0) AND (Config.lrMaxAcceleration < 1.0E12)
+    AND (Config.lrStopDeceleration > 0)
+    AND (Config.lrStopDeceleration <= Config.lrMaxAcceleration);
+]]></ST></Implementation>
+  </POU>
+</TcPlcObject>

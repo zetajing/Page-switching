@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="F_AxisPositionValid" Id="{41B00CA0-ACF0-4DFF-AA2C-DF1A4034A8A6}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION F_AxisPositionValid : BOOL
+VAR_INPUT
+    Config : ST_AxisConfig; // 本轴参数，只读取调用方传入的值。
+END_VAR]]></Declaration>
+    <Implementation><ST><![CDATA[// 只校验位置范围，供手动方向限制使用。
+F_AxisPositionValid := (Config.lrMinPosition >= -1.0E12) AND (Config.lrMaxPosition <= 1.0E12)
+    AND (Config.lrMinPosition < Config.lrMaxPosition);
+]]></ST></Implementation>
+  </POU>
+</TcPlcObject>

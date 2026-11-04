@@ -40,13 +40,8 @@ rtHome(CLK := Data.gohome);
 rtReset(CLK := Data.reset);
 // Config 由 MAIN 传入 GVL_motion.aConfig；本块只读取，不覆盖输入参数。
 // 2. 分开校验位置和运动参数；未配置时可以基础使能，但不允许发起运动。
-xPositionValid := (Config.lrMinPosition >= -1.0E12) AND (Config.lrMaxPosition <= 1.0E12)
-    AND (Config.lrMinPosition < Config.lrMaxPosition);
-xConfigValid := xPositionValid
-    AND (Config.lrMaxVelocity > 0) AND (Config.lrMaxVelocity < 1.0E12)
-    AND (Config.lrMaxAcceleration > 0) AND (Config.lrMaxAcceleration < 1.0E12)
-    AND (Config.lrStopDeceleration > 0)
-    AND (Config.lrStopDeceleration <= Config.lrMaxAcceleration);
+xPositionValid := F_AxisPositionValid(Config);
+xConfigValid := F_AxisConfigValid(Config);
 
 // 3. 软件使能：Data.xStart 是持续使能请求，xPermit 和有效 I/O 决定能否接受该请求。
 // 已经使能的轴在运动、轨迹占用或 MC_Stop 尚未结束时，由 xHoldPower 暂时保持使能。

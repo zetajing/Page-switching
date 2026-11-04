@@ -4,11 +4,33 @@ import re
 import xml.etree.ElementTree as ET
 
 
+def resolve_state_constants(pou, source):
+    # 用源码声明的数值还原状态引用，让执行器和原有数字基线都能核对状态行为。
+    states = dict(re.findall(r'\b(cState\w+)\s*:\s*UINT\s*:=\s*(\d+)\s*;',
+                             pou.findtext('Declaration', default='')))
+    return re.sub(r'\bcState\w+\b', lambda match: states[match[0]], source)
+
+
+def expand_axis_checks(path, source):
+    # 离线执行器只支持表达式；从实际函数读取校验规则，避免测试维护第二份规则。
+    folder = path.parent.parent / 'AxisConfig_轴配置'
+
+    def inline(match):
+        name, argument = match.groups()
+        code = ET.parse(folder / (name + '.TcPOU')).findtext('.//Implementation/ST')
+        code = re.sub(r'//[^\n]*', '', code).strip()
+        expression = re.fullmatch(name + r'\s*:=\s*(.*);', code, re.S)[1]
+        expression = expand_axis_checks(path, expression)
+        return re.sub(r'\bConfig\.', lambda _: argument + '.', expression)
+
+    return re.sub(r'\b(F_Axis(?:Position|Config)Valid)\((Config|aConfig\[i\])\)', inline, source)
+
+
 def pou_source(path):
     pou = ET.parse(path).find('POU')
-    actions = {action.get('Name'): action.findtext('./Implementation/ST')
+    actions = {action.get('Name'): resolve_state_constants(pou, action.findtext('./Implementation/ST'))
                for action in pou.findall('Action')}
-    source = pou.findtext('./Implementation/ST')
+    source = resolve_state_constants(pou, pou.findtext('./Implementation/ST'))
 
     def expand_action(name, chain):
         if name not in actions: raise ValueError('引用了不存在的 Action：' + name)
@@ -33,7 +55,7 @@ def pou_source(path):
         return re.sub(r'^[ \t]*(A\d\d_\w+)\(\);[ \t]*$',
                       lambda match: expand_action(match.group(1), chain), text, flags=re.M)
 
-    return expand(source, [])
+    return expand_axis_checks(path, expand(source, []))
 
 
 def main_source(root):

@@ -5,7 +5,7 @@ import re
 import tempfile
 import unittest
 import xml.etree.ElementTree as ET
-from plc_source import pou_source
+from plc_source import pou_source, resolve_state_constants
 
 ROOT = Path(__file__).resolve().parents[1]
 PATH = ROOT / 'axis_4/POUs/Trajectory_点位与轨迹/FB_FourAxisTrajectory.TcPOU'
@@ -13,7 +13,7 @@ PATH = ROOT / 'axis_4/POUs/Trajectory_点位与轨迹/FB_FourAxisTrajectory.TcPO
 
 class TrajectoryActionChecks(unittest.TestCase):
     def test_expanded_statements_equal_pre_refactor_baseline(self):
-        # 基线来自 e21965f 保存的 499 行 ST：只允许搬移与加注释，不能改运行语句。
+        # 基线来自 e21965f；还原状态常量并展开共用校验后，执行语句应与原先一致。
         source = re.sub(r'//[^\n]*|\(\*.*?\*\)', '', pou_source(PATH), flags=re.S)
         tokens = re.findall(r"'(?:''|[^'])*'|\w+|:=|<>|<=|>=|[^\s]", source)
         self.assertEqual(len(tokens), 3131)
@@ -27,9 +27,10 @@ class TrajectoryActionChecks(unittest.TestCase):
         self.assertEqual(len(actions), 8)
         for name in actions: self.assertEqual(main.count(name + '();'), 1)
         self.assertEqual(main.count('CASE nState OF'), 1)
-        self.assertIn('0, 5: A04_ReceiveAndAssemble();', main)
-        self.assertIn('10, 15, 20, 30: A05_PrepareAndRun();', main)
-        self.assertIn('40, 50, 60, 70: A06_StopAndExit();', main)
+        dispatch = resolve_state_constants(pou, main)
+        self.assertIn('0, 5: A04_ReceiveAndAssemble();', dispatch)
+        self.assertIn('10, 15, 20, 30: A05_PrepareAndRun();', dispatch)
+        self.assertIn('40, 50, 60, 70: A06_StopAndExit();', dispatch)
         self.assertLess(main.index('A03_ResetAndInterlocks();'), main.index('CASE nState OF'))
         self.assertLess(main.index('END_CASE'), main.index('A07_CallMotionBlocks();'))
         self.assertLess(main.index('A07_CallMotionBlocks();'), main.index('A08_PublishFeedback();'))

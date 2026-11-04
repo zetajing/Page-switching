@@ -57,6 +57,12 @@
       <SubType>Code</SubType>
       <LinkAlways>true</LinkAlways>
     </Compile>
+    <Compile Include="POUs\AxisConfig_轴配置\F_AxisPositionValid.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\AxisConfig_轴配置\F_AxisConfigValid.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="POUs\AxisConfig_轴配置\FB_AxisConfig.TcPOU">
       <SubType>Code</SubType>
     </Compile>
