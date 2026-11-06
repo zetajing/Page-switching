@@ -9,6 +9,8 @@
 3. 点击“保存数据库”。后台每5秒尝试补传，设置保存后即被下次同步读取。未启用时仍保存本地文件。
 4. 从“数据管理 → 数据库记录”查看记录或立即同步。管理员和操作员均可查看、导出；查询页没有删除和编辑入口。
 
+连接字符串采用 .NET SQL Server 格式，不支持 `jdbc:sqlserver://` Java URL。例如使用 SQL 账号时填写 `Server=localhost;Database=WaveControl;Integrated Security=False`，账号和密码分别填入下方输入框。`WaveControl` 需替换为实际已有的业务数据库名称。“连接并建表”只创建业务表，不创建数据库。保存和连接测试都会校验服务器、数据库及连接字符串格式；检测到 JDBC 时显示中文格式提示。
+
 连接配置仍使用现有 `DatabaseEnabled`、`DatabaseConnectionString`、`DatabaseUserName`、`DatabasePassword`。初始保持关闭；配置中的数据库账号与软件登录账号是两套账号。配置保存方式沿用现有App.config机制，不改变PLC连接参数。
 
 ## 保存内容

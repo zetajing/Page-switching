@@ -1071,7 +1071,7 @@ partial class Config
         _databaseConnectionTextBox.Location = new Point(130, 3);
         _databaseConnectionTextBox.Margin = new Padding(2, 3, 2, 3);
         _databaseConnectionTextBox.Name = "_databaseConnectionTextBox";
-        _databaseConnectionTextBox.PlaceholderText = "SQL Server 连接字符串";
+        _databaseConnectionTextBox.PlaceholderText = "Server=localhost;Database=WaveControl;Integrated Security=False";
         _databaseConnectionTextBox.Size = new Size(540, 23);
         _databaseConnectionTextBox.TabIndex = 1;
         //

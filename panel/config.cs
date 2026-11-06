@@ -191,7 +191,10 @@ public partial class Config : UserControl
             throw new InvalidOperationException("启用数据库日志时，连接字符串不能为空。");
         if (!string.IsNullOrWhiteSpace(password) && string.IsNullOrWhiteSpace(userName))
             throw new InvalidOperationException("填写数据库密码时，账号不能为空。");
-        return AddSqlServerCredentials(connectionString, userName, password);
+        // 保存与连接测试使用相同校验，禁止将无效配置交给后台补传。
+        if (string.IsNullOrWhiteSpace(connectionString)) return connectionString;
+        connectionString = DatabaseStore.Normalize(connectionString);
+        return DatabaseStore.Normalize(AddSqlServerCredentials(connectionString, userName, password));
     }
 
     // 打开文件选择框，让用户选择波形生成程序。

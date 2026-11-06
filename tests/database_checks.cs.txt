@@ -9,6 +9,30 @@ internal static class Program
     static void Check(bool condition, string message) { checks++; if (!condition) throw new Exception(message); }
     static async Task Main(string[] args)
     {
+        // 连接配置离线验证：JDBC 误填须给出修正格式，且错误不得带回密码。
+        foreach (string prefix in new[] { "jdbc:sqlserver://", "  JDBC:SQLSERVER://" })
+        {
+            try
+            {
+                DatabaseStore.Normalize(prefix + ";servername=localhost;databaseName=master;password=probe-secret");
+                throw new Exception("未拒绝JDBC连接串");
+            }
+            catch (InvalidOperationException ex)
+            {
+                Check(ex.Message.Contains("Server=localhost") && !ex.Message.Contains("probe-secret"), "JDBC格式提示不泄露密码");
+            }
+        }
+        foreach (string invalid in new[] { "", "Server=localhost", "Database=Wave" })
+        {
+            try { DatabaseStore.Normalize(invalid); throw new Exception("未拒绝缺失服务器或数据库"); }
+            catch (InvalidOperationException) { Check(true, "必填连接参数校验"); }
+        }
+        var sql = new System.Data.SqlClient.SqlConnectionStringBuilder(DatabaseStore.Normalize(
+            "Server=localhost;Database=Wave;User ID=probe;Password=\"a;b=c\";Integrated Security=False"));
+        Check(sql.DataSource == "localhost" && sql.InitialCatalog == "Wave" && sql.Password == "a;b=c"
+            && !sql.IntegratedSecurity && sql.ConnectTimeout == 3, "SQL认证及带分隔符密码保留");
+        Check(new System.Data.SqlClient.SqlConnectionStringBuilder(DatabaseStore.Normalize(
+            "Server=localhost;Database=Wave;Integrated Security=True")).IntegratedSecurity, "Windows认证保留");
         DatabaseArchive.Root = Path.Combine(args[0], "archive");
         Check(await DatabaseArchive.SaveWaveDataAsync(new[] { 1.0 }, "disabled", default) is null, "Designer未启动归档");
         DatabaseArchive.Start("管理员甲", 2);

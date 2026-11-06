@@ -17,6 +17,9 @@ internal static class DatabaseStore
     internal static string ConnectionString => Normalize(ConfigurationManager.AppSettings["DatabaseConnectionString"] ?? "");
     internal static string Normalize(string text)
     {
+        // JDBC URL 不能交给 .NET 驱动解析；提示可直接填写的格式，不回显账号密码。
+        if (text.TrimStart().StartsWith("jdbc:", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("请使用 .NET SQL Server 连接字符串，不支持 JDBC。示例：Server=localhost;Database=WaveControl;Integrated Security=False；账号和密码请在下方填写。");
         var builder = new SqlConnectionStringBuilder(text) { ConnectTimeout = 3 };
         if (string.IsNullOrWhiteSpace(builder.DataSource) || string.IsNullOrWhiteSpace(builder.InitialCatalog))
             throw new InvalidOperationException("请填写SQL Server服务器和数据库名称。");
