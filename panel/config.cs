@@ -91,6 +91,8 @@ public partial class Config : UserControl
         remoteAddressTextBox.Text = Read("AdsTcpRouterRemoteAddress");
         // 两种模式都先显示程序实际连接的 PLC；旧配置里的 Router 路由可能指向其他目标。
         remoteNetIdTextBox.Text = Read("AdsAmsNetId", Read("AdsTcpRouterRemoteNetId"));
+        // 只显示 PLC 的 ADS 端口，独立 Router 的 TCP 监听端口在下方单独设置。
+        plcAdsPortLabel.Text = $"PLC ADS 端口：{ReadPort("AdsPort", 851)}";
     }
 
     // 从 App.config 读取数据库开关、连接字符串以及 SQL Server 账号密码。

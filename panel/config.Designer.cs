@@ -24,6 +24,10 @@ partial class Config
     private AntdUI.Button browseOperationLogDirectoryButton;
     private AntdUI.Button saveOperationLogDirectoryButton;
     private AntdUI.Label operationLogStateLabel;
+    private AntdUI.Panel plcTargetGroup;
+    private AntdUI.Label plcTargetCaption;
+    private TableLayoutPanel plcTargetLayout;
+    private AntdUI.Label plcAdsPortLabel;
     private AntdUI.Panel routerGroup;
         private AntdUI.Label routerGroupCaption;
     private TableLayoutPanel routerLayout;
@@ -113,6 +117,10 @@ partial class Config
         saveOperationLogDirectoryButton = new AntdUI.Button();
             saveOperationLogDirectoryButton.Radius = 6;
         operationLogStateLabel = new AntdUI.Label();
+        plcTargetGroup = new AntdUI.Panel();
+        plcTargetCaption = new AntdUI.Label();
+        plcTargetLayout = new TableLayoutPanel();
+        plcAdsPortLabel = new AntdUI.Label();
         routerGroup = new AntdUI.Panel();
             routerGroupCaption = new AntdUI.Label();
         routerLayout = new TableLayoutPanel();
@@ -202,6 +210,8 @@ partial class Config
         controlStationLayout.SuspendLayout();
         operationLogGroup.SuspendLayout();
         operationLogLayout.SuspendLayout();
+        plcTargetGroup.SuspendLayout();
+        plcTargetLayout.SuspendLayout();
         routerGroup.SuspendLayout();
         routerLayout.SuspendLayout();
         waveGeneratorGroup.SuspendLayout();
@@ -231,26 +241,28 @@ partial class Config
         rootLayout.Controls.Add(subtitleLabel, 0, 1);
         rootLayout.Controls.Add(controlStationGroup, 0, 2);
         rootLayout.Controls.Add(operationLogGroup, 0, 3);
-        rootLayout.Controls.Add(routerGroup, 0, 4);
-        rootLayout.Controls.Add(waveGeneratorGroup, 0, 5);
-        rootLayout.Controls.Add(_databaseGroup, 0, 6);
-        rootLayout.Controls.Add(monitoringSettingsButton, 0, 7);
+        rootLayout.Controls.Add(plcTargetGroup, 0, 4);
+        rootLayout.Controls.Add(routerGroup, 0, 5);
+        rootLayout.Controls.Add(waveGeneratorGroup, 0, 6);
+        rootLayout.Controls.Add(_databaseGroup, 0, 7);
+        rootLayout.Controls.Add(monitoringSettingsButton, 0, 8);
         rootLayout.Dock = DockStyle.Top;
         rootLayout.Location = new Point(0, 0);
         rootLayout.Margin = new Padding(2, 3, 2, 3);
         rootLayout.Name = "rootLayout";
         rootLayout.MinimumSize = new Size(820, 0);
         rootLayout.Padding = new Padding(16);
-        rootLayout.RowCount = 8;
+        rootLayout.RowCount = 9;
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 42F));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 26F));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 120F));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 116F));
-        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 292F));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 130F));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 232F));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 172F));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 156F));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 52F));
-        rootLayout.Size = new Size(843, 956);
+        rootLayout.Size = new Size(843, 1078);
         rootLayout.TabIndex = 0;
         //
         // titleLabel
@@ -276,7 +288,7 @@ partial class Config
         subtitleLabel.Name = "subtitleLabel";
         subtitleLabel.Size = new Size(807, 26);
         subtitleLabel.TabIndex = 1;
-        subtitleLabel.Text = "本站身份、日志保存位置、手动控制 ADS 路由、波形程序和数据库连接";
+        subtitleLabel.Text = "本站身份、日志保存位置、PLC 连接、波形程序和数据库连接";
         subtitleLabel.TextAlign = ContentAlignment.MiddleLeft;
         //
         // controlStationGroup
@@ -495,6 +507,61 @@ partial class Config
         operationLogStateLabel.Text = "日志按小时保存。保存目录立即生效，已有日志保留在原目录；留空恢复默认位置。";
         operationLogStateLabel.TextAlign = ContentAlignment.MiddleLeft;
         //
+        // 两种 Router 模式共用的 PLC 目标单独显示，避免与独立 Router 的本机参数混在一起。
+        // plcTargetGroup
+        //
+        plcTargetGroup.BackColor = Color.White;
+        plcTargetGroup.BorderWidth = 1F;
+        plcTargetGroup.BorderColor = Color.FromArgb(203, 213, 225);
+        plcTargetGroup.Radius = 6;
+        plcTargetGroup.Controls.Add(plcTargetLayout);
+        plcTargetGroup.Controls.Add(plcTargetCaption);
+        plcTargetGroup.Dock = DockStyle.Fill;
+        plcTargetGroup.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
+        plcTargetGroup.ForeColor = Color.FromArgb(15, 23, 42);
+        plcTargetGroup.Location = new Point(18, 323);
+        plcTargetGroup.Margin = new Padding(2, 3, 2, 3);
+        plcTargetGroup.Name = "plcTargetGroup";
+        plcTargetGroup.Padding = new Padding(16, 32, 16, 12);
+        plcTargetGroup.Size = new Size(807, 124);
+        plcTargetGroup.TabIndex = 2;
+        plcTargetCaption.AutoSize = true;
+        plcTargetCaption.Location = new Point(10, 2);
+        plcTargetCaption.Name = "plcTargetCaption";
+        plcTargetCaption.Text = "PLC 连接目标";
+        plcTargetCaption.BringToFront();
+        //
+        // plcTargetLayout
+        //
+        plcTargetLayout.ColumnCount = 3;
+        plcTargetLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 130F));
+        plcTargetLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 40F));
+        plcTargetLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 60F));
+        plcTargetLayout.Controls.Add(remoteNetIdLabel, 0, 0);
+        plcTargetLayout.Controls.Add(remoteNetIdTextBox, 1, 0);
+        plcTargetLayout.Controls.Add(plcAdsPortLabel, 2, 0);
+        plcTargetLayout.Controls.Add(saveRouterButton, 1, 1);
+        plcTargetLayout.Controls.Add(saveResultLabel, 2, 1);
+        plcTargetLayout.Dock = DockStyle.Fill;
+        plcTargetLayout.Location = new Point(16, 32);
+        plcTargetLayout.Name = "plcTargetLayout";
+        plcTargetLayout.RowCount = 2;
+        plcTargetLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 38F));
+        plcTargetLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+        plcTargetLayout.Size = new Size(775, 80);
+        //
+        // plcAdsPortLabel
+        //
+        plcAdsPortLabel.Dock = DockStyle.Fill;
+        plcAdsPortLabel.Font = new Font("Microsoft YaHei UI", 9F);
+        plcAdsPortLabel.ForeColor = Color.FromArgb(71, 85, 105);
+        plcAdsPortLabel.Location = new Point(398, 0);
+        plcAdsPortLabel.Margin = new Padding(10, 0, 2, 0);
+        plcAdsPortLabel.Name = "plcAdsPortLabel";
+        plcAdsPortLabel.Size = new Size(375, 38);
+        plcAdsPortLabel.Text = "PLC ADS 端口：851";
+        plcAdsPortLabel.TextAlign = ContentAlignment.MiddleLeft;
+        //
         // routerGroup
         //
         routerGroup.BackColor = Color.White;
@@ -502,14 +569,14 @@ partial class Config
         routerGroup.Dock = DockStyle.Fill;
         routerGroup.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
         routerGroup.ForeColor = Color.FromArgb(15, 23, 42);
-        routerGroup.Location = new Point(18, 323);
+        routerGroup.Location = new Point(18, 453);
         routerGroup.Margin = new Padding(2, 3, 2, 3);
         routerGroup.Name = "routerGroup";
         routerGroup.Padding = new Padding(16, 32, 16, 12);
-        routerGroup.Size = new Size(807, 286);
-        routerGroup.TabIndex = 2;
+        routerGroup.Size = new Size(807, 226);
+        routerGroup.TabIndex = 3;
         // AntdUI 面板用独立标题标签保留原分组标题，布局仍可在 Designer 编辑。
-            routerGroupCaption.Text = "手动控制 ADS 路由";
+            routerGroupCaption.Text = "独立 TCP Router（无 TwinCAT 的电脑）";
             routerGroupCaption.AutoSize = true;
             routerGroupCaption.Name = "routerGroupCaption";
             routerGroupCaption.Location = new Point(10, 2);
@@ -539,23 +606,18 @@ partial class Config
         routerLayout.Controls.Add(remoteNameTextBox, 3, 1);
         routerLayout.Controls.Add(remoteAddressLabel, 2, 2);
         routerLayout.Controls.Add(remoteAddressTextBox, 3, 2);
-        routerLayout.Controls.Add(remoteNetIdLabel, 2, 3);
-        routerLayout.Controls.Add(remoteNetIdTextBox, 3, 3);
-        routerLayout.Controls.Add(saveRouterButton, 1, 4);
-        routerLayout.Controls.Add(saveResultLabel, 2, 4);
-        routerLayout.Controls.Add(routerNoticeLabel, 0, 5);
+        routerLayout.Controls.Add(routerNoticeLabel, 0, 4);
         routerLayout.Dock = DockStyle.Fill;
         routerLayout.Location = new Point(16, 29);
         routerLayout.Margin = new Padding(2, 3, 2, 3);
         routerLayout.Name = "routerLayout";
-        routerLayout.RowCount = 6;
+        routerLayout.RowCount = 5;
         routerLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
         routerLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 38F));
         routerLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 38F));
         routerLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 38F));
-        routerLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 42F));
         routerLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-        routerLayout.Size = new Size(775, 245);
+        routerLayout.Size = new Size(775, 182);
         routerLayout.TabIndex = 0;
         //
         // routerEnabledCheckBox
@@ -643,7 +705,7 @@ partial class Config
         routerTcpPortLabel.Name = "routerTcpPortLabel";
         routerTcpPortLabel.Size = new Size(126, 38);
         routerTcpPortLabel.TabIndex = 6;
-        routerTcpPortLabel.Text = "Router TCP 端口";
+        routerTcpPortLabel.Text = "本机 TCP 端口";
         routerTcpPortLabel.TextAlign = ContentAlignment.MiddleLeft;
         //
         // routerTcpPortInput
@@ -716,11 +778,11 @@ partial class Config
         remoteNetIdLabel.Dock = DockStyle.Fill;
         remoteNetIdLabel.Font = new Font("Microsoft YaHei UI", 9F);
         remoteNetIdLabel.ForeColor = Color.FromArgb(71, 85, 105);
-        remoteNetIdLabel.Location = new Point(389, 108);
+        remoteNetIdLabel.Location = new Point(2, 0);
         remoteNetIdLabel.Margin = new Padding(2, 0, 2, 0);
         remoteNetIdLabel.Name = "remoteNetIdLabel";
         remoteNetIdLabel.Size = new Size(126, 38);
-        remoteNetIdLabel.TabIndex = 12;
+        remoteNetIdLabel.TabIndex = 0;
         remoteNetIdLabel.Text = "PLC AMS Net ID";
         remoteNetIdLabel.TextAlign = ContentAlignment.MiddleLeft;
         //
@@ -730,11 +792,11 @@ partial class Config
         remoteNetIdTextBox.Dock = DockStyle.Fill;
         remoteNetIdTextBox.Font = new Font("Microsoft YaHei UI", 10F);
         remoteNetIdTextBox.ForeColor = Color.FromArgb(15, 23, 42);
-        remoteNetIdTextBox.Location = new Point(519, 113);
+        remoteNetIdTextBox.Location = new Point(132, 5);
         remoteNetIdTextBox.Margin = new Padding(2, 5, 2, 5);
         remoteNetIdTextBox.Name = "remoteNetIdTextBox";
-        remoteNetIdTextBox.Size = new Size(254, 24);
-        remoteNetIdTextBox.TabIndex = 13;
+        remoteNetIdTextBox.Size = new Size(254, 28);
+        remoteNetIdTextBox.TabIndex = 1;
         //
         // saveRouterButton
         //
@@ -746,24 +808,23 @@ partial class Config
         saveRouterButton.BackHover = Color.FromArgb(30, 64, 175);
         saveRouterButton.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
         saveRouterButton.ForeColor = Color.White;
-        saveRouterButton.Location = new Point(132, 150);
+        saveRouterButton.Location = new Point(132, 42);
         saveRouterButton.Margin = new Padding(2, 3, 2, 3);
         saveRouterButton.Name = "saveRouterButton";
         saveRouterButton.Size = new Size(140, 34);
-        saveRouterButton.TabIndex = 14;
-        saveRouterButton.Text = "保存 Router 配置";
+        saveRouterButton.TabIndex = 2;
+        saveRouterButton.Text = "保存 ADS 配置";
         saveRouterButton.Click += SaveRouterButton_Click;
         //
         // saveResultLabel
         //
-        routerLayout.SetColumnSpan(saveResultLabel, 2);
         saveResultLabel.Dock = DockStyle.Fill;
         saveResultLabel.Font = new Font("Microsoft YaHei UI", 9F);
-        saveResultLabel.Location = new Point(389, 146);
-        saveResultLabel.Margin = new Padding(2, 0, 2, 0);
+        saveResultLabel.Location = new Point(398, 38);
+        saveResultLabel.Margin = new Padding(10, 0, 2, 0);
         saveResultLabel.Name = "saveResultLabel";
-        saveResultLabel.Size = new Size(384, 42);
-        saveResultLabel.TabIndex = 15;
+        saveResultLabel.Size = new Size(375, 42);
+        saveResultLabel.TabIndex = 3;
         saveResultLabel.TextAlign = ContentAlignment.MiddleLeft;
         //
         // routerNoticeLabel
@@ -773,13 +834,13 @@ partial class Config
         routerNoticeLabel.Dock = DockStyle.Fill;
         routerNoticeLabel.Font = new Font("Microsoft YaHei UI", 9F);
         routerNoticeLabel.ForeColor = Color.FromArgb(100, 116, 139);
-        routerNoticeLabel.Location = new Point(2, 188);
+        routerNoticeLabel.Location = new Point(2, 146);
         routerNoticeLabel.Margin = new Padding(2, 0, 2, 0);
         routerNoticeLabel.Name = "routerNoticeLabel";
         routerNoticeLabel.Padding = new Padding(0, 3, 0, 0);
-        routerNoticeLabel.Size = new Size(771, 57);
+        routerNoticeLabel.Size = new Size(771, 36);
         routerNoticeLabel.TabIndex = 16;
-        routerNoticeLabel.Text = "系统 TwinCAT Router 运行时应关闭独立 Router；PLC 需配置到本机 AMS Net ID 的返回路由。";
+        routerNoticeLabel.Text = "有 TwinCAT：在 TwinCAT 中配置 PLC 路由。此区域修改后，点击上方「保存 ADS 配置」。";
         //
         // waveGeneratorGroup
         //
@@ -788,7 +849,7 @@ partial class Config
         waveGeneratorGroup.Dock = DockStyle.Fill;
         waveGeneratorGroup.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
         waveGeneratorGroup.ForeColor = Color.FromArgb(15, 23, 42);
-        waveGeneratorGroup.Location = new Point(18, 615);
+        waveGeneratorGroup.Location = new Point(18, 685);
         waveGeneratorGroup.Margin = new Padding(2, 3, 2, 3);
         waveGeneratorGroup.Name = "waveGeneratorGroup";
         waveGeneratorGroup.Padding = new Padding(11, 32, 11, 8);
@@ -997,7 +1058,7 @@ partial class Config
         _databaseGroup.Dock = DockStyle.Fill;
         _databaseGroup.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
         _databaseGroup.ForeColor = Color.FromArgb(15, 23, 42);
-        _databaseGroup.Location = new Point(18, 787);
+        _databaseGroup.Location = new Point(18, 857);
         _databaseGroup.Margin = new Padding(2, 3, 2, 3);
         _databaseGroup.Name = "_databaseGroup";
         _databaseGroup.Padding = new Padding(11, 32, 11, 8);
@@ -1181,6 +1242,9 @@ partial class Config
         operationLogGroup.ResumeLayout(false);
         operationLogLayout.ResumeLayout(false);
         operationLogLayout.PerformLayout();
+        plcTargetGroup.ResumeLayout(false);
+        plcTargetGroup.PerformLayout();
+        plcTargetLayout.ResumeLayout(false);
         routerGroup.ResumeLayout(false);
         routerLayout.ResumeLayout(false);
         routerLayout.PerformLayout();

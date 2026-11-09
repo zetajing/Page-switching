@@ -6,7 +6,7 @@
 
 ## 每台电脑的配置
 
-在上位机「系统配置」中填写 ADS 连接参数，保存后重启程序。参数保存到各自 Windows 用户的 `%LOCALAPPDATA%\PageSwitching\AdsConnectionSettings.json`，优先于随程序发布的默认配置。
+在上位机「系统配置」的「PLC 连接目标」中填写目标 AMS Net ID。无 TwinCAT 的电脑还需在下方的「独立 TCP Router」区域勾选并填写参数。点「保存 ADS 配置」保存这两处设置，再重启程序。参数保存到各自 Windows 用户的 `%LOCALAPPDATA%\PageSwitching\AdsConnectionSettings.json`，优先于随程序发布的默认配置。
 
 | 设置 | 已安装 TwinCAT 的电脑 | 无 TwinCAT 的电脑 B | 无 TwinCAT 的电脑 C |
 | --- | --- | --- | --- |
