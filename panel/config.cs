@@ -89,7 +89,8 @@ public partial class Config : UserControl
         routerTcpPortInput.Value = ReadPort("AdsTcpRouterTcpPort", 48898);
         remoteNameTextBox.Text = Read("AdsTcpRouterRemoteName", "WaveMakerPlc");
         remoteAddressTextBox.Text = Read("AdsTcpRouterRemoteAddress");
-        remoteNetIdTextBox.Text = Read("AdsTcpRouterRemoteNetId", Read("AdsAmsNetId"));
+        // 两种模式都先显示程序实际连接的 PLC；旧配置里的 Router 路由可能指向其他目标。
+        remoteNetIdTextBox.Text = Read("AdsAmsNetId", Read("AdsTcpRouterRemoteNetId"));
     }
 
     // 从 App.config 读取数据库开关、连接字符串以及 SQL Server 账号密码。
@@ -390,7 +391,8 @@ public partial class Config : UserControl
         routerTcpPortInput.Enabled = enabled;
         remoteNameTextBox.Enabled = enabled;
         remoteAddressTextBox.Enabled = enabled;
-        remoteNetIdTextBox.Enabled = enabled;
+        // PLC 目标在系统 Router 和独立 Router 模式下都需要可编辑。
+        remoteNetIdTextBox.Enabled = true;
         routerStateLabel.Text = enabled ? "独立 Router：启用（重启后生效）" : "独立 Router：关闭，使用系统 TwinCAT Router";
         routerStateLabel.ForeColor = enabled ? UiPalette.Success : UiPalette.Muted;
     }
@@ -430,9 +432,10 @@ public partial class Config : UserControl
         OperationJournal.Record("系统配置", logMessage ?? message);
     }
 
-    // 检查 Router 名称、Net ID、地址和端口是否合法。
+    // 两种模式都检查 PLC 目标；独立 Router 才需要检查本机和路由参数。
     private void ValidateRouterInputs()
     {
+        ValidateAmsNetId(remoteNetIdTextBox.Text, "PLC AMS Net ID");
         if (!routerEnabledCheckBox.Checked)
         {
             return;
@@ -453,8 +456,6 @@ public partial class Config : UserControl
         {
             throw new InvalidOperationException("PLC 路由名称不能为空。");
         }
-
-        ValidateAmsNetId(remoteNetIdTextBox.Text, "PLC AMS Net ID");
     }
 
     private void ValidateWaveProgramDirectory(bool requireGenerator = false)

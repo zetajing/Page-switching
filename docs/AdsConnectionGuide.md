@@ -1,10 +1,40 @@
-# 73 与 113 两台电脑的 ADS 连接
+# 三台电脑连接同一台 PLC
 
 [返回文档导航](README.md)
 
-73 电脑运行虚拟 PLC 和系统 TwinCAT Router；113 电脑没有虚拟 PLC，通过程序内的独立 Router 连接 73。两台电脑可以同时读取同一个 PLC，无需关闭 73 上的程序。
+三台电脑运行同一套上位机。安装了 TwinCAT 的电脑使用系统 TwinCAT Router，另外两台分别启用程序自带的独立 Router。三台电脑各自直连 PLC 的 ADS Router，可同时读取 PLC 数据。
 
-## 配置
+## 每台电脑的配置
+
+在上位机「系统配置」中填写 ADS 连接参数，保存后重启程序。参数保存到各自 Windows 用户的 `%LOCALAPPDATA%\PageSwitching\AdsConnectionSettings.json`，优先于随程序发布的默认配置。
+
+| 设置 | 已安装 TwinCAT 的电脑 | 无 TwinCAT 的电脑 B | 无 TwinCAT 的电脑 C |
+| --- | --- | --- | --- |
+| 独立 Router | 关闭 | 开启 | 开启 |
+| 本机 AMS Net ID | TwinCAT 系统 Router 已配置的 Net ID | B 专用 Net ID | C 专用 Net ID |
+| PLC AMS Net ID | 三台均填 PLC 实际的 AMS Net ID | 同左 | 同左 |
+| PLC ADS 端口 | `851`（PLC Runtime 1） | `851` | `851` |
+| PLC IP 地址 | 在 TwinCAT 路由里配置 | 填 PLC 在该网段可达的 IP | 填 PLC 在该网段可达的 IP |
+| Router TCP 端口 | 由系统 Router 管理 | `48898` | `48898` |
+| 本机回环地址及端口 | 由系统 Router 管理 | 保存时自动使用 `127.0.0.1:48898` | 保存时自动使用 `127.0.0.1:48898` |
+
+AMS Net ID 是 ADS 节点身份。B、C 可以用各自实际 IP 加 `.1.1` 来命名，但必须彼此不同，也要与系统 Router 和 PLC 的 Net ID 区分。两台电脑使用同一个 TCP 端口号没有冲突，因为各自在本机监听。`851` 用于寻址 PLC Runtime，标准 ADS TCP 通信使用 `48898`。参考 [Beckhoff ADS 设备寻址](https://infosys.beckhoff.com/content/1033/tc3_ads_intro/116159883.html)和[独立 Router 配置](https://infosys.beckhoff.com/content/1033/tc3_ads.net/9409008395.html)。
+
+## 在 PLC 侧配置路由
+
+- 在实际运行 PLC 的 TwinCAT Router 中，分别添加 `B 的 AMS Net ID → B 的实际 IP` 和 `C 的 AMS Net ID → C 的实际 IP`。
+- 如果 PLC 是独立 CX 或另一台电脑，给已安装 TwinCAT 的上位机与 PLC 也分别配置指向对方的静态路由。如果 PLC 就运行在该上位机的系统 Router 下，本机 ADS 客户端使用本地路由即可。
+- 配置前从目标 TwinCAT 核对 PLC 的 AMS Net ID 和实际可达 IP。AMS Net ID 的前四段与 IP 不同时，分别按各自实际值填写。参考 [Beckhoff Static Routes](https://infosys.beckhoff.com/content/1033/tc3_system/5210273931.html)。
+
+## 三站控制权和联调
+
+ADS 联通后，三台电脑可同时监视。需要操作的电脑分别设置「本站身份」，按现场分工选择造波控制室、拖车本地、远程操作室。同一个身份只分配给一台电脑，因为同站会共用 PLC 中的请求、心跳和手动命令邮箱。实际控制权由 PLC 仲裁，同一时刻只有一个站持有。只看监控的电脑可以保留未配置身份。
+
+先从三台电脑分别检查到 PLC IP 的 TCP `48898`，再同时打开上位机，确认三台都能持续读取同一个 PLC 的 `GVL_HMI.stMonitor`，看到变化的反馈心跳和正常的监控质量。若 PLC 在系统 Router 所在电脑上，该电脑以本地 ADS 读取验证。当前上位机监控结构要求布局版本 `4`、`164` 字节；端口连通后若提示符号或结构不匹配，要核对在线 PLC 是否为配套程序。
+
+## 73 与 113 的虚拟 PLC 示例
+
+以下为原虚拟 PLC 环境的配置示例。连接独立 CX 时，使用 CX 当前的 ADS 地址和可达 IP。
 
 | 设置 | 73 电脑 | 113 电脑 |
 | --- | --- | --- |
