@@ -16,9 +16,6 @@ public partial class Config : UserControl
         _currentUser = user;
         InitializeComponent();
         monitoringSettingsButton.Enabled = user?.IsAdministrator == true;
-        controlStationComboBox.SelectedIndex = (int)ControlStationIdentity.Current;
-        controlStationStateLabel.Text = "当前配置：" + ControlStationIdentity.Format(ControlStationIdentity.Current)
-            + "；控制权由 PLC 统一管理。";
         LoadSettings();
         LoadDatabaseSettings();
     }
@@ -30,32 +27,10 @@ public partial class Config : UserControl
         MonitoringSettingsRequested?.Invoke(this, e);
     }
 
-    // 本站身份只保存软件部署位置，不申请、释放或改变 PLC 控制权。
-    private void SaveControlStationButton_Click(object? sender, EventArgs e)
-    {
-        try
-        {
-            var station = (ControlStation)controlStationComboBox.SelectedIndex;
-            var value = ControlStationIdentity.ToSettingValue(station);
-            AdsConnectionSettings.Save((ControlStationIdentity.SettingKey, value));
-            controlStationStateLabel.ForeColor = UiPalette.Success;
-            controlStationStateLabel.Text = "本站身份已保存：" + ControlStationIdentity.Format(station)
-                + "；控制权仍由 PLC 决定。";
-            OperationJournal.Record("系统配置", controlStationStateLabel.Text);
-        }
-        catch (Exception ex)
-        {
-            controlStationStateLabel.ForeColor = UiPalette.Danger;
-            controlStationStateLabel.Text = "本站身份保存失败：" + ex.Message;
-            OperationJournal.Record("系统配置", controlStationStateLabel.Text);
-        }
-    }
-
-    // 按页面分组加载配置，最后再按当前选项更新控件可用状态。
+    // 加载 ADS 和波形程序配置后，再按当前选项更新控件可用状态。
     private void LoadSettings()
     {
         LoadWaveGeneratorSettings();
-        operationLogDirectoryTextBox.Text = OperationJournal.DirectoryPath;
         LoadRouterSettings();
         UpdateWaveGeneratorState();
         UpdateInputState();
@@ -243,44 +218,6 @@ public partial class Config : UserControl
         catch (Exception ex)
         {
             ShowSaveResult("波形程序目录保存失败：" + ex.Message, UiPalette.Danger);
-        }
-    }
-
-    // 日志目录与界面中显示的位置共用同一套配置。
-    private void BrowseOperationLogDirectoryButton_Click(object? sender, EventArgs e)
-    {
-        using var dialog = new FolderBrowserDialog
-        {
-            Description = "选择操作日志保存目录",
-            SelectedPath = OperationJournal.DirectoryPath,
-            UseDescriptionForTitle = true
-        };
-        if (dialog.ShowDialog(this) == DialogResult.OK)
-            operationLogDirectoryTextBox.Text = dialog.SelectedPath;
-    }
-
-    // 先确认目录可写，再保存；后续记录立即写入新目录，已有日志留在原处。
-    private void SaveOperationLogDirectoryButton_Click(object? sender, EventArgs e)
-    {
-        try
-        {
-            var configured = operationLogDirectoryTextBox.Text.Trim();
-            var directory = OperationJournal.ResolveDirectory(configured);
-            Directory.CreateDirectory(directory);
-            var probePath = Path.Combine(directory, ".write-test-" + Guid.NewGuid().ToString("N"));
-            using (new FileStream(probePath, FileMode.CreateNew, FileAccess.Write, FileShare.None,
-                1, FileOptions.DeleteOnClose)) { }
-            SaveSettings(("OperationLogDirectory", configured));
-            operationLogDirectoryTextBox.Text = OperationJournal.DirectoryPath;
-            operationLogStateLabel.ForeColor = UiPalette.Success;
-            operationLogStateLabel.Text = "已保存，新日志立即写入此目录。";
-            OperationJournal.Record("系统配置", "日志保存位置已更新：" + OperationJournal.DirectoryPath);
-        }
-        catch (Exception ex)
-        {
-            operationLogStateLabel.ForeColor = UiPalette.Danger;
-            operationLogStateLabel.Text = "保存失败：" + ex.Message;
-            OperationJournal.Record("系统配置", "日志目录保存失败：" + ex.Message);
         }
     }
 

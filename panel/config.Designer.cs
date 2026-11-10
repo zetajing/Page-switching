@@ -4,26 +4,11 @@ partial class Config
 {
     private Panel pagePanel;
     private Button monitoringSettingsButton;
-    private AntdUI.Panel controlStationGroup;
-        private AntdUI.Label controlStationGroupCaption;
-    private TableLayoutPanel controlStationLayout;
-    private AntdUI.Label controlStationCaptionLabel;
-    private AntdUI.Select controlStationComboBox;
-    private AntdUI.Button saveControlStationButton;
-    private AntdUI.Label controlStationStateLabel;
 
     private System.ComponentModel.IContainer components = null!;
     private TableLayoutPanel rootLayout;
     private AntdUI.Label titleLabel;
     private AntdUI.Label subtitleLabel;
-    private AntdUI.Panel operationLogGroup;
-        private AntdUI.Label operationLogGroupCaption;
-    private TableLayoutPanel operationLogLayout;
-    private AntdUI.Label operationLogDirectoryLabel;
-    private AntdUI.Input operationLogDirectoryTextBox;
-    private AntdUI.Button browseOperationLogDirectoryButton;
-    private AntdUI.Button saveOperationLogDirectoryButton;
-    private AntdUI.Label operationLogStateLabel;
     private AntdUI.Panel plcTargetGroup;
     private AntdUI.Label plcTargetCaption;
     private TableLayoutPanel plcTargetLayout;
@@ -93,30 +78,6 @@ partial class Config
         rootLayout = new TableLayoutPanel();
         titleLabel = new AntdUI.Label();
         subtitleLabel = new AntdUI.Label();
-        controlStationGroup = new AntdUI.Panel();
-            controlStationGroupCaption = new AntdUI.Label();
-        controlStationLayout = new TableLayoutPanel();
-        controlStationCaptionLabel = new AntdUI.Label();
-        controlStationComboBox = new AntdUI.Select();
-            controlStationComboBox.WaveSize = 0;
-            controlStationComboBox.Radius = 6;
-            controlStationComboBox.List = true;
-        saveControlStationButton = new AntdUI.Button();
-            saveControlStationButton.Radius = 6;
-        controlStationStateLabel = new AntdUI.Label();
-        operationLogGroup = new AntdUI.Panel();
-            operationLogGroupCaption = new AntdUI.Label();
-        operationLogLayout = new TableLayoutPanel();
-        operationLogDirectoryLabel = new AntdUI.Label();
-        operationLogDirectoryTextBox = new AntdUI.Input();
-            operationLogDirectoryTextBox.WaveSize = 0;
-            operationLogDirectoryTextBox.Radius = 6;
-        browseOperationLogDirectoryButton = new AntdUI.Button();
-            browseOperationLogDirectoryButton.Radius = 6;
-            browseOperationLogDirectoryButton.BorderWidth = 1F;
-        saveOperationLogDirectoryButton = new AntdUI.Button();
-            saveOperationLogDirectoryButton.Radius = 6;
-        operationLogStateLabel = new AntdUI.Label();
         plcTargetGroup = new AntdUI.Panel();
         plcTargetCaption = new AntdUI.Label();
         plcTargetLayout = new TableLayoutPanel();
@@ -206,10 +167,6 @@ partial class Config
         monitoringSettingsButton.Dock = DockStyle.Fill;
         monitoringSettingsButton.Click += MonitoringSettingsButton_Click;
         rootLayout.SuspendLayout();
-        controlStationGroup.SuspendLayout();
-        controlStationLayout.SuspendLayout();
-        operationLogGroup.SuspendLayout();
-        operationLogLayout.SuspendLayout();
         plcTargetGroup.SuspendLayout();
         plcTargetLayout.SuspendLayout();
         routerGroup.SuspendLayout();
@@ -239,30 +196,26 @@ partial class Config
         rootLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
         rootLayout.Controls.Add(titleLabel, 0, 0);
         rootLayout.Controls.Add(subtitleLabel, 0, 1);
-        rootLayout.Controls.Add(controlStationGroup, 0, 2);
-        rootLayout.Controls.Add(operationLogGroup, 0, 3);
-        rootLayout.Controls.Add(plcTargetGroup, 0, 4);
-        rootLayout.Controls.Add(routerGroup, 0, 5);
-        rootLayout.Controls.Add(waveGeneratorGroup, 0, 6);
-        rootLayout.Controls.Add(_databaseGroup, 0, 7);
-        rootLayout.Controls.Add(monitoringSettingsButton, 0, 8);
+        rootLayout.Controls.Add(plcTargetGroup, 0, 2);
+        rootLayout.Controls.Add(routerGroup, 0, 3);
+        rootLayout.Controls.Add(waveGeneratorGroup, 0, 4);
+        rootLayout.Controls.Add(_databaseGroup, 0, 5);
+        rootLayout.Controls.Add(monitoringSettingsButton, 0, 6);
         rootLayout.Dock = DockStyle.Top;
         rootLayout.Location = new Point(0, 0);
         rootLayout.Margin = new Padding(2, 3, 2, 3);
         rootLayout.Name = "rootLayout";
         rootLayout.MinimumSize = new Size(820, 0);
         rootLayout.Padding = new Padding(16);
-        rootLayout.RowCount = 9;
+        rootLayout.RowCount = 7;
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 42F));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 26F));
-        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 120F));
-        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 116F));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 130F));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 232F));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 172F));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 156F));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 52F));
-        rootLayout.Size = new Size(843, 1078);
+        rootLayout.Size = new Size(843, 842);
         rootLayout.TabIndex = 0;
         //
         // titleLabel
@@ -288,224 +241,8 @@ partial class Config
         subtitleLabel.Name = "subtitleLabel";
         subtitleLabel.Size = new Size(807, 26);
         subtitleLabel.TabIndex = 1;
-        subtitleLabel.Text = "本站身份、日志保存位置、PLC 连接、波形程序和数据库连接";
+        subtitleLabel.Text = "PLC 连接、波形程序和数据库连接";
         subtitleLabel.TextAlign = ContentAlignment.MiddleLeft;
-        //
-        // controlStationGroup
-        //
-        controlStationGroup.BackColor = Color.White;
-        controlStationGroup.Controls.Add(controlStationLayout);
-        controlStationGroup.Dock = DockStyle.Fill;
-        controlStationGroup.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
-        controlStationGroup.ForeColor = Color.FromArgb(15, 23, 42);
-        controlStationGroup.Location = new Point(18, 87);
-        controlStationGroup.Margin = new Padding(2, 3, 2, 3);
-        controlStationGroup.Name = "controlStationGroup";
-        controlStationGroup.Padding = new Padding(11, 32, 11, 8);
-        controlStationGroup.Size = new Size(807, 114);
-        controlStationGroup.TabIndex = 2;
-        // AntdUI 面板用独立标题标签保留原分组标题，布局仍可在 Designer 编辑。
-            controlStationGroupCaption.Text = "本站身份";
-            controlStationGroupCaption.AutoSize = true;
-            controlStationGroupCaption.Name = "controlStationGroupCaption";
-            controlStationGroupCaption.Location = new Point(10, 2);
-            controlStationGroupCaption.ForeColor = Color.FromArgb(15, 23, 42);
-            controlStationGroup.BorderWidth = 1F;
-            controlStationGroup.BorderColor = Color.FromArgb(203, 213, 225);
-            controlStationGroup.Radius = 6;
-            controlStationGroup.Controls.Add(controlStationGroupCaption);
-            controlStationGroupCaption.BringToFront();
-        //
-        // controlStationLayout
-        //
-        controlStationLayout.ColumnCount = 3;
-        controlStationLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 140F));
-        controlStationLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-        controlStationLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 128F));
-        controlStationLayout.Controls.Add(controlStationCaptionLabel, 0, 0);
-        controlStationLayout.Controls.Add(controlStationComboBox, 1, 0);
-        controlStationLayout.Controls.Add(saveControlStationButton, 2, 0);
-        controlStationLayout.Controls.Add(controlStationStateLabel, 0, 1);
-        controlStationLayout.Dock = DockStyle.Fill;
-        controlStationLayout.Location = new Point(11, 32);
-        controlStationLayout.Margin = new Padding(0);
-        controlStationLayout.Name = "controlStationLayout";
-        controlStationLayout.RowCount = 2;
-        controlStationLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 36F));
-        controlStationLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-        controlStationLayout.Size = new Size(785, 74);
-        controlStationLayout.TabIndex = 0;
-        //
-        // controlStationCaptionLabel
-        //
-        controlStationCaptionLabel.Dock = DockStyle.Fill;
-        controlStationCaptionLabel.Font = new Font("Microsoft YaHei UI", 9F);
-        controlStationCaptionLabel.ForeColor = Color.FromArgb(71, 85, 105);
-        controlStationCaptionLabel.Location = new Point(2, 0);
-        controlStationCaptionLabel.Margin = new Padding(2, 0, 2, 0);
-        controlStationCaptionLabel.Name = "controlStationCaptionLabel";
-        controlStationCaptionLabel.Size = new Size(136, 36);
-        controlStationCaptionLabel.TabIndex = 0;
-        controlStationCaptionLabel.Text = "本机所属控制端";
-        controlStationCaptionLabel.TextAlign = ContentAlignment.MiddleLeft;
-        //
-        // controlStationComboBox
-        //
-        controlStationComboBox.Dock = DockStyle.Fill;
-        controlStationComboBox.Font = new Font("Microsoft YaHei UI", 9F);
-        controlStationComboBox.Items.AddRange(new object[] { "未配置", "造波控制室", "拖车本地", "远程操作室" });
-        controlStationComboBox.Location = new Point(142, 5);
-        controlStationComboBox.Margin = new Padding(2, 5, 10, 5);
-        controlStationComboBox.Name = "controlStationComboBox";
-        controlStationComboBox.Size = new Size(505, 25);
-        controlStationComboBox.TabIndex = 0;
-        //
-        // saveControlStationButton
-        //
-        saveControlStationButton.BackColor = Color.FromArgb(29, 78, 216);
-            saveControlStationButton.DefaultBack = Color.FromArgb(29, 78, 216);
-        saveControlStationButton.Cursor = Cursors.Hand;
-        saveControlStationButton.Dock = DockStyle.Fill;
-        saveControlStationButton.BorderWidth = 0;
-        saveControlStationButton.Font = new Font("Microsoft YaHei UI", 9F);
-        saveControlStationButton.ForeColor = Color.White;
-        saveControlStationButton.Location = new Point(659, 3);
-        saveControlStationButton.Margin = new Padding(2, 3, 2, 3);
-        saveControlStationButton.Name = "saveControlStationButton";
-        saveControlStationButton.Size = new Size(124, 30);
-        saveControlStationButton.TabIndex = 1;
-        saveControlStationButton.Text = "保存本站身份";
-        saveControlStationButton.Click += SaveControlStationButton_Click;
-        //
-        // controlStationStateLabel
-        //
-        controlStationLayout.SetColumnSpan(controlStationStateLabel, 3);
-        controlStationStateLabel.Dock = DockStyle.Fill;
-        controlStationStateLabel.Font = new Font("Microsoft YaHei UI", 8F);
-        controlStationStateLabel.ForeColor = Color.FromArgb(100, 116, 139);
-        controlStationStateLabel.Location = new Point(2, 36);
-        controlStationStateLabel.Margin = new Padding(2, 0, 2, 0);
-        controlStationStateLabel.Name = "controlStationStateLabel";
-        controlStationStateLabel.Size = new Size(781, 38);
-        controlStationStateLabel.TabIndex = 2;
-        controlStationStateLabel.Text = "选择本机所属站点后保存；本站身份不代表取得控制权，控制权由 PLC 统一管理。";
-        controlStationStateLabel.TextAlign = ContentAlignment.MiddleLeft;
-        //
-        // operationLogGroup
-        //
-        operationLogGroup.BackColor = Color.White;
-        operationLogGroup.Controls.Add(operationLogLayout);
-        operationLogGroup.Dock = DockStyle.Fill;
-        operationLogGroup.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
-        operationLogGroup.ForeColor = Color.FromArgb(15, 23, 42);
-        operationLogGroup.Location = new Point(18, 207);
-        operationLogGroup.Margin = new Padding(2, 3, 2, 3);
-        operationLogGroup.Name = "operationLogGroup";
-        operationLogGroup.Padding = new Padding(11, 32, 11, 8);
-        operationLogGroup.Size = new Size(807, 110);
-        operationLogGroup.TabIndex = 2;
-        // AntdUI 面板用独立标题标签保留原分组标题，布局仍可在 Designer 编辑。
-            operationLogGroupCaption.Text = "操作日志";
-            operationLogGroupCaption.AutoSize = true;
-            operationLogGroupCaption.Name = "operationLogGroupCaption";
-            operationLogGroupCaption.Location = new Point(10, 2);
-            operationLogGroupCaption.ForeColor = Color.FromArgb(15, 23, 42);
-            operationLogGroup.BorderWidth = 1F;
-            operationLogGroup.BorderColor = Color.FromArgb(203, 213, 225);
-            operationLogGroup.Radius = 6;
-            operationLogGroup.Controls.Add(operationLogGroupCaption);
-            operationLogGroupCaption.BringToFront();
-        //
-        // operationLogLayout
-        //
-        operationLogLayout.ColumnCount = 4;
-        operationLogLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 140F));
-        operationLogLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-        operationLogLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 90F));
-        operationLogLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 112F));
-        operationLogLayout.Controls.Add(operationLogDirectoryLabel, 0, 0);
-        operationLogLayout.Controls.Add(operationLogDirectoryTextBox, 1, 0);
-        operationLogLayout.Controls.Add(browseOperationLogDirectoryButton, 2, 0);
-        operationLogLayout.Controls.Add(saveOperationLogDirectoryButton, 3, 0);
-        operationLogLayout.Controls.Add(operationLogStateLabel, 0, 1);
-        operationLogLayout.Dock = DockStyle.Fill;
-        operationLogLayout.Location = new Point(11, 25);
-        operationLogLayout.Margin = new Padding(2);
-        operationLogLayout.Name = "operationLogLayout";
-        operationLogLayout.RowCount = 2;
-        operationLogLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 36F));
-        operationLogLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-        operationLogLayout.Size = new Size(785, 77);
-        operationLogLayout.TabIndex = 0;
-        //
-        // operationLogDirectoryLabel
-        //
-        operationLogDirectoryLabel.Dock = DockStyle.Fill;
-        operationLogDirectoryLabel.Font = new Font("Microsoft YaHei UI", 9F);
-        operationLogDirectoryLabel.Location = new Point(2, 0);
-        operationLogDirectoryLabel.Margin = new Padding(2, 0, 2, 0);
-        operationLogDirectoryLabel.Name = "operationLogDirectoryLabel";
-        operationLogDirectoryLabel.Size = new Size(136, 36);
-        operationLogDirectoryLabel.TabIndex = 0;
-        operationLogDirectoryLabel.Text = "日志保存位置";
-        operationLogDirectoryLabel.TextAlign = ContentAlignment.MiddleLeft;
-        //
-        // operationLogDirectoryTextBox
-        //
-        operationLogDirectoryTextBox.Dock = DockStyle.Fill;
-        operationLogDirectoryTextBox.Font = new Font("Microsoft YaHei UI", 9F);
-        operationLogDirectoryTextBox.Location = new Point(142, 3);
-        operationLogDirectoryTextBox.Margin = new Padding(2, 3, 2, 3);
-        operationLogDirectoryTextBox.Name = "operationLogDirectoryTextBox";
-        operationLogDirectoryTextBox.PlaceholderText = "留空使用默认日志目录";
-        operationLogDirectoryTextBox.Size = new Size(439, 23);
-        operationLogDirectoryTextBox.TabIndex = 0;
-        //
-        // browseOperationLogDirectoryButton
-        //
-        browseOperationLogDirectoryButton.BackColor = Color.White;
-            browseOperationLogDirectoryButton.DefaultBack = Color.White;
-        browseOperationLogDirectoryButton.Cursor = Cursors.Hand;
-        browseOperationLogDirectoryButton.Dock = DockStyle.Fill;
-        browseOperationLogDirectoryButton.Font = new Font("Microsoft YaHei UI", 9F);
-        browseOperationLogDirectoryButton.Location = new Point(585, 3);
-        browseOperationLogDirectoryButton.Margin = new Padding(2, 3, 2, 3);
-        browseOperationLogDirectoryButton.Name = "browseOperationLogDirectoryButton";
-        browseOperationLogDirectoryButton.Size = new Size(86, 30);
-        browseOperationLogDirectoryButton.TabIndex = 1;
-        browseOperationLogDirectoryButton.Text = "选择目录";
-        browseOperationLogDirectoryButton.Click += BrowseOperationLogDirectoryButton_Click;
-        //
-        // saveOperationLogDirectoryButton
-        //
-        saveOperationLogDirectoryButton.BackColor = Color.FromArgb(29, 78, 216);
-            saveOperationLogDirectoryButton.DefaultBack = Color.FromArgb(29, 78, 216);
-        saveOperationLogDirectoryButton.Cursor = Cursors.Hand;
-        saveOperationLogDirectoryButton.Dock = DockStyle.Fill;
-        saveOperationLogDirectoryButton.BorderWidth = 0;
-        saveOperationLogDirectoryButton.Font = new Font("Microsoft YaHei UI", 9F);
-        saveOperationLogDirectoryButton.ForeColor = Color.White;
-        saveOperationLogDirectoryButton.Location = new Point(675, 3);
-        saveOperationLogDirectoryButton.Margin = new Padding(2, 3, 2, 3);
-        saveOperationLogDirectoryButton.Name = "saveOperationLogDirectoryButton";
-        saveOperationLogDirectoryButton.Size = new Size(108, 30);
-        saveOperationLogDirectoryButton.TabIndex = 2;
-        saveOperationLogDirectoryButton.Text = "保存日志目录";
-        saveOperationLogDirectoryButton.Click += SaveOperationLogDirectoryButton_Click;
-        //
-        // operationLogStateLabel
-        //
-        operationLogLayout.SetColumnSpan(operationLogStateLabel, 4);
-        operationLogStateLabel.Dock = DockStyle.Fill;
-        operationLogStateLabel.Font = new Font("Microsoft YaHei UI", 8F);
-        operationLogStateLabel.ForeColor = Color.FromArgb(100, 116, 139);
-        operationLogStateLabel.Location = new Point(2, 36);
-        operationLogStateLabel.Margin = new Padding(2, 0, 2, 0);
-        operationLogStateLabel.Name = "operationLogStateLabel";
-        operationLogStateLabel.Size = new Size(781, 41);
-        operationLogStateLabel.TabIndex = 3;
-        operationLogStateLabel.Text = "日志按小时保存。保存目录立即生效，已有日志保留在原目录；留空恢复默认位置。";
-        operationLogStateLabel.TextAlign = ContentAlignment.MiddleLeft;
         //
         // 两种 Router 模式共用的 PLC 目标单独显示，避免与独立 Router 的本机参数混在一起。
         // plcTargetGroup
@@ -519,7 +256,7 @@ partial class Config
         plcTargetGroup.Dock = DockStyle.Fill;
         plcTargetGroup.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
         plcTargetGroup.ForeColor = Color.FromArgb(15, 23, 42);
-        plcTargetGroup.Location = new Point(18, 323);
+        plcTargetGroup.Location = new Point(18, 87);
         plcTargetGroup.Margin = new Padding(2, 3, 2, 3);
         plcTargetGroup.Name = "plcTargetGroup";
         plcTargetGroup.Padding = new Padding(16, 32, 16, 12);
@@ -569,7 +306,7 @@ partial class Config
         routerGroup.Dock = DockStyle.Fill;
         routerGroup.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
         routerGroup.ForeColor = Color.FromArgb(15, 23, 42);
-        routerGroup.Location = new Point(18, 453);
+        routerGroup.Location = new Point(18, 217);
         routerGroup.Margin = new Padding(2, 3, 2, 3);
         routerGroup.Name = "routerGroup";
         routerGroup.Padding = new Padding(16, 32, 16, 12);
@@ -849,7 +586,7 @@ partial class Config
         waveGeneratorGroup.Dock = DockStyle.Fill;
         waveGeneratorGroup.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
         waveGeneratorGroup.ForeColor = Color.FromArgb(15, 23, 42);
-        waveGeneratorGroup.Location = new Point(18, 685);
+        waveGeneratorGroup.Location = new Point(18, 449);
         waveGeneratorGroup.Margin = new Padding(2, 3, 2, 3);
         waveGeneratorGroup.Name = "waveGeneratorGroup";
         waveGeneratorGroup.Padding = new Padding(11, 32, 11, 8);
@@ -1058,7 +795,7 @@ partial class Config
         _databaseGroup.Dock = DockStyle.Fill;
         _databaseGroup.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
         _databaseGroup.ForeColor = Color.FromArgb(15, 23, 42);
-        _databaseGroup.Location = new Point(18, 857);
+        _databaseGroup.Location = new Point(18, 621);
         _databaseGroup.Margin = new Padding(2, 3, 2, 3);
         _databaseGroup.Name = "_databaseGroup";
         _databaseGroup.Padding = new Padding(11, 32, 11, 8);
@@ -1237,11 +974,6 @@ partial class Config
         pagePanel.ResumeLayout(false);
         pagePanel.PerformLayout();
         rootLayout.ResumeLayout(false);
-        controlStationGroup.ResumeLayout(false);
-        controlStationLayout.ResumeLayout(false);
-        operationLogGroup.ResumeLayout(false);
-        operationLogLayout.ResumeLayout(false);
-        operationLogLayout.PerformLayout();
         plcTargetGroup.ResumeLayout(false);
         plcTargetGroup.PerformLayout();
         plcTargetLayout.ResumeLayout(false);
