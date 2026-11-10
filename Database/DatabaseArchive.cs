@@ -19,7 +19,16 @@ internal static class DatabaseArchive
     private static string _user = "未登录";
     private static ushort _station;
     private static Guid? _runId;
-    internal static string Root { get; set; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "PageSwitching", "DatabaseArchive");
+    internal static string Root { get; set; } = ProgramDataPaths.InProgramDirectory("DatabaseArchive");
+    // 目录搬移后继续使用原来源标识，保证旧操作记录和点位仍对应已有的数据库记录。
+    internal static string IdentityRoot
+    {
+        get
+        {
+            var origin = Path.Combine(Root, ProgramDataPaths.ArchiveOriginFile);
+            return File.Exists(origin) ? File.ReadAllText(origin) : Path.GetFullPath(Root);
+        }
+    }
     internal static string? LastError { get; private set; }
 
     internal static void Start(string user, ushort station)
@@ -69,7 +78,7 @@ internal static class DatabaseArchive
             await using (var stream = File.OpenRead(temporary))
                 id = Convert.ToHexString(await SHA256.HashDataAsync(stream, token).ConfigureAwait(false));
             // 各站可连同一数据库：本机来源也进入编号，避免两台电脑同时重放同一批点位。
-            string source = Environment.MachineName + "|" + Path.GetFullPath(Root);
+            string source = Environment.MachineName + "|" + IdentityRoot;
             id = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(source + "|" + id)));
             string target = Path.Combine(folder, id + ".bin");
             if (!File.Exists(target)) File.Move(temporary, target);

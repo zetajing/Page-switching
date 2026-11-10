@@ -19,9 +19,7 @@ internal static class AdsConnectionSettings
 
     internal static string FilePath => ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None).FilePath;
 
-    private static string LegacyFilePath => Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "PageSwitching", "AdsConnectionSettings.json");
+    private static string LegacyFilePath => Path.Combine(ProgramDataPaths.LegacyRoot, "AdsConnectionSettings.json");
 
     // 从运行目录的配置文件读取 ADS 参数；通信服务使用本次启动的快照。
     internal static NameValueCollection GetSettings()

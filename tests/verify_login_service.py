@@ -14,7 +14,7 @@ class LoginServiceChecks(unittest.TestCase):
             folder = Path(directory)
             links = "".join(
                 f'<Compile Include="{escape(str(ROOT / "Infrastructure" / name))}" />'
-                for name in ("LoginService.cs", "LoginUser.cs")
+                for name in ("LoginService.cs", "LoginUser.cs", "ProgramDataPaths.cs")
             )
             (folder / "Probe.csproj").write_text(
                 '<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup>'

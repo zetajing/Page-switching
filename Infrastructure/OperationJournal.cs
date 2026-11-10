@@ -13,15 +13,20 @@ internal static class OperationJournal
 
     internal static string DirectoryPath => ResolveDirectory(ConfigurationManager.AppSettings["OperationLogDirectory"]);
 
-    // 空配置沿用原目录；相对路径从程序目录解析，并支持 %LOCALAPPDATA% 等环境变量。
+    // 日志可选程序目录内的子目录，旧版配置指向外部时使用程序目录下的 Operations。
     internal static string ResolveDirectory(string? configuredDirectory)
     {
-        if (string.IsNullOrWhiteSpace(configuredDirectory))
-            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "PageSwitching", "Operations");
+        if (!string.IsNullOrWhiteSpace(configuredDirectory))
+        {
+            var expanded = Environment.ExpandEnvironmentVariables(configuredDirectory.Trim());
+            var directory = Path.GetFullPath(expanded, AppContext.BaseDirectory);
+            var relative = Path.GetRelativePath(AppContext.BaseDirectory, directory);
+            if (!Path.IsPathRooted(relative) && relative != ".." &&
+                !relative.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal))
+                return directory;
+        }
 
-        var expanded = Environment.ExpandEnvironmentVariables(configuredDirectory.Trim());
-        return Path.GetFullPath(expanded, AppContext.BaseDirectory);
+        return ProgramDataPaths.InProgramDirectory("Operations");
     }
 
     internal static void Record(string page, string message)

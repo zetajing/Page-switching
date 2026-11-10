@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SOURCES = ['Axis/Monitoring/AxisMonitoringSettings.cs', 'Axis/Monitoring/AxisMonitoringReport.cs',
            'Axis/Monitoring/AxisMonitoringSource.cs', 'Axis/Monitoring/AxisRuntimeMonitoringService.cs',
            'Axis/AxisServiceOptions.cs', 'Axis/Feedback/PlcMachineMonitor.cs', 'Axis/Feedback/AxisSnapshot.cs',
-           'Axis/Feedback/MachineMonitorSnapshot.cs', 'Infrastructure/LoginUser.cs']
+           'Axis/Feedback/MachineMonitorSnapshot.cs', 'Infrastructure/LoginUser.cs', 'Infrastructure/ProgramDataPaths.cs']
 
 
 class AxisMonitoringChecks(unittest.TestCase):

@@ -25,7 +25,7 @@ internal sealed class AxisRuntimeMonitoringService
 
     internal AxisRuntimeMonitoringService(AxisServiceOptions options) : this(
         () => new AdsAxisMonitoringSource(options), new AxisMonitoringClock(), () => AxisMonitoringSettings.Load(),
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "PageSwitching", "AxisMonitoring"),
+        ProgramDataPaths.InProgramDirectory("AxisMonitoring"),
         message => OperationJournal.Record("运行超限统计", message)) { }
 
     // 时钟和只读来源可替换，离线验证不连接真实 ADS。

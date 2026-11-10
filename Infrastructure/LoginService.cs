@@ -18,9 +18,7 @@ internal sealed class LoginService
 
     internal LoginService(string? filePath = null)
     {
-        _filePath = Path.GetFullPath(filePath ?? Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "PageSwitching", "users.json"));
+        _filePath = Path.GetFullPath(filePath ?? ProgramDataPaths.InProgramDirectory("users.json"));
     }
 
     // 只有文件确实不存在才进入首次注册；损坏或读取失败必须报告错误。

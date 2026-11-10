@@ -15,6 +15,19 @@ namespace Page_switching
             ApplicationConfiguration.Initialize();
             // 页面使用统一浅色调，弹出菜单和日期选择器也采用同一主题。
             AntdUI.Config.Mode = AntdUI.TMode.Light;
+            // 先搬移账号、日志和采集数据，再允许页面或后台任务读写。
+            try
+            {
+                ProgramDataPaths.MigrateLegacyData();
+                AdsConnectionSettings.MigrateLegacySettings();
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ConfigurationErrorsException or JsonException)
+            {
+                MessageBox.Show("旧版数据迁移失败，请检查程序目录的写入权限和旧文件状态。\n" + ex.Message,
+                    "程序数据", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
             LoginUser user;
             if (LoginEnabled)
             {
@@ -27,18 +40,6 @@ namespace Page_switching
                 // 临时身份只开放软件页面，不写入账号库，也不授予 PLC 控制权。
                 user = new LoginUser("临时免登录", UserRole.Administrator);
             }
-            // 迁移失败时先保留旧配置，避免按随附默认值连接另一台 PLC。
-            try
-            {
-                AdsConnectionSettings.MigrateLegacySettings();
-            }
-            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ConfigurationErrorsException or JsonException)
-            {
-                MessageBox.Show("旧 ADS 配置迁移失败，请检查配置文件和写入权限。\n" + ex.Message,
-                    "ADS 配置", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
             Application.Run(new Mainpage(user));
         }
     }

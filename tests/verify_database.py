@@ -12,7 +12,7 @@ class DatabaseChecks(unittest.TestCase):
     def test_archive_and_dll_storage_contract(self):
         sources = ['Database/DatabaseArchive.cs', 'Database/DatabaseStore.cs',
                    'Database/DatabaseRows.cs', 'Database/DatabaseSyncService.cs',
-                   'Wave/Acquisition/WaveDataModels.cs', 'Wave/Legacy/WaveTrajectoryFile.cs']
+                   'Wave/Acquisition/WaveDataModels.cs', 'Wave/Legacy/WaveTrajectoryFile.cs', 'Infrastructure/ProgramDataPaths.cs']
         with tempfile.TemporaryDirectory(prefix='SwitchDatabase_') as directory:
             folder = Path(directory)
             links = ''.join(f'<Compile Include="{escape(str(ROOT / path))}" />' for path in sources)

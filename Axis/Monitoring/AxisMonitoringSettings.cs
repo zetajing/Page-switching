@@ -28,8 +28,7 @@ internal sealed record AxisMonitoringProfile([property: JsonRequired] int Schema
 
 internal static class AxisMonitoringSettings
 {
-    internal static string FilePath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "PageSwitching", "AxisMonitoringSettings.json");
+    internal static string FilePath => ProgramDataPaths.InProgramDirectory("AxisMonitoringSettings.json");
 
     internal static (AxisMonitoringProfile? Profile, string? Error) Load(string? path = null)
     {

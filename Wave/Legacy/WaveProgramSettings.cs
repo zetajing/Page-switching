@@ -5,8 +5,7 @@ namespace Page_switching;
 // 只保存波形计算程序的目录，不包含PLC或机械参数。
 internal static class WaveProgramSettings
 {
-    internal static string WorkDirectory => Path.Combine(Environment.GetFolderPath(
-        Environment.SpecialFolder.LocalApplicationData), "PageSwitching", "WavePrograms");
+    internal static string WorkDirectory => ProgramDataPaths.InProgramDirectory("WavePrograms");
 
     internal static string ProgramDirectory
     {

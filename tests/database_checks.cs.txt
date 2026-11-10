@@ -77,7 +77,7 @@ internal static class Program
         bool enabled = false; string connection = "Server=fake;Database=Wave;Integrated Security=true";
         int opened = 0;
         var service = new DatabaseSyncService((kind, _) => { opened++; return stores[kind]; }, () => enabled, () => connection)
-            { MonitoringRoot = Path.Combine(args[0], "monitoring") };
+            { MonitoringRoot = Path.Combine(args[0], "AxisMonitoring") };
         Check(await service.SynchronizeAsync() == 0 && opened == 0, "未启用时不打开DLL存储");
         enabled = true;
         stores[0].FailNext = true;
@@ -134,6 +134,20 @@ internal static class Program
         await DatabaseArchive.SaveJsonAsync(summary, new AxisMonitoringReport(monitorId, at, at.AddSeconds(2)), default);
         await service.SynchronizeAsync();
         Check(stores[4].Rows.Count == 2 && stores[7].Rows.Count == 1, "结束后同步完整采样和报告");
+
+        // 模拟升级搬移归档和监测文件，已有 SQL 记录和游标应继续有效。
+        string relocated = Path.Combine(args[0], "program");
+        Directory.CreateDirectory(relocated);
+        DatabaseArchive.Root = Path.Combine(relocated, "DatabaseArchive");
+        Directory.Move(archiveRoot, DatabaseArchive.Root);
+        File.WriteAllText(Path.Combine(DatabaseArchive.Root, ProgramDataPaths.ArchiveOriginFile), archiveRoot);
+        string oldMonitoringRoot = service.MonitoringRoot;
+        service.MonitoringRoot = Path.Combine(relocated, "AxisMonitoring");
+        Directory.Move(oldMonitoringRoot, service.MonitoringRoot);
+        writes = stores.Sum(s => s.Writes);
+        Check(await service.SynchronizeAsync() == 0 && writes == stores.Sum(s => s.Writes), "搬移归档后沿用旧同步游标");
+        Check(await DatabaseArchive.SaveWaveDataAsync(points, "搬移后.txt", default) == id, "搬移后点位标识稳定");
+
         manifest.SampleCount++;
         try { DatabaseStore.SensorRecords(manifest).ToArray(); throw new Exception("未验证数量"); }
         catch (InvalidDataException) { Check(true, "损坏采样不伪报成功"); }

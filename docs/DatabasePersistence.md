@@ -36,13 +36,14 @@ Run记录的开始时间包括使能和必要回原，不能当作PLC正式运�
 
 ## 本地文件与补传
 
-本机数据库归档目录：`%LOCALAPPDATA%/PageSwitching/DatabaseArchive/`。
+本机数据库归档保存在程序目录的 `DatabaseArchive/`。
 
 ```text
 operations/  每小时JSONL日志，固定记录ID
 waves/       点位二进制和元信息
 runs/        每次启动请求的运行JSON
 sync/        按目标服务器、数据库区分的同步游标
+legacy-source.txt  仅旧归档迁移时生成，用于沿用已有记录标识和同步游标
 ```
 
 原有 `Operations` 日志、`WaveHeight` 传感器CSV和任务JSON、`AxisMonitoring` 轴采样CSV和报告均保留。传感器和监测文件在结束后补传，运行记录在状态更新后补传；正在追加的日志按已读取行数推进。数据库自身故障消息只写原日志，避免数据库失败再生成入库失败消息的循环。退出后的最后日志在下次启动时补传。

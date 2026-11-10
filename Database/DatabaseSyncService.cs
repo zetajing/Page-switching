@@ -14,7 +14,7 @@ internal sealed class DatabaseSyncService
     private readonly Func<int, string, IInduLinkHistoryStore> _open;
     private readonly Func<bool> _enabled;
     private readonly Func<string> _connection;
-    internal string MonitoringRoot { get; set; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "PageSwitching", "AxisMonitoring");
+    internal string MonitoringRoot { get; set; } = ProgramDataPaths.InProgramDirectory("AxisMonitoring");
     private Task _worker = Task.CompletedTask;
     internal string Status { get; private set; } = "数据库未启用，本地文件继续保存。";
     internal DateTimeOffset? LastSuccess { get; private set; }
@@ -59,6 +59,11 @@ internal sealed class DatabaseSyncService
             string destination = Hash(target.DataSource + "|" + target.InitialCatalog);
             string cursorRoot = Path.Combine(DatabaseArchive.Root, "sync", destination);
             Directory.CreateDirectory(cursorRoot);
+            // 迁移过的归档沿用旧路径计算数据库标识和游标，避免搬目录引起重复补传。
+            string archiveIdentity = DatabaseArchive.IdentityRoot;
+            string ArchiveSource(string path) => Path.Combine(archiveIdentity, Path.GetRelativePath(DatabaseArchive.Root, path));
+            string monitoringIdentity = archiveIdentity == Path.GetFullPath(DatabaseArchive.Root)
+                ? MonitoringRoot : Path.Combine(Path.GetDirectoryName(archiveIdentity)!, "AxisMonitoring");
             for (int kind = 0; kind < DatabaseStore.Names.Length; kind++)
             {
                 var store = _open(kind, connection); stores.Add(store);
@@ -76,9 +81,10 @@ internal sealed class DatabaseSyncService
             {
                 await Import(path, async () =>
                 {
-                    string marker = Path.Combine(cursorRoot, Hash(path) + ".lines");
+                    string source = ArchiveSource(path);
+                    string marker = Path.Combine(cursorRoot, Hash(source) + ".lines");
                     int offset = File.Exists(marker) ? int.Parse(await File.ReadAllTextAsync(marker, token).ConfigureAwait(false)) : 0;
-                    string id = Hash(Environment.MachineName + "|" + Path.GetFullPath(path));
+                    string id = Hash(Environment.MachineName + "|" + source);
                     // 丢失游标时完整重建该小时，避免旧分批边界留下重复记录。
                     if (offset == 0) await stores[0].DeleteAsync(new HistoryQueryFilter { DeviceId = id }, token).ConfigureAwait(false);
                     while (true)
@@ -96,7 +102,7 @@ internal sealed class DatabaseSyncService
             }
             foreach (string path in Files(Path.Combine(DatabaseArchive.Root, "waves"), "*.json"))
             {
-                await Import(path, () => Once(path, async json =>
+                await Import(path, () => Once(path, ArchiveSource(path), async json =>
                 {
                     var data = Read<DatabaseWaveData>(json);
                     await WriteStream(2, data.DataId, DatabaseStore.PointBlocks(data, Path.ChangeExtension(path, ".bin")));
@@ -106,7 +112,7 @@ internal sealed class DatabaseSyncService
             }
             foreach (string path in Files(Path.Combine(DatabaseArchive.Root, "runs"), "*.json"))
             {
-                await Import(path, () => Once(path, async json =>
+                await Import(path, () => Once(path, ArchiveSource(path), async json =>
                 {
                     var run = Read<DatabaseWaveRun>(json); string id = run.RunId.ToString("N");
                     await DatabaseStore.ReplaceBatchAsync(stores[3], id, "metadata",
@@ -120,7 +126,8 @@ internal sealed class DatabaseSyncService
                     string json = await File.ReadAllTextAsync(path, token).ConfigureAwait(false);
                     var report = Read<AxisMonitoringReport>(json);
                     if (report.EndedAt is null) return;
-                    await Once(path, async _ =>
+                    string source = Path.Combine(monitoringIdentity, Path.GetRelativePath(MonitoringRoot, path));
+                    await Once(path, source, async _ =>
                     {
                         string id = report.RunId.ToString("N");
                         await WriteStream(4, id, DatabaseStore.AxisRecords(report.RunId, Path.Combine(Path.GetDirectoryName(path)!, "samples.csv")));
@@ -153,10 +160,10 @@ internal sealed class DatabaseSyncService
             if (failures == 0) LastSuccess = DateTimeOffset.Now;
             return count;
 
-            async Task Once(string path, Func<string, Task> save)
+            async Task Once(string path, string source, Func<string, Task> save)
             {
                 string json = await File.ReadAllTextAsync(path, token).ConfigureAwait(false);
-                string stamp = Hash(json), marker = Path.Combine(cursorRoot, Hash(path) + ".stamp");
+                string stamp = Hash(json), marker = Path.Combine(cursorRoot, Hash(source) + ".stamp");
                 if (File.Exists(marker) && await File.ReadAllTextAsync(marker, token).ConfigureAwait(false) == stamp) return;
                 await save(json).ConfigureAwait(false);
                 await WriteMarkerAsync(marker, stamp, token).ConfigureAwait(false); count++;

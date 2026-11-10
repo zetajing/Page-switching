@@ -25,9 +25,7 @@ public sealed class WaveDataWorkspace : IDisposable
 
     private WaveDataWorkspace()
     {
-        RootDirectory = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "PageSwitching", "WaveHeight");
+        RootDirectory = ProgramDataPaths.InProgramDirectory("WaveHeight");
         Directory.CreateDirectory(RootDirectory);
         var path = Path.Combine(RootDirectory, "calibrations.json");
         if (File.Exists(path))
@@ -198,7 +196,14 @@ public sealed class WaveDataWorkspace : IDisposable
                     SearchOption.AllDirectories)
                 .Select(path =>
                 {
-                    try { return JsonSerializer.Deserialize<WaveCaptureManifest>(File.ReadAllText(path)); }
+                    try
+                    {
+                        var manifest = JsonSerializer.Deserialize<WaveCaptureManifest>(File.ReadAllText(path));
+                        // 样本与会话文件始终在同一目录，搬移后继续使用本地样本文件。
+                        if (manifest is not null)
+                            manifest.CsvPath = Path.Combine(Path.GetDirectoryName(path)!, "samples.csv");
+                        return manifest;
+                    }
                     catch { return null; }
                 })
                 .Where(x => x is not null).Cast<WaveCaptureManifest>()
