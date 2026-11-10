@@ -21,7 +21,7 @@ VAR
     // 完整四轴位置表，只由本块分段写入；运行中不再接收上传。
     aPosition : ARRAY[1..4, 0..2099999] OF LREAL; // [轴号, 完整表点号]，所有点号从 0 开始，单位由 NC 配置决定。
     aConfig : ARRAY[1..4] OF ST_AxisConfig; // 启动时锁存参数，首点定位、运行及本次停车使用相同参数。
-    aSet : ARRAY[1..4] OF ST_TrajectoryPoint; // 本周期四轴的位置/速度/加速度；减速从最后送出的给定继续计算。
+    aSet : ARRAY[1..4] OF ST_TrajectoryPoint; // 本周期四轴的位置、内部速度和加速度；内部速度用于减速停车。
     aEnable : ARRAY[1..4] OF MC_ExtSetPointGenEnable; // 四个外部给定开启实例；异步执行，等待 NC Enabled 反馈。
     aDisable : ARRAY[1..4] OF MC_ExtSetPointGenDisable; // 四个关闭实例；确认全部退出之前不交回手动。
     aMoveInit : ARRAY[1..4] OF MC_MoveAbsolute; // 四轴各自定位到轨迹首点，全部完成才同步执行位置表。
@@ -51,7 +51,6 @@ VAR
     nStopCycles : UINT; // 减速阶段扫描计数，用于满足该阶段的最少扫描次数。
     nState : UINT; // 轨迹阶段码，数值与上位机监控和故障诊断一致。
     i : INT; // 四轴循环索引，范围 1～4。
-    nDirection : DINT; // 送点方向，本实现使用 +1/-1，静止保持时也保持非零。
     xAllEnabled : BOOL; // 四轴 NC 外部给定均已开启；不是四轴伺服使能汇总。
     xAllDisabled : BOOL; // 四轴外部给定均已关闭，相关开启、关闭和首点停止块均释放 Busy。
     xAllStopped : BOOL; // 四轴 NC 均未处于 Moving 状态；仅为本块此项汇总条件。
@@ -558,21 +557,15 @@ FOR i := 1 TO 4 DO
     aStopInit[i](Axis := Axes[i], Execute := (nState = cStateDecelerate) AND NOT Axes[i].Status.ExtSetPointGenEnabled,
         Deceleration := aConfig[i].lrStopDeceleration);
     IF xFeed THEN
-        // 方向在起止和反向拐点保持非零，确保位置点被 NC 接收。
-        nDirection := 1;
-        IF (aSet[i].lrVelocity < 0) OR ((aSet[i].lrVelocity = 0) AND (aSet[i].lrAcceleration < 0)) THEN
-            nDirection := -1;
-        END_IF
-        // C. 外部设定值核心调用：把 aSet 写入该轴循环 PLC->NC 接口。
-        // Position=绝对设定位置，Velocity/Acceleration=同一点的速度/加速度。
-        // Feed 不开启外部给定、不自行规划轨迹，开启确认后 NC 才采用此接口的数据。
-        // 起止和零速反向拐点也保持非零 Direction，覆盖 NC 对位置采纳的时序要求。
+        // C. 送绝对位置，按确认的调用方式固定速度 0、加速度 2000。
+        // Direction 固定为 1，使 NC 在运行、反向和末点保持期间持续采纳位置。
+        // PLC 内部仍用 aSet 的速度计算减速停车点位。
         // 该函数返回值不代表本点执行完成，不能用它控制 nSendPoint 递增。
         MC_ExtSetPointGenFeed(Axis := Axes[i],
                             Position := aSet[i].lrPosition,
-                             Velocity := aSet[i].lrVelocity,
-                             Acceleration := aSet[i].lrAcceleration,
-                            Direction := nDirection);
+                            Velocity := 0.0,
+                            Acceleration := 2000.0,
+                            Direction := 1);
     END_IF
     // D. 开启外部给定：状态 20 的 Execute 上升沿发起异步命令。
     // PositionType=ABSOLUTE；Position 传末点用于目标位置监控，不是让轴立即跑到末点。

@@ -12,13 +12,13 @@ PATH = ROOT / 'axis_4/POUs/Trajectory_点位与轨迹/FB_FourAxisTrajectory.TcPO
 
 
 class TrajectoryActionChecks(unittest.TestCase):
-    def test_expanded_statements_equal_pre_refactor_baseline(self):
-        # 基线来自 e21965f；还原状态常量并展开共用校验后，执行语句应与原先一致。
+    def test_expanded_statements_match_trajectory_baseline(self):
+        # 从原有基线仅移除送点方向分支，并更新 Feed 的速度、加速度和方向参数。
         source = re.sub(r'//[^\n]*|\(\*.*?\*\)', '', pou_source(PATH), flags=re.S)
         tokens = re.findall(r"'(?:''|[^'])*'|\w+|:=|<>|<=|>=|[^\s]", source)
-        self.assertEqual(len(tokens), 3131)
+        self.assertEqual(len(tokens), 3079)
         self.assertEqual(hashlib.sha256(' '.join(tokens).encode()).hexdigest(),
-                         '1ce8fc4e4886e9b8f13c5d8d3ca96c15abdccc95923cb7084afc554703a1110e')
+                         'b2afbf1b228f368d9918417a870ceb8553ae42a8f840d70fcb72b8780a2650ab')
 
     def test_one_phase_dispatch_and_fixed_motion_call_order(self):
         pou = ET.parse(PATH).find('POU')
@@ -37,6 +37,7 @@ class TrajectoryActionChecks(unittest.TestCase):
         expanded = pou_source(PATH)
         for call in ['aMoveInit[i](', 'aStopInit[i](', 'MC_ExtSetPointGenFeed(', 'aEnable[i](', 'aDisable[i](']:
             self.assertEqual(expanded.count(call), 1, call)
+        self.assertRegex(expanded, r'Velocity := 0\.0,\s+Acceleration := 2000\.0,\s+Direction := 1\);')
 
     def test_invalid_action_graph_and_dispatch_are_rejected(self):
         with tempfile.TemporaryDirectory() as directory:
