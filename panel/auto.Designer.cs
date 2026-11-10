@@ -28,6 +28,8 @@ namespace Page_switching
         private AntdUI.Label feedbackLabel;
         private AntdUI.Label heartbeatLabel;
         private TableLayoutPanel bodyLayout;
+        private TableLayoutPanel leftLayout;
+        private AntdUI.Panel monitoringGroup;
         private AntdUI.Panel progressGroup;
         private AntdUI.Label progressGroupCaption;
         private TableLayoutPanel waveLayout;
@@ -90,6 +92,8 @@ namespace Page_switching
             feedbackLabel = new AntdUI.Label();
             heartbeatLabel = new AntdUI.Label();
             bodyLayout = new TableLayoutPanel();
+            leftLayout = new TableLayoutPanel();
+            monitoringGroup = new AntdUI.Panel();
             progressGroup = new AntdUI.Panel();
             waveLayout = new TableLayoutPanel();
             waveButtonsLayout = new TableLayoutPanel();
@@ -102,7 +106,6 @@ namespace Page_switching
             waveProgressBar = new ProgressBar();
             waveDetailLabel = new Label();
             runtimeMonitoringSummary = new AxisMonitoringSummaryControl();
-            runtimeMonitoringSummary.Dock = DockStyle.Fill;
             progressGroupCaption = new AntdUI.Label();
             rightLayout = new TableLayoutPanel();
             axisGroup = new AntdUI.Panel();
@@ -128,6 +131,8 @@ namespace Page_switching
             waveCardLayout.SuspendLayout();
             monitorInfoLayout.SuspendLayout();
             bodyLayout.SuspendLayout();
+            leftLayout.SuspendLayout();
+            monitoringGroup.SuspendLayout();
             progressGroup.SuspendLayout();
             waveLayout.SuspendLayout();
             waveButtonsLayout.SuspendLayout();
@@ -145,12 +150,12 @@ namespace Page_switching
             axisGrid.Font = new Font("Microsoft YaHei UI", 9F);
             axisGrid.Gap = 4;
             axisGrid.Gaps = new Size(4, 4);
-            axisGrid.Location = new Point(20, 42);
-            axisGrid.Margin = new Padding(5, 5, 5, 5);
+            axisGrid.Location = new Point(16, 36);
+            axisGrid.Margin = new Padding(0);
             axisGrid.Name = "axisGrid";
             axisGrid.RowHeight = 28;
             axisGrid.RowHeightHeader = 28;
-            axisGrid.Size = new Size(810, 241);
+            axisGrid.Size = new Size(694, 188);
             axisGrid.TabIndex = 0;
             // 
             // pagePanel
@@ -159,7 +164,7 @@ namespace Page_switching
             pagePanel.Dock = DockStyle.Fill;
             pagePanel.Location = new Point(0, 0);
             pagePanel.Margin = new Padding(4, 4, 4, 4);
-            pagePanel.MinimumSize = new Size(1255, 1100);
+            pagePanel.MinimumSize = new Size(1255, 785);
             pagePanel.Name = "pagePanel";
             pagePanel.Size = new Size(1359, 905);
             pagePanel.TabIndex = 0;
@@ -502,9 +507,10 @@ namespace Page_switching
             // bodyLayout
             // 
             bodyLayout.ColumnCount = 2;
-            bodyLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            bodyLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 850F));
-            bodyLayout.Controls.Add(progressGroup, 0, 0);
+            // 两列按可用宽度分配，小窗口也能保留左侧操作区。
+            bodyLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 45F));
+            bodyLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 55F));
+            bodyLayout.Controls.Add(leftLayout, 0, 0);
             bodyLayout.Controls.Add(rightLayout, 1, 0);
             bodyLayout.Dock = DockStyle.Fill;
             bodyLayout.Location = new Point(20, 240);
@@ -514,6 +520,37 @@ namespace Page_switching
             bodyLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             bodyLayout.Size = new Size(1319, 645);
             bodyLayout.TabIndex = 3;
+            //
+            // leftLayout
+            //
+            leftLayout.ColumnCount = 1;
+            leftLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            leftLayout.Controls.Add(progressGroup, 0, 0);
+            leftLayout.Controls.Add(monitoringGroup, 0, 1);
+            leftLayout.Dock = DockStyle.Fill;
+            leftLayout.Location = new Point(0, 0);
+            leftLayout.Margin = new Padding(0, 0, 15, 0);
+            leftLayout.Name = "leftLayout";
+            leftLayout.RowCount = 2;
+            // 文件、进度和原因紧凑排列，剩余高度留给可滚动的运行统计。
+            leftLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 290F));
+            leftLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            leftLayout.Size = new Size(578, 645);
+            leftLayout.TabIndex = 0;
+            //
+            // monitoringGroup
+            //
+            monitoringGroup.BackColor = Color.White;
+            monitoringGroup.BorderColor = Color.FromArgb(203, 213, 225);
+            monitoringGroup.BorderWidth = 1F;
+            monitoringGroup.Controls.Add(runtimeMonitoringSummary);
+            monitoringGroup.Dock = DockStyle.Fill;
+            monitoringGroup.Location = new Point(0, 305);
+            monitoringGroup.Margin = new Padding(0, 15, 0, 0);
+            monitoringGroup.Name = "monitoringGroup";
+            monitoringGroup.Padding = new Padding(15, 13, 15, 15);
+            monitoringGroup.Size = new Size(578, 340);
+            monitoringGroup.TabIndex = 1;
             // 
             // progressGroup
             // 
@@ -526,10 +563,10 @@ namespace Page_switching
             progressGroup.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
             progressGroup.ForeColor = Color.FromArgb(15, 23, 42);
             progressGroup.Location = new Point(0, 0);
-            progressGroup.Margin = new Padding(0, 0, 15, 0);
+            progressGroup.Margin = new Padding(0);
             progressGroup.Name = "progressGroup";
-            progressGroup.Padding = new Padding(18, 40, 18, 15);
-            progressGroup.Size = new Size(454, 645);
+            progressGroup.Padding = new Padding(15, 35, 15, 13);
+            progressGroup.Size = new Size(578, 290);
             progressGroup.TabIndex = 0;
             // 
             // waveLayout
@@ -541,48 +578,50 @@ namespace Page_switching
             waveLayout.Controls.Add(waveStageLabel, 0, 2);
             waveLayout.Controls.Add(waveProgressBar, 0, 3);
             waveLayout.Controls.Add(waveDetailLabel, 0, 4);
-            waveLayout.Controls.Add(runtimeMonitoringSummary, 0, 5);
             waveLayout.Dock = DockStyle.Fill;
-            waveLayout.Location = new Point(20, 42);
-            waveLayout.Margin = new Padding(4, 4, 4, 4);
+            waveLayout.Location = new Point(16, 36);
+            waveLayout.Margin = new Padding(0);
             waveLayout.Name = "waveLayout";
-            waveLayout.RowCount = 6;
-            waveLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 120F));
-            waveLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 140F));
-            waveLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 50F));
-            waveLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 35F));
+            waveLayout.RowCount = 5;
+            waveLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 53F));
+            waveLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 65F));
+            waveLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 33F));
+            waveLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 28F));
             waveLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            waveLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 195F));
-            waveLayout.Size = new Size(414, 586);
+            waveLayout.Size = new Size(546, 240);
             waveLayout.TabIndex = 0;
             // 
             // waveButtonsLayout
             // 
-            waveButtonsLayout.ColumnCount = 2;
-            waveButtonsLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            waveButtonsLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            waveButtonsLayout.ColumnCount = 5;
+            waveButtonsLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120F));
+            waveButtonsLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120F));
+            waveButtonsLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120F));
+            waveButtonsLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120F));
+            waveButtonsLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
             waveButtonsLayout.Controls.Add(importWaveButton, 0, 0);
             waveButtonsLayout.Controls.Add(sendWaveButton, 1, 0);
-            waveButtonsLayout.Controls.Add(startWaveButton, 0, 1);
-            waveButtonsLayout.Controls.Add(stopWaveButton, 1, 1);
+            waveButtonsLayout.Controls.Add(startWaveButton, 2, 0);
+            waveButtonsLayout.Controls.Add(stopWaveButton, 3, 0);
             waveButtonsLayout.Dock = DockStyle.Fill;
-            waveButtonsLayout.Location = new Point(4, 4);
-            waveButtonsLayout.Margin = new Padding(4, 4, 4, 4);
+            waveButtonsLayout.Location = new Point(0, 0);
+            waveButtonsLayout.Margin = new Padding(0);
             waveButtonsLayout.Name = "waveButtonsLayout";
-            waveButtonsLayout.RowCount = 2;
-            waveButtonsLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            waveButtonsLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            waveButtonsLayout.Size = new Size(406, 112);
+            waveButtonsLayout.RowCount = 1;
+            waveButtonsLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            waveButtonsLayout.Size = new Size(546, 53);
             waveButtonsLayout.TabIndex = 0;
             // 
             // importWaveButton
             // 
+            importWaveButton.Cursor = Cursors.Hand;
             importWaveButton.Dock = DockStyle.Fill;
             importWaveButton.Enabled = false;
-            importWaveButton.Location = new Point(5, 5);
-            importWaveButton.Margin = new Padding(5, 5, 5, 5);
+            importWaveButton.Location = new Point(0, 3);
+            importWaveButton.Margin = new Padding(0, 3, 8, 5);
             importWaveButton.Name = "importWaveButton";
-            importWaveButton.Size = new Size(193, 46);
+            importWaveButton.Size = new Size(112, 45);
+            importWaveButton.WaveSize = 0;
             importWaveButton.TabIndex = 0;
             importWaveButton.Text = "导入造波信号";
             importWaveButton.Type = AntdUI.TTypeMini.Primary;
@@ -590,12 +629,14 @@ namespace Page_switching
             // 
             // sendWaveButton
             // 
+            sendWaveButton.Cursor = Cursors.Hand;
             sendWaveButton.Dock = DockStyle.Fill;
             sendWaveButton.Enabled = false;
-            sendWaveButton.Location = new Point(208, 5);
-            sendWaveButton.Margin = new Padding(5, 5, 5, 5);
+            sendWaveButton.Location = new Point(120, 3);
+            sendWaveButton.Margin = new Padding(0, 3, 8, 5);
             sendWaveButton.Name = "sendWaveButton";
-            sendWaveButton.Size = new Size(193, 46);
+            sendWaveButton.Size = new Size(112, 45);
+            sendWaveButton.WaveSize = 0;
             sendWaveButton.TabIndex = 1;
             sendWaveButton.Text = "发送造波信号";
             sendWaveButton.Type = AntdUI.TTypeMini.Primary;
@@ -603,12 +644,14 @@ namespace Page_switching
             // 
             // startWaveButton
             // 
+            startWaveButton.Cursor = Cursors.Hand;
             startWaveButton.Dock = DockStyle.Fill;
             startWaveButton.Enabled = false;
-            startWaveButton.Location = new Point(5, 61);
-            startWaveButton.Margin = new Padding(5, 5, 5, 5);
+            startWaveButton.Location = new Point(240, 3);
+            startWaveButton.Margin = new Padding(0, 3, 8, 5);
             startWaveButton.Name = "startWaveButton";
-            startWaveButton.Size = new Size(193, 46);
+            startWaveButton.Size = new Size(112, 45);
+            startWaveButton.WaveSize = 0;
             startWaveButton.TabIndex = 2;
             startWaveButton.Text = "开始造波";
             startWaveButton.Type = AntdUI.TTypeMini.Success;
@@ -616,12 +659,14 @@ namespace Page_switching
             // 
             // stopWaveButton
             // 
+            stopWaveButton.Cursor = Cursors.Hand;
             stopWaveButton.Dock = DockStyle.Fill;
             stopWaveButton.Enabled = false;
-            stopWaveButton.Location = new Point(208, 61);
-            stopWaveButton.Margin = new Padding(5, 5, 5, 5);
+            stopWaveButton.Location = new Point(360, 3);
+            stopWaveButton.Margin = new Padding(0, 3, 8, 5);
             stopWaveButton.Name = "stopWaveButton";
-            stopWaveButton.Size = new Size(193, 46);
+            stopWaveButton.Size = new Size(112, 45);
+            stopWaveButton.WaveSize = 0;
             stopWaveButton.TabIndex = 3;
             stopWaveButton.Text = "停止造波";
             stopWaveButton.Type = AntdUI.TTypeMini.Error;
@@ -629,13 +674,14 @@ namespace Page_switching
             // 
             // waveFileLabel
             // 
+            waveFileLabel.AutoEllipsis = true;
             waveFileLabel.Dock = DockStyle.Fill;
             waveFileLabel.Font = new Font("Microsoft YaHei UI", 9F);
             waveFileLabel.ForeColor = Color.FromArgb(71, 85, 105);
-            waveFileLabel.Location = new Point(5, 125);
-            waveFileLabel.Margin = new Padding(5, 5, 5, 5);
+            waveFileLabel.Location = new Point(3, 56);
+            waveFileLabel.Margin = new Padding(3, 3, 3, 3);
             waveFileLabel.Name = "waveFileLabel";
-            waveFileLabel.Size = new Size(404, 130);
+            waveFileLabel.Size = new Size(540, 59);
             waveFileLabel.TabIndex = 1;
             waveFileLabel.Text = "尚未导入造波信号。\r\n仅支持旧格式最终 PLC 点位，四轴共用，周期 2 ms。";
             waveFileLabel.TextAlign = ContentAlignment.MiddleLeft;
@@ -643,12 +689,12 @@ namespace Page_switching
             // waveStageLabel
             // 
             waveStageLabel.Dock = DockStyle.Fill;
-            waveStageLabel.Font = new Font("Microsoft YaHei UI", 9F);
+            waveStageLabel.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
             waveStageLabel.ForeColor = Color.FromArgb(71, 85, 105);
-            waveStageLabel.Location = new Point(5, 265);
-            waveStageLabel.Margin = new Padding(5, 5, 5, 5);
+            waveStageLabel.Location = new Point(3, 121);
+            waveStageLabel.Margin = new Padding(3, 3, 3, 3);
             waveStageLabel.Name = "waveStageLabel";
-            waveStageLabel.Size = new Size(404, 40);
+            waveStageLabel.Size = new Size(540, 27);
             waveStageLabel.TabIndex = 2;
             waveStageLabel.Text = "未导入";
             waveStageLabel.TextAlign = ContentAlignment.MiddleLeft;
@@ -656,25 +702,34 @@ namespace Page_switching
             // waveProgressBar
             // 
             waveProgressBar.Dock = DockStyle.Fill;
-            waveProgressBar.Location = new Point(5, 315);
-            waveProgressBar.Margin = new Padding(5, 5, 5, 5);
+            waveProgressBar.Location = new Point(3, 154);
+            waveProgressBar.Margin = new Padding(3, 3, 3, 3);
             waveProgressBar.Maximum = 1000;
             waveProgressBar.Name = "waveProgressBar";
-            waveProgressBar.Size = new Size(404, 25);
+            waveProgressBar.Size = new Size(540, 22);
             waveProgressBar.Style = ProgressBarStyle.Continuous;
             waveProgressBar.TabIndex = 3;
             // 
             // waveDetailLabel
             // 
+            waveDetailLabel.AutoEllipsis = true;
             waveDetailLabel.Dock = DockStyle.Fill;
             waveDetailLabel.Font = new Font("Microsoft YaHei UI", 9F);
             waveDetailLabel.ForeColor = Color.FromArgb(71, 85, 105);
-            waveDetailLabel.Location = new Point(5, 350);
-            waveDetailLabel.Margin = new Padding(5, 5, 5, 5);
+            waveDetailLabel.Location = new Point(3, 182);
+            waveDetailLabel.Margin = new Padding(3, 3, 3, 3);
             waveDetailLabel.Name = "waveDetailLabel";
-            waveDetailLabel.Size = new Size(404, 231);
+            waveDetailLabel.Size = new Size(540, 55);
             waveDetailLabel.TabIndex = 4;
             waveDetailLabel.Text = "等待有效 PLC 反馈。";
+            //
+            // runtimeMonitoringSummary
+            //
+            runtimeMonitoringSummary.Dock = DockStyle.Fill;
+            runtimeMonitoringSummary.Location = new Point(16, 14);
+            runtimeMonitoringSummary.Name = "runtimeMonitoringSummary";
+            runtimeMonitoringSummary.Size = new Size(546, 310);
+            runtimeMonitoringSummary.TabIndex = 0;
             // 
             // progressGroupCaption
             // 
@@ -694,14 +749,14 @@ namespace Page_switching
             rightLayout.Controls.Add(axisGroup, 0, 0);
             rightLayout.Controls.Add(logGroup, 0, 1);
             rightLayout.Dock = DockStyle.Fill;
-            rightLayout.Location = new Point(469, 0);
+            rightLayout.Location = new Point(593, 0);
             rightLayout.Margin = new Padding(0);
             rightLayout.Name = "rightLayout";
             rightLayout.RowCount = 2;
-            rightLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 300F));
+            rightLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 238F));
             // 反馈固定高度，消息紧接下方并填满剩余空间。
             rightLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            rightLayout.Size = new Size(850, 645);
+            rightLayout.Size = new Size(726, 645);
             rightLayout.TabIndex = 1;
             // 
             // axisGroup
@@ -717,8 +772,8 @@ namespace Page_switching
             axisGroup.Location = new Point(0, 0);
             axisGroup.Margin = new Padding(0);
             axisGroup.Name = "axisGroup";
-            axisGroup.Padding = new Padding(18, 40, 18, 15);
-            axisGroup.Size = new Size(850, 300);
+            axisGroup.Padding = new Padding(15, 35, 15, 13);
+            axisGroup.Size = new Size(726, 238);
             axisGroup.TabIndex = 3;
             // 
             // axisGroupCaption
@@ -742,11 +797,11 @@ namespace Page_switching
             logGroup.Dock = DockStyle.Fill;
             logGroup.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
             logGroup.ForeColor = Color.FromArgb(15, 23, 42);
-            logGroup.Location = new Point(0, 275);
-            logGroup.Margin = new Padding(0, 10, 0, 0);
+            logGroup.Location = new Point(0, 253);
+            logGroup.Margin = new Padding(0, 15, 0, 0);
             logGroup.Name = "logGroup";
-            logGroup.Padding = new Padding(18, 40, 18, 15);
-            logGroup.Size = new Size(850, 370);
+            logGroup.Padding = new Padding(15, 35, 15, 13);
+            logGroup.Size = new Size(726, 392);
             logGroup.TabIndex = 4;
             // 
             // logLayout
@@ -755,32 +810,32 @@ namespace Page_switching
             logLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
             logLayout.Controls.Add(messageHeader, 0, 0);
             logLayout.Controls.Add(_logList, 0, 1);
-            logLayout.Controls.Add(clearLogButton, 0, 2);
             logLayout.Dock = DockStyle.Fill;
-            logLayout.Location = new Point(20, 42);
+            logLayout.Location = new Point(16, 36);
             logLayout.Margin = new Padding(0);
             logLayout.Name = "logLayout";
-            logLayout.RowCount = 3;
-            logLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
+            logLayout.RowCount = 2;
+            logLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 45F));
             logLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            logLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 56F));
-            logLayout.Size = new Size(810, 311);
+            logLayout.Size = new Size(694, 342);
             logLayout.TabIndex = 0;
             // 
             // messageHeader
             // 
-            messageHeader.ColumnCount = 2;
-            messageHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150F));
+            messageHeader.ColumnCount = 3;
+            messageHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 105F));
             messageHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            messageHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 135F));
             messageHeader.Controls.Add(messageCountLabel, 0, 0);
             messageHeader.Controls.Add(messageSummaryLabel, 1, 0);
+            messageHeader.Controls.Add(clearLogButton, 2, 0);
             messageHeader.Dock = DockStyle.Fill;
             messageHeader.Location = new Point(0, 0);
             messageHeader.Margin = new Padding(0);
             messageHeader.Name = "messageHeader";
             messageHeader.RowCount = 1;
             messageHeader.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            messageHeader.Size = new Size(810, 40);
+            messageHeader.Size = new Size(694, 45);
             messageHeader.TabIndex = 0;
             // 
             // messageCountLabel
@@ -791,7 +846,7 @@ namespace Page_switching
             messageCountLabel.Location = new Point(0, 0);
             messageCountLabel.Margin = new Padding(0);
             messageCountLabel.Name = "messageCountLabel";
-            messageCountLabel.Size = new Size(150, 40);
+            messageCountLabel.Size = new Size(105, 45);
             messageCountLabel.TabIndex = 0;
             messageCountLabel.Text = "消息：0 条";
             // 
@@ -801,10 +856,10 @@ namespace Page_switching
             messageSummaryLabel.Dock = DockStyle.Fill;
             messageSummaryLabel.Font = new Font("Microsoft YaHei UI", 9F);
             messageSummaryLabel.ForeColor = Color.FromArgb(71, 85, 105);
-            messageSummaryLabel.Location = new Point(150, 0);
-            messageSummaryLabel.Margin = new Padding(0, 0, 15, 0);
+            messageSummaryLabel.Location = new Point(105, 0);
+            messageSummaryLabel.Margin = new Padding(0, 0, 8, 0);
             messageSummaryLabel.Name = "messageSummaryLabel";
-            messageSummaryLabel.Size = new Size(645, 40);
+            messageSummaryLabel.Size = new Size(446, 45);
             messageSummaryLabel.TabIndex = 1;
             messageSummaryLabel.Text = "暂无运行消息";
             // 
@@ -813,33 +868,32 @@ namespace Page_switching
             _logList.BackColor = Color.White;
             _logList.Dock = DockStyle.Fill;
             _logList.Font = new Font("Microsoft YaHei UI", 9F);
-            _logList.Location = new Point(4, 44);
-            _logList.Margin = new Padding(4, 4, 4, 4);
+            _logList.Location = new Point(0, 50);
+            _logList.Margin = new Padding(0, 5, 0, 0);
             _logList.Multiline = true;
             _logList.Name = "_logList";
             _logList.ReadOnly = true;
-            _logList.Size = new Size(802, 215);
+            _logList.Size = new Size(694, 292);
             _logList.TabIndex = 1;
             _logList.WaveSize = 0;
-            _logList.WordWrap = false;
+            _logList.WordWrap = true;
             // 
             // clearLogButton
             // 
-            clearLogButton.Anchor = AnchorStyles.Left;
-            clearLogButton.AutoSizeMode = AntdUI.TAutoSize.Auto;
             clearLogButton.BackColor = Color.FromArgb(248, 250, 252);
             clearLogButton.BorderWidth = 1F;
             clearLogButton.Cursor = Cursors.Hand;
             clearLogButton.DefaultBack = Color.FromArgb(248, 250, 252);
             clearLogButton.DefaultBorderColor = Color.FromArgb(203, 213, 225);
+            clearLogButton.Dock = DockStyle.Fill;
             clearLogButton.Font = new Font("Microsoft YaHei UI", 9F);
             clearLogButton.ForeColor = Color.FromArgb(15, 23, 42);
-            clearLogButton.Location = new Point(4, 267);
-            clearLogButton.Margin = new Padding(4, 4, 4, 4);
-            clearLogButton.MinimumSize = new Size(142, 40);
+            clearLogButton.Location = new Point(559, 1);
+            clearLogButton.Margin = new Padding(0, 1, 0, 4);
             clearLogButton.Name = "clearLogButton";
-            clearLogButton.Size = new Size(142, 45);
+            clearLogButton.Size = new Size(135, 40);
             clearLogButton.TabIndex = 2;
+            clearLogButton.WaveSize = 0;
             clearLogButton.Text = "清空本页消息";
             clearLogButton.Click += ClearLogButton_Click;
             // 
@@ -859,7 +913,7 @@ namespace Page_switching
             AutoScaleDimensions = new SizeF(120F, 120F);
             AutoScaleMode = AutoScaleMode.Dpi;
             AutoScroll = true;
-            AutoScrollMinSize = new Size(1255, 905);
+            AutoScrollMinSize = new Size(1255, 785);
             BackColor = Color.FromArgb(241, 245, 249);
             Controls.Add(pagePanel);
             Font = new Font("Microsoft YaHei UI", 9F);
@@ -879,6 +933,8 @@ namespace Page_switching
             waveCardLayout.ResumeLayout(false);
             monitorInfoLayout.ResumeLayout(false);
             bodyLayout.ResumeLayout(false);
+            leftLayout.ResumeLayout(false);
+            monitoringGroup.ResumeLayout(false);
             progressGroup.ResumeLayout(false);
             progressGroup.PerformLayout();
             waveLayout.ResumeLayout(false);

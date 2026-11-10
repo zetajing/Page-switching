@@ -21,6 +21,8 @@ public sealed class AxisFeedbackGrid : AntdUI.Table
     public AxisFeedbackGrid()
     {
         var titles = new[] { "轴", "位置反馈", "速度反馈", "回零", "报警", "负限位", "正限位", "原点" };
+        // 按表格宽度分配，预留少量空间给边距和像素取整，避免出现横向滚动条。
+        var widths = new[] { "7%", "19%", "19%", "10%", "10%", "11%", "11%", "11%" };
         for (var index = 0; index < titles.Length; index++)
         {
             var key = "C" + index;
@@ -28,14 +30,11 @@ public sealed class AxisFeedbackGrid : AntdUI.Table
             var column = new AntdUI.Column(key, titles[index])
             {
                 ReadOnly = true,
-                Width = index == 0 ? "40" : index <= 2 ? "20%" : "70",
-                Align = index <= 2 ? AntdUI.ColumnAlign.Right : AntdUI.ColumnAlign.Center
+                Width = widths[index],
+                Align = index is 1 or 2 ? AntdUI.ColumnAlign.Right : AntdUI.ColumnAlign.Center
             };
-            if (index == 0) column.Width = "40";
-            else if (index > 2) column.Width = "70";
             Columns.Add(column);
         }
-        // 数值列填满剩余宽度，固定信号列不再挤出横向滚动条。
         AutoSizeColumnsMode = AntdUI.ColumnsMode.Fill;
         DataSource = FeedbackRows;
         ShowTip = true;

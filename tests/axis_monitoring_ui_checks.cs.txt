@@ -106,11 +106,12 @@ internal static class Program
             host.Controls.Add(page); page.Dock = DockStyle.Fill;
             var summary = Field(page, "runtimeMonitoringSummary"); Call(summary, "ApplyReport", Call(counter, "Snapshot"));
             Render(host, "wave-monitoring-summary.png");
-            var parent = (TableLayoutPanel)summary.Parent!;
-            // 仓库 Designer 为120 DPI，用户未提交布局为96 DPI；按实际缩放后行高检查。
-            Check(parent.GetRow(summary) == 5 && summary.Height >= parent.RowStyles[5].Height - summary.Margin.Vertical - 2
-                && summary.Height >= 130 && summary.Width > 300, "wave page report has dedicated scaled row");
-            Check(parent.ClientRectangle.Contains(summary.Bounds), "report within wave layout");
+            var left = (TableLayoutPanel)Field(page, "leftLayout");
+            var group = Field(page, "monitoringGroup");
+            // 统计卡片接在进度区下方，使用左列剩余空间。
+            Check(left.GetControlFromPosition(0, 1) == group && summary.Parent == group
+                && summary.Height >= 130 && summary.Width > 300, "wave page report fills its own card");
+            Check(group.ClientRectangle.Contains(summary.Bounds), "report within monitoring card");
             ((ScrollableControl)page).ScrollControlIntoView(summary); Application.DoEvents();
             Render(host, "wave-monitoring-summary-scrolled.png");
         }
