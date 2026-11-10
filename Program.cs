@@ -1,3 +1,6 @@
+using System.Configuration;
+using System.Text.Json;
+
 namespace Page_switching
 {
     internal static class Program
@@ -24,6 +27,18 @@ namespace Page_switching
                 // 临时身份只开放软件页面，不写入账号库，也不授予 PLC 控制权。
                 user = new LoginUser("临时免登录", UserRole.Administrator);
             }
+            // 迁移失败时先保留旧配置，避免按随附默认值连接另一台 PLC。
+            try
+            {
+                AdsConnectionSettings.MigrateLegacySettings();
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ConfigurationErrorsException or JsonException)
+            {
+                MessageBox.Show("旧 ADS 配置迁移失败，请检查配置文件和写入权限。\n" + ex.Message,
+                    "ADS 配置", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
             Application.Run(new Mainpage(user));
         }
     }

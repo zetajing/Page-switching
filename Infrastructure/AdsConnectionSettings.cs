@@ -1,15 +1,13 @@
 using System.Collections.Specialized;
 using System.Configuration;
-using System.Text;
 using System.Text.Json;
+using System.Xml.Linq;
 
 namespace Page_switching;
 
 internal static class AdsConnectionSettings
 {
     private const string LegacyPlcNetIdKey = "AdsTcpRouterRemoteNetId";
-    private static readonly object SettingsLock = new();
-    private static Dictionary<string, string>? _savedValues;
     private static readonly HashSet<string> ConnectionKeys = new(StringComparer.Ordinal)
     {
         "AdsAmsNetId", "AdsPort", "AdsConnectTimeoutMs", "AdsOperationTimeoutMs",
@@ -19,94 +17,88 @@ internal static class AdsConnectionSettings
         ControlStationIdentity.SettingKey
     };
 
-    internal static string FilePath => Path.Combine(
+    internal static string FilePath => ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None).FilePath;
+
+    private static string LegacyFilePath => Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "PageSwitching", "AdsConnectionSettings.json");
 
-    internal static string? LoadError { get; private set; }
-
-    // 用户保存的连接参数和本站身份优先于 App.config，避免重新生成覆盖现场设置。
+    // 从运行目录的配置文件读取 ADS 参数；通信服务使用本次启动的快照。
     internal static NameValueCollection GetSettings()
     {
         var settings = new NameValueCollection(ConfigurationManager.AppSettings);
         // 兼容只填写旧 Router 目标的 App.config；两项都有值时以 AdsAmsNetId 为准。
         settings["AdsAmsNetId"] ??= settings[LegacyPlcNetIdKey];
         settings.Remove(LegacyPlcNetIdKey);
-        lock (SettingsLock)
-        {
-            foreach (var (key, value) in LoadSavedValues())
-                settings[key] = value;
-        }
-
         return settings;
     }
 
     internal static string? Read(string key) => GetSettings()[key];
 
-    // 保存连接、Router 参数和本站身份；写入完成后才替换旧文件并更新缓存。
-    internal static void Save(params (string Key, string Value)[] values)
+    // 页面和启动读取使用同一份配置；只更新传入的 ADS 字段。
+    internal static string Save(params (string Key, string Value)[] values)
     {
-        lock (SettingsLock)
-        {
-            var settings = GetSettings();
-            var savedValues = ConnectionKeys.Where(key => settings[key] is not null)
-                .ToDictionary(key => key, key => settings[key]!, StringComparer.Ordinal);
-            foreach (var (key, value) in values)
-            {
-                if (!ConnectionKeys.Contains(key))
-                    throw new ArgumentException("不支持的本机配置项：" + key);
-                savedValues[key] = value;
-            }
+        var configuration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+        var section = configuration.AppSettings.SectionInformation;
+        // 修改原始 XML，让配置保存后仍保留 PLC 目标和独立 Router 的分组注释。
+        var settings = section.GetRawXml() is { Length: > 0 } xml
+            ? XElement.Parse(xml, LoadOptions.PreserveWhitespace)
+            : new XElement("appSettings");
+        XElement? FindSetting(string key) => settings.Elements("add").LastOrDefault(element =>
+            string.Equals((string?)element.Attribute("key"), key, StringComparison.OrdinalIgnoreCase));
 
-            Directory.CreateDirectory(Path.GetDirectoryName(FilePath)!);
-            var temporaryPath = FilePath + "." + Guid.NewGuid().ToString("N") + ".tmp";
-            try
-            {
-                File.WriteAllText(temporaryPath,
-                    JsonSerializer.Serialize(savedValues, new JsonSerializerOptions { WriteIndented = true }),
-                    Encoding.UTF8);
-                File.Move(temporaryPath, FilePath, overwrite: true);
-                _savedValues = savedValues;
-                LoadError = null;
-            }
-            finally
-            {
-                if (File.Exists(temporaryPath))
-                    File.Delete(temporaryPath);
-            }
+        if (FindSetting(LegacyPlcNetIdKey) is { } legacyPlcNetId)
+        {
+            if (FindSetting("AdsAmsNetId") is null)
+                legacyPlcNetId.SetAttributeValue("key", "AdsAmsNetId");
+            else
+                legacyPlcNetId.Remove();
         }
+
+        foreach (var (key, value) in values)
+        {
+            if (!ConnectionKeys.Contains(key))
+                throw new ArgumentException("不支持的 ADS 配置项：" + key);
+            if (FindSetting(key) is { } existing)
+                existing.SetAttributeValue("value", value);
+            else
+                settings.Add(new XElement("add", new XAttribute("key", key), new XAttribute("value", value)));
+        }
+
+        section.SetRawXml(settings.ToString(SaveOptions.DisableFormatting));
+        configuration.Save(ConfigurationSaveMode.Modified);
+        ConfigurationManager.RefreshSection("appSettings");
+        return configuration.FilePath;
     }
 
-    // 同一进程共用一次读取结果；手动修改用户配置后需要重启程序。
-    private static Dictionary<string, string> LoadSavedValues()
+    // 旧 JSON 只在升级时导入，运行配置成功保存后才删除旧文件。
+    internal static void MigrateLegacySettings()
     {
-        if (_savedValues is not null)
-            return _savedValues;
-
-        _savedValues = new Dictionary<string, string>(StringComparer.Ordinal);
-        if (!File.Exists(FilePath))
-            return _savedValues;
-
+        var path = LegacyFilePath;
+        Dictionary<string, string>? values;
         try
         {
-            var values = JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(FilePath));
-            if (values is null)
-                return _savedValues;
-
-            // 先在旧 JSON 内归并目标，再覆盖 App.config，保留上位机已经保存的目标。
-            if (values.GetValueOrDefault("AdsAmsNetId") is null &&
-                values.TryGetValue(LegacyPlcNetIdKey, out var legacyPlcNetId))
-                values["AdsAmsNetId"] = legacyPlcNetId;
-
-            foreach (var (key, value) in values)
-                if (ConnectionKeys.Contains(key) && value is not null)
-                    _savedValues[key] = value;
+            values = JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(path));
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
+        catch (FileNotFoundException)
         {
-            LoadError = ex.Message;
+            return;
+        }
+        catch (DirectoryNotFoundException)
+        {
+            return;
         }
 
-        return _savedValues;
+        if (values is null)
+            throw new JsonException("旧 ADS 配置应为 JSON 对象。");
+
+        // 保留旧程序的覆盖顺序，已保存的目标优先于程序随附的默认值。
+        if (values.GetValueOrDefault("AdsAmsNetId") is null &&
+            values.TryGetValue(LegacyPlcNetIdKey, out var legacyPlcNetId))
+            values["AdsAmsNetId"] = legacyPlcNetId;
+
+        Save(values.Where(pair => ConnectionKeys.Contains(pair.Key) && pair.Value is not null)
+            .Select(pair => (pair.Key, pair.Value)).ToArray());
+        File.Delete(path);
     }
 }

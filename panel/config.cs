@@ -342,7 +342,7 @@ public partial class Config : UserControl
         try
         {
             ValidateRouterInputs();
-            AdsConnectionSettings.Save(
+            var path = AdsConnectionSettings.Save(
                 ("AdsTcpRouterEnabled", routerEnabledCheckBox.Checked.ToString().ToLowerInvariant()),
                 ("AdsTcpRouterName", routerNameTextBox.Text.Trim()),
                 ("AdsTcpRouterLocalNetId", localNetIdTextBox.Text.Trim()),
@@ -353,8 +353,8 @@ public partial class Config : UserControl
                 ("AdsTcpRouterRemoteAddress", remoteAddressTextBox.Text.Trim()),
                 ("AdsAmsNetId", remoteNetIdTextBox.Text.Trim()));
 
-            ShowSaveResult("保存成功；ADS连接设置已保留，重启后生效。", UiPalette.Success,
-                $"ADS连接配置已保存：独立Router={routerEnabledCheckBox.Checked}，PLC IP={remoteAddressTextBox.Text.Trim()}，目标AMS Net ID={remoteNetIdTextBox.Text.Trim()}；重启后生效。");
+            ShowSaveResult($"已保存到 {Path.GetFileName(path)}，重启后生效。", UiPalette.Success,
+                $"ADS连接配置已保存到 {path}：独立Router={routerEnabledCheckBox.Checked}，PLC IP={remoteAddressTextBox.Text.Trim()}，目标AMS Net ID={remoteNetIdTextBox.Text.Trim()}；重启后生效。");
         }
         catch (Exception ex)
         {
@@ -415,7 +415,7 @@ public partial class Config : UserControl
         }
     }
 
-    // ADS 连接参数优先读取用户保存值，其余配置沿用 App.config。
+    // 配置页和通信服务读取同一份运行配置。
     private static string Read(string key, string fallback = "")
     {
         string? value = AdsConnectionSettings.Read(key);

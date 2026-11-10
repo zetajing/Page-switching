@@ -6,9 +6,11 @@
 
 ## 每台电脑的配置
 
-在上位机「系统配置」的「PLC 连接目标」中填写目标 AMS Net ID。无 TwinCAT 的电脑还需在下方的「独立 TCP Router」区域勾选并填写参数。点「保存 ADS 配置」保存这两处设置，再重启程序。参数保存到各自 Windows 用户的 `%LOCALAPPDATA%\PageSwitching\AdsConnectionSettings.json`，优先于随程序发布的默认配置。
+在上位机「系统配置」的「PLC 连接目标」中填写目标 AMS Net ID。无 TwinCAT 的电脑还需在下方的「独立 TCP Router」区域勾选并填写参数。点「保存 ADS 配置」会更新运行目录中的 `Page switching.dll.config`，重启后应用。启动日志会显示该文件的完整路径。
 
-手工编辑 `App.config` 时，PLC 的 AMS Net ID 统一填写 `AdsAmsNetId`，独立 Router 的 PLC 路由也用这个值。旧配置只有 `AdsTcpRouterRemoteNetId` 时，程序会沿用该值。`AdsTcpRouterLocalNetId` 填独立 Router 所在电脑自己的 AMS Net ID。
+项目里的 `App.config` 用于生成发布配置。现场手工编辑时，打开正在使用的 `Page switching.dll.config`。PLC 的 AMS Net ID 统一填写 `AdsAmsNetId`，独立 Router 的 PLC 路由也用这个值。旧配置只有 `AdsTcpRouterRemoteNetId` 时，程序会沿用该值。`AdsTcpRouterLocalNetId` 填独立 Router 所在电脑自己的 AMS Net ID。
+
+从旧版本升级时，先启动各电脑实际使用的那份程序。程序会把当前 Windows 用户的旧 `AdsConnectionSettings.json` 导入运行配置，保存成功后清理旧文件。后续覆盖发布文件时，保留各电脑自己的 `Page switching.dll.config`。
 
 | 设置 | 已安装 TwinCAT 的电脑 | 无 TwinCAT 的电脑 B | 无 TwinCAT 的电脑 C |
 | --- | --- | --- | --- |
@@ -30,7 +32,7 @@ AMS Net ID 是 ADS 节点身份。B、C 可以用各自实际 IP 加 `.1.1` 来�
 
 ## 三站控制权和联调
 
-ADS 联通后，三台电脑可同时监视。需要操作的电脑按现场分工配置 `ControlStationIdentity`，可用值为 `WaveControlRoom`、`TowingLocal`、`RemoteControlRoom`。启动时优先读取本机 ADS JSON 中已保存的值，再读取程序的 App.config 设置。同一个身份只分配给一台电脑，因为同站会共用 PLC 中的请求、心跳和手动命令邮箱。实际控制权由 PLC 仲裁，同一时刻只有一个站持有。只看监控的电脑可以保留未配置身份。
+ADS 联通后，三台电脑可同时监视。需要操作的电脑按现场分工在运行配置中设置 `ControlStationIdentity`，可用值为 `WaveControlRoom`、`TowingLocal`、`RemoteControlRoom`。同一个身份只分配给一台电脑，因为同站会共用 PLC 中的请求、心跳和手动命令邮箱。实际控制权由 PLC 仲裁，同一时刻只有一个站持有。只看监控的电脑可以保留未配置身份。
 
 先从三台电脑分别检查到 PLC IP 的 TCP `48898`，再同时打开上位机，确认三台都能持续读取同一个 PLC 的 `GVL_HMI.stMonitor`，看到变化的反馈心跳和正常的监控质量。若 PLC 在系统 Router 所在电脑上，该电脑以本地 ADS 读取验证。当前上位机监控结构要求布局版本 `4`、`164` 字节；端口连通后若提示符号或结构不匹配，要核对在线 PLC 是否为配套程序。
 
@@ -57,7 +59,7 @@ AMS Net ID 是 Router 身份，不要求前四段等于当前 IP。73 的 PLC �
 
 `C:\ProgramData\Beckhoff\TwinCAT\3.1\Runtimes\UmRT_Default\3.1\Target\StaticRoutes.xml`
 
-程序的 ADS 设置在系统配置页保存，重启后生效。复制程序时，每台电脑的设置仍分别保存在自己的用户目录。
+程序的 ADS 设置在系统配置页保存，重启后生效。每台电脑的设置保存在各自运行目录的 `Page switching.dll.config`。
 
 ## 读取超时的检查
 

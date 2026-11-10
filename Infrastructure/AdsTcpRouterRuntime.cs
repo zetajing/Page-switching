@@ -2,9 +2,7 @@ using InduLink.Protocols.Ads.Router;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using System.Collections.Specialized;
-using System.Configuration;
 using System.Diagnostics;
-using ConfigurationManager = System.Configuration.ConfigurationManager;
 using System.Net;
 using TwinCAT.Ads;
 using TwinCAT.Ams;
@@ -80,12 +78,10 @@ internal sealed class AdsTcpRouterRuntime : IAsyncDisposable
 
     private void LogConfiguration()
     {
-        _log("ADS 配置文件：" + ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None).FilePath);
+        _log("ADS 配置文件：" + AdsConnectionSettings.FilePath);
         var adsVersion = FileVersionInfo.GetVersionInfo(typeof(TwinCAT.Ads.AdsClient).Assembly.Location).FileVersion;
         var routerVersion = FileVersionInfo.GetVersionInfo(typeof(TwinCAT.Ads.TcpRouter.AmsTcpIpRouter).Assembly.Location).FileVersion;
         _log($"ADS SDK={adsVersion}，Router SDK={routerVersion}");
-        if (File.Exists(AdsConnectionSettings.FilePath)) _log("ADS 用户配置：" + AdsConnectionSettings.FilePath);
-        if (AdsConnectionSettings.LoadError is { } error) _log("ADS 用户配置读取失败，采用程序默认配置：" + error);
         _log($"ADS 连接目标：AMS Net ID={Read("AdsAmsNetId")}，ADS 端口={Read("AdsPort")}，连接超时={Read("AdsConnectTimeoutMs")} ms");
         if (!IsEnabled) return;
         _log($"ADS Router 本机：AMS Net ID={Read("AdsTcpRouterLocalNetId")}，TCP 端口={Read("AdsTcpRouterTcpPort")}，回环={Read("AdsTcpRouterLoopbackIp")}:{Read("AdsTcpRouterLoopbackPort")}");

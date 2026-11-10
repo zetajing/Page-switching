@@ -29,7 +29,7 @@ public sealed class AxisServiceOptions
     public double MaximumPosition { get; init; } = 20;
     public IReadOnlyList<AxisSymbolMap> AxisSymbols { get; init; } = Array.Empty<AxisSymbolMap>();
 
-    // 合并用户保存的 ADS 连接参数；四根轴的变量地址仍来自 App.config。
+    // ADS 连接参数和四根轴的变量地址都来自程序的运行配置。
     public static AxisServiceOptions FromConfiguration(NameValueCollection? settings = null)
     {
         if (settings == null)
