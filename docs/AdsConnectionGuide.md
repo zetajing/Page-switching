@@ -10,9 +10,7 @@
 
 项目里的 `App.config` 用于生成发布配置。现场手工编辑时，打开正在使用的 `Page switching.dll.config`。PLC 的 AMS Net ID 统一填写 `AdsAmsNetId`，独立 Router 的 PLC 路由也用这个值。旧配置只有 `AdsTcpRouterRemoteNetId` 时，程序会沿用该值。`AdsTcpRouterLocalNetId` 填独立 Router 所在电脑自己的 AMS Net ID。
 
-从旧版本升级时，先启动各电脑实际使用的那份程序。程序会把当前 Windows 用户的旧 `AdsConnectionSettings.json` 导入运行配置，保存成功后清理旧文件。后续覆盖发布文件时，保留各电脑自己的 `Page switching.dll.config`。
-
-升级前先关闭旧程序。新版首次启动会把旧用户目录中的账号、监测设置、日志、采集数据、数据库归档和旧波形工具工作文件搬到程序目录。目标已有同名文件或目录时，保留正在使用的版本，把旧数据放在程序目录的 `LegacyData` 下。程序目录需要有写入权限。
+覆盖发布文件时，保留各电脑自己的 `Page switching.dll.config`。程序在运行目录读写配置和数据，旧用户目录中的文件由使用者自行保留或处理。程序目录需要有写入权限。
 
 | 设置 | 已安装 TwinCAT 的电脑 | 无 TwinCAT 的电脑 B | 无 TwinCAT 的电脑 C |
 | --- | --- | --- | --- |

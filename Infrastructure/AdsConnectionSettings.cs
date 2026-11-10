@@ -1,6 +1,5 @@
 using System.Collections.Specialized;
 using System.Configuration;
-using System.Text.Json;
 using System.Xml.Linq;
 
 namespace Page_switching;
@@ -18,8 +17,6 @@ internal static class AdsConnectionSettings
     };
 
     internal static string FilePath => ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None).FilePath;
-
-    private static string LegacyFilePath => Path.Combine(ProgramDataPaths.LegacyRoot, "AdsConnectionSettings.json");
 
     // 从运行目录的配置文件读取 ADS 参数；通信服务使用本次启动的快照。
     internal static NameValueCollection GetSettings()
@@ -67,36 +64,5 @@ internal static class AdsConnectionSettings
         configuration.Save(ConfigurationSaveMode.Modified);
         ConfigurationManager.RefreshSection("appSettings");
         return configuration.FilePath;
-    }
-
-    // 旧 JSON 只在升级时导入，运行配置成功保存后才删除旧文件。
-    internal static void MigrateLegacySettings()
-    {
-        var path = LegacyFilePath;
-        Dictionary<string, string>? values;
-        try
-        {
-            values = JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(path));
-        }
-        catch (FileNotFoundException)
-        {
-            return;
-        }
-        catch (DirectoryNotFoundException)
-        {
-            return;
-        }
-
-        if (values is null)
-            throw new JsonException("旧 ADS 配置应为 JSON 对象。");
-
-        // 保留旧程序的覆盖顺序，已保存的目标优先于程序随附的默认值。
-        if (values.GetValueOrDefault("AdsAmsNetId") is null &&
-            values.TryGetValue(LegacyPlcNetIdKey, out var legacyPlcNetId))
-            values["AdsAmsNetId"] = legacyPlcNetId;
-
-        Save(values.Where(pair => ConnectionKeys.Contains(pair.Key) && pair.Value is not null)
-            .Select(pair => (pair.Key, pair.Value)).ToArray());
-        File.Delete(path);
     }
 }

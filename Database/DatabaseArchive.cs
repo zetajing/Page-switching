@@ -20,12 +20,12 @@ internal static class DatabaseArchive
     private static ushort _station;
     private static Guid? _runId;
     internal static string Root { get; set; } = ProgramDataPaths.InProgramDirectory("DatabaseArchive");
-    // 目录搬移后继续使用原来源标识，保证旧操作记录和点位仍对应已有的数据库记录。
+    // 兼容此前版本已搬入程序目录的归档；标识文件只在当前归档目录内读取。
     internal static string IdentityRoot
     {
         get
         {
-            var origin = Path.Combine(Root, ProgramDataPaths.ArchiveOriginFile);
+            var origin = Path.Combine(Root, "legacy-source.txt");
             return File.Exists(origin) ? File.ReadAllText(origin) : Path.GetFullPath(Root);
         }
     }

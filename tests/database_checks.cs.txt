@@ -140,7 +140,7 @@ internal static class Program
         Directory.CreateDirectory(relocated);
         DatabaseArchive.Root = Path.Combine(relocated, "DatabaseArchive");
         Directory.Move(archiveRoot, DatabaseArchive.Root);
-        File.WriteAllText(Path.Combine(DatabaseArchive.Root, ProgramDataPaths.ArchiveOriginFile), archiveRoot);
+        File.WriteAllText(Path.Combine(DatabaseArchive.Root, "legacy-source.txt"), archiveRoot);
         string oldMonitoringRoot = service.MonitoringRoot;
         service.MonitoringRoot = Path.Combine(relocated, "AxisMonitoring");
         Directory.Move(oldMonitoringRoot, service.MonitoringRoot);
