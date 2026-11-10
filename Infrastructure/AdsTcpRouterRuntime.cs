@@ -89,7 +89,7 @@ internal sealed class AdsTcpRouterRuntime : IAsyncDisposable
         _log($"ADS 连接目标：AMS Net ID={Read("AdsAmsNetId")}，ADS 端口={Read("AdsPort")}，连接超时={Read("AdsConnectTimeoutMs")} ms");
         if (!IsEnabled) return;
         _log($"ADS Router 本机：AMS Net ID={Read("AdsTcpRouterLocalNetId")}，TCP 端口={Read("AdsTcpRouterTcpPort")}，回环={Read("AdsTcpRouterLoopbackIp")}:{Read("AdsTcpRouterLoopbackPort")}");
-        _log($"ADS Router PLC 路由：IP={Read("AdsTcpRouterRemoteAddress")}，AMS Net ID={Read("AdsTcpRouterRemoteNetId")}");
+        _log($"ADS Router PLC 路由：IP={Read("AdsTcpRouterRemoteAddress")}，AMS Net ID={Read("AdsAmsNetId")}");
     }
 
     // 使用启动时的同一份配置，不在连接过程中重新读取已保存的设置。
@@ -105,7 +105,8 @@ internal sealed class AdsTcpRouterRuntime : IAsyncDisposable
             ["AmsRouter:LoopbackPort"] = Read("AdsTcpRouterLoopbackPort"),
             ["AmsRouter:RemoteConnections:0:Name"] = Read("AdsTcpRouterRemoteName"),
             ["AmsRouter:RemoteConnections:0:Address"] = Read("AdsTcpRouterRemoteAddress"),
-            ["AmsRouter:RemoteConnections:0:NetId"] = Read("AdsTcpRouterRemoteNetId"),
+            // 独立 Router 的 PLC 路由使用与 ADS 客户端相同的目标 AMS Net ID。
+            ["AmsRouter:RemoteConnections:0:NetId"] = Read("AdsAmsNetId"),
             ["AmsRouter:RemoteConnections:0:Type"] = "TCP_IP"
         };
 

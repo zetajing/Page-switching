@@ -7,6 +7,7 @@ namespace Page_switching;
 
 internal static class AdsConnectionSettings
 {
+    private const string LegacyPlcNetIdKey = "AdsTcpRouterRemoteNetId";
     private static readonly object SettingsLock = new();
     private static Dictionary<string, string>? _savedValues;
     private static readonly HashSet<string> ConnectionKeys = new(StringComparer.Ordinal)
@@ -14,7 +15,7 @@ internal static class AdsConnectionSettings
         "AdsAmsNetId", "AdsPort", "AdsConnectTimeoutMs", "AdsOperationTimeoutMs",
         "AdsTcpRouterEnabled", "AdsTcpRouterName", "AdsTcpRouterLocalNetId",
         "AdsTcpRouterTcpPort", "AdsTcpRouterLoopbackIp", "AdsTcpRouterLoopbackPort",
-        "AdsTcpRouterRemoteName", "AdsTcpRouterRemoteAddress", "AdsTcpRouterRemoteNetId",
+        "AdsTcpRouterRemoteName", "AdsTcpRouterRemoteAddress",
         ControlStationIdentity.SettingKey
     };
 
@@ -28,6 +29,9 @@ internal static class AdsConnectionSettings
     internal static NameValueCollection GetSettings()
     {
         var settings = new NameValueCollection(ConfigurationManager.AppSettings);
+        // 兼容只填写旧 Router 目标的 App.config；两项都有值时以 AdsAmsNetId 为准。
+        settings["AdsAmsNetId"] ??= settings[LegacyPlcNetIdKey];
+        settings.Remove(LegacyPlcNetIdKey);
         lock (SettingsLock)
         {
             foreach (var (key, value) in LoadSavedValues())
@@ -37,16 +41,7 @@ internal static class AdsConnectionSettings
         return settings;
     }
 
-    internal static string? Read(string key)
-    {
-        lock (SettingsLock)
-        {
-            if (LoadSavedValues().TryGetValue(key, out var value))
-                return value;
-        }
-
-        return ConfigurationManager.AppSettings[key];
-    }
+    internal static string? Read(string key) => GetSettings()[key];
 
     // 保存连接、Router 参数和本站身份；写入完成后才替换旧文件并更新缓存。
     internal static void Save(params (string Key, string Value)[] values)
@@ -95,10 +90,17 @@ internal static class AdsConnectionSettings
         try
         {
             var values = JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(FilePath));
-            if (values is not null)
-                foreach (var (key, value) in values)
-                    if (ConnectionKeys.Contains(key) && value is not null)
-                        _savedValues[key] = value;
+            if (values is null)
+                return _savedValues;
+
+            // 先在旧 JSON 内归并目标，再覆盖 App.config，保留上位机已经保存的目标。
+            if (values.GetValueOrDefault("AdsAmsNetId") is null &&
+                values.TryGetValue(LegacyPlcNetIdKey, out var legacyPlcNetId))
+                values["AdsAmsNetId"] = legacyPlcNetId;
+
+            foreach (var (key, value) in values)
+                if (ConnectionKeys.Contains(key) && value is not null)
+                    _savedValues[key] = value;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
         {

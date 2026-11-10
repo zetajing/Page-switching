@@ -8,6 +8,8 @@
 
 在上位机「系统配置」的「PLC 连接目标」中填写目标 AMS Net ID。无 TwinCAT 的电脑还需在下方的「独立 TCP Router」区域勾选并填写参数。点「保存 ADS 配置」保存这两处设置，再重启程序。参数保存到各自 Windows 用户的 `%LOCALAPPDATA%\PageSwitching\AdsConnectionSettings.json`，优先于随程序发布的默认配置。
 
+手工编辑 `App.config` 时，PLC 的 AMS Net ID 统一填写 `AdsAmsNetId`，独立 Router 的 PLC 路由也用这个值。旧配置只有 `AdsTcpRouterRemoteNetId` 时，程序会沿用该值。`AdsTcpRouterLocalNetId` 填独立 Router 所在电脑自己的 AMS Net ID。
+
 | 设置 | 已安装 TwinCAT 的电脑 | 无 TwinCAT 的电脑 B | 无 TwinCAT 的电脑 C |
 | --- | --- | --- | --- |
 | 独立 Router | 关闭 | 开启 | 开启 |

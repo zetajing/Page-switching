@@ -64,8 +64,8 @@ public partial class Config : UserControl
         routerTcpPortInput.Value = ReadPort("AdsTcpRouterTcpPort", 48898);
         remoteNameTextBox.Text = Read("AdsTcpRouterRemoteName", "WaveMakerPlc");
         remoteAddressTextBox.Text = Read("AdsTcpRouterRemoteAddress");
-        // 两种模式都先显示程序实际连接的 PLC；旧配置里的 Router 路由可能指向其他目标。
-        remoteNetIdTextBox.Text = Read("AdsAmsNetId", Read("AdsTcpRouterRemoteNetId"));
+        // 两种 Router 模式共用一个 PLC 目标。
+        remoteNetIdTextBox.Text = Read("AdsAmsNetId");
         // 只显示 PLC 的 ADS 端口，独立 Router 的 TCP 监听端口在下方单独设置。
         plcAdsPortLabel.Text = $"PLC ADS 端口：{ReadPort("AdsPort", 851)}";
     }
@@ -351,7 +351,6 @@ public partial class Config : UserControl
                 ("AdsTcpRouterLoopbackPort", decimal.ToInt32(routerTcpPortInput.Value).ToString()),
                 ("AdsTcpRouterRemoteName", remoteNameTextBox.Text.Trim()),
                 ("AdsTcpRouterRemoteAddress", remoteAddressTextBox.Text.Trim()),
-                ("AdsTcpRouterRemoteNetId", remoteNetIdTextBox.Text.Trim()),
                 ("AdsAmsNetId", remoteNetIdTextBox.Text.Trim()));
 
             ShowSaveResult("保存成功；ADS连接设置已保留，重启后生效。", UiPalette.Success,
