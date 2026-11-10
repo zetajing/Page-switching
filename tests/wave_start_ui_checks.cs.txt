@@ -21,6 +21,8 @@ internal static class Program
         var stop = Field<AntdUI.Button>(page, "stopWaveButton");
         var detail = Field<Label>(page, "waveDetailLabel");
         var stage = Field<Label>(page, "waveStageLabel");
+        var cardStage = Field<AntdUI.Label>(page, "_runStateLabel");
+        var progress = Field<ProgressBar>(page, "waveProgressBar");
 
         PlcMachineMonitor good = new()
         {
@@ -52,17 +54,15 @@ internal static class Program
             change();
             Refresh();
             Check(!start.Enabled, "缺少条件时开始按钮必须禁用：" + reason);
-            Check(detail.Text.Contains("暂不能开始") && detail.Text.Contains(reason),
-                "实际详情应显示对应的开始阻断原因：" + reason + "；实际：" + detail.Text);
+            Check(detail.Text.Contains(reason), "空闲时提示当前阻断原因：" + reason + "；实际：" + detail.Text);
             Check(stop.Enabled == stopAvailable, "停止入口不能跟随开始条件一起禁用：" + reason);
-            Check(stage.Text == "已发送，等待开始" || Field<bool>(page, "_waveImporting"),
-                "开始原因不应覆盖已有阶段反馈。");
+            Check(stage.Text == cardStage.Text && !detail.Text.Contains('\n'), "两处阶段一致，详情只显示一条提示。");
         }
 
         Reset();
         Refresh();
         Check(start.Enabled && stop.Enabled, "原有开始门槛全部满足时应可开始和停止。");
-        Check(!detail.Text.Contains("暂不能开始"), "满足条件时不应遗留开始阻断原因。");
+        Check(stage.Text == "待开始" && detail.Text == "", "满足条件时只显示待开始。");
         Check(!good.Axis1.Enabled && !good.Axis2.Enabled && !good.Axis3.Enabled && !good.Axis4.Enabled,
             "场景必须包含四轴尚未使能。");
         Check(!good.Axis1.Homed && !good.Axis2.Homed && !good.Axis3.Homed && !good.Axis4.Homed,
@@ -78,16 +78,13 @@ internal static class Program
             Enumerable.Range(0, 4).Select(_ => new AxisMonitoringThreshold(-10, 10, 5)).ToArray()));
         monitor.Fail("模拟统计读取失败"); monitor.Finish(DateTimeOffset.UtcNow, "统计任务结束", true);
         service.RuntimeMonitoringReport = monitor.Snapshot(); Refresh();
-        Check(start.Enabled && stop.Enabled && stage.Text == "已发送，等待开始", "统计失败不覆盖运动阶段、不禁用开始停止。");
+        Check(start.Enabled && stop.Enabled && stage.Text == "待开始", "统计失败不覆盖运动阶段、不禁用开始停止。");
         Check(statistics.BuildReportText().Contains("统计不完整"), "报告说明统计缺失。");
         service.RuntimeMonitoringReport = null;
 
         // 每次只打破一个原有门槛，直接观察真实控件 Enabled 和详情 Text。
         Blocked(() => service.IsConnected = false, "控制权", stopAvailable: false);
         Blocked(() => service.HasControlAuthority = false, "控制权", stopAvailable: false);
-        Blocked(() => service.WaveOperationActive = true, "正在执行");
-        Blocked(() => Set(page, "_waveStopping", true), "停止", stopAvailable: false);
-        Blocked(() => Set(page, "_waveImporting", true), "导入");
         Blocked(() => service.WaveStatus = new("已发送，等待开始", 1, false, false), "发送");
         Blocked(() => Set(page, "_waveFrame", null), "反馈");
         var missing = good; missing.DataReady = false;
@@ -116,10 +113,6 @@ internal static class Program
         Blocked(() => Set(page, "_waveFrame", missing), "接收序号");
         missing = good; missing.AcceptedSequence = 7;
         Blocked(() => Set(page, "_waveFrame", missing), "已启动过");
-        missing = good; missing.UploadBusy = true;
-        Blocked(() => Set(page, "_waveFrame", missing), "正在拼接");
-        missing = good; missing.TrajectoryBusy = true;
-        Blocked(() => Set(page, "_waveFrame", missing), "尚未退出");
         missing = good; missing.Error = true; missing.TrajectoryErrorId = 1010;
         Blocked(() => Set(page, "_waveFrame", missing), "1010");
         missing = good; missing.Version = 0;
@@ -134,38 +127,70 @@ internal static class Program
         Check(send.Enabled && !start.Enabled, "运动准备条件不能误用于禁用发送，真实参数仍在服务预检。");
         Set(page, "_waveSignal", null);
         Refresh();
-        Check(!send.Enabled && detail.Text.Contains("暂不能发送：请先导入"), "未导入文件时发送按钮与原因一致。");
+        missing.Error = false; Set(page, "_waveFrame", missing); Refresh();
+        Check(!send.Enabled && detail.Text.Contains("请先导入"), "未导入文件时提示导入。");
         Reset();
         Set(page, "_waveImporting", true);
         Refresh();
-        Check(!send.Enabled && detail.Text.Contains("暂不能发送：正在导入"), "导入期间解释发送禁用原因。");
+        Check(!send.Enabled && !start.Enabled && stage.Text == "导入中" && detail.Text == "", "导入期间只显示当前阶段。");
 
-        // 同时欠缺的条件须一起显示，不能只保留第一个，或被“暂不能发送”覆盖。
+        // 同时欠缺多个条件时只显示当前能处理的一项。
         Reset();
-        service.IsConnected = false;
         service.HasControlAuthority = false;
-        service.WaveOperationActive = true;
-        service.WaveStatus = new("已发送，等待开始", 1, false, false);
-        Set(page, "_waveImporting", true);
         missing = good;
         missing.DataReady = missing.MotionPermit = missing.ConfigValid = missing.AxesIdle = false;
-        missing.AxisFault = true;
         missing.UploadStation = 1;
         Set(page, "_waveFrame", missing);
         Refresh();
-        Check(!start.Enabled && !stop.Enabled, "多个条件不满足且无有效控制权时，开始和停止均应禁用。");
-        foreach (string reason in new[] { "控制权", "正在执行", "导入", "发送", "拼接", "运动许可", "参数", "故障", "空闲", "本站" })
-            Check(detail.Text.Contains(reason), "多个阻断原因必须一起展示：" + reason + "；实际：" + detail.Text);
-        Check(detail.Text.Contains("PLC 接收") && detail.Text.Contains("PLC 拼接"),
-            "补充开始原因时仍须保留PLC接收和拼接进度。");
+        Check(!start.Enabled && !stop.Enabled && !send.Enabled, "无有效控制权时各命令保持禁用。");
+        Check(detail.Text == "本站未取得有效控制权。", "只显示首个阻断原因。");
         int detailChanges = 0;
         detail.TextChanged += (_, _) => detailChanges++;
         Refresh();
         Check(detailChanges == 0, "条件未变化时周期刷新不能反复清除、重写原因导致闪动。");
 
+        // 模拟截图：已消费的上传凭据不影响运行显示，本地进度与页面帧刻意不同。
+        Reset();
+        service.WaveOperationActive = true;
+        service.WaveStatus = new("正在造波", 0.8, true, false);
+        missing = good;
+        missing.Running = missing.TrajectoryBusy = true;
+        missing.AxesIdle = false;
+        missing.AcceptedSequence = missing.ReceivedSequence;
+        missing.WaveState = 2;
+        missing.CurrentPoint = 24;
+        Set(page, "_waveFrame", missing);
+        Refresh();
+        Check(stage.Text == "造波中" && cardStage.Text == stage.Text, "运行阶段与状态卡一致。");
+        Check(progress.Visible && progress.Value == 250 && detail.Text == $"轨迹进度 {0.25:P1} · 25 / 100 点",
+            "进度条和点数由同一帧计算，运行中只显示轨迹进度。");
+        Check(!send.Enabled && !start.Enabled && stop.Enabled, "运行期间保持原有操作门槛。");
+        service.WaveOperationActive = false;
+        Refresh();
+        Check(!send.Enabled && !start.Enabled && stage.Text == "造波中" && progress.Value == 250,
+            "其他站启动的轨迹也应使用 PLC 运行进度。");
+        missing.WaveState = 4; missing.Running = false;
+        Set(page, "_waveFrame", missing); Refresh();
+        Check(stage.Text == "停止中" && !progress.Visible && detail.Text == "", "退出阶段清除执行进度和启动提示。");
+        Set(page, "_waveFrame", null); Refresh();
+        Check(stage.Text == "等待 PLC 反馈" && !progress.Visible && progress.Value == 0, "反馈失效后清除旧进度。");
+
+        Reset();
+        service.WaveOperationActive = true;
+        service.WaveStatus = new("正在发送", 0.75, true, false) { IsSending = true };
+        Refresh();
+        Check(stage.Text == "发送中" && progress.Value == 750 && detail.Text == $"发送进度 {0.75:P1}", "发送阶段使用本次传输进度。");
+        missing = good; missing.UploadBusy = true; missing.LoadedCount = 20;
+        Set(page, "_waveFrame", missing); Refresh();
+        Check(stage.Text == "拼接中" && progress.Value == 200 && detail.Text == $"拼接进度 {0.2:P1} · 20 / 100 点",
+            "拼接阶段只显示 PLC 拼接进度。");
+        Set(page, "_waveStopping", true); Refresh();
+        Check(stage.Text == "停止中" && !start.Enabled && !send.Enabled && !stop.Enabled && !progress.Visible,
+            "停止请求期间保持按钮门槛并隐藏其他进度。");
+
         Reset();
         Refresh();
-        Check(start.Enabled && !detail.Text.Contains("暂不能开始"), "条件恢复后必须移除旧原因并恢复开始按钮。");
+        Check(start.Enabled && detail.Text == "", "条件恢复后必须移除旧原因并恢复开始按钮。");
         missing = good;
         missing.Error = true;
         missing.TrajectoryErrorId = 1003;
@@ -173,23 +198,21 @@ internal static class Program
         Set(page, "_waveFrame", missing);
         service.WaveStatus = new("造波操作失败", 0, false, false, "轨迹启动确认失败：PLC 轨迹故障 1003");
         Refresh();
-        foreach (var text in new[] { "1003", "首尾静止", "加速度", "停车空间", "故障等待复位", "最近操作失败", "轨迹启动确认" })
-            Check(detail.Text.Contains(text), "实际页面显示故障含义和原始失败阶段：" + text);
+        Check(stage.Text == "造波故障" && detail.Text == PlcWaveDiagnostics.DescribeFault(1003), "当前故障保留一条 PLC 故障说明。");
         Reset();
         Refresh();
-        Check(!detail.Text.Contains("最近操作失败") && !detail.Text.Contains("1003"), "新操作状态清除后不遗留旧故障详情。");
+        Check(detail.Text == "", "新操作状态清除后不遗留旧故障详情。");
         service.LastWaveFailure = "首点定位失败：轴 2，原始错误 16384";
-        service.WaveStatus = new("已停止，再次运行请重新发送", 0, false, false);
+        service.WaveStatus = new("已停止", 0, false, false);
         Refresh();
-        Check(detail.Text.Contains("历史") && detail.Text.Contains("轴 2") && detail.Text.Contains("16384"),
-            "成功停止后仍展示历史原始失败，不能误认为当前仍在报同一故障。");
-        Check(stage.Text.StartsWith("已停止") && stop.Enabled, "历史记录不能覆盖当前停车阶段或禁用停止。");
+        Check(detail.Text == "请发送造波信号。", "成功停止后只提示下次运行要先发送。");
+        Check(stage.Text == "已停止" && stop.Enabled, "历史记录不能覆盖当前停车阶段或禁用停止。");
         service.WaveStatus = new("已发送，等待开始", 1, false, true);
         Refresh();
-        Check(start.Enabled && detail.Text.Contains("16384"), "历史失败仅供追溯，不作为新的启动门槛。");
+        Check(start.Enabled && detail.Text == "", "历史失败留在运行诊断，不占用造波进度区。");
         service.WaveStatus = new("造波操作失败", 0, false, false, service.LastWaveFailure);
         Refresh();
-        Check(detail.Text.IndexOf("16384") == detail.Text.LastIndexOf("16384"), "同一失败不在当前和历史区重复展示。");
+        Check(detail.Text == service.LastWaveFailure, "当前操作失败只显示一条说明。");
         Check(service.CommandCalls == 0, "更新按钮和原因不能调用启动、停止或上传命令。");
 
         // 弹出真实确认框，只操作本探针UI线程的窗口，不连接PLC或操作用户的窗口。
@@ -272,6 +295,7 @@ namespace Page_switching
         private readonly AntdUI.Button stopWaveButton = new();
         private readonly Label waveFileLabel = new();
         private readonly Label waveStageLabel = new();
+        private readonly AntdUI.Label _runStateLabel = new();
         private readonly Label waveDetailLabel = new();
         private readonly AxisMonitoringSummaryControl runtimeMonitoringSummary = new();
         private readonly ProgressBar waveProgressBar = new() { Maximum = 1000 };
@@ -279,13 +303,17 @@ namespace Page_switching
         {
             _waveFrame = null;
             Controls.AddRange(new Control[] { importWaveButton, sendWaveButton, startWaveButton,
-                stopWaveButton, waveFileLabel, waveStageLabel, waveDetailLabel, waveProgressBar });
+                stopWaveButton, waveFileLabel, waveStageLabel, _runStateLabel, waveDetailLabel, waveProgressBar });
         }
         internal readonly List<string> Logs = new();
         public void AddLog(string message) => Logs.Add(message);
+        private static string FormatWaveState(ushort value) => value == 5 ? "已停止" : "已完成";
     }
 
-    public sealed record WaveOperationStatus(string Stage, double Fraction, bool Active, bool Ready, string? Error = null);
+    public sealed record WaveOperationStatus(string Stage, double Fraction, bool Active, bool Ready, string? Error = null)
+    {
+        internal bool IsSending { get; init; }
+    }
 
     // 服务替身没有网络依赖；若页面刷新误发命令，计数会使检查失败。
     public sealed class AxisService

@@ -79,7 +79,7 @@ namespace Page_switching
             LogMonitorStateChange(snapshot);
         }
 
-        // 三个状态卡片及故障码只使用当前快照，读取失败时保留明确的无效状态。
+        // 控制端、模式和故障码只使用当前快照；造波状态与进度区一起刷新。
         private void UpdateStatusCards(MachineMonitorSnapshot snapshot)
         {
             ApplyEnumField(snapshot.ControlOwner, controlValueLabel, controlDetailLabel,
@@ -87,14 +87,11 @@ namespace Page_switching
             ApplyEnumField(snapshot.ControlMode, modeValueLabel, modeDetailLabel,
                 FormatControlMode, value => value <= 2,
                 value => value == 0 ? UiPalette.Warning : value == 2 ? UiPalette.Primary : UiPalette.Text);
-            ApplyWaveState(snapshot.WaveState);
             var faultText = FormatMonitorField(snapshot.WaveFaultCode);
             var hasCurrentFault = HasValue(snapshot.WaveFaultCode) && snapshot.WaveFaultCode.Value != 0;
             faultCodeLabel.Text = "故障码：" + faultText + (hasCurrentFault ? "（当前故障）" : "");
             faultCodeLabel.ForeColor = hasCurrentFault ? UiPalette.Danger
                 : HasValue(snapshot.WaveFaultCode) ? UiPalette.Muted : UnavailableColor(faultText);
-            // 故障码独立于运行枚举：保留 PLC 状态文字，同时突出当前故障。
-            if (hasCurrentFault) _runStateLabel.ForeColor = UiPalette.Danger;
             if (snapshot.Frame is { Error: true } faultFrame)
                 faultCodeLabel.AccessibleDescription = PlcWaveDiagnostics.DescribeFault(faultFrame.TrajectoryErrorId);
             else faultCodeLabel.AccessibleDescription = hasCurrentFault
@@ -256,21 +253,6 @@ namespace Page_switching
             valueLabel.ForeColor = known ? color(value) : UiPalette.Warning;
             detailLabel.Text = known ? "PLC 反馈" : "未知状态值：" + value;
             detailLabel.ForeColor = known ? UiPalette.Muted : UiPalette.Warning;
-        }
-
-        private void ApplyWaveState(FeedbackField<ushort> field)
-        {
-            _runStateLabel.Text = FormatMonitorField(field, FormatWaveState);
-            _runStateLabel.AccessibleDescription = field.ErrorMessage;
-            _runStateLabel.ForeColor = !HasValue(field) ? UnavailableColor(_runStateLabel.Text) : field.Value switch
-            {
-                1 or 2 => UiPalette.Primary,
-                3 or 4 => UiPalette.Warning,
-                6 => UiPalette.Success,
-                7 => UiPalette.Danger,
-                0 or 5 => UiPalette.Text,
-                _ => UiPalette.Warning
-            };
         }
 
         // 单元格保留无效状态及原始原因；超长文字由 AntdUI ShowTip 展示。

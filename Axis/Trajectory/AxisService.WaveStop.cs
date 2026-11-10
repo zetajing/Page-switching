@@ -49,7 +49,7 @@ public sealed partial class AxisService
             await WaitWaveFrameAsync(f => f.AxesIdle && !f.TrajectoryBusy && !f.UploadBusy,
                 5000, "停止块退出", timeout.Token, allowError: true);
             await WaveWriteAsync(StationPrefix + ".xWaveSession", DataType.Bool, false, timeout.Token);
-            _waveStatus = new("已停止，再次运行请重新发送", 0, false, false);
+            _waveStatus = new("已停止", 0, false, false);
         }
         catch
         {

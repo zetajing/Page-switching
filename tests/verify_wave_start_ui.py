@@ -17,7 +17,7 @@ class WaveStartUiChecks(unittest.TestCase):
         sources = ["panel/auto.Wave.cs", "Axis/Feedback/PlcMachineMonitor.cs", "Axis/Feedback/PlcWaveDiagnostics.cs",
                    "Axis/Feedback/MachineMonitorSnapshot.cs", "Axis/Feedback/AxisSnapshot.cs",
                    "Wave/Legacy/WaveTrajectoryFile.cs", "Axis/Trajectory/WaveCommandChecks.cs",
-                   "Controls/AxisMonitoringSummaryControl.cs", "Controls/AxisMonitoringSummaryControl.Designer.cs",
+                   "Controls/UiPalette.cs", "Controls/AxisMonitoringSummaryControl.cs", "Controls/AxisMonitoringSummaryControl.Designer.cs",
                    "Axis/Monitoring/AxisMonitoringSettings.cs", "Axis/Monitoring/AxisMonitoringReport.cs", "Infrastructure/LoginUser.cs"]
         with tempfile.TemporaryDirectory(prefix="PageSwitching_WaveStartUI_") as directory:
             folder = Path(directory)

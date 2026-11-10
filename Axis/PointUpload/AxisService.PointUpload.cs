@@ -90,7 +90,7 @@ public sealed partial class AxisService
                         $"写入 GVL_motion.aUpload 段 {chunk.Segment}、轴 {chunk.Axis}、段内点 {chunk.Point}..{chunk.Point + chunk.Count - 1} 失败：{AdsDiagnostics.DescribeException(ex)}", ex);
                 }
             }, token);
-            _waveStatus = new("正在发送", chunk.Completed / (double)(points.Length * 4L), true, false);
+            _waveStatus = new("正在发送", chunk.Completed / (double)(points.Length * 4L), true, false) { IsSending = true };
             if (!chunk.EndOfSegment) continue;
             await WaveWriteAsync("GVL_motion.nUploadOffset", DataType.UInt32, (uint)(chunk.Segment * 100000), token);
             await WaveWriteAsync("GVL_motion.nUploadCount", DataType.UInt32, (uint)chunk.SegmentCount, token);

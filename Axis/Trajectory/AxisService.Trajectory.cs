@@ -2,7 +2,11 @@ using InduLink.Abstractions;
 
 namespace Page_switching;
 
-public sealed record WaveOperationStatus(string Stage, double Fraction, bool Active, bool Ready, string? Error = null);
+public sealed record WaveOperationStatus(string Stage, double Fraction, bool Active, bool Ready, string? Error = null)
+{
+    // 页面只在发送时使用本地进度；拼接和运行进度取 PLC 反馈。
+    internal bool IsSending { get; init; }
+}
 
 // 运行主线：核对本次表 → 使能及必要回原 → 启动和等待执行结束。
 public sealed partial class AxisService
@@ -80,7 +84,7 @@ public sealed partial class AxisService
             if (f.Stopped) throw new OperationCanceledException("PLC 已停止轨迹。", token);
             return f.Done && !f.TrajectoryBusy && f.AxesIdle;
         }, Math.Max(180000, (int)(pointCount * 2L + 180000)), "造波执行", token);
-        _waveStatus = new("造波完成，再次运行请重新发送", 1, false, false);
+        _waveStatus = new("造波完成", 1, false, false);
     }
 
     private static void CheckPreparation(PlcMachineMonitor frame)
