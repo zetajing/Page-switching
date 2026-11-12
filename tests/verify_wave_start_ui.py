@@ -18,7 +18,8 @@ class WaveStartUiChecks(unittest.TestCase):
                    "Axis/Feedback/MachineMonitorSnapshot.cs", "Axis/Feedback/AxisSnapshot.cs",
                    "Wave/Legacy/WaveTrajectoryFile.cs", "Axis/Trajectory/WaveCommandChecks.cs",
                    "Controls/UiPalette.cs", "Controls/AxisMonitoringSummaryControl.cs", "Controls/AxisMonitoringSummaryControl.Designer.cs",
-                   "Axis/Monitoring/AxisMonitoringSettings.cs", "Axis/Monitoring/AxisMonitoringReport.cs", "Infrastructure/LoginUser.cs"]
+                   "Axis/Monitoring/AxisMonitoringSettings.cs", "Axis/Monitoring/AxisMonitoringReport.cs", "Infrastructure/LoginUser.cs",
+                   "Infrastructure/ProgramDataPaths.cs"]
         with tempfile.TemporaryDirectory(prefix="PageSwitching_WaveStartUI_") as directory:
             folder = Path(directory)
             links = "".join(f'<Compile Include="{escape(str(ROOT / name))}" />' for name in sources)

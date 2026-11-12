@@ -683,7 +683,7 @@ namespace Page_switching
             waveFileLabel.Name = "waveFileLabel";
             waveFileLabel.Size = new Size(540, 59);
             waveFileLabel.TabIndex = 1;
-            waveFileLabel.Text = "尚未导入造波信号。\r\n仅支持旧格式最终 PLC 点位，四轴共用，周期 2 ms。";
+            waveFileLabel.Text = "尚未导入造波信号。\r\n旧格式最终 PLC 点位，支持 2 ms 或 20 ms，20 ms 自动补点为 2 ms。";
             waveFileLabel.TextAlign = ContentAlignment.MiddleLeft;
             // 
             // waveStageLabel

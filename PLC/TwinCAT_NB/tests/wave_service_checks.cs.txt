@@ -65,6 +65,37 @@ internal static class Program
                 }
                 assertions++;
             }
+            // 20 ms 文件通过真实导入器补点后，下发四轴相同的 2 ms 表并使用转换后的点数。
+            File.WriteAllText(temp, FileText(dt: "0.02", data: "0\n0\n0.01\n0.01\n"));
+            var interpolated = WaveTrajectoryFile.Read(temp);
+            AdsClient.Model = new FakePlc();
+            using (var service = NewService(Options()))
+            {
+                await service.ConnectAsync(CancellationToken.None);
+                await Until(() => service.HasControlAuthority);
+                await service.UploadWaveAsync(interpolated);
+                var model = AdsClient.Model;
+                Check(service.WaveStatus.Ready && model.Frame.PointCount == 31, "20 ms 上传使用补点后数量");
+                Check(model.SampleTimeUs == 2000, "补点后上传周期固定为 2000 微秒");
+                Check(model.ValuesByAxis.Count == 4 && model.ValuesByAxis.Values.All(v => v.SequenceEqual(interpolated.Positions)),
+                    "补点后四轴实际接收相同点位");
+                Check(model.StartWrites == 0, "补点和发送不自动启动");
+            }
+            File.WriteAllText(temp, FileText(dt: "0.02", data: "0\n0\n1\n1\n"));
+            var limited = WaveTrajectoryFile.Read(temp);
+            foreach (string reason in new[] { "差分速度", "差分加速度" })
+            {
+                var model = AdsClient.Model = new FakePlc();
+                if (reason == "差分速度") model.AxisLimits[0][2] = model.AxisLimits[0][6] = 1;
+                else model.AxisLimits[0][3] = model.AxisLimits[0][4] = 100;
+                using var service = NewService(Options());
+                await service.ConnectAsync(CancellationToken.None);
+                await Until(() => service.HasControlAuthority);
+                var failure = await Reject(() => service.UploadWaveAsync(limited), "补点后仍须通过预检");
+                Check(failure.Message.Contains(reason), "补点后按实际轴限制拒绝 " + reason);
+                Check(model.ArrayWrites == 0 && model.PointMetadataWrites == 0 && model.ClearWrites == 0 && model.StartWrites == 0,
+                    "补点预检失败不清旧表、不写点位元数据和数组、不启动");
+            }
             // 逐轴逐字段检查：展开All/Select后，缺项判定和四轴顺序必须保持一致。
             AxisSymbolMap MapWithout(string missing) => new()
             {
@@ -578,6 +609,7 @@ namespace InduLink.Protocols.Ads
         public bool ChangeConfigOnHome;
         public double[][] AxisLimits = Enumerable.Range(1, 4).Select(_ => new[] { -200d, 200, 1000, 1e6, 1000, 10, 10 }).ToArray();
         public int PointMetadataWrites, ClearWrites;
+        public ushort SampleTimeUs;
         public int ArrayWrites, StartWrites, StopReleaseWrites, WaveHeartbeatWrites;
         public int MotionWrites;
         public readonly List<string> PulseWrites = new();
@@ -614,6 +646,7 @@ namespace InduLink.Protocols.Ads
             if (address.EndsWith("xWaveSession")) Session = (bool)request.Value;
             if (address == "GVL_motion.udiHeartbeat") WaveHeartbeatWrites++;
             if (address == "GVL_motion.nPointCount") { Frame.PointCount = (uint)request.Value; PointMetadataWrites++; }
+            if (address == "GVL_motion.nSampleTimeUs") SampleTimeUs = (ushort)request.Value;
             if (address == "GVL_motion.udiUploadSequence") sequence = (uint)request.Value;
             if (address == "GVL_motion.nUploadOffset") offset = (uint)request.Value;
             if (address == "GVL_motion.nUploadCount") size = (uint)request.Value;

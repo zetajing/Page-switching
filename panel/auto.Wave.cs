@@ -36,8 +36,10 @@ public partial class Auto
             if (IsDisposed || Disposing) return;
             _waveService.ForgetWaveSignal();
             _waveSignal = signal; // 全部解析成功后才替换，失败保留原文件。
-            waveFileLabel.Text = $"文件：{signal.FileName}\r\n{signal.Positions.Length:N0} 点 · 2 ms · 预计 {signal.DurationSeconds:F3} 秒";
-            AddLog("导入造波信号：" + signal.FileName + $"，{signal.Positions.Length} 点，四轴共用。");
+            var pointSummary = $"原始 {signal.SourcePointCount:N0} 点 · {signal.SourceSampleTime * 1000:0} ms"
+                + $" → 下发 {signal.Positions.Length:N0} 点 · 2 ms · 预计 {signal.DurationSeconds:F3} 秒";
+            waveFileLabel.Text = $"文件：{signal.FileName}\r\n{pointSummary}";
+            AddLog($"导入造波信号：{signal.FileName}，{pointSummary}，四轴共用。");
             AddLog($"文件读取及解析耗时：{elapsed.Elapsed.TotalMilliseconds:F1} ms。");
         }
         catch (Exception ex) { AddLog("导入失败，保留原信号：" + ex.Message); }
