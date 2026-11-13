@@ -295,12 +295,14 @@ namespace Page_switching
             try
             {
                 var includeAxes = ReferenceEquals(_currentPage, _autoPage);
-                // 保存实际读取任务；关闭窗体时只等待它，不依赖 UI 回调继续运行。
-                _monitorRefreshTask = _monitorService.RefreshAsync(includeAxes, cancellationToken);
-                await _monitorRefreshTask;
+                // 关键：从线程池开始执行，ADS 同步读不再占用 UI 线程。
+                _monitorRefreshTask = Task.Run(
+                    () => _monitorService.RefreshAsync(includeAxes, cancellationToken),
+                    cancellationToken);
+                await _monitorRefreshTask;   // 默认回到 UI 上下文
                 if (_closing || IsDisposed) return;
                 _lastMonitorError = null;
-                PublishMonitorSnapshot();
+                PublishMonitorSnapshot();    // 仍在 UI 线程，安全
             }
             catch (OperationCanceledException) when (_closing || cancellationToken.IsCancellationRequested) { }
             catch (Exception ex)
