@@ -1,0 +1,179 @@
+using System.Diagnostics;
+using InduLink.Protocols.Ads;
+using Page_switching;
+
+int checks = 0;
+void Check(bool condition, string message)
+{
+    if (!condition) throw new Exception(message);
+    checks++;
+}
+async Task ExpectCanceled(Task task)
+{
+    try { await task; }
+    catch (OperationCanceledException) { checks++; return; }
+    throw new Exception("取消后不应报告连接成功。");
+}
+
+// 只替换网络客户端和无关业务成员，连接及重试方法直接编译仓库的实际源码。
+AdsClient.Reset();
+var log = new List<string>();
+int attempts = 0;
+AdsClient.OnConnect = (_, _) =>
+{
+    attempts++;
+    if (attempts <= 2)
+        throw new InvalidOperationException("连接失败", new TimeoutException("测试目标未上线"));
+    return Task.CompletedTask;
+};
+using (var service = new AxisService(new AxisServiceOptions()))
+{
+    var watch = Stopwatch.StartNew();
+    await service.ConnectAtStartupAsync(log.Add, CancellationToken.None);
+    Check(attempts == 3 && service.IsConnected, "PLC 稍后上线，应持续尝试到首次成功。");
+    Check(watch.ElapsedMilliseconds >= 5800, "两次失败之间必须保留 3 秒等待，不能忙循环。");
+    Check(log.Count == 2 && log[0].Contains("测试目标未上线") && log[1] == "手动 ADS 连接成功",
+        "相同故障应去重，并保留底层原因及恢复日志。");
+    Check(AdsClient.Instances.Take(2).All(client => client.DisposeCount == 1), "每次失败客户端都必须释放。");
+    Check(service.AuthorityStarts == 1, "只有首次连接成功才启动控制权维护。");
+    Check(service.LastError is null, "成功后应清除初次连接错误。");
+    await service.ConnectAsync(CancellationToken.None);
+    Check(AdsClient.Instances.Count == 3 && service.AuthorityStarts == 1, "重复连接已连接服务不能创建额外客户端。");
+}
+Check(AdsClient.Instances.All(client => client.DisposeCount == 1), "服务释放后所有创建的客户端均已释放一次。");
+
+// 关闭发生在重试间隔内，应立即取消，不等满 3 秒也不再建立新客户端。
+AdsClient.Reset();
+using (var cancellation = new CancellationTokenSource())
+using (var service = new AxisService(new AxisServiceOptions()))
+{
+    AdsClient.OnConnect = (_, _) => throw new TimeoutException("离线");
+    var watch = Stopwatch.StartNew();
+    await ExpectCanceled(service.ConnectAtStartupAsync(_ => cancellation.CancelAfter(40), cancellation.Token));
+    Check(watch.ElapsedMilliseconds < 1500 && AdsClient.Instances.Count == 1, "关闭应取消重试等待，且不新增连接。");
+    Check(!service.IsConnected && service.AuthorityStarts == 0, "失败或取消不能启动心跳循环。");
+}
+
+// 关闭发生在连接过程中，同样必须退出并释放尚未连接的实例。
+AdsClient.Reset();
+using (var cancellation = new CancellationTokenSource())
+using (var service = new AxisService(new AxisServiceOptions()))
+{
+    var connecting = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+    AdsClient.OnConnect = async (_, token) =>
+    {
+        connecting.SetResult();
+        await Task.Delay(Timeout.Infinite, token);
+    };
+    var pending = service.ConnectAtStartupAsync(_ => throw new Exception("取消不应记录成功或重试。"), cancellation.Token);
+    await connecting.Task;
+    cancellation.Cancel();
+    await ExpectCanceled(pending);
+    Check(AdsClient.Instances.Single().DisposeCount == 1 && !service.IsConnected, "取消连接须释放客户端。");
+}
+
+// 个别客户端可能在取消后才返回成功，发布连接状态之前仍须检查退出信号。
+AdsClient.Reset();
+using (var cancellation = new CancellationTokenSource())
+using (var service = new AxisService(new AxisServiceOptions()))
+{
+    AdsClient.OnConnect = (_, _) => { cancellation.Cancel(); return Task.CompletedTask; };
+    await ExpectCanceled(service.ConnectAtStartupAsync(_ => throw new Exception("退出时不能报告成功。"), cancellation.Token));
+    Check(!service.IsConnected && service.AuthorityStarts == 0 && AdsClient.Instances.Single().DisposeCount == 1,
+        "迟到的连接成功应释放，不能恢复服务状态或启动心跳。");
+}
+
+// 显式再次连接失联服务时，必须先释放旧实例，避免遗留 ADS 端口和旧符号句柄。
+AdsClient.Reset();
+using (var service = new AxisService(new AxisServiceOptions()))
+{
+    await service.ConnectAsync(CancellationToken.None);
+    var previous = AdsClient.Instances.Single();
+    previous.IsConnected = false;
+    AdsClient.OnConnect = (_, _) =>
+    {
+        Check(previous.DisposeCount == 1, "新客户端连接前应释放旧客户端。");
+        Check(!service.TestAuthorityStatus.Available && service.UnavailableSnapshotUpdates >= 2,
+            "重建连接前必须撤销缓存授权和四轴快照。");
+        return Task.CompletedTask;
+    };
+    await service.ConnectAsync(CancellationToken.None);
+    Check(service.IsConnected && AdsClient.Instances.Count == 2, "显式再次连接应使用新的客户端。");
+}
+Check(AdsClient.Instances.All(client => client.DisposeCount == 1), "替换后的新旧客户端都应只释放一次。");
+
+Console.WriteLine($"ADS connection lifecycle: {checks} checks passed (offline fake transport; no PLC writes).");
+
+namespace InduLink.Protocols.Ads
+{
+    public sealed class AdsClientOptions
+    {
+        public string DeviceId { get; init; } = "";
+        public string AmsNetId { get; init; } = "";
+        public int Port { get; init; }
+        public int ConnectTimeoutMilliseconds { get; init; }
+        public int OperationTimeoutMilliseconds { get; init; }
+        public bool ValidateTargetStateOnConnect { get; init; }
+        public bool EnableSumCommands { get; init; }
+    }
+
+    public sealed class AdsClient : IDisposable
+    {
+        public static readonly List<AdsClient> Instances = new();
+        public static Func<AdsClient, CancellationToken, Task> OnConnect = (_, _) => Task.CompletedTask;
+        public bool IsConnected { get; set; }
+        public int DisposeCount { get; private set; }
+        public AdsClient(AdsClientOptions options) { Instances.Add(this); }
+        public async Task ConnectAsync(CancellationToken token)
+        {
+            await OnConnect(this, token);
+            IsConnected = true;
+        }
+        public Task DisconnectAsync(CancellationToken token) { IsConnected = false; return Task.CompletedTask; }
+        public void Dispose() { DisposeCount++; IsConnected = false; }
+        public static void Reset() { Instances.Clear(); OnConnect = (_, _) => Task.CompletedTask; }
+    }
+}
+
+namespace Page_switching
+{
+    public sealed class AxisServiceOptions
+    {
+        public string SnapshotSymbol { get; init; } = "GVL_HMI.stMonitor";
+        public IReadOnlyList<int> AxisSymbols { get; init; } = new[] { 1, 2, 3, 4 };
+        public string AmsNetId { get; init; } = "1.2.3.4.1.1";
+        public int AdsPort { get; init; } = 851;
+        public int ConnectTimeoutMilliseconds { get; init; } = 100;
+        public int OperationTimeoutMilliseconds { get; init; } = 100;
+        public int RefreshIntervalMilliseconds { get; init; } = 100;
+        public string Unit { get; init; } = "原始单位";
+        public double MinimumPosition { get; init; } = -20;
+        public double MaximumPosition { get; init; } = 20;
+    }
+    public sealed class Axis { public Axis(AxisService service, int index) { } }
+    public sealed class AxisRuntimeMonitoringService { }
+    public sealed record ControlAuthorityStatus(bool Available)
+    {
+        public static ControlAuthorityStatus Unavailable(string message) => new(false);
+    }
+    internal static class OperationJournal { public static void Record(string category, string message) { } }
+
+    public sealed partial class AxisService
+    {
+        private AxisRuntimeMonitoringService? _runtimeMonitoring { get; set; }
+        private CancellationTokenSource? _waveCancellation { get; set; }
+        private readonly SemaphoreSlim _waveStopGate = new(1, 1);
+        private ControlAuthorityStatus _authorityStatus = new(true);
+        public ControlAuthorityStatus TestAuthorityStatus => _authorityStatus;
+        public ushort ControlStationCode => 0;
+        public bool HasControlAuthority => false;
+        public int AuthorityStarts { get; private set; }
+        public int UnavailableSnapshotUpdates { get; private set; }
+        private void StartAuthorityLoop() { AuthorityStarts++; }
+        private Task StopAuthorityLoopAsync() => Task.CompletedTask;
+        public Task ShutdownWaveAsync() => Task.CompletedTask;
+        private void EndRuntimeMonitoring(string reason) { }
+        private object CreateUnavailableSnapshots(string reason) => new();
+        private void UpdateAxisSnapshots(object snapshots) { UnavailableSnapshotUpdates++; }
+    }
+}

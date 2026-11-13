@@ -1,0 +1,251 @@
+using System.Collections.Specialized;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using InduLink.Protocols.Ads;
+using Page_switching;
+
+internal static class Program
+{
+    private static int _checks;
+
+    private static async Task Main()
+    {
+        Check(Marshal.SizeOf<PlcAxisMonitor>() == 22 && Marshal.SizeOf<PlcMachineMonitor>() == 164,
+            "C# 监控布局保持 22/164 字节");
+        var combinedError = AdsDiagnostics.DescribeException(new AggregateException(
+            new InvalidOperationException("命令提交失败", new IOException("submit timeout")),
+            new InvalidOperationException("命令撤销失败", new IOException("clear timeout"))));
+        Check(combinedError.Contains("命令提交失败") && combinedError.Contains("submit timeout") &&
+            combinedError.Contains("命令撤销失败") && combinedError.Contains("clear timeout"),
+            "聚合异常同时保留命令提交和撤销的原因");
+        await FailedReconnectsWaitAgain();
+        await HeartbeatControlsWholeFrame();
+        await InvalidFramesAndHandles();
+        await CancellationAndDisposal();
+        Console.WriteLine($"PASS: {_checks} ADS monitor checks; fake transport only, no PLC connection.");
+    }
+
+    private static MachineMonitorOptions Options() => new()
+    {
+        AmsNetId = "offline", ConnectTimeoutMilliseconds = 1000,
+        OperationTimeoutMilliseconds = 1000, RefreshTimeoutMilliseconds = 1000,
+        ReconnectIntervalMilliseconds = 30000, StaleAfterMilliseconds = 3000
+    };
+
+    // 不等待真实 30 秒；只推进服务保存的失败时间，验证后续实际失败会重新开始等待。
+    private static async Task FailedReconnectsWaitAgain()
+    {
+        AdsClient.Reset();
+        AdsClient.ConnectFailure = new InvalidOperationException("TargetMachineNotFound");
+        await using var monitor = new MachineMonitorService(Options());
+        await monitor.RefreshAsync(true);
+        Check(AdsClient.Connections == 1 && !monitor.LatestSnapshot.IsLive, "首次连接失败使反馈无效");
+        await monitor.RefreshAsync(true);
+        Check(AdsClient.Connections == 1, "首次失败后等待重连间隔");
+        Set(monitor, "_failureSinceTick", Environment.TickCount64 - 30001);
+        await monitor.RefreshAsync(true);
+        Check(AdsClient.Connections == 2, "间隔到期尝试第二次连接");
+        await monitor.RefreshAsync(true);
+        Check(AdsClient.Connections == 2, "第二次连接失败后重新等待完整间隔");
+
+        AdsClient.ConnectFailure = null;
+        Set(monitor, "_failureSinceTick", Environment.TickCount64 - 30001);
+        await monitor.RefreshAsync(true);
+        Check(AdsClient.Connections == 3 && monitor.LatestSnapshot.OverallQuality == MachineMonitorQuality.WaitingHeartbeat,
+            "恢复连接后重新确认心跳");
+        AdsClient.Frame.Heartbeat++;
+        await monitor.RefreshAsync(true);
+        Check(monitor.LatestSnapshot.IsLive, "恢复后的第二帧心跳变化使反馈有效");
+
+        AdsClient.ReadFailure = new InvalidOperationException("ClientSyncTimeOut");
+        await monitor.RefreshAsync(true);
+        Check(!monitor.LatestSnapshot.IsLive && monitor.LatestSnapshot.Axes.All(axis => !axis.ActualPosition.IsAvailable),
+            "读取通信故障使整帧失效");
+        int connections = AdsClient.Connections;
+        await monitor.RefreshAsync(true);
+        Check(AdsClient.Connections == connections, "读取故障也遵守重连间隔");
+    }
+
+    private static async Task HeartbeatControlsWholeFrame()
+    {
+        AdsClient.Reset();
+        await using var monitor = new MachineMonitorService(Options());
+        await monitor.RefreshAsync(true);
+        var first = monitor.LatestSnapshot;
+        Check(first.OverallQuality == MachineMonitorQuality.WaitingHeartbeat && first.Heartbeat.IsAvailable,
+            "首帧保留心跳计数但等待变化");
+        Check(first.Axes.All(axis => !axis.ActualPosition.IsAvailable && !axis.HasAlarm.IsAvailable),
+            "首帧轴状态也等待同任务心跳确认");
+        AdsClient.Frame.Heartbeat++;
+        await monitor.RefreshAsync(true);
+        Check(monitor.LatestSnapshot.IsLive && monitor.LatestSnapshot.Axes.All(axis => axis.ActualPosition.IsAvailable),
+            "心跳变化后整帧有效");
+
+        Set(monitor, "_lastHeartbeatTick", Environment.TickCount64 - 3001);
+        await monitor.RefreshAsync(true);
+        var stalled = monitor.LatestSnapshot;
+        Check(stalled.OverallQuality == MachineMonitorQuality.HeartbeatStalled && stalled.Heartbeat.IsAvailable,
+            "持续读取冻结帧时仍识别心跳停滞");
+        Check(stalled.Frame is null && !stalled.ControlOwner.IsAvailable &&
+            stalled.Axes.All(axis => !axis.ActualPosition.IsAvailable && !axis.Speed.IsAvailable &&
+                !axis.HasAlarm.IsAvailable && !axis.IsHomed.IsAvailable && !axis.PositiveLimit.IsAvailable &&
+                !axis.NegativeLimit.IsAvailable && !axis.OriginSignal.IsAvailable),
+            "心跳停滞使四轴数值与信号同时失效");
+        AdsClient.Frame.Heartbeat++;
+        await monitor.RefreshAsync(true);
+        Check(monitor.LatestSnapshot.IsLive && monitor.LatestSnapshot.Axes[0].HasAlarm.IsAvailable,
+            "心跳恢复后轴信号恢复");
+        Set(monitor, "_lastSuccessTick", Environment.TickCount64 - 3001);
+        Check(monitor.LatestSnapshot.OverallQuality == MachineMonitorQuality.Stale &&
+            !monitor.LatestSnapshot.Heartbeat.IsAvailable && !monitor.LatestSnapshot.Axes[0].ActualPosition.IsAvailable,
+            "停止读取后整帧按时间过期");
+        AdsClient.Frame.Heartbeat = uint.MaxValue;
+        await monitor.RefreshAsync(true);
+        AdsClient.Frame.Heartbeat = 0;
+        await monitor.RefreshAsync(true);
+        Check(monitor.LatestSnapshot.IsLive, "心跳 uint 回绕不误判停滞");
+    }
+
+    private static async Task InvalidFramesAndHandles()
+    {
+        AdsClient.Reset();
+        await using var monitor = new MachineMonitorService(Options());
+        await monitor.RefreshAsync(true);
+        AdsClient.Frame.Heartbeat++;
+        AdsClient.Frame.Axis1.ActualPosition = double.NaN;
+        await monitor.RefreshAsync(true);
+        Check(monitor.LatestSnapshot.OverallQuality == MachineMonitorQuality.Partial &&
+            !monitor.LatestSnapshot.Axes[0].ActualPosition.IsAvailable && monitor.LatestSnapshot.Axes[1].ActualPosition.IsAvailable,
+            "单轴非有限数值不伪造为零，其他轴仍有效");
+        AdsClient.Frame.Size = 148;
+        await monitor.RefreshAsync(true);
+        Check(!monitor.LatestSnapshot.IsLive && monitor.LatestSnapshot.ErrorMessage!.Contains("布局不匹配"),
+            "旧布局拒绝作为有效数据");
+        int connections = AdsClient.Connections;
+        AdsClient.ReadFailure = new InvalidOperationException("ADS create handle failed: DeviceSymbolNotFound");
+        await monitor.RefreshAsync(true);
+        await monitor.RefreshAsync(true);
+        Check(AdsClient.Connections == connections, "单纯不存在的符号不反复重连");
+        AdsClient.ReadFailure = new InvalidOperationException("ADS ReadAny 'GVL_HMI.stMonitor' failed",
+            new IOException("DeviceSymbolNotFound"));
+        var wrappedError = AdsDiagnostics.DescribeException(AdsClient.ReadFailure);
+        Check(wrappedError.Contains("ReadAny") && wrappedError.Contains("DeviceSymbolNotFound"),
+            "包装异常同时保留读取阶段和底层符号错误");
+        await monitor.RefreshAsync(true);
+        AdsClient.ReadFailure = null;
+        AdsClient.Frame.Size = 164;
+        await monitor.RefreshAsync(true);
+        Check(AdsClient.Connections == connections + 1 &&
+            monitor.LatestSnapshot.OverallQuality == MachineMonitorQuality.WaitingHeartbeat,
+            "已缓存句柄失效后重建客户端并重新确认心跳");
+    }
+
+    private static async Task CancellationAndDisposal()
+    {
+        AdsClient.Reset();
+        var monitor = new MachineMonitorService(Options());
+        AdsClient.HoldRead = true;
+        using var caller = new CancellationTokenSource();
+        var read = monitor.RefreshAsync(true, caller.Token);
+        var concurrent = await monitor.RefreshAsync(true);
+        Check(AdsClient.Reads == 1, "并发刷新忙时跳过，不额外排队");
+        caller.Cancel();
+        await ExpectCancellation(read);
+        Check(OperationJournal.Entries.Count(message => message.Contains("监控读取失败")) == 0,
+            "调用方取消不误记为通信失败");
+        read = monitor.RefreshAsync(true);
+        await monitor.DisposeAsync();
+        await ExpectCancellation(read);
+        await monitor.DisposeAsync();
+        Check(AdsClient.Disposals == 1 && !monitor.LatestSnapshot.IsConnected, "关闭取消读取且只清理一次客户端");
+    }
+
+    private static async Task ExpectCancellation(Task task)
+    {
+        try { await task; throw new Exception("未观察到取消"); }
+        catch (OperationCanceledException) { Check(true, "取消传播给调用方"); }
+    }
+
+    private static void Set(object target, string name, object value) =>
+        target.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(target, value);
+
+    private static void Check(bool condition, string message)
+    {
+        if (!condition) throw new Exception(message);
+        _checks++;
+    }
+}
+
+namespace InduLink.Protocols.Ads
+{
+    public sealed class AdsClientOptions
+    {
+        public string DeviceId { get; init; } = "";
+        public string AmsNetId { get; init; } = "";
+        public int Port { get; init; }
+        public int ConnectTimeoutMilliseconds { get; init; }
+        public int OperationTimeoutMilliseconds { get; init; }
+        public bool ValidateTargetStateOnConnect { get; init; }
+    }
+
+    // 替身只有计数和受控结果，不提供网络或 PLC 命令能力。
+    public sealed class AdsClient : IDisposable
+    {
+        public static int Connections, Reads, Disposals;
+        public static bool HoldRead;
+        public static Exception? ConnectFailure, ReadFailure;
+        public static PlcMachineMonitor Frame;
+        public bool IsConnected { get; private set; }
+        public AdsClient(AdsClientOptions options) { }
+        public Task ConnectAsync(CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
+            Connections++;
+            if (ConnectFailure is not null) return Task.FromException(ConnectFailure);
+            IsConnected = true;
+            return Task.CompletedTask;
+        }
+        public async Task<T> ReadAnyAsync<T>(string symbol, CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            Reads++;
+            if (HoldRead) await Task.Delay(Timeout.Infinite, cancellationToken);
+            if (ReadFailure is not null) throw ReadFailure;
+            return (T)(object)Frame;
+        }
+        public Task DisconnectAsync(CancellationToken token)
+        {
+            IsConnected = false;
+            return Task.CompletedTask;
+        }
+        public void Dispose() { Disposals++; IsConnected = false; }
+        public static void Reset()
+        {
+            Connections = Reads = Disposals = 0;
+            HoldRead = false;
+            ConnectFailure = ReadFailure = null;
+            Frame = new PlcMachineMonitor { Version = 4, Size = 164, Heartbeat = 1 };
+            OperationJournal.Entries.Clear();
+        }
+    }
+}
+
+namespace Page_switching
+{
+    public sealed class AxisServiceOptions
+    {
+        public string AmsNetId { get; init; } = "offline";
+        public int AdsPort { get; init; } = 851;
+        public int ConnectTimeoutMilliseconds { get; init; } = 1000;
+        public string SnapshotSymbol { get; init; } = "GVL_HMI.stMonitor";
+    }
+    internal static class AdsConnectionSettings
+    {
+        internal static NameValueCollection GetSettings() => new();
+    }
+    internal static class OperationJournal
+    {
+        internal static readonly List<string> Entries = [];
+        internal static void Record(string category, string message) => Entries.Add(category + ": " + message);
+    }
+}

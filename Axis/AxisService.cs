@@ -88,6 +88,38 @@ public sealed partial class AxisService : IDisposable
         }
     }
 
+    // 仅启动阶段重试连接；首次成功即退出，不重放命令或重新申请控制权。
+    internal async Task ConnectAtStartupAsync(Action<string> log, CancellationToken cancellationToken)
+    {
+        string? lastError = null;
+        while (true)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            try
+            {
+                await ConnectAsync(cancellationToken).ConfigureAwait(false);
+                log("手动 ADS 连接成功");
+                return;
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                // 同一种故障只记录一次；PLC 稍后上线时无需重启上位机。
+                string error = AdsDiagnostics.DescribeException(ex);
+                if (error != lastError)
+                {
+                    lastError = error;
+                    log("手动 ADS 连接失败，3 秒后重试：" + error);
+                    AdsDiagnostics.RecordException("手动 ADS 连接失败", ex);
+                }
+            }
+            await Task.Delay(3000, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
     // 根据配置的 AMS Net ID 和 ADS 端口连接 Beckhoff PLC。
     public async Task ConnectAsync(CancellationToken cancellationToken)
     {
@@ -100,6 +132,18 @@ public sealed partial class AxisService : IDisposable
             {
                 return;
             }
+
+            // 失联客户端仍持有本机 ADS 端口和符号句柄，替换前必须释放。
+            AdsClient? previousClient;
+            lock (_stateSync)
+            {
+                previousClient = _adsClient;
+                _adsClient = null;
+                _connected = false;
+            }
+            _authorityStatus = ControlAuthorityStatus.Unavailable("ADS 正在连接");
+            UpdateAxisSnapshots(CreateUnavailableSnapshots("ADS 正在连接"));
+            previousClient?.Dispose();
 
             var client = new AdsClient(new AdsClientOptions
             {
@@ -115,6 +159,7 @@ public sealed partial class AxisService : IDisposable
             try
             {
                 await client.ConnectAsync(cancellationToken).ConfigureAwait(false);
+                cancellationToken.ThrowIfCancellationRequested();
                 lock (_stateSync)
                 {
                     _adsClient = client;
@@ -129,7 +174,7 @@ public sealed partial class AxisService : IDisposable
                 lock (_stateSync)
                 {
                     _connected = false;
-                    _lastError = ex.Message;
+                    _lastError = AdsDiagnostics.DescribeException(ex);
                 }
 
                 throw;

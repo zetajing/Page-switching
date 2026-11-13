@@ -84,7 +84,8 @@ public sealed record MachineMonitorSnapshot
         _ => "监控未连接"
     };
 
-    // 机器状态依赖 PLC 任务心跳；轴读取有自己的质量，不随机器心跳一同失效。
+    // 四轴和机器状态来自同一 PLC 任务发布的整帧，心跳未确认或停滞时都不能当作实时反馈。
+    // 保留心跳计数本身，界面仍可显示当前值和停滞原因。
     internal MachineMonitorSnapshot WithoutMachineAvailability(MachineMonitorQuality quality, string reason) => this with
     {
         OverallQuality = quality,
@@ -93,13 +94,13 @@ public sealed record MachineMonitorSnapshot
         ControlOwner = ControlOwner.WithoutAvailability(reason),
         ControlMode = ControlMode.WithoutAvailability(reason),
         WaveState = WaveState.WithoutAvailability(reason),
-        WaveFaultCode = WaveFaultCode.WithoutAvailability(reason)
+        WaveFaultCode = WaveFaultCode.WithoutAvailability(reason),
+        Axes = Array.AsReadOnly(Axes.Select(axis => axis.WithoutAvailability(reason)).ToArray())
     };
 
     internal MachineMonitorSnapshot WithoutAvailability(MachineMonitorQuality quality, string reason) =>
         WithoutMachineAvailability(quality, reason) with
     {
-        Heartbeat = Heartbeat.WithoutAvailability(reason),
-        Axes = Array.AsReadOnly(Axes.Select(axis => axis.WithoutAvailability(reason)).ToArray())
+        Heartbeat = Heartbeat.WithoutAvailability(reason)
     };
 }

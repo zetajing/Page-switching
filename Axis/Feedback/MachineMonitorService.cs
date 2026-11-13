@@ -221,7 +221,8 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
         lock (_stateSync)
         {
             if (_disposed) return;
-            _failureSinceTick ??= Environment.TickCount64;
+            // 每次实际连接或读取失败后重新计时，持续断线时也保留完整重试间隔。
+            _failureSinceTick = Environment.TickCount64;
             _snapshot = _snapshot.WithoutAvailability(MachineMonitorQuality.Unavailable, message);
         }
         // 保留实际错误和变量步骤，偶发故障也能从主窗体操作记录中定位。

@@ -248,8 +248,8 @@ namespace Page_switching
                 _monitorReady = true;
                 PostToUi(() => { _ = RefreshMonitorAsync(); });
                 stage = "手动 ADS 连接";
-                await _axisService.ConnectAsync(cancellationToken).ConfigureAwait(false);
-                if (!_closing) _autoPage.AddLog("手动 ADS 连接成功");
+                // PLC 上线较晚时继续尝试首次连接；关闭窗体会取消连接和重试等待。
+                await _axisService.ConnectAtStartupAsync(LogManualConnection, cancellationToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException) when (_closing)
             {
@@ -263,6 +263,11 @@ namespace Page_switching
                     AdsDiagnostics.RecordException(stage + "失败", ex);
                 }
             }
+        }
+
+        private void LogManualConnection(string message)
+        {
+            if (!_closing) _autoPage.AddLog(message);
         }
 
         private async void HeaderStatusTimer_Tick(object? sender, EventArgs e)
