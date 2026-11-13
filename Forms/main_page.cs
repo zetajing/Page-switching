@@ -295,12 +295,14 @@ namespace Page_switching
             try
             {
                 var includeAxes = ReferenceEquals(_currentPage, _autoPage);
-                // 保存实际读取任务；关闭窗体时只等待它，不依赖 UI 回调继续运行。
-                _monitorRefreshTask = _monitorService.RefreshAsync(includeAxes, cancellationToken);
-                await _monitorRefreshTask;
+                // 关键：从线程池开始执行，ADS 同步读不再占用 UI 线程。
+                _monitorRefreshTask = Task.Run(
+                    () => _monitorService.RefreshAsync(includeAxes, cancellationToken),
+                    cancellationToken);
+                await _monitorRefreshTask;   // 默认回到 UI 上下文
                 if (_closing || IsDisposed) return;
                 _lastMonitorError = null;
-                PublishMonitorSnapshot();
+                PublishMonitorSnapshot();    // 仍在 UI 线程，安全
             }
             catch (OperationCanceledException) when (_closing || cancellationToken.IsCancellationRequested) { }
             catch (Exception ex)
@@ -397,26 +399,25 @@ namespace Page_switching
         private void ShowPage(UserControl page)
         {
             ArgumentNullException.ThrowIfNull(page);
-
-            if (ReferenceEquals(_currentPage, page))
-            {
-                return;
-            }
+            if (ReferenceEquals(_currentPage, page)) return;
 
             panelswitch.SuspendLayout();
-
             try
             {
-                if (_currentPage is not null)
+                // 首次进入才 Add；之后只切可见性，句柄不再重建。
+                if (!ReferenceEquals(page.Parent, panelswitch))
                 {
-                    // 先隐藏再移出容器，让各页的显示事件正确停止刷新。
-                    _currentPage.Visible = false;
-                    panelswitch.Controls.Remove(_currentPage);
+                    page.Dock = DockStyle.Fill;
+                    panelswitch.Controls.Add(page);
                 }
 
-                page.Dock = DockStyle.Fill;
-                panelswitch.Controls.Add(page);
-                // 复用已有页面并恢复显示，保留输入和标签选择，触发需要的刷新。
+                if (_currentPage is not null)
+                {
+                    // 只隐藏不移除：Visible=false 同样会触发 VisibleChanged，
+                    // 页面依赖它停止刷新的逻辑不受影响。
+                    _currentPage.Visible = false;
+                }
+
                 page.Visible = true;
                 page.BringToFront();
                 _currentPage = page;

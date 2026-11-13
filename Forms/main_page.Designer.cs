@@ -39,11 +39,11 @@ namespace Page_switching
             diagnosticsButton = new AntdUI.Button();
             panel1 = new AntdUI.Panel();
             headerStatusPanel = new AntdUI.Panel();
+            controlStatusLabel = new AntdUI.Label();
+            adsStatusLabel = new AntdUI.Label();
             accountPanel = new Panel();
             currentUserLabel = new AntdUI.Label();
             manageAccountsButton = new AntdUI.Button();
-            controlStatusLabel = new AntdUI.Label();
-            adsStatusLabel = new AntdUI.Label();
             appTitleLabel = new AntdUI.Label();
             panel2 = new Panel();
             systemSectionLabel = new AntdUI.Label();
@@ -64,6 +64,7 @@ namespace Page_switching
             operationFolderButton = new AntdUI.Button();
             panel1.SuspendLayout();
             headerStatusPanel.SuspendLayout();
+            accountPanel.SuspendLayout();
             panel2.SuspendLayout();
             contentPanel.SuspendLayout();
             operationGroup.SuspendLayout();
@@ -128,9 +129,9 @@ namespace Page_switching
             controlAuthorityButton.TabIndex = 14;
             controlAuthorityButton.Text = "控制权申请";
             controlAuthorityButton.Click += ControlAuthorityButton_Click;
-            //
+            // 
             // diagnosticsButton
-            //
+            // 
             diagnosticsButton.BackActive = Color.FromArgb(226, 232, 240);
             diagnosticsButton.BackColor = Color.White;
             diagnosticsButton.BackHover = Color.FromArgb(219, 234, 254);
@@ -169,31 +170,13 @@ namespace Page_switching
             headerStatusPanel.Controls.Add(controlStatusLabel);
             headerStatusPanel.Controls.Add(adsStatusLabel);
             headerStatusPanel.Dock = DockStyle.Right;
-            headerStatusPanel.Location = new Point(1173, 0);
+            headerStatusPanel.Location = new Point(833, 0);
             headerStatusPanel.Margin = new Padding(4);
             headerStatusPanel.Name = "headerStatusPanel";
             headerStatusPanel.Padding = new Padding(15, 8, 25, 8);
             headerStatusPanel.Radius = 0;
             headerStatusPanel.Size = new Size(427, 75);
             headerStatusPanel.TabIndex = 2;
-            // 登录账号与管理入口独立于 PLC 控制端状态。
-            accountPanel.BackColor = Color.White;
-            accountPanel.Controls.Add(currentUserLabel);
-            accountPanel.Controls.Add(manageAccountsButton);
-            accountPanel.Dock = DockStyle.Right;
-            accountPanel.Name = "accountPanel";
-            accountPanel.Padding = new Padding(10, 14, 10, 14);
-            accountPanel.Size = new Size(340, 75);
-            currentUserLabel.AutoEllipsis = true;
-            currentUserLabel.Dock = DockStyle.Fill;
-            currentUserLabel.Font = new Font("Microsoft YaHei UI", 9F);
-            currentUserLabel.Name = "currentUserLabel";
-            currentUserLabel.Text = "尚未登录";
-            manageAccountsButton.Dock = DockStyle.Right;
-            manageAccountsButton.Name = "manageAccountsButton";
-            manageAccountsButton.Size = new Size(100, 47);
-            manageAccountsButton.Text = "账号管理";
-            manageAccountsButton.Click += ManageAccountsButton_Click;
             // 
             // controlStatusLabel
             // 
@@ -222,6 +205,39 @@ namespace Page_switching
             adsStatusLabel.Text = "● ADS：手动未连接 / 监控未连接";
             adsStatusLabel.TextAlign = ContentAlignment.MiddleRight;
             // 
+            // accountPanel
+            // 
+            accountPanel.BackColor = Color.White;
+            accountPanel.Controls.Add(currentUserLabel);
+            accountPanel.Controls.Add(manageAccountsButton);
+            accountPanel.Dock = DockStyle.Right;
+            accountPanel.Location = new Point(1260, 0);
+            accountPanel.Name = "accountPanel";
+            accountPanel.Padding = new Padding(10, 14, 10, 14);
+            accountPanel.Size = new Size(340, 75);
+            accountPanel.TabIndex = 3;
+            // 
+            // currentUserLabel
+            // 
+            currentUserLabel.AutoEllipsis = true;
+            currentUserLabel.Dock = DockStyle.Fill;
+            currentUserLabel.Font = new Font("Microsoft YaHei UI", 9F);
+            currentUserLabel.Location = new Point(10, 14);
+            currentUserLabel.Name = "currentUserLabel";
+            currentUserLabel.Size = new Size(220, 47);
+            currentUserLabel.TabIndex = 0;
+            currentUserLabel.Text = "尚未登录";
+            // 
+            // manageAccountsButton
+            // 
+            manageAccountsButton.Dock = DockStyle.Right;
+            manageAccountsButton.Location = new Point(230, 14);
+            manageAccountsButton.Name = "manageAccountsButton";
+            manageAccountsButton.Size = new Size(100, 47);
+            manageAccountsButton.TabIndex = 1;
+            manageAccountsButton.Text = "账号管理";
+            manageAccountsButton.Click += ManageAccountsButton_Click;
+            // 
             // appTitleLabel
             // 
             appTitleLabel.AutoSizeMode = AntdUI.TAutoSize.Auto;
@@ -230,7 +246,7 @@ namespace Page_switching
             appTitleLabel.Location = new Point(25, 19);
             appTitleLabel.Margin = new Padding(4, 0, 4, 0);
             appTitleLabel.Name = "appTitleLabel";
-            appTitleLabel.Size = new Size(139, 26);
+            appTitleLabel.Size = new Size(150, 32);
             appTitleLabel.TabIndex = 0;
             appTitleLabel.Text = "造波控制系统";
             // 
@@ -532,6 +548,7 @@ namespace Page_switching
             panel1.ResumeLayout(false);
             panel1.PerformLayout();
             headerStatusPanel.ResumeLayout(false);
+            accountPanel.ResumeLayout(false);
             panel2.ResumeLayout(false);
             contentPanel.ResumeLayout(false);
             operationGroup.ResumeLayout(false);
