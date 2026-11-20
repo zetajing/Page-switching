@@ -1,60 +1,51 @@
-# 项目文档导航
+# switch 项目文档
 
-更新日期：2026-10-29。按用途归类现有文档，文件名和设备图片路径保持不变。
+仓库包含四轴造波上位机和配套 TwinCAT PLC 源码。本页按工作任务导航。PLC 连接配置和在线程序以现场工程及实际运行目录为准。
 
-## 建议阅读顺序
+## 先按要做的事查
 
-1. 接手项目：先读[整个项目代码讲解](整个项目代码讲解.md)，再读[代码阅读与调试入口](CodeSimplification.md)。
-2. 操作造波页：先读[造波页操作与通信](WaveOperation.md)，再核对[三站控制权与运行锁](ControlAuthorityRules.md)。
-3. 连接或部署 PLC：依次读 [ADS 连接](AdsConnectionGuide.md)、[TwinCAT 对接](TwinCAT_NB_Integration.md)和[PLC 只读监控接口](PlcMonitoringContract.md)。
-4. 调整造波计算或机械转换：先读[造波计算讨论记录](WaveGenerationNotes.md)，区分设备资料、理论示例及待确认参数。
-5. 本轮交付及在线验收：见[优化交付与虚拟轴验收](OptimizationAcceptance.md)，包含版本记录、固定点位、逐项验收表和性能基线。
-6. 查找本轮精简后的代码：见[第五项整理记录](Step5CodeMap.md)，包含轨迹 Action、上位机四条入口和变量核查结果。
-
-## 开发与界面
-
-| 文档 | 内容与用途 |
+| 任务 | 文档 |
 | --- | --- |
-| [整个项目代码讲解](整个项目代码讲解.md) | 项目架构、业务调用链、源码索引与维护边界 |
-| [代码阅读与调试入口](CodeSimplification.md) | 写法约定、四轴对象、共享通信服务与调试入口 |
-| [AntdUI 全页面迁移](AntdUiMigration.md) | 全页面控件迁移范围、数据行为与验证 |
-| [页面布局与验证](PageLayout.md) | 导航、手动、控制权、诊断和监测配置布局；多尺寸与缩放检查 |
+| 第一次接手，了解模块和数据怎样流动 | [项目架构与源码入口](整个项目代码讲解.md) |
+| 找上位机或 PLC 断点，检查一条命令或一次反馈 | [上位机功能分工](上位机功能分工.md) · [调试入口](CodeSimplification.md) · [Axis 服务目录](../Axis/README.md) |
+| 连接一台或多台上位机，排查连接和超时 | [ADS 连接与排查](AdsConnectionGuide.md) |
+| 对接、编译和验收 PLC | [TwinCAT 对接](TwinCAT_NB_Integration.md) · [监控结构和字节布局](PlcMonitoringContract.md) |
+| 理解站点身份、申请、交接和失联 | [三站控制权](ControlAuthorityRules.md) |
+| 操作造波文件、发送、开始或停止 | [造波页操作](WaveOperation.md) |
+| 查轴参数、错误码或实测超限 | [运行诊断](RuntimeDiagnostics.md) · [运行实测统计](AxisRuntimeMonitoring.md) |
+| 管理登录账号、配置 SQL Server | [登录与账号权限](登录与账号权限.md) · [数据库保存与补传](DatabasePersistence.md) |
+| 调整页面布局、控件或主题 | [页面布局及验证](PageLayout.md) · [AntdUI 页面改造](AntdUiMigration.md) |
+| 讨论摇板模型、丝杆换算和生成算法 | [造波计算记录](WaveGenerationNotes.md) |
 
-## 操作、通信与设备
+## 从源码到现场
 
-| 文档 | 内容与用途 |
+在仓库根目录可运行以下构建和离线检查。上位机引用文件见 [lib 说明](../lib/README.md)。
+
+```powershell
+dotnet build 'Page switching.csproj' -c Release
+python -m unittest discover -s PLC/TwinCAT_NB/tests -p 'verify_*.py' -v
+python tests/verify_ads_connection.py
+python tests/verify_ads_monitor.py
+```
+
+PLC 离线检查覆盖仓库结构、扫描分支和接口契约。现场验收应在 XAE 核对实际工程、PLC 在线版本、轴配置与现场接线，再按部署方式验证 ADS、反馈和手动操作。虚拟轴的调试许可和参数只用于相应测试。[TwinCAT 对接](TwinCAT_NB_Integration.md) · [虚拟轴验收记录](OptimizationAcceptance.md)
+
+## 设备资料
+
+- [设备简介与设计指标原图](assets/wavemaker/equipment-specification.png)
+- [主要部件布局原图](assets/wavemaker/drive-structure.png)
+
+设计指标、理论示例与待确认的铰链、传动几何和 NC 轴单位分别记录在 [造波计算记录](WaveGenerationNotes.md)。
+
+## 历史改动与验证记录
+
+历史记录的数值和结论对应当时的源码及验证环境。当前配置、操作方法和接口查上面的专题文档。
+
+| 记录 | 内容 |
 | --- | --- |
-| [造波页操作与通信](WaveOperation.md) | 导入、发送、开始、停止，四轴共用最终点位及 2 ms 周期 |
-| [三站控制权与运行锁](ControlAuthorityRules.md) | 站点优先级、申请与应答、运行期间禁止交接 |
-| [运行诊断与轴参数](RuntimeDiagnostics.md) | 首次故障、只读参数、复制诊断、配套版本和源码核对 |
-| [运行实测超限统计](AxisRuntimeMonitoring.md) | 独立100 ms只读采样、四轴位置/速度阈值、去重占比及CSV/JSON报告 |
-| [数据库保存与补传](DatabasePersistence.md) | Total存储DLL、SQL Server配置、日志/造波/传感器归档、断线补传和查询 |
-| [PLC 只读监控接口](PlcMonitoringContract.md) | 版本 4 / 164 字节反馈布局、数据质量、异常与部署验证 |
-| [TwinCAT 对接](TwinCAT_NB_Integration.md) | 配套 PLC 源码、手动映射、轨迹下发与接口演进 |
-| [ADS 连接](AdsConnectionGuide.md) | 三台电脑的 Router 配置、PLC 回程路由与超时排查 |
-| [ADS 通讯代码检查](AdsCommunicationReview.md) | 2026-11-13 检查结果、连接恢复修复、离线验证和剩余问题 |
-| [造波计算讨论记录](WaveGenerationNotes.md) | 摇板设备资料、计算思路、机械转换边界与待确认参数 |
-
-## 历史与阶段记录
-
-以下文档保留当时的改动与验证背景，其中的“未接入”“待确认”等描述需结合后续专题文档阅读。
-
-| 文档 | 记录范围 | 后续阅读 |
-| --- | --- | --- |
-| [旧工程功能覆盖](旧工程功能覆盖.md) | 旧功能迁移、计算程序、文件格式、单位及阶段性缺口 | [造波操作](WaveOperation.md)、[控制权](ControlAuthorityRules.md)、[监控接口](PlcMonitoringContract.md) |
-| [程序检查记录（2026-09-30）](ProgramReview-20260930.md) | 当次缺陷修复、检查结果与待验收事项 | 按问题查看对应专题文档及当前源码 |
-| [AntdUI 与 ScottPlot 试用记录](UiTrial.md) | 初期控件试用、图表行为与 Designer 检查 | [全页面迁移](AntdUiMigration.md) |
-
-## 设备原始资料
-
-- [设备简介与设计指标](assets/wavemaker/equipment-specification.png)
-- [主要部件布局](assets/wavemaker/drive-structure.png)
-
-图片的解释和使用边界见[造波计算讨论记录](WaveGenerationNotes.md)。设计指标不能当作现场实测结果，理论示例不能直接用作 PLC 点位参数。
-
-## 阅读与维护约定
-
-- 操作流程以 `WaveOperation.md` 为入口，控制权规则查 `ControlAuthorityRules.md`，反馈布局查 `PlcMonitoringContract.md`。
-- `TwinCAT_NB_Integration.md` 包含接口演进过程，部署时需一并阅读文末的整块监控和造波操作更新。
-- 文档描述不代表现场 PLC 已部署或设备已验收；实际行为需核对当前源码、配置及 PLC 版本。
-- 修改接口时同步更新对应专题文档；新增文档时补充本索引。历史检查结果保留原日期和验证边界。
+| [2026-11-13 ADS 通讯代码检查](AdsCommunicationReview.md) | 首次连接与监控恢复修复，运行期限制 |
+| [优化交付与虚拟轴验收](OptimizationAcceptance.md) | 固定点位、性能基线和验收步骤 |
+| [第五项代码整理](Step5CodeMap.md) | 轨迹 Action、调用图和旧变量核查 |
+| [旧工程功能覆盖](旧工程功能覆盖.md) | 已迁移的功能和当时的缺口 |
+| [2026-09-30 程序检查](ProgramReview-20260930.md) | 当时的检查项和处理记录 |
+| [AntdUI 与 ScottPlot 试用](UiTrial.md) | 初期界面和绘图验证 |

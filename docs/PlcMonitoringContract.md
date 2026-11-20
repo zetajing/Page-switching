@@ -1,68 +1,141 @@
 # PLC 只读监控接口
 
-[返回文档导航](README.md)
+[返回文档导航](README.md) · [ADS 配置与排查](AdsConnectionGuide.md) · [运行诊断与轴参数](RuntimeDiagnostics.md)
 
-2026-10-15 起，监控改为整块读取 `GVL_HMI.stMonitor`，替代原来的 33 次逐字段读取。该结构只包含反馈，不包含任何控制命令；三站命令、控制权与轨迹接口不受影响。手动页面也通过现有 DLL 整体读取同一个结构体。
+本文说明 `GVL_HMI.stMonitor` 的发布、读取、布局和数据质量，按 2026-11-20 源码核对。该结构是 PLC 发布给上位机的反馈接口，不用于回写控制命令。连接和路由问题先查[ADS 连接配置](AdsConnectionGuide.md)。
 
-## 通信布局
+## 1. 确认配套版本
 
-PLC `ST_MachineMonitor` 和 C# `PlcMachineMonitor` 均明确采用 1 字节对齐。版本 4 固定 164 字节，按以下顺序排列：
+| 项目 | 当前约定 |
+| --- | --- |
+| 配置键与默认符号 | `AdsMonitorSnapshot=GVL_HMI.stMonitor` |
+| PLC / C# 类型 | `ST_MachineMonitor` / `PlcMachineMonitor` |
+| 对齐 | PLC `pack_mode=1`，C# `StructLayout(Pack=1)` |
+| 布局版本 / 总长 | `4 / 164` 字节 |
+| 每轴结构 | `ST_AxisMonitor` / `PlcAxisMonitor`，22 字节 |
+| PLC 发布块中的程序版本 | `2026102401`，在线值取决于实际下载程序 |
+| 接口行为版本 | `1`，现有点位下发和启动另行校验 |
 
-| 字段 | PLC 类型 | 字节偏移 |
-| --- | --- | --- |
-| nVersion | UINT，固定 4 | 0 |
-| nByteSize | UINT，SIZEOF(stMonitor)，固定 164 | 2 |
-| nControlOwner | UINT | 4 |
-| nControlMode | UINT | 6 |
-| nWaveState | UINT | 8 |
-| uiWaveFaultCode | UINT | 10 |
-| udiHeartbeat | UDINT | 12 |
-| Axis1 / Axis2 / Axis3 / Axis4 | ST_AxisMonitor，各 22 字节 | 16 / 38 / 60 / 82 |
+`AdsMonitorSnapshot` 保存在实际运行配置 `Page switching.dll.config`；项目 `App.config` 是生成该配置的源文件。旧的五个独立机器监控地址和四轴逐成员反馈地址已移除，命令地址仍单独保留。
 
-每轴依次为：`lrActualPosition`、`lrSpeed`（各 LREAL / double，8 字节），`xHomed`、`xError`、`xPositiveLimit`、`xNegativeLimit`、`xOriginSignal`、`xEnabled`（各 BOOL，1 字节）。C# BOOL 显式使用 `MarshalAs(UnmanagedType.I1)`，禁止依赖默认 BOOL 尺寸。修改结构必须同步两端并升级版本，不能直接复用轴内部的混合命令结构。
+监控和手动反馈检查布局版本及字节数，不符合就拒绝解释。现有点位下发和启动另外要求行为版本 1；不匹配时不能通过清表、下发或启动检查，既有停车退出流程不因此改道。版本号说明接口约定，不能证明现场已下载，也不能证明其他 ADS 客户端执行了上位机预检。
 
-控制端编码 0 未分配、1 造波控制室、2 拖车本地、3 远程操作室；模式 0 未选择、1 手动、2 自动；轨迹显示状态 0 待机、1 准备、2 运行、4 停止中、6 完成、7 故障。未知值保留数值提示。故障码保持 UINT，完整源故障超出 UINT 时显示 65535，完整码仍保留在GVL_HMI.udiDetailedFaultCode。轴方向及机械单位需现场确认，不在监控中做角度或丝杆转换。
+## 2. PLC 发布与上位机读取
 
-前 104 字节之后的 44 字节为轨迹及准备反馈，前 148 字节的完整字段顺序见 [造波操作](WaveOperation.md)。包括接收/拼接/执行计数和序号、所属站、完整错误、准备条件及停车完成标志。
+`MAIN` 在四个基础轴块执行后调用 `FB_HmiFeedback`，从本扫描的轴状态和全局反馈直接填充 `stMonitor`。反馈心跳约每 500 ms 加一，`UDINT` 回绕到 0；待机和故障时也继续更新，上位机只读。
 
-版本4在偏移148之后追加首次故障诊断，原有字段偏移保持：
+两条读取路径使用同一结构定义，但连接、缓存和质量处理各自独立：
 
-| 字段 | PLC 类型 | 字节偏移 |
-| --- | --- | --- |
-| udiProgramVersion | UDINT，当前2026102401 | 148 |
-| nBehaviorVersion | UINT，当前1 | 152 |
-| nFaultAxis | UINT，0为组条件，1..4为轴号 | 154 |
-| nFaultSource | UINT，首次故障来源 | 156 |
-| nFaultState | UINT，首次故障发生阶段 | 158 |
-| udiCleanupErrorId | UDINT，首个停车/退出错误 | 160 |
+| 路径 | 读取与用途 |
+| --- | --- |
+| `MachineMonitorService.RefreshAsync` | 直接调用 DLL 的 `ReadAnyAsync<PlcMachineMonitor>`，将整帧转换成监控快照；负责重连、心跳和过期质量 |
+| `AxisService.ReadSnapshotAsync` | 通过手动客户端读取同一帧，校验布局后更新四轴手动反馈；目前不执行独立监控服务的心跳新鲜度判定 |
 
-布局检查和行为版本检查分别进行。手动反馈和诊断读取校验4/164；点位下发和启动另要求行为版本1。未知行为版本不允许清表、下发点位或启动；已经进入停车时仍走原停止流程。版本号只识别配套约定，不能证明其它ADS客户端做过预检。
+主窗体每 500 ms 尝试刷新独立监控，读取未完成时跳过、不排队。页面隐藏后仍读取完整的 164 字节，只在不需要轴表格时省略四轴显示快照。手动反馈按手动页面自己的刷新设置读取，不能把两者当成同一缓存。
 
-首次故障保留到有效组复位；停车或关闭错误不会覆盖它。当前停车阶段和首次故障发生阶段分别发布。完整来源码、窗口入口和验证结果见[运行诊断与轴参数](RuntimeDiagnostics.md)。
+两者都使用 `InduLink.Protocols.Ads.AdsClient`，句柄创建、复用和释放由 DLL 管理。整帧失败时不回退到逐字段读。2026-11-20 的整理已将监控读取集中到 `RefreshAsync`，不再经过错误列表和整帧 `FeedbackField` 包装层。
 
-## 发布和读取
+整块读取减少请求往返和字段之间的采样间隔，但没有声明跨任务原子性。严格同一扫描一致性需要另行设计发布缓冲或序号校验；现有接口不能据此作出保证，也没有改变 PLC 轨迹周期。
 
-`FB_HmiFeedback` 在 MAIN 四个基础轴块之后，直接填充 stMonitor 并使心跳每约 500 ms 递增；待机和故障时心跳也持续运行。旧的五项独立监控变量及 GVL_pc 兼容层已删除；控制端、模式、状态、故障码和心跳直接写入 stMonitor。完整故障码和轨迹诊断仍保留在 GVL_HMI，手动页面不再单独读取 GVL_axis.Axis1..4。
+## 3. 判断质量、心跳和错误
 
-App.config 用 `AdsMonitorSnapshot=GVL_HMI.stMonitor` 指定整块地址，原有五个 AdsMonitor 字段地址配置已移除。四轴 32 项成员反馈地址已移除；命令地址仍保留。监控和手动服务统一使用 `InduLink.Protocols.Ads.AdsClient` 及 DLL 的 `ReadAnyAsync<PlcMachineMonitor>`；句柄创建、复用和释放由 DLL 负责。监控连接时由 DLL 探测 PLC 状态，原有心跳、过期、整轮超时和错误显示继续由监控服务处理。两个服务保留独立连接，各自按需读取，不共用缓存，保持现有控制、轨迹上传和心跳调度。页面隐藏时仍读取这个 164 字节结构，只不生成四轴显示快照。500 ms 调度周期保持现状，不排队积累刷新任务。
+以下质量规则属于独立 `MachineMonitorService`：
 
-一块读取减少请求往返和字段采样间隔，不承诺跨任务原子性；如将来需要严格同一扫描快照，需另外实现发布缓冲/一致性协议。它不改变 PLC 2 ms 轨迹取点周期。
+| 情况 | 对外结果 |
+| --- | --- |
+| 首次连接或重建连接后的第一帧 | 建立心跳基线，等待变化；机器状态和四轴反馈不可用 |
+| 布局有效且已确认心跳变化 | 正常反馈，按有效字段显示状态 |
+| 单个位置或速度为 NaN / 无穷 | 该数值不可用，其余字段保留；包含轴列表时质量为“部分反馈不可用” |
+| 持续读到帧，但心跳 3 秒不变 | 心跳停滞，机器和四轴字段一同失效；保留心跳计数用于显示原因 |
+| 3 秒没有有效帧 | 反馈过期，整帧不可用 |
+| 断线或整帧读取失败 | 本轮数据不可用，不把缺失值显示成零或把缺失 BOOL 当作 false |
 
-## 质量和异常
+可用性判断使用单调计时，界面另保留最近成功读取和心跳变化时间。`IsConnected` 表示客户端连接状态；`IsLive` 还要求心跳有效、质量为正常或部分可用。即使继续成功读到 PLC 内存，也不能把冻结值当作实时反馈。
 
-- 整块读取失败时，全部本轮反馈无效，页面显示 `--` 或不可用，不显示默认零/false；不自动回退到逐字段读。
-- 布局版本/字节数不符时明确提示更新配套 PLC，不连续重连。未部署符号、类型和 Marshalling 错误同样按协议错误显示。
-- 监控客户端在下载/在线修改导致句柄失效时重建客户端，下轮重新获取；网络错误在每次失败后等待完整重连间隔，恢复后重新确认心跳。手动客户端的运行期恢复限制见 [ADS 通讯代码检查](AdsCommunicationReview.md)。
-- 单个位置/速度为 NaN 或无穷时，该数值不可用，其余字段保留有效质量。
-- 首次有效读取需观察心跳变化后确认整帧状态；3 秒不变化显示心跳停止，3 秒没有有效帧显示过期。监控中的四轴数值和状态灯来自同一帧，心跳未确认或停滞时也全部标为不可用；心跳计数本身保留用于显示停滞原因。历史数据不能视为当前有效状态。
-- 每次 ADS 请求超时默认 1000 ms，整轮默认 3000 ms，由 AdsMonitorRefreshTimeoutMs 配置；连接默认 10000 ms。超时日志保留具体读取步骤。
+错误处理按以下类别进行：
 
-## 部署及验证
+- 布局不符、普通符号不存在、数据尺寸/类型或封送错误：显示协议问题，不靠反复重连解决。
+- `ReadAny` 已缓存句柄找不到：下轮重建客户端，重新获取句柄。
+- `DeviceSymbolVersionInvalid` 或通信错误：记录失败，等待完整重连间隔后重建；每次实际失败重新计时。
+- 调用方取消或程序退出：取消读取并清理，不记成普通通信故障；超时则记录上限和当前“连接”或“读取变量”步骤。
 
-先在设备停稳时用 XAE 编译、下载配套 PLC，再重启更新后的上位机。当前在线 PLC 未更新时会显示结构体符号不存在，不能将编译成功当作已部署。
+独立监控恢复后重新确认心跳，**不会替手动客户端恢复连接或控制权**。手动客户端只有首次连接重试，运行中断线和旧句柄恢复仍未统一处理，见[连接恢复范围](AdsConnectionGuide.md#6-明确连接恢复的范围)。
 
-离线运行 `python -m unittest discover -s PLC/TwinCAT_NB/tests -p "verify_*.py" -v`。新增检查验证 PLC 字段顺序、22/164 字节封送、四轴偏移、UINT 高位、BOOL、布局拒绝和数值失效。版本1/100字节和版本3/148字节均不兼容，两端必须一起更新到版本 4。仍需现场确认 ADS SDK 和 DLL 对实际 PLC 的整块读取，以及断线、心跳停滞和恢复。
+| 时间参数 | 默认值 | 来源 |
+| --- | ---: | --- |
+| 连接超时 | 10000 ms | 复用 `AdsConnectTimeoutMs` |
+| 监控单次 ADS 请求超时 | 1000 ms | `MachineMonitorOptions.OperationTimeoutMilliseconds` 默认值 |
+| 整轮监控读取超时 | 3000 ms | `AdsMonitorRefreshTimeoutMs`，无效值回到默认值 |
+| 反馈过期 / 心跳停滞 | 3000 ms | `MachineMonitorOptions.StaleAfterMilliseconds` 默认值 |
+| 通信失败后的重连等待 | 3000 ms | `MachineMonitorOptions.ReconnectIntervalMilliseconds` 默认值 |
 
-性能验收在同一 PLC、网络和调度周期下进行：先预热句柄，再分别采集旧 33 字段和新结构体读取耗时，比较平均值、P95 和失败数。新结构体未部署前无法测得实际优化比例，不报告推测的倍数。
+`AdsOperationTimeoutMs` 默认 5000 ms 属于手动客户端，当前配置加载方法不会把它复制给监控客户端。
 
-2026-10-15 本次只读检查 `192.168.0.55.1.1:851`：新符号返回 DeviceSymbolNotFound，实际服务反馈为 Unavailable / IsLive=false，控制端和心跳均不可用。未写入 PLC、未下载，因此本次未测得新结构体的实际读取耗时。
+## 4. 核对字段布局
+
+偏移从结构起点计，单位为字节。PLC 字段顺序必须与 [C# 结构](../Axis/Feedback/PlcMachineMonitor.cs)一致；修改时同步两端并升级布局版本。BOOL 明确按 1 字节封送，不能依赖 C# 默认 BOOL 大小，也不能直接改用含命令的轴内部结构。
+
+### 机器与四轴反馈：0–103
+
+| PLC 字段 | 类型 | 偏移 |
+| --- | --- | ---: |
+| `nVersion` | UINT | 0 |
+| `nByteSize` | UINT | 2 |
+| `nControlOwner` | UINT | 4 |
+| `nControlMode` | UINT | 6 |
+| `nWaveState` | UINT | 8 |
+| `uiWaveFaultCode` | UINT | 10 |
+| `udiHeartbeat` | UDINT | 12 |
+| `Axis1` / `Axis2` / `Axis3` / `Axis4` | 4 × ST_AxisMonitor | 16 / 38 / 60 / 82 |
+
+每轴内部依次为：`lrActualPosition`（偏移 0，LREAL）、`lrSpeed`（偏移 8，LREAL），然后是 `xHomed`、`xError`、`xPositiveLimit`、`xNegativeLimit`、`xOriginSignal`、`xEnabled`（偏移 16–21，各 BOOL）。`xEnabled` 是实际使能反馈，不是请求。
+
+控制端编码：`0` 未分配、`1` 造波控制室、`2` 拖车本地、`3` 远程操作室。模式：`0` 未分配、`1` 手动、`2` 轨迹占用。页面状态：`0` 待机、`1` 准备、`2` 运行、`4` 停止中、`5` 已停止、`6` 完成、`7` 故障；它与内部轨迹状态不同，未知值保留数值提示。
+
+`uiWaveFaultCode` 为 UINT，完整源故障超过 65535 时显示 65535，完整值另在 `GVL_HMI.udiDetailedFaultCode`。轴位置和速度保留 PLC/NC 原始单位；方向、丝杆几何和机械换算尚未确认，不在监控接口中擅自转换为角度或水面高程。
+
+### 轨迹、准备及停车反馈：104–147
+
+| PLC 字段 | 类型 | 偏移 |
+| --- | --- | ---: |
+| `nTrajectoryState` | UINT | 104 |
+| `nReceivedCount` / `nLoadedCount` / `nPointCount` / `nCurrentPoint` | 4 × UDINT | 106 / 110 / 114 / 118 |
+| `udiReceivedSequence` / `udiAcceptedSequence` | 2 × UDINT | 122 / 126 |
+| `udiErrorId` | UDINT | 130 |
+| `nUploadStation` | UINT | 134 |
+| `xUploadBusy` / `xDataReady` / `xTrajectoryBusy` | 3 × BOOL | 136 / 137 / 138 |
+| `xRunning` / `xDone` / `xError` / `xStopped` | 4 × BOOL | 139 / 140 / 141 / 142 |
+| `xMotionPermit` / `xConfigValid` | 2 × BOOL | 143 / 144 |
+| `xAxesIdle` / `xAxisFault` / `xAxesStopped` | 3 × BOOL | 145 / 146 / 147 |
+
+接收、拼表、执行点数各自独立；`nCurrentPoint` 是从 0 开始的给定点号，不表示机械轴实际到位。`xAxesStopped` 表示实际停车完成，`xAxesIdle` 还要求相关异步块退出，不能互换。业务含义见 [PLC 类型定义](../PLC/TwinCAT_NB/axis_4/DUTs/ST_MachineMonitor.TcDUT)和[现有造波协议](WaveOperation.md)。
+
+### 程序与首次故障诊断：148–163
+
+| PLC 字段 | 类型 | 偏移 |
+| --- | --- | ---: |
+| `udiProgramVersion` | UDINT | 148 |
+| `nBehaviorVersion` | UINT | 152 |
+| `nFaultAxis` | UINT | 154 |
+| `nFaultSource` | UINT | 156 |
+| `nFaultState` | UINT | 158 |
+| `udiCleanupErrorId` | UDINT | 160 |
+
+尾部 `nFaultAxis`、`nFaultSource`、`nFaultState` 对应轨迹首次故障；0 号轴可表示组条件，1–4 表示轴号。首次故障保持到有效组复位，停车/退出错误单独放在 `udiCleanupErrorId`。当前阶段看 `nTrajectoryState`，故障发生阶段看 `nFaultState`。不要与 `GVL_HMI.nFaultAxis` 的当前汇总故障来源混淆，详见[运行诊断](RuntimeDiagnostics.md)。
+
+## 5. 部署与验证
+
+1. 核对两端源码、164 字节布局和实际目标。旧版本 `1 / 100`、`3 / 148` 不能直接按版本 4 解释。
+2. 由现场流程完成配套 PLC 的 XAE 编译、下载和在线确认，再更新并重启上位机。源文件已修改、C# 编译成功都不代表 PLC 已部署。
+3. 先只读检查布局、心跳变化、质量及四轴原始反馈，再按现场条件验证断线、PLC 任务停滞和恢复。本文不要求发送运动命令。
+
+离线检查入口：
+
+```powershell
+python PLC/TwinCAT_NB/tests/verify_monitor_frame.py
+python tests/verify_ads_monitor.py
+```
+
+前者检查 PLC 布局、发布源码和 C# 封送；后者直接链接真实监控服务，以无网络 ADS 替身验证恢复、质量、超时和取消。2026-11-20 监控整理后该服务回归为 35 项断言通过。这些检查不能替代实际 ADS SDK、PLC 在线程序、网络和三机联调验收。
+
+评估整帧性能时，应在同一 PLC、网络和调度条件下预热句柄后采样，比较平均耗时、P95 和失败数。2026-10-15 从旧 33 次逐字段读取迁移时，对 `192.168.0.55.1.1:851` 的只读检查曾返回 `DeviceSymbolNotFound`；当时未下载 PLC、未测得整帧实际耗时。这是有日期的历史结果，不代表今天目标仍缺符号，也不能据此报告当前性能提升倍数。
