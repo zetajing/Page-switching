@@ -399,25 +399,26 @@ namespace Page_switching
         private void ShowPage(UserControl page)
         {
             ArgumentNullException.ThrowIfNull(page);
-            if (ReferenceEquals(_currentPage, page)) return;
+
+            if (ReferenceEquals(_currentPage, page))
+            {
+                return;
+            }
 
             panelswitch.SuspendLayout();
+
             try
             {
-                // 首次进入才 Add；之后只切可见性，句柄不再重建。
-                if (!ReferenceEquals(page.Parent, panelswitch))
-                {
-                    page.Dock = DockStyle.Fill;
-                    panelswitch.Controls.Add(page);
-                }
-
                 if (_currentPage is not null)
                 {
-                    // 只隐藏不移除：Visible=false 同样会触发 VisibleChanged，
-                    // 页面依赖它停止刷新的逻辑不受影响。
+                    // 先隐藏再移出容器，让各页的显示事件正确停止刷新。
                     _currentPage.Visible = false;
+                    panelswitch.Controls.Remove(_currentPage);
                 }
 
+                page.Dock = DockStyle.Fill;
+                panelswitch.Controls.Add(page);
+                // 复用已有页面并恢复显示，保留输入和标签选择，触发需要的刷新。
                 page.Visible = true;
                 page.BringToFront();
                 _currentPage = page;
