@@ -11,8 +11,8 @@ public sealed partial class AxisService : IDisposable
     // 手动读写和控制权维护共用此门闩；不要为了简化调用而改成并发写命令。
     private readonly SemaphoreSlim _operationGate = new(1, 1);
     private readonly object _stateSync = new();
+    // 连接成功后才持有客户端，连接状态直接取 ADS 客户端的反馈。
     private AdsClient? _adsClient;
-    private bool _connected;
     private string? _lastError;
     private bool _disposed;
 
@@ -60,16 +60,7 @@ public sealed partial class AxisService : IDisposable
         get { lock (_stateSync) return _lastError; }
     }
 
-    public bool IsConnected
-    {
-        get
-        {
-            lock (_stateSync)
-            {
-                return _connected && _adsClient?.IsConnected == true;
-            }
-        }
-    }
+    public bool IsConnected => GetConnectedClient() is not null;
 
     public string ConnectionStateText
     {
@@ -139,7 +130,6 @@ public sealed partial class AxisService : IDisposable
             {
                 previousClient = _adsClient;
                 _adsClient = null;
-                _connected = false;
             }
             _authorityStatus = ControlAuthorityStatus.Unavailable("ADS 正在连接");
             UpdateAxisSnapshots(CreateUnavailableSnapshots("ADS 正在连接"));
@@ -163,19 +153,18 @@ public sealed partial class AxisService : IDisposable
                 lock (_stateSync)
                 {
                     _adsClient = client;
-                    _connected = true;
                     _lastError = null;
                 }
                 StartAuthorityLoop();
             }
             catch (Exception ex)
             {
-                client.Dispose();
                 lock (_stateSync)
                 {
-                    _connected = false;
+                    _adsClient = null;
                     _lastError = AdsDiagnostics.DescribeException(ex);
                 }
+                client.Dispose();
 
                 throw;
             }
@@ -204,7 +193,6 @@ public sealed partial class AxisService : IDisposable
             {
                 client = _adsClient;
                 _adsClient = null;
-                _connected = false;
             }
             UpdateAxisSnapshots(CreateUnavailableSnapshots("ADS 未连接"));
 
@@ -229,12 +217,12 @@ public sealed partial class AxisService : IDisposable
         }
     }
 
-    // 仅在服务和 ADS 客户端都处于连接状态时返回客户端。
+    // 界面状态和读写共用这一处判断，避免额外维护一份连接标志。
     private AdsClient? GetConnectedClient()
     {
         lock (_stateSync)
         {
-            return _connected && _adsClient?.IsConnected == true ? _adsClient : null;
+            return _adsClient?.IsConnected == true ? _adsClient : null;
         }
     }
 

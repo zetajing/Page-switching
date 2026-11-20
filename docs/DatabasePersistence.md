@@ -1,6 +1,8 @@
 # 数据库保存与补传
 
-更新：2026-10-29。数据库提供程序来自用户的 `C:\Users\75881\Desktop\total`，源码和PLC控制逻辑分别维护。
+[文档导航](README.md)
+
+本地采集、点位和操作日志先保存到运行目录，再由 InduLink 存储库向 SQL Server 补传。存储库来源与部署文件见 [lib 说明](../lib/README.md)。
 
 ## 从哪里使用
 
@@ -11,7 +13,7 @@
 
 连接字符串采用 .NET SQL Server 格式，不支持 `jdbc:sqlserver://` Java URL。例如使用 SQL 账号时填写 `Server=localhost;Database=WaveControl;Integrated Security=False`，账号和密码分别填入下方输入框。`WaveControl` 需替换为实际已有的业务数据库名称。“连接并建表”只创建业务表，不创建数据库。保存和连接测试都会校验服务器、数据库及连接字符串格式；检测到 JDBC 时显示中文格式提示。
 
-连接配置仍使用现有 `DatabaseEnabled`、`DatabaseConnectionString`、`DatabaseUserName`、`DatabasePassword`。初始保持关闭；配置中的数据库账号与软件登录账号是两套账号。配置保存方式沿用现有App.config机制，不改变PLC连接参数。
+数据库设置使用 `DatabaseEnabled`、`DatabaseConnectionString`、`DatabaseUserName`、`DatabasePassword`，保存到运行目录的 `Page switching.dll.config`。默认关闭，数据库账号由目标 SQL Server 管理，软件登录账号由本机账号库管理。
 
 ## 保存内容
 
@@ -68,7 +70,7 @@ SDK目前没有按业务键原子更新接口，因此固定批次采用“删�
 - `DatabaseSyncService`：单后台循环，补传本地文件、更新游标及同步状态。
 - `DatabasePage`：只读查询、导出当前结果；布局在Designer。
 
-## 本次验证
+## 2026-10-29 离线验证记录
 
 执行Release构建及离线存储替身验证：内容复用、分块二进制、取消/文件失败、部分失败继续、补传去重、提交后应答丢失、游标重建、目标数据库切换、采样质量、CSV数量不符及结束后补传。另执行原运动会话、手动、启动条件、100ms统计、登录权限和页面布局回归。
 

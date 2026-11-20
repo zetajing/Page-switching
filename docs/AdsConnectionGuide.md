@@ -1,97 +1,116 @@
-# 三台电脑连接同一台 PLC
+# ADS 连接配置与现场排查
 
-[返回文档导航](README.md)
+[返回文档导航](README.md) · [监控接口与数据质量](PlcMonitoringContract.md) · [通信代码检查与待解决项](AdsCommunicationReview.md)
 
-三台电脑运行同一套上位机。安装了 TwinCAT 的电脑使用系统 TwinCAT Router，另外两台分别启用程序自带的独立 Router。三台电脑各自直连 PLC 的 ADS Router，可同时读取 PLC 数据。
+本文按首次部署、确认通信、故障排查的顺序说明当前程序。源码核对日期：2026-11-20。三台电脑可以连接同一个 PLC，但每台电脑的本机身份和路由需要分别配置。
 
-## 每台电脑的配置
+## 1. 确认地址和实际配置文件
 
-在上位机「系统配置」的「PLC 连接目标」中填写目标 AMS Net ID。无 TwinCAT 的电脑还需在下方的「独立 TCP Router」区域勾选并填写参数。点「保存 ADS 配置」会更新运行目录中的 `Page switching.dll.config`，重启后应用。启动日志会显示该文件的完整路径。
+连接前从目标 TwinCAT/XAE 核对以下信息，不从示例地址推算：
 
-项目里的 `App.config` 用于生成发布配置。现场手工编辑时，打开正在使用的 `Page switching.dll.config`。PLC 的 AMS Net ID 统一填写 `AdsAmsNetId`，独立 Router 的 PLC 路由也用这个值。旧配置只有 `AdsTcpRouterRemoteNetId` 时，程序会沿用该值。`AdsTcpRouterLocalNetId` 填独立 Router 所在电脑自己的 AMS Net ID。
+| 信息 | 用途 |
+| --- | --- |
+| PLC 的可达 IP | 网卡通信和 Router 路由的网络地址 |
+| PLC 的 AMS Net ID | ADS 目标身份，填写到 `AdsAmsNetId` |
+| PLC Runtime 的 ADS 端口 | 填写到 `AdsPort`；Runtime 1 通常为 `851`，以目标工程为准 |
+| 各电脑的 IP 和本机 AMS Net ID | PLC 返回该电脑的路由；各电脑的 Net ID 必须唯一，并与 PLC 区分 |
 
-覆盖发布文件时，保留各电脑自己的 `Page switching.dll.config`。程序在运行目录读写配置和数据，旧用户目录中的文件由使用者自行保留或处理。程序目录需要有写入权限。
+AMS Net ID 的前四段可以与当前 IP 不同。`851` 是 PLC Runtime 的 ADS 端口；`48898` 通常是 Router 的 TCP 端口；`127.0.0.1` 是本机回环地址。
 
-| 设置 | 已安装 TwinCAT 的电脑 | 无 TwinCAT 的电脑 B | 无 TwinCAT 的电脑 C |
-| --- | --- | --- | --- |
-| 独立 Router | 关闭 | 开启 | 开启 |
-| 本机 AMS Net ID | TwinCAT 系统 Router 已配置的 Net ID | B 专用 Net ID | C 专用 Net ID |
-| PLC AMS Net ID | 三台均填 PLC 实际的 AMS Net ID | 同左 | 同左 |
-| PLC ADS 端口 | `851`（PLC Runtime 1） | `851` | `851` |
-| PLC IP 地址 | 在 TwinCAT 路由里配置 | 填 PLC 在该网段可达的 IP | 填 PLC 在该网段可达的 IP |
-| Router TCP 端口 | 由系统 Router 管理 | `48898` | `48898` |
-| 本机回环地址及端口 | 由系统 Router 管理 | 保存时自动使用 `127.0.0.1:48898` | 保存时自动使用 `127.0.0.1:48898` |
+程序读取运行目录中的 `Page switching.dll.config`，启动日志的“ADS 配置文件”给出实际完整路径。项目根目录的 `App.config` 用于生成输出配置，修改它不会立即改变已经运行的程序。
 
-AMS Net ID 是 ADS 节点身份。B、C 可以用各自实际 IP 加 `.1.1` 来命名，但必须彼此不同，也要与系统 Router 和 PLC 的 Net ID 区分。两台电脑使用同一个 TCP 端口号没有冲突，因为各自在本机监听。`851` 用于寻址 PLC Runtime，标准 ADS TCP 通信使用 `48898`。参考 [Beckhoff ADS 设备寻址](https://infosys.beckhoff.com/content/1033/tc3_ads_intro/116159883.html)和[独立 Router 配置](https://infosys.beckhoff.com/content/1033/tc3_ads.net/9409008395.html)。
+“系统配置”中的“保存 ADS 配置”写入实际运行配置，**重启程序后生效**；通信服务使用本次启动取得的配置快照。发布更新时保留各电脑自己的配置文件，运行目录需要有写入权限。
 
-## 在 PLC 侧配置路由
+旧配置只有 `AdsTcpRouterRemoteNetId`、没有 `AdsAmsNetId` 时，程序沿用旧目标；两项都有时以 `AdsAmsNetId` 为准。保存时合并旧项，后续只维护 `AdsAmsNetId`。
 
-- 在实际运行 PLC 的 TwinCAT Router 中，分别添加 `B 的 AMS Net ID → B 的实际 IP` 和 `C 的 AMS Net ID → C 的实际 IP`。
-- 如果 PLC 是独立 CX 或另一台电脑，给已安装 TwinCAT 的上位机与 PLC 也分别配置指向对方的静态路由。如果 PLC 就运行在该上位机的系统 Router 下，本机 ADS 客户端使用本地路由即可。
-- 配置前从目标 TwinCAT 核对 PLC 的 AMS Net ID 和实际可达 IP。AMS Net ID 的前四段与 IP 不同时，分别按各自实际值填写。参考 [Beckhoff Static Routes](https://infosys.beckhoff.com/content/1033/tc3_system/5210273931.html)。
+## 2. 选择 Router 模式并填写参数
 
-## 三站控制权和联调
+所有电脑都先在“PLC 连接目标”填写同一个 PLC AMS Net ID。页面只显示 PLC ADS 端口；需要更改 `AdsPort` 时，编辑上一步确认的运行配置并重启。
 
-ADS 联通后，三台电脑可同时监视。需要操作的电脑按现场分工在运行配置中设置 `ControlStationIdentity`，可用值为 `WaveControlRoom`、`TowingLocal`、`RemoteControlRoom`。同一个身份只分配给一台电脑，因为同站会共用 PLC 中的请求、心跳和手动命令邮箱。实际控制权由 PLC 仲裁，同一时刻只有一个站持有。只看监控的电脑可以保留未配置身份。
+| 设置 | 系统 TwinCAT Router | 程序独立 TCP Router |
+| --- | --- | --- |
+| 适用电脑 | 已安装并运行 TwinCAT Router | 没有 TwinCAT Router 的电脑 |
+| “独立 TCP Router”开关 | 关闭 | 开启 |
+| PLC 目标 AMS Net ID | `AdsAmsNetId` | 同一个 `AdsAmsNetId`，也用于创建 PLC 路由 |
+| 本机 AMS Net ID | 由系统 Router 管理 | `AdsTcpRouterLocalNetId`，本电脑专用 |
+| PLC IP | 在系统 Router 的目标路由中配置 | `AdsTcpRouterRemoteAddress` |
+| 本机 Router TCP 端口 | 由系统 Router 管理 | `AdsTcpRouterTcpPort`，通常 `48898` |
+| 本机回环地址和端口 | 由系统 Router 管理 | 页面保存为 `127.0.0.1`，端口跟随上面的 TCP 端口 |
 
-先从三台电脑分别检查到 PLC IP 的 TCP `48898`，再同时打开上位机，确认三台都能持续读取同一个 PLC 的 `GVL_HMI.stMonitor`，看到变化的反馈心跳和正常的监控质量。若 PLC 在系统 Router 所在电脑上，该电脑以本地 ADS 读取验证。当前上位机监控结构要求布局版本 `4`、`164` 字节；端口连通后若提示符号或结构不匹配，要核对在线 PLC 是否为配套程序。
+独立模式还使用 `AdsTcpRouterName` 标识本机 Router，使用 `AdsTcpRouterRemoteName` 标识 PLC 路由。`AdsTcpRouterLoopbackIp`、`AdsTcpRouterLoopbackPort` 指向本机独立 Router，不能填 PLC IP 或把 PLC ADS 端口 `851` 复制到这里。
 
-## 73 与 113 的虚拟 PLC 示例
+页面保存会修正回环 IP 并使回环端口跟随 TCP 端口，**不会把用户填写的 TCP 端口自动改成 `48898`**。手工编辑配置或启用独立模式前，仍要逐项核对。
 
-以下为原虚拟 PLC 环境的配置示例。连接独立 CX 时，使用 CX 当前的 ADS 地址和可达 IP。
+独立 Router 关闭时，上述独立参数不参与系统 Router 连接。同机已有进程占用监听端口时，独立 Router 可能启动失败；程序会停止此次客户端启动，不会自动改连另一个 Router。
+
+## 3. 配置两端路由并重启
+
+1. 上位机侧登记 `PLC AMS Net ID → PLC 可达 IP`。系统模式在 TwinCAT Router 配置；独立模式由程序按上述参数创建。
+2. PLC 侧登记 `各上位机本机 AMS Net ID → 该电脑在 PLC 网络中可达的 IP`。三台分别登记，先核对已有路由，再补缺项。
+3. 保存运行配置并重启。日志应显示目标、实际加载的 SDK 版本、Router 模式及客户端连接结果。
+
+若 PLC 就运行在本机系统 Router 下，可先用本地 ADS 读取验证；远端电脑仍需配置路由。各电脑使用相同的 TCP 端口号没有冲突，因为监听发生在不同电脑上；本机 AMS Net ID 和操作站身份则不能重复。
+
+程序先启动 Router，再分别连接监控和手动客户端。两客户端使用各自分配的本机 ADS 端口，访问同一个 PLC Runtime 端口。退出时先取消并释放客户端，最后停止 Router。
+
+## 4. 先确认监控，再确认操作权限
+
+主窗体分别显示手动 ADS、监控 ADS 的连接状态。只读确认应同时满足：目标正确、`GVL_HMI.stMonitor` 可读、布局为 `4 / 164`、心跳持续变化、监控质量正常。“ADS 已连接”本身不能证明反馈实时有效，详见[监控接口](PlcMonitoringContract.md)。
+
+需要操作的电脑在运行配置中设置 `ControlStationIdentity`，一个站点身份只分配给一台电脑。随后在控制权页申请，由 PLC 返回授权。只监视的电脑可留空。配置值与站号见 [三站控制权](ControlAuthorityRules.md)。
+
+三台电脑先分别完成只读确认，再同时读取同一个 PLC，核对各自心跳和质量。当前文档和离线测试不代表三台实机已完成并发联调。
+
+## 5. 按失败阶段排查
+
+| 现象或日志阶段 | 检查顺序 |
+| --- | --- |
+| Router 启动失败 | 模式是否正确 → 本机端口是否占用 → 本机 Net ID、TCP 和回环参数 |
+| “连接”超时、`TargetMachineNotFound`、`TCPSendError` | 网卡是否已连接 → PLC IP 是否可达 → 目标 Net ID、两端路由及 Runtime 端口 |
+| “读取变量 GVL_HMI.stMonitor”失败 | 在线符号是否存在 → 是否下载配套程序 → 原始错误属于协议还是通信问题 |
+| 布局不匹配 | 核对 PLC 和上位机是否同时更新到 `4 / 164`，不要只反复重启连接 |
+| ADS 已连接但等待心跳、心跳停止 | PLC 任务是否运行并发布反馈，可读内存是否一直冻结 |
+| 监控恢复，手动仍失败 | 分别查看两个客户端，按下一节确认恢复范围 |
+
+远端 TCP 检查使用 PLC 的真实 IP，将下面占位文字替换后执行：
+
+```powershell
+Test-NetConnection -ComputerName 'PLC实际IP' -Port 48898
+```
+
+Ping 通不等于 ADS TCP 可用；TCP 可用也不等于路由、Runtime 或符号正确。反向 TCP 探测失败本身不能直接判定读取响应被防火墙阻断，响应可能沿客户端已建立的连接返回。保留完整日志中的失败阶段和底层错误后再定位。
+
+项目同时引用 ADS 与 Router SDK `7.0.389`，部署应包含完整输出目录；启动日志记录实际文件版本。调试监控可在 `MachineMonitorService.RefreshAsync` 的 `ReadAnyAsync<PlcMachineMonitor>` 处查看 `symbol`、`frame` 和异常。
+
+## 6. 明确连接恢复的范围
+
+| 客户端 | 当前行为 |
+| --- | --- |
+| 手动客户端首次连接 | 每次失败后等待 3 秒重试，同一原因日志去重；首次成功即结束启动重试；关闭窗口取消连接或等待 |
+| 独立监控客户端 | 通信失败后等待完整的 3 秒再重建；普通缺符号或类型错误不反复重连；旧句柄失效按错误类别进入重建流程；恢复后重新确认心跳 |
+| 手动客户端已连接后的运行期 | 尚无统一的断线或旧句柄恢复入口；独立监控恢复不会替它恢复连接 |
+
+ADS 写入超时可能意味着结果不确定，不能认定 PLC 没收到请求。程序不会自动重放手动命令、控制权申请或恢复运动。手动反馈目前也没有独立监控服务的心跳新鲜度判定。遇到“监控正常但手动失败”应保留两侧日志，按现场流程确认设备状态后恢复服务，不连续重复发送操作。
+
+手动读写与控制权维护共用串行锁。默认操作超时为 5000 ms，长请求可能影响心跳送达。循环每次等待 250 ms，之后仍须等待通信锁。详细证据和待解决项见 [2026-11-13 通信代码检查](AdsCommunicationReview.md)。
+
+## 7. 历史示例与验证边界
+
+以下是旧虚拟 PLC 环境，**仅用于理解配置关系，不是当前现场地址**：
 
 | 设置 | 73 电脑 | 113 电脑 |
 | --- | --- | --- |
 | 电脑 IP | `192.168.1.73` | `192.168.1.113` |
-| 独立 Router | 关闭，使用系统 TwinCAT Router | 开启 |
-| 本机 Router AMS Net ID | 虚拟 PLC 当前为 `192.168.0.55.1.1` | `192.168.1.113.1.1` |
-| PLC 目标 AMS Net ID | `192.168.0.55.1.1` | `192.168.0.55.1.1` |
-| PLC ADS 端口 | `851` | `851` |
-| 独立 Router 的 PLC 路由 IP | 不使用此项 | `192.168.1.73` |
-| 独立 Router TCP / 回环端口 | 不使用此项 | `48898` |
-| 独立 Router 回环地址 | 不使用此项 | `127.0.0.1` |
+| Router 模式 | 系统 Router，运行虚拟 PLC | 程序独立 Router |
+| 本机 AMS Net ID | `192.168.0.55.1.1` | `192.168.1.113.1.1` |
+| PLC 目标 | `192.168.0.55.1.1:851` | `192.168.0.55.1.1:851` |
+| 独立 Router 的 PLC IP | 不使用此项 | `192.168.1.73` |
+| 独立 Router TCP / 回环 | 不使用此项 | `48898` / `127.0.0.1:48898` |
 
-AMS Net ID 是 Router 身份，不要求前四段等于当前 IP。73 的 PLC 已确认为 `192.168.0.55.1.1`，不能仅因 IP 是 `192.168.1.73` 就修改 PLC 目标。
+2026-10-08 记录在 73 的 `C:\ProgramData\Beckhoff\TwinCAT\3.1\Runtimes\UmRT_Default\3.1\Target\StaticRoutes.xml` 中读到 `192.168.1.113.1.1 → 192.168.1.113`。该路径属于当时的 UmRT 环境，不能代替当前系统或实物 CX 的路由核对。
 
-113 的程序先启动独立 Router，再连接手动和监控客户端。两个客户端共用这个 Router，本机 ADS 端口由 Router 自动分配；`851` 是 PLC 的目标端口。
+同日记录包括：两个客户端并发读取虚拟 PLC 心跳、手动只读四轴反馈、专用端口的独立 Router 本机客户端登记、端口冲突和关闭清理检查。当时监控仍为逐字段读取，“33 项读取”不是当前整帧接口的性能数据，也未完成 113 到实际 PLC 的端到端验收。
 
-73 的 Router 需要识别 113 的身份：`192.168.1.113.1.1 → 192.168.1.113`。2026-10-08 在 73 的以下文件中已读到这条配置，没有修改它：
+现场仍需确认 PLC IP、AMS Net ID、路由、在线程序和三机持续运行。SDK 升级、本地编译或离线测试通过都不能单独证明现场超时根因已经消除。
 
-`C:\ProgramData\Beckhoff\TwinCAT\3.1\Runtimes\UmRT_Default\3.1\Target\StaticRoutes.xml`
-
-程序的 ADS 设置在系统配置页保存，重启后生效。每台电脑的设置保存在各自运行目录的 `Page switching.dll.config`。
-
-## 读取超时的检查
-
-### 程序的连接恢复范围
-
-- Router 就绪后，监控和手动客户端分别连接。手动客户端首次连接失败时，每次失败后等待 3 秒重试；首次成功后结束这个启动重试任务。相同失败原因只记录一次，关闭窗口会取消连接或等待。
-- 监控客户端持续运行自己的恢复流程。每次通信失败后重新等待完整的 3 秒间隔；重建连接后先等 PLC 心跳变化，再把反馈标为实时。
-- 手动客户端已经成功连接后发生的断线、PLC 下载或在线修改导致的旧句柄失效，目前没有统一的运行期恢复入口。监控恢复不代表手动客户端也已恢复，需分别查看主窗体的连接和控制权反馈。
-- ADS 写入超时不能证明 PLC 未收到请求。当前恢复逻辑不重放手动命令或控制权申请，也不代表已经重新取得控制权。
-
-2026-11-13 的代码检查、已修复项和剩余问题见 [ADS 通讯代码检查](AdsCommunicationReview.md)。
-
-### 现场检查顺序
-
-1. 确认 113 上的程序正在运行，日志出现“独立 ADS TCP Router 已启动”。
-2. 确认启动日志的 ADS SDK 和 Router SDK 均为 `7.0.389.0`；更新程序需要包含全部输出文件。当前控制和监控均通过 InduLink DLL 连接；查看监控连接日志的目标地址，113 的本机 Router 身份由配置及启动日志核对。
-3. 查看超时的具体步骤。监控日志保留“连接”或“读取变量 变量名”，DLL 异常保留底层 PLC 状态探测、获取句柄及读取失败原因。可在 `MachineMonitorService.ReadFrameAsync` 的 DLL ReadAnyAsync 调用处打断点。
-4. Router 运行时检查两台电脑之间的 TCP `48898` 通信。Ping 通不能证明 ADS TCP 通信正常；若端口不通，再核对程序监听和防火墙的放行配置。单独从 73 连接 113 失败不能直接证明读取超时由防火墙造成，读取响应也可能沿 113 主动建立的 TCP 连接返回。
-5. 核对 PLC 变量的符号名和类型。当前故障码按 `UINT / ushort` 读取，心跳按 `UDINT / uint` 读取。
-
-项目将 ADS 与 Router 依赖同步到 `7.0.389`。Beckhoff 的发布说明包含远端并发连接和 Router 重启后的连接恢复修复；此版本更新不能单独证明 113 的现场超时根因。参考 [Router 发布说明](https://www.nuget.org/packages/Beckhoff.TwinCAT.Ads.TcpRouter/7.0.389) 与 [Router 配置说明](https://infosys.beckhoff.com/content/1033/tc3_ads.net/9409008395.html)。
-
-## 验证范围
-
-2026-10-08 更新后的程序完成以下验证：
-
-- Debug、Release 编译均为 0 警告、0 错误；输出 ADS 与 Router DLL 的文件版本均为 `7.0.389.0`。
-- 73 上两个独立客户端并发读取五轮 PLC 心跳，本机 ADS 端口不同，读取均成功。
-- 实际监控服务连续五轮读取 33 项反馈，心跳变化后质量正常；离线、页面显示、单字段失效及关闭检查共 28 条断言通过。
-- 手动客户端仍使用现有 InduLink DLL，实际连接并读取四轴反馈成功，没有向 PLC 写入控制命令。
-- 使用专用端口和测试 Net ID 启动实际 Router 工厂，两个客户端均取得测试 Router 的本机身份及不同 ADS 端口。该检查只登记本机客户端，不向真实 PLC 发送远端读取。
-- 独立 Router 与系统端口冲突时，手动与监控客户端均未连接，关闭清理完成；缩短只读超时后，日志保留具体变量和读取步骤。
-- Debug DLL、PDB 和当前读取源码一致，`ReadAnyAsync<T>` 行有断点映射。
-
-以上未替代 113 的现场联调。113 上的独立 Router 需要使用更新后的程序再做两台电脑的端到端验证。
+相关官方资料：[ADS 设备寻址](https://infosys.beckhoff.com/content/1033/tc3_ads_intro/116159883.html)、[独立 Router 配置](https://infosys.beckhoff.com/content/1033/tc3_ads.net/9409008395.html)、[Static Routes](https://infosys.beckhoff.com/content/1033/tc3_system/5210273931.html)、[Router 7.0.389 包说明](https://www.nuget.org/packages/Beckhoff.TwinCAT.Ads.TcpRouter/7.0.389)。

@@ -9,7 +9,6 @@ VAR
     udiFault : UDINT; // 本扫描选出的完整故障码；轨迹组优先，其次为第一根故障轴。
     nFaultAxis : UINT; // 故障来源轴号：0 为组故障或无故障，1～4 为对应轴。
     i : INT; // 汇总四轴配置、就绪及故障的循环轴号，范围 1～4。
-    Config : ST_AxisConfig; // 循环检查当前轴的配置副本；只读校验，不修改设备参数。
 END_VAR]]></Declaration>
     <Implementation><ST><![CDATA[// 1. 自复位 TON 每约 500 ms 产生一个扫描周期的 Q，不依赖上位机写入。
 // 心跳始终更新，不能因待机/故障而停住，否则 switch 会认为反馈已过期。
@@ -153,12 +152,13 @@ GVL_HMI.stMonitor.xAxesIdle := GVL_HMI.stMonitor.xAxesStopped
     AND NOT GVL_axis.Axis3.xBusy AND NOT GVL_axis.Axis4.xBusy;
 GVL_HMI.stMonitor.xAxisFault := GVL_axis.Axis1.xError OR GVL_axis.Axis2.xError
     OR GVL_axis.Axis3.xError OR GVL_axis.Axis4.xError;
+// MAIN 已在本扫描应用轴参数，发布时直接从同一个配置来源校验。
 FOR i := 1 TO 4 DO
-    Config := GVL_motion.aConfig[i];
     GVL_HMI.stMonitor.xConfigValid := GVL_HMI.stMonitor.xConfigValid
-        AND F_AxisConfigValid(Config)
-        AND (Config.lrInitVelocity > 0) AND (Config.lrInitVelocity <= Config.lrMaxVelocity)
-        AND (Config.lrStartTolerance >= 0) AND (Config.lrStartTolerance < 1.0E12);
+        AND F_AxisConfigValid(GVL_motion.aConfig[i])
+        AND (GVL_motion.aConfig[i].lrInitVelocity > 0)
+        AND (GVL_motion.aConfig[i].lrInitVelocity <= GVL_motion.aConfig[i].lrMaxVelocity)
+        AND (GVL_motion.aConfig[i].lrStartTolerance >= 0) AND (GVL_motion.aConfig[i].lrStartTolerance < 1.0E12);
     GVL_HMI.stMonitor.xAxesIdle := GVL_HMI.stMonitor.xAxesIdle
         AND (GVL_sy.axis[i].Status.StandStill OR GVL_sy.axis[i].Status.Disabled)
         AND NOT GVL_sy.axis[i].Status.Homing

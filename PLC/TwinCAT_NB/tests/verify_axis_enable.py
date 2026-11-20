@@ -70,13 +70,14 @@ class AxisEnableChecks(unittest.TestCase):
                                   r'(GVL_HMI.stMonitor.xConfigValid\s+AND.*?);', feedback, re.S)[1]
         trajectory = pou_source(ROOT / 'axis_4/POUs/Trajectory_点位与轨迹/FB_FourAxisTrajectory.TcPOU')
         trajectory_check = re.search(r'xValid\s*:=\s*(\(aConfig\[i\].lrMinPosition.*?);', trajectory, re.S)[1]
-        for config in configs:
+        for axis, config in enumerate(configs, 1):
             values = self.fixture()
             values['Config'] = config
             self.program.run(values)
             self.assertTrue(values['xConfigValid'] and values['xManual'])
             values['GVL_HMI'] = NS(stMonitor=NS(xConfigValid=True))
-            values['aConfig'], values['i'] = [None, config], 1
+            values['GVL_motion'] = fixture.motion
+            values['aConfig'], values['i'] = fixture.motion.aConfig, axis
             self.assertTrue(StBranch.value(' '.join(monitor_check.split()), values))
             self.assertTrue(StBranch.value(' '.join(trajectory_check.split()), values))
         axis_source = ET.parse(ROOT / 'axis_4/POUs/ManualControl_手动控制/FB_AxisControl.TcPOU').findtext('.//ST')

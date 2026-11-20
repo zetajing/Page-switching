@@ -1,6 +1,3 @@
-using InduLink.Abstractions;
-using InduLink.Protocols.Ads;
-
 namespace Page_switching;
 
 // 手动页反馈读取：读取并校验整帧，更新四轴快照；不申请控制权，不写操作命令。
@@ -22,7 +19,10 @@ public sealed partial class AxisService
             }
             else
             {
-                snapshots = await ReadAdsSnapshotsAsync(client, cancellationToken).ConfigureAwait(false);
+                // 四轴一次整帧读取，ToAxisSnapshots 校验布局后再转换实际反馈。
+                var frame = await client.ReadAnyAsync<PlcMachineMonitor>(
+                    _options.SnapshotSymbol, cancellationToken: cancellationToken).ConfigureAwait(false);
+                snapshots = frame.ToAxisSnapshots();
                 SetFeedbackError(null);
             }
             UpdateAxisSnapshots(snapshots);
@@ -52,17 +52,6 @@ public sealed partial class AxisService
         }
         if (exception is not null) AdsDiagnostics.RecordException(error!, exception);
         else OperationJournal.Record("手动反馈", "四轴反馈读取已恢复。");
-    }
-
-    // 使用现有 DLL 一次读取四轴反馈，布局校验通过后才更新手动页。
-    // 控制命令仍逐项写本站邮箱，不整体回写反馈结构体。
-    private async Task<IReadOnlyList<AxisSnapshot>> ReadAdsSnapshotsAsync(
-        AdsClient client,
-        CancellationToken cancellationToken)
-    {
-        var frame = await client.ReadAnyAsync<PlcMachineMonitor>(
-            _options.SnapshotSymbol, cancellationToken: cancellationToken).ConfigureAwait(false);
-        return frame.ToAxisSnapshots();
     }
 
     // 在未连接或读取失败时，生成四根轴的占位状态。

@@ -154,6 +154,42 @@ class AuthorityChecks(unittest.TestCase):
         # 同扫描重新授予原站也清命令，避免旧点动/回原保持位重放。
         self.assertIn("(nOwner <> nOldOwner) OR xResetCommands", source)
 
+    def test_manual_gate_routes_only_authorized_station_and_keeps_loss_stop(self):
+        # 执行 MAIN 的命令 Action 和实际命令门，同时验证对应轴号、切站清除和停车独立性。
+        main = ET.parse(ROOT / "axis_4/POUs/MAIN.TcPOU")
+        dispatch = main.findtext(".//Action[@Name='A03_ManualCommands']/Implementation/ST")
+        gate = ET.parse(ROOT / "axis_4/POUs/ManualControl_手动控制/FB_AxisCommandGate.TcPOU").findtext(".//ST")
+        dispatch = StBranch(re.sub(r"//[^\n]*", "", dispatch))
+        gate = StBranch(re.sub(r"//[^\n]*", "", gate))
+        fields = ("xStart", "xStop", "jogz", "jogf", "gohome", "reset", "lrJogSpeed")
+        stations = {station: NS(aAxis={axis: NS(xStart=True, xStop=axis == 2,
+            jogz=axis == 1, jogf=axis == 2, gohome=axis == 3, reset=axis == 4,
+            lrJogSpeed=station * 10.0 + axis) for axis in range(1, 5)}) for station in range(1, 4)}
+        axes = NS(**{f"Axis{i}": NS(xEnabled=True) for i in range(1, 5)})
+        control = NS(aStation=stations)
+
+        def transfer(Data, nStation, nAxis, xStop):
+            gate.run(dict(Data=Data, nStation=nStation, nAxis=nAxis, xStop=xStop, GVL_control=control))
+
+        scenarios = ((1, True, False, False), (2, True, False, False), (3, True, False, True),
+                     (1, True, True, False), (2, True, False, False), (2, False, False, True),
+                     (0, False, False, False))
+        for owner, permit, changed, stop in scenarios:
+            with self.subTest(owner=owner, permit=permit, changed=changed, stop=stop):
+                control.nOwner, control.xCanCommand = owner, permit
+                control.xOwnerChanged, control.xStopOwner = changed, stop
+                dispatch.run(dict(GVL_axis=axes, GVL_control=control,
+                                  aCommandGate={axis: transfer for axis in range(1, 5)}))
+                for axis in range(1, 5):
+                    actual = getattr(axes, f"Axis{axis}")
+                    expected = dict.fromkeys(fields, False)
+                    expected["lrJogSpeed"] = 0
+                    if permit and not changed:
+                        expected = vars(stations[owner].aAxis[axis]).copy()
+                    expected["xStop"] |= stop
+                    self.assertEqual({name: getattr(actual, name) for name in fields}, expected)
+                    self.assertTrue(actual.xEnabled, "命令门不修改轴反馈")
+
 
 class AxisInterlockChecks(unittest.TestCase):
     """执行基础轴真实条件，确认控制权精简没有绕过运动和复位联锁。"""

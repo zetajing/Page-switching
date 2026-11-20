@@ -51,26 +51,20 @@ public sealed partial class AxisService
     }
 
     // 将四根轴的 EnableCommand 全部写为 true。
-    public Task EnableAllAsync(CancellationToken cancellationToken)
-    {
-        // 数组下标与轴顺序一致，后续按原顺序写入四轴请求。
-        var symbols = new string[_options.AxisSymbols.Count];
-        for (int i = 0; i < symbols.Length; i++)
-        {
-            symbols[i] = _options.AxisSymbols[i].EnableCommand;
-        }
-        return WriteAllAsync(symbols, true, cancellationToken);
-    }
+    public Task EnableAllAsync(CancellationToken cancellationToken) => SetAllEnabledAsync(true, cancellationToken);
 
     // 将四根轴的 EnableCommand 全部写为 false。
-    public Task DisableAllAsync(CancellationToken cancellationToken)
+    public Task DisableAllAsync(CancellationToken cancellationToken) => SetAllEnabledAsync(false, cancellationToken);
+
+    // 使能和撤使能使用同一组地址，按轴号顺序提交。
+    private Task SetAllEnabledAsync(bool enabled, CancellationToken cancellationToken)
     {
         var symbols = new string[_options.AxisSymbols.Count];
         for (int i = 0; i < symbols.Length; i++)
         {
             symbols[i] = _options.AxisSymbols[i].EnableCommand;
         }
-        return WriteAllAsync(symbols, false, cancellationToken);
+        return WriteAllAsync(symbols, enabled, cancellationToken);
     }
 
     // 单轴使能沿用批量写入的门锁、控制权和造波互锁，只提交本轴符号。

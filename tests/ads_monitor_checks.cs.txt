@@ -21,6 +21,7 @@ internal static class Program
         await FailedReconnectsWaitAgain();
         await HeartbeatControlsWholeFrame();
         await InvalidFramesAndHandles();
+        await ReadTimeoutKeepsRetryDelay();
         await CancellationAndDisposal();
         Console.WriteLine($"PASS: {_checks} ADS monitor checks; fake transport only, no PLC connection.");
     }
@@ -138,6 +139,45 @@ internal static class Program
         Check(AdsClient.Connections == connections + 1 &&
             monitor.LatestSnapshot.OverallQuality == MachineMonitorQuality.WaitingHeartbeat,
             "已缓存句柄失效后重建客户端并重新确认心跳");
+
+        // 整帧读取替代逐字段读取后，仍要保留类型错误与通信失败的不同处理。
+        connections = AdsClient.Connections;
+        foreach (var error in new[] { "DeviceInvalidSize", "DeviceInvalidData", "Marshalling" })
+        {
+            AdsClient.ReadFailure = new InvalidOperationException(error);
+            await monitor.RefreshAsync(true);
+            await monitor.RefreshAsync(true);
+            Check(AdsClient.Connections == connections && !monitor.LatestSnapshot.IsLive &&
+                monitor.LatestSnapshot.ErrorMessage!.Contains(error) &&
+                OperationJournal.Entries.All(message => !message.Contains("监控读取失败")),
+                error + " 使整帧失效但不当作连接故障重试");
+        }
+
+        AdsClient.ReadFailure = new InvalidOperationException("DeviceSymbolVersionInvalid");
+        await monitor.RefreshAsync(true);
+        await monitor.RefreshAsync(true);
+        Check(AdsClient.Connections == connections && OperationJournal.Entries.Any(message =>
+            message.Contains("DeviceSymbolVersionInvalid") && message.Contains("读取变量 GVL_HMI.stMonitor")),
+            "符号版本变化记录具体读取步骤，并遵守重连等待");
+        Set(monitor, "_failureSinceTick", Environment.TickCount64 - 30001);
+        AdsClient.ReadFailure = null;
+        await monitor.RefreshAsync(false);
+        Check(AdsClient.Connections == connections + 1 && monitor.LatestSnapshot.Axes.Count == 0 &&
+            monitor.LatestSnapshot.OverallQuality == MachineMonitorQuality.WaitingHeartbeat,
+            "符号版本恢复后重建连接，按调用要求省略轴列表并重新确认心跳");
+    }
+
+    private static async Task ReadTimeoutKeepsRetryDelay()
+    {
+        AdsClient.Reset();
+        await using var monitor = new MachineMonitorService(Options());
+        AdsClient.HoldRead = true;
+        await monitor.RefreshAsync(true);
+        Check(!monitor.LatestSnapshot.IsLive && OperationJournal.Entries.Any(message =>
+            message.Contains("监控超时（上限 1000 ms）：读取变量 GVL_HMI.stMonitor")),
+            "整帧读取超时保留当前变量步骤和超时上限");
+        await monitor.RefreshAsync(true);
+        Check(AdsClient.Reads == 1 && AdsClient.Connections == 1, "读取超时后不立即再次连接或读取");
     }
 
     private static async Task CancellationAndDisposal()
