@@ -107,13 +107,34 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
             // DLL 复用句柄；单次请求超时与整轮读取超时仍分开计算。
             timeoutMilliseconds = _options.RefreshTimeoutMilliseconds;
             timeout.CancelAfter(timeoutMilliseconds);
-            var errors = new List<string>();
-            var snapshot = await ReadSnapshotAsync(includeAxes, errors, timeout.Token).ConfigureAwait(false);
+            // 每轮只读一个结构体，直接转换为页面快照，不再逐字段收集错误。
+            var symbol = _options.SnapshotSymbol.Trim();
+            _readOperation = $"读取变量 {symbol}";
+            PlcMachineMonitor frame;
+            try
+            {
+                frame = await _client.ReadAnyAsync<PlcMachineMonitor>(
+                    symbol, cancellationToken: timeout.Token).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                // 调用方取消或本轮超时交给外层处理，不能当作符号错误。
+                timeout.Token.ThrowIfCancellationRequested();
+                var error = AdsDiagnostics.DescribeException(ex);
+                // 在线修改后的旧句柄需要重建；单纯缺少符号或类型不匹配不靠重连解决。
+                _resetClient = error.Contains("DeviceSymbolVersionInvalid", StringComparison.OrdinalIgnoreCase)
+                    || (error.Contains("ReadAny", StringComparison.OrdinalIgnoreCase)
+                    && error.Contains("DeviceSymbolNotFound", StringComparison.OrdinalIgnoreCase));
+                var message = $"读取 {_options.SnapshotSymbol} 失败：{error}；请核对配套 PLC 结构体是否已部署。";
+                SaveFrame(new MachineMonitorSnapshot { IsConnected = true }
+                    .WithoutAvailability(MachineMonitorQuality.Unavailable, message));
+                if (!IsContractError(error)) RecordCommunicationFailure(message, startedAt);
+                return LatestSnapshot;
+            }
+
+            var snapshot = frame.ToSnapshot(includeAxes);
             timeout.Token.ThrowIfCancellationRequested();
             SaveFrame(snapshot);
-            // 所有字段均因通信失败而无效时才重连；符号或类型错误不靠重连解决。
-            if (snapshot.OverallQuality == MachineMonitorQuality.Unavailable && errors.Any(error => !IsContractError(error)))
-                RecordCommunicationFailure(snapshot.ErrorMessage ?? "监控读取失败", startedAt);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested || _lifetime.IsCancellationRequested)
         {
@@ -137,51 +158,6 @@ public sealed class MachineMonitorService : IDisposable, IAsyncDisposable
             _refreshGate.Release();
         }
         return LatestSnapshot;
-    }
-
-    // 句柄缓存后，每轮只有一次数据读取；失败使整帧无效，不显示默认零值。
-    private async Task<MachineMonitorSnapshot> ReadSnapshotAsync(bool includeAxes, List<string> errors, CancellationToken token)
-    {
-        var frame = await ReadFrameAsync(errors, token).ConfigureAwait(false);
-        if (!frame.IsAvailable || !frame.Value.HasValue)
-        {
-            var message = $"读取 {_options.SnapshotSymbol} 失败：{frame.ErrorMessage}；请核对配套 PLC 结构体是否已部署。";
-            return new MachineMonitorSnapshot { IsConnected = true }
-                .WithoutAvailability(MachineMonitorQuality.Unavailable, message);
-        }
-        return frame.Value.Value.ToSnapshot(includeAxes);
-    }
-
-    // 与轴服务调用同一个 DLL 泛型接口；断点查看 symbol、frame 和实际异常。
-    private async Task<FeedbackField<PlcMachineMonitor>> ReadFrameAsync(List<string> errors, CancellationToken token)
-    {
-        var symbol = _options.SnapshotSymbol;
-        var error = "未配置符号";
-        if (!string.IsNullOrWhiteSpace(symbol))
-        {
-            symbol = symbol.Trim();
-            try
-            {
-                _readOperation = $"读取变量 {symbol}";
-                var frame = await _client!.ReadAnyAsync<PlcMachineMonitor>(
-                    symbol, cancellationToken: token).ConfigureAwait(false);
-                return new FeedbackField<PlcMachineMonitor>(frame, true);
-            }
-            catch (OperationCanceledException) when (token.IsCancellationRequested) { throw; }
-            catch (Exception ex)
-            {
-                error = AdsDiagnostics.DescribeException(ex);
-                // 在线修改会使 DLL 缓存的句柄失效；下轮重建客户端，由 DLL 集中清理。
-                // 单纯找不到符号时不重连，仍保留具体变量和原始 ADS 错误。
-                var symbolVersionChanged = error.Contains("DeviceSymbolVersionInvalid", StringComparison.OrdinalIgnoreCase);
-                var cachedHandleMissing = error.Contains("ReadAny", StringComparison.OrdinalIgnoreCase)
-                    && error.Contains("DeviceSymbolNotFound", StringComparison.OrdinalIgnoreCase);
-                _resetClient = symbolVersionChanged || cachedHandleMissing;
-            }
-        }
-        // 整帧读取失败时返回无效，不能把失败值显示成零或 false。
-        errors.Add($"{symbol}：{error}");
-        return FeedbackField<PlcMachineMonitor>.Unavailable(error);
     }
 
     private void SaveFrame(MachineMonitorSnapshot snapshot)

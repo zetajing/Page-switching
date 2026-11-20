@@ -12,10 +12,8 @@ VAR
     fbAxis4 : FB_AxisControl; // 轴4基础控制实例，固定对应 GVL_sy.axis[4] 和 GVL_axis.Axis4。
     fbAuthority : FB_ControlAuthority; // 三站控制权仲裁实例，处理申请、释放、心跳和交接锁。
     aCommandGate : ARRAY[1..4] OF FB_AxisCommandGate; // 四轴手动命令门，只向对应轴转交当前持有站的有效命令。
-    aCommands : ARRAY[1..4] OF ST_AxisCommand; // 本扫描从当前持有站邮箱取出的四轴手动命令副本。
-    aEmptyCommands : ARRAY[1..4] OF ST_AxisCommand; // 全零命令模板；无有效控制权时用于清除内部动作请求。
     xControlBusy : BOOL; // 实际运动、轨迹或轴块忙的汇总，作为禁止控制权交接的判据。
-    xCommandPermit : BOOL; // 允许转交当前持有站手动命令；控制权交接扫描为 FALSE。
+    nManualStation : UINT; // 本扫描允许读取的站号；0 时命令门清除旧请求。
     fbTrajectory : FB_FourAxisTrajectory; // 四轴点位接收、拼表、校验及轨迹执行实例。
     fbHmiFeedback : FB_HmiFeedback; // 四轴执行结果发布到 switch 只读监控接口。
     xAllEnabled : BOOL; // 四轴使能反馈，用于运行中判断是否掉使能。
@@ -84,15 +82,16 @@ fbAuthority(xMotionBusy := xControlBusy, xFeedbackInvalid := GVL_control.xFeedba
     </Action>
     <Action Name="A03_ManualCommands" Id="{455d291c-6bbf-5830-8f93-78839db9156a}">
       <Implementation>
-        <ST><![CDATA[// 取出授权站手动命令；通过命令门写入 GVL_axis 命令字段。
-aCommands := aEmptyCommands;
-IF GVL_control.xCanCommand THEN aCommands := GVL_control.aStation[GVL_control.nOwner].aAxis; END_IF
-// 交接扫描清除命令；新持有者必须在获授权应答后重新发动作，不能继承旧命令。
-xCommandPermit := GVL_control.xCanCommand AND NOT GVL_control.xOwnerChanged;
-aCommandGate[1](Data := GVL_axis.Axis1, Command := aCommands[1], xPermit := xCommandPermit, xStop := GVL_control.xStopOwner);
-aCommandGate[2](Data := GVL_axis.Axis2, Command := aCommands[2], xPermit := xCommandPermit, xStop := GVL_control.xStopOwner);
-aCommandGate[3](Data := GVL_axis.Axis3, Command := aCommands[3], xPermit := xCommandPermit, xStop := GVL_control.xStopOwner);
-aCommandGate[4](Data := GVL_axis.Axis4, Command := aCommands[4], xPermit := xCommandPermit, xStop := GVL_control.xStopOwner);
+        <ST><![CDATA[// 四个命令门共用本扫描的授权结果，各自读取对应轴的邮箱。
+// 交接扫描仍清除旧请求，新持有者须在确认授权后重新发命令。
+nManualStation := 0;
+IF GVL_control.xCanCommand AND NOT GVL_control.xOwnerChanged THEN
+    nManualStation := GVL_control.nOwner;
+END_IF
+aCommandGate[1](Data := GVL_axis.Axis1, nStation := nManualStation, nAxis := 1, xStop := GVL_control.xStopOwner);
+aCommandGate[2](Data := GVL_axis.Axis2, nStation := nManualStation, nAxis := 2, xStop := GVL_control.xStopOwner);
+aCommandGate[3](Data := GVL_axis.Axis3, nStation := nManualStation, nAxis := 3, xStop := GVL_control.xStopOwner);
+aCommandGate[4](Data := GVL_axis.Axis4, nStation := nManualStation, nAxis := 4, xStop := GVL_control.xStopOwner);
 ]]></ST>
       </Implementation>
     </Action>

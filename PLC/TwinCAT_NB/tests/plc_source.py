@@ -23,7 +23,7 @@ def expand_axis_checks(path, source):
         expression = expand_axis_checks(path, expression)
         return re.sub(r'\bConfig\.', lambda _: argument + '.', expression)
 
-    return re.sub(r'\b(F_Axis(?:Position|Config)Valid)\((Config|aConfig\[i\])\)', inline, source)
+    return re.sub(r'\b(F_Axis(?:Position|Config)Valid)\((Config|(?:GVL_motion\.)?aConfig\[i\])\)', inline, source)
 
 
 def pou_source(path):

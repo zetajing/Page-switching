@@ -4,21 +4,35 @@
     <Declaration><![CDATA[FUNCTION_BLOCK FB_AxisCommandGate
 // 每扫描在基础轴块之前调用；只从已授权站点邮箱复制命令，反馈字段不受影响。
 VAR_INPUT
-    Command : ST_AxisCommand; // 当前持有站对应轴的手动命令副本；不包含轴实际反馈。
-    xPermit : BOOL; // 本扫描手动命令转交许可；无授权或正在交接时为 FALSE。
+    nStation : UINT; // MAIN 已确认的命令来源，0 表示无授权或正在交接。
+    nAxis : INT; // MAIN 固定传入与 Data 对应的轴号，范围 1～4。
     xStop : BOOL; // 控制端失联停车请求，独立于普通手动命令许可。
 END_VAR
 VAR_IN_OUT
     Data : ST_AxisAds; // 对应轴内部命令区；本块只改命令字段，保留反馈字段。
+END_VAR
+VAR
+    Command : ST_AxisCommand; // 仅取本轴邮箱一次，速度和方向从同一份副本提取。
 END_VAR]]></Declaration>
-    <Implementation><ST><![CDATA[Data.xStart := xPermit AND Command.xStart;
-Data.xStop := xStop OR (xPermit AND Command.xStop);
-Data.jogz := xPermit AND Command.jogz;
-Data.jogf := xPermit AND Command.jogf;
-Data.gohome := xPermit AND Command.gohome;
-Data.reset := xPermit AND Command.reset;
-Data.lrJogSpeed := 0;
-IF xPermit THEN Data.lrJogSpeed := Command.lrJogSpeed; END_IF
+    <Implementation><ST><![CDATA[IF (nStation >= 1) AND (nStation <= 3) THEN
+    Command := GVL_control.aStation[nStation].aAxis[nAxis];
+    Data.xStart := Command.xStart;
+    Data.xStop := xStop OR Command.xStop;
+    Data.jogz := Command.jogz;
+    Data.jogf := Command.jogf;
+    Data.gohome := Command.gohome;
+    Data.reset := Command.reset;
+    Data.lrJogSpeed := Command.lrJogSpeed;
+ELSE
+    // 无有效站号时不读邮箱，清除上一扫描的请求，同时保留失联停车。
+    Data.xStart := FALSE;
+    Data.xStop := xStop;
+    Data.jogz := FALSE;
+    Data.jogf := FALSE;
+    Data.gohome := FALSE;
+    Data.reset := FALSE;
+    Data.lrJogSpeed := 0;
+END_IF
 ]]></ST></Implementation>
   </POU>
 </TcPlcObject>
